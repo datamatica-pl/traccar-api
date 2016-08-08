@@ -1,0 +1,4 @@
+# Java
+*.class
+/target/
+nb-configuration.xml
