@@ -14,25 +14,22 @@
  *  You should have received a copy of the GNU Affero General Public License
  *  along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-package pl.datamatica.traccar.api;
+package pl.datamatica.traccar.api.auth;
 
-import javax.persistence.EntityManager;
-import javax.persistence.EntityManagerFactory;
-import javax.persistence.Persistence;
-import pl.datamatica.traccar.api.auth.BasicAuthFilter;
-import pl.datamatica.traccar.api.auth.PasswordValidator;
-import spark.Spark;
-import spark.utils.SparkUtils;
-
-
-public class Application implements spark.servlet.SparkApplication {
+public class Credentials {
+    private String login;
+    private String password;
     
-    @Override
-    public void init() {        
-        Spark.get("test", (req, res) -> {
-                return "Hello world";
-        });
-        PasswordValidator passValidator = new PasswordValidator(Context.getInstance());
-        Spark.before(new BasicAuthFilter(SparkUtils.ALL_PATHS, passValidator));
+    public Credentials(String login, String password) {
+        this.login = login;
+        this.password = password;
+    }
+    
+    public String getLogin() {
+        return login;
+    }
+    
+    public String getPassword() {
+        return password;
     }
 }
