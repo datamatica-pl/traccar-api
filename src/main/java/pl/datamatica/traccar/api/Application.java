@@ -16,9 +16,6 @@
  */
 package pl.datamatica.traccar.api;
 
-import javax.persistence.EntityManager;
-import javax.persistence.EntityManagerFactory;
-import javax.persistence.Persistence;
 import pl.datamatica.traccar.api.auth.BasicAuthFilter;
 import pl.datamatica.traccar.api.auth.PasswordValidator;
 import spark.Spark;
@@ -28,7 +25,7 @@ import spark.utils.SparkUtils;
 public class Application implements spark.servlet.SparkApplication {
     
     @Override
-    public void init() {        
+    public void init() {
         Spark.get("test", (req, res) -> {
                 return "Hello world";
         });
