@@ -58,6 +58,11 @@
                     <version>4.3.1.Final</version>
             </dependency>
             <dependency>
+                <groupId>com.google.code.gson</groupId>
+                <artifactId>gson</artifactId>
+                <version>2.7</version>
+            </dependency>
+            <dependency>
                 <groupId>${project.groupId}</groupId>
                 <artifactId>traccar-orm</artifactId>
                 <version>${project.version}</version>

@@ -16,6 +16,8 @@
  */
 package pl.datamatica.traccar.api.auth;
 
+import pl.datamatica.traccar.model.User;
+
 public interface IPasswordValidator {
-    boolean validate(Credentials credentials);
+    User getUser(Credentials credentials);
 }

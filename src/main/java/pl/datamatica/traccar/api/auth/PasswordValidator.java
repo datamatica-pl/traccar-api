@@ -37,13 +37,13 @@ public class PasswordValidator implements IPasswordValidator {
     }
 
     @Override
-    public boolean validate(Credentials credentials) {
+    public User getUser(Credentials credentials) {
         try{
             User user = getUserByLogin(credentials.getLogin());
             String hashedPassword = getHashedPassword(user, credentials.getPassword());
-            return hashedPassword.equals(user.getPassword());
+            return hashedPassword.equals(user.getPassword()) ? user : null;
         } catch(NoResultException e) {
-            return false;
+            return null;
         }
     }
 

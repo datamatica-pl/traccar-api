@@ -16,8 +16,10 @@
  */
 package pl.datamatica.traccar.api;
 
+import com.google.gson.Gson;
 import pl.datamatica.traccar.api.auth.BasicAuthFilter;
 import pl.datamatica.traccar.api.auth.PasswordValidator;
+import pl.datamatica.traccar.api.controllers.DevicesController;
 import spark.Spark;
 import spark.utils.SparkUtils;
 
@@ -31,5 +33,16 @@ public class Application implements spark.servlet.SparkApplication {
         });
         PasswordValidator passValidator = new PasswordValidator(Context.getInstance());
         Spark.before(new BasicAuthFilter(SparkUtils.ALL_PATHS, passValidator));
+        
+        Gson gson = new Gson();
+        Spark.get("devices", (req, res) -> {
+            DevicesController dc = new DevicesController(Context.getInstance());
+            return dc.get(req.session().attribute("user"));
+        }, gson::toJson);
+        
+        Spark.get("devices/:id", (req, res) -> {
+            DevicesController dc = new DevicesController(Context.getInstance());
+            return dc.get(Long.parseLong(req.params(":id")), req.session().attribute("user"));
+        }, gson::toJson);
     }
 }
