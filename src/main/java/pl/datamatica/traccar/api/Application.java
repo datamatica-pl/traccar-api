@@ -34,15 +34,6 @@ public class Application implements spark.servlet.SparkApplication {
         PasswordValidator passValidator = new PasswordValidator(Context.getInstance());
         Spark.before(new BasicAuthFilter(SparkUtils.ALL_PATHS, passValidator));
         
-        Gson gson = new Gson();
-        Spark.get("devices", (req, res) -> {
-            DevicesController dc = new DevicesController(Context.getInstance());
-            return dc.get(req.session().attribute("user"));
-        }, gson::toJson);
-        
-        Spark.get("devices/:id", (req, res) -> {
-            DevicesController dc = new DevicesController(Context.getInstance());
-            return dc.get(Long.parseLong(req.params(":id")), req.session().attribute("user"));
-        }, gson::toJson);
+        DevicesController.registerMethods();
     }
 }
