@@ -110,9 +110,8 @@ public class BasicAuthFilter extends FilterImpl {
     }
 
     private void unauthorized(Response response, String errorMessage) {
-        response.body(errorMessage);
         response.header("WWW-Authenticate", SCHEME + " " + "realm=\"" + REALM + "\"");
-        Spark.halt(401);
+        Spark.halt(401, errorMessage);
     }
     
     private void serverError(Response response, String errorMessage) {

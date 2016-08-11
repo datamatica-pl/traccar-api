@@ -23,6 +23,7 @@ import javax.persistence.EntityManager;
 import javax.persistence.TypedQuery;
 import pl.datamatica.traccar.api.Context;
 import pl.datamatica.traccar.api.dtos.DeviceDto;
+import pl.datamatica.traccar.api.transformers.DeviceTransformer;
 import pl.datamatica.traccar.model.Device;
 import pl.datamatica.traccar.model.User;
 import spark.Spark;
@@ -41,43 +42,33 @@ public class DevicesController {
         this.user = user;
     }
     
-    public List<DeviceDto> get() {
+    public List<Device> get() {
         if(user.getAdmin()) {
             TypedQuery<Device> tq = em.createQuery("Select x from Device x", Device.class);
-            return convert(tq.getResultList());
+            return tq.getResultList();
         }
-        return convert(new ArrayList<>(user.getAllAvailableDevices()));
+        return new ArrayList<>(user.getAllAvailableDevices());
     }
     
-    public DeviceDto get(long id) {
+    public Device get(long id) {
         Device device = em.find(Device.class, id);
         if(!user.getAllAvailableDevices().contains(device))
             return null;
-        return convert(device);
+        return device;
     }
     
     public static void registerMethods() {
         Gson gson = Context.getInstance().getGson();
+        DeviceTransformer responseTransformer = new DeviceTransformer(gson);
+        
         Spark.get("devices", (req, res) -> {
             DevicesController dc = new DevicesController(req.session().attribute("user"));
             return dc.get();
-        }, gson::toJson);
+        }, responseTransformer);
         
         Spark.get("devices/:id", (req, res) -> {
             DevicesController dc = new DevicesController(req.session().attribute("user"));
             return dc.get(Long.parseLong(req.params(":id")));
-        }, gson::toJson);
-    }
-    
-    public List<DeviceDto> convert(List<Device> devices) {
-        List<DeviceDto> result = new ArrayList<>();
-        devices.stream().forEach((device) -> {
-            result.add(new DeviceDto(device));
-        });
-        return result;
-    }
-    
-    public DeviceDto convert(Device device) {
-        return new DeviceDto(device);
+        }, responseTransformer);
     }
 }
