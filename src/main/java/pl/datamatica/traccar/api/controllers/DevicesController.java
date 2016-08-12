@@ -17,52 +17,39 @@
 package pl.datamatica.traccar.api.controllers;
 
 import com.google.gson.Gson;
-import java.text.ParseException;
-import java.util.ArrayList;
 import java.util.Date;
-import java.util.List;
-import javax.persistence.EntityManager;
-import javax.persistence.TypedQuery;
+import java.util.stream.Stream;
 import pl.datamatica.traccar.api.Context;
-import pl.datamatica.traccar.api.dtos.DeviceDto;
+import pl.datamatica.traccar.api.providers.DeviceProvider;
 import pl.datamatica.traccar.api.transformers.DeviceTransformer;
-import pl.datamatica.traccar.api.utils.DateUtil;
 import pl.datamatica.traccar.model.Device;
 import pl.datamatica.traccar.model.User;
-import spark.Request;
 import spark.Spark;
 
 public class DevicesController {
     
-    private EntityManager em;
-    private User user;
-    private CachingHandler cachingHandler;
+    private DeviceProvider dp;
+    private RequestContext requestContext;
     
-    public DevicesController(User user, CachingHandler cachingHandler) {
-        this(Context.getInstance(), user, cachingHandler);
+    public DevicesController(RequestContext cachingHandler) {
+        this(Context.getInstance(), cachingHandler);
     }
     
-    public DevicesController(Context context, User user, CachingHandler cachingHandler) {
-        em = context.getEntityManager();
-        this.user = user;
-        this.cachingHandler = cachingHandler;
+    public DevicesController(Context context, RequestContext requestContext) {
+        dp = new DeviceProvider(context.getEntityManager());
+        this.requestContext = requestContext;
     }
     
-    public List<Device> get() {
-        long modificationTimestamp = 0;
-        List<Device> devices;
-        if(user.getAdmin()) {
-            TypedQuery<Device> tq = em.createQuery("Select x from Device x", Device.class);
-            devices = tq.getResultList();
-        } else {
-            devices = new ArrayList<>(user.getAllAvailableDevices());
-        }
+    public Device[] get() {
+        User user = requestContext.getUser();
+        Device[] devices = dp.getAllAvailableDevices(user).toArray(Device[]::new);
+        Date modificationTime = new Date(Stream.of(devices)
+                .mapToLong(d -> d.getLastUpdate().getTime())
+                .max()
+                .orElse(0));
         
-        for(Device device:devices)
-            if(device.getLastUpdate() != null && device.getLastUpdate().getTime() > modificationTimestamp)
-                modificationTimestamp = device.getLastUpdate().getTime();
-        cachingHandler.setLastModified(new Date(modificationTimestamp));
-        if(!cachingHandler.isModified()) {
+        requestContext.setLastModified(modificationTime);
+        if(!requestContext.isModified()) {
             Spark.halt(304);
             return null;
         }
@@ -71,18 +58,18 @@ public class DevicesController {
     }
     
     public Device get(long id) {
-        Device device = em.find(Device.class, id);
+        Device device = dp.getDevice(id);
         
         if(device == null) {
             Spark.halt(404);
             return null;
-        } else if(!canShowDeviceToUser(device, user)) {
+        } else if(!DeviceProvider.isVisibleToUser(device, requestContext.getUser())) {
             Spark.halt(403);
             return null;
         }
         
-        cachingHandler.setLastModified(device.getLastUpdate());
-        if(!cachingHandler.isModified()) {
+        requestContext.setLastModified(device.getLastUpdate());
+        if(!requestContext.isModified()) {
             Spark.halt(304);
             return null;
         }
@@ -98,21 +85,15 @@ public class DevicesController {
         DeviceTransformer responseTransformer = new DeviceTransformer(gson);
         
         Spark.get("devices", (req, res) -> { 
-            CachingHandler cachingHandler = new CachingHandler(req);
-            DevicesController dc = new DevicesController(req.session().attribute("user"),
-                    cachingHandler);
-            List<Device> result = dc.get();
-            cachingHandler.addLastModified(res);
-            return result;
+            RequestContext context = new RequestContext(req, res);
+            DevicesController dc = new DevicesController(context);
+            return dc.get();
         }, responseTransformer);
         
         Spark.get("devices/:id", (req, res) -> {            
-            CachingHandler cachingHandler = new CachingHandler(req);
-            DevicesController dc = new DevicesController(req.session().attribute("user"),
-                    cachingHandler);
-            Device result = dc.get(Long.parseLong(req.params(":id")));
-            cachingHandler.addLastModified(res);
-            return result;
+            RequestContext context = new RequestContext(req, res);
+            DevicesController dc = new DevicesController(context);
+            return dc.get(Long.parseLong(req.params(":id")));
         }, responseTransformer);
     }
 }
