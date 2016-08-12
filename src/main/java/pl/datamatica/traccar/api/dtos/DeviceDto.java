@@ -22,16 +22,31 @@ import pl.datamatica.traccar.model.Position;
 public class DeviceDto {
     private final long id;
     private String iconKey;
-    private String name;
-    private PositionDto latestPosition;
+    private String deviceName;
+    private String phoneNumber;
+    private String plateNumber;
+    private String description;
+    private String status;
+    private String uniqueId;
+    private PositionDto lastEvent;
+    private long accountId;
+    private Long groupId;
     
     public DeviceDto(Device device) {
         this.id = device.getId();
         this.iconKey = device.getIconType().toString();
-        this.name = device.getName();
+        this.deviceName = device.getName();
+        this.phoneNumber = device.getPhoneNumber();
+        this.plateNumber = device.getPlateNumber();
+        this.description = device.getDescription();
+        this.status = device.getStatus();
+        this.uniqueId = device.getUniqueId();
+        this.accountId = device.getOwner().getId();
+        if(device.getGroup() != null)
+            this.groupId = device.getGroup().getId();
         Position latestPosition = device.getLatestPosition();
         if(latestPosition != null) {
-            this.latestPosition = new PositionDto(latestPosition);
+            this.lastEvent = new PositionDto(latestPosition);
         }
     }
     
@@ -44,10 +59,48 @@ public class DeviceDto {
     }
 
     public String getName() {
-        return name;
+        return deviceName;
     }
 
     public PositionDto getLatestPosition() {
-        return latestPosition;
+        return lastEvent;
     }
+
+    public String getDeviceName() {
+        return deviceName;
+    }
+
+    public String getPhoneNumber() {
+        return phoneNumber;
+    }
+
+    public String getPlateNumber() {
+        return plateNumber;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public String getStatus() {
+        return status;
+    }
+
+    public String getUniqueId() {
+        return uniqueId;
+    }
+
+    public PositionDto getLastEvent() {
+        return lastEvent;
+    }
+
+    public long getAccountId() {
+        return accountId;
+    }
+
+    public Long getGroupId() {
+        return groupId;
+    }
+    
+    
 }
