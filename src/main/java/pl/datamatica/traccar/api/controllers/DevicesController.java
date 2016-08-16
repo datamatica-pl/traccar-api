@@ -17,8 +17,8 @@
 package pl.datamatica.traccar.api.controllers;
 
 import com.google.gson.Gson;
-import java.util.Date;
-import java.util.stream.Stream;
+import java.util.List;
+import java.util.stream.Collectors;
 import pl.datamatica.traccar.api.Context;
 import pl.datamatica.traccar.api.providers.DeviceProvider;
 import pl.datamatica.traccar.api.transformers.DeviceTransformer;
@@ -26,58 +26,36 @@ import pl.datamatica.traccar.model.Device;
 import pl.datamatica.traccar.model.User;
 import spark.Spark;
 
-public class DevicesController {
+public class DevicesController extends ControllerBase<Device> {
     
     private DeviceProvider dp;
-    private RequestContext requestContext;
     
     public DevicesController(RequestContext cachingHandler) {
         this(Context.getInstance(), cachingHandler);
     }
     
     public DevicesController(Context context, RequestContext requestContext) {
+        super(requestContext);
         dp = new DeviceProvider(context.getEntityManager());
-        this.requestContext = requestContext;
     }
     
-    public Device[] get() {
+    public List<Device> get() {
         User user = requestContext.getUser();
-        Device[] devices = dp.getAllAvailableDevices(user).toArray(Device[]::new);
-        Date modificationTime = new Date(Stream.of(devices)
-                .mapToLong(d -> d.getLastUpdate().getTime())
-                .max()
-                .orElse(0));
+        List<Device> devices = dp.getAllAvailableDevices(user).collect(Collectors.toList());
         
-        requestContext.setLastModified(modificationTime);
-        if(!requestContext.isModified()) {
-            Spark.halt(304);
-            return null;
-        }
-        
-        return devices;
+        return ok(devices);
     }
     
     public Device get(long id) {
         Device device = dp.getDevice(id);
         
         if(device == null) {
-            Spark.halt(404);
-            return null;
+            return notFound();
         } else if(!DeviceProvider.isVisibleToUser(device, requestContext.getUser())) {
-            Spark.halt(403);
-            return null;
+            return forbidden();
         }
         
-        requestContext.setLastModified(device.getLastUpdate());
-        if(!requestContext.isModified()) {
-            Spark.halt(304);
-            return null;
-        }
-        return device;
-    }
-    
-    private boolean canShowDeviceToUser(Device device, User user) {
-        return user.getAdmin() || user.getAllAvailableDevices().contains(device);
+        return ok(device);
     }
     
     public static void registerMethods() {

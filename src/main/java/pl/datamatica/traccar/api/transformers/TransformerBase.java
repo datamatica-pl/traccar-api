@@ -33,9 +33,9 @@ public abstract class TransformerBase<In> implements ResponseTransformer {
     
     @Override
     public String render(Object o) throws Exception {
-        if(o.getClass().isArray()) {
+        if(Iterable.class.isInstance(o)) {
             List result = new ArrayList<>();
-            for(Object element : (Object[])o) {
+            for(Object element : (Iterable)o) {
                 if(in.isInstance(element))
                     result.add(transform((In)element));
                 else

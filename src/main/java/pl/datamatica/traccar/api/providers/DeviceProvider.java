@@ -40,14 +40,8 @@ public class DeviceProvider {
     public Stream<Device> getAllAvailableDevices(User user) {
         if(user.getAdmin())
             return getAllDevices();
-        else if(user.getManager()) {
-            Stream<Device> availableDevices = user.getDevices().stream();
-            for(User managed : user.getManagedUsers())
-                availableDevices = Stream.concat(availableDevices, getAllAvailableDevices(managed));
-            return availableDevices.distinct();
-        } else {
-            return user.getDevices().stream();
-        }
+        else
+            return managedAndMe(user).flatMap(u -> u.getDevices().stream()).distinct();
     }
     
     public static boolean isVisibleToUser(Device device, User user) {
