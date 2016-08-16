@@ -61,4 +61,8 @@ public class DeviceProvider {
         TypedQuery<Device> tq = em.createQuery("Select x from Device x", Device.class);
         return tq.getResultList().stream();
     }
+    
+    public boolean isImeiValid(String imei) {
+        return true;
+    }
 }

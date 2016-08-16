@@ -29,6 +29,10 @@ public abstract class ControllerBase<T extends TimestampedEntity> {
         this.requestContext = requestContext;
     }
     
+    protected<Type> IHttpResponse okNoTimestamp(Type result) {
+        return new OkResponse(result);
+    }
+    
     protected IHttpResponse ok(List<T> list) {
         Date modificationTime = new Date(list.stream()
                 .mapToLong(d -> d.getLastUpdate().getTime())
@@ -55,6 +59,10 @@ public abstract class ControllerBase<T extends TimestampedEntity> {
     
     protected IHttpResponse forbidden() {
         return new ForbiddenResponse();
+    }
+    
+    protected IHttpResponse badRequest() {
+        return new BadRequestResponse();
     }
     
     public static Object render(IHttpResponse result, Response response) {

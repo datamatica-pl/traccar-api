@@ -14,21 +14,15 @@
  *  You should have received a copy of the GNU Affero General Public License
  *  along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-package pl.datamatica.traccar.api.transformers;
+package pl.datamatica.traccar.api.responses;
 
-import com.google.gson.Gson;
-import pl.datamatica.traccar.api.dtos.out.DeviceDto;
-import pl.datamatica.traccar.model.Device;
+import spark.Response;
 
-public class DeviceTransformer extends TransformerBase<Device> {
-
-    public DeviceTransformer(Gson gson) {
-        super(gson, Device.class);
-    }
+public class BadRequestResponse implements IHttpResponse {
 
     @Override
-    public Object transform(Device element) {
-        return new DeviceDto(element);
+    public Object write(Response response) {
+        response.status(400);
+        return "";
     }
-    
 }

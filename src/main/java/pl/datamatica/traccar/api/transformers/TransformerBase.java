@@ -44,6 +44,8 @@ public abstract class TransformerBase<In> implements ResponseTransformer {
             return gson.toJson(result);
         } else if(in.isInstance(o)) {
             return gson.toJson(transform((In)o));
+        } else if(o != null){
+            return o.toString();
         } else {
             return null;
         }
