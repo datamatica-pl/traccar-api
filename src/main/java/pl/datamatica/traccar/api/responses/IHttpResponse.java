@@ -14,10 +14,10 @@
  *  You should have received a copy of the GNU Affero General Public License
  *  along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-package pl.datamatica.traccar.api.auth;
+package pl.datamatica.traccar.api.responses;
 
-import pl.datamatica.traccar.model.User;
+import spark.Response;
 
-public interface IPasswordValidator {
-    User getUser(Credentials credentials);
+public interface IHttpResponse {
+    public Object write(Response response);
 }

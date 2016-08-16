@@ -14,10 +14,21 @@
  *  You should have received a copy of the GNU Affero General Public License
  *  along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-package pl.datamatica.traccar.api.auth;
+package pl.datamatica.traccar.api.transformers;
 
-import pl.datamatica.traccar.model.User;
+import com.google.gson.Gson;
+import pl.datamatica.traccar.api.dtos.DeviceDto;
+import pl.datamatica.traccar.model.Device;
 
-public interface IPasswordValidator {
-    User getUser(Credentials credentials);
+public class DeviceTransformer extends TransformerBase<Device> {
+
+    public DeviceTransformer(Gson gson) {
+        super(gson, Device.class);
+    }
+
+    @Override
+    public Object transform(Device element) {
+        return new DeviceDto(element);
+    }
+    
 }

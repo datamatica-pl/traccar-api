@@ -24,6 +24,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import spark.*;
 import static pl.datamatica.traccar.api.auth.AuthenticationException.*;
+import pl.datamatica.traccar.model.User;
 
 public class BasicAuthFilter extends FilterImpl {
     private static final String AUTH_HEADER_NAME = "Authorization";
@@ -49,12 +50,16 @@ public class BasicAuthFilter extends FilterImpl {
     @Override
     public void handle(Request request, Response response) throws Exception { 
         String errorMessage = null;
+        User user = null;
         try {
             Credentials credentials = readCredentials(request);
             if(credentials == null)
                 errorMessage = NO_CREDENTIALS_MSG;
-            else if(!passwordValidator.validate(credentials))
-                errorMessage = INVALID_CREDENTIALS_MSG;
+            else {
+                user = passwordValidator.getUser(credentials);
+                if(user == null)
+                    errorMessage = INVALID_CREDENTIALS_MSG;
+            }
         } catch(AuthenticationException e) {
             errorMessage = e.toString();
         } catch(IllegalArgumentException e) {
@@ -63,6 +68,9 @@ public class BasicAuthFilter extends FilterImpl {
         }
         if(errorMessage != null) {
             unauthorized(response, errorMessage);
+        } else if(user != null) {
+            request.session(true);
+            request.session().attribute("user", user);
         }
     }
 
@@ -102,9 +110,8 @@ public class BasicAuthFilter extends FilterImpl {
     }
 
     private void unauthorized(Response response, String errorMessage) {
-        response.body(errorMessage);
         response.header("WWW-Authenticate", SCHEME + " " + "realm=\"" + REALM + "\"");
-        Spark.halt(401);
+        Spark.halt(401, errorMessage);
     }
     
     private void serverError(Response response, String errorMessage) {
