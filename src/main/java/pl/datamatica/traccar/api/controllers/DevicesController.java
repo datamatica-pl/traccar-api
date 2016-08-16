@@ -31,8 +31,8 @@ public class DevicesController extends ControllerBase<Device> {
     
     private DeviceProvider dp;
     
-    public DevicesController(RequestContext cachingHandler) {
-        this(Context.getInstance(), cachingHandler);
+    public DevicesController(RequestContext requestContext) {
+        this(Context.getInstance(), requestContext);
     }
     
     public DevicesController(Context context, RequestContext requestContext) {
@@ -59,6 +59,12 @@ public class DevicesController extends ControllerBase<Device> {
         return ok(device);
     }
     
+    public IHttpResponse checkImei(String imei) {
+        if(imei == null)
+            return badRequest();
+        return okNoTimestamp(dp.isImeiValid(imei));
+    }
+    
     public static void registerMethods() {
         Gson gson = Context.getInstance().getGson();
         DeviceTransformer responseTransformer = new DeviceTransformer(gson);
@@ -68,6 +74,12 @@ public class DevicesController extends ControllerBase<Device> {
             DevicesController dc = new DevicesController(context);
             return render(dc.get(), res);
         }, responseTransformer);
+        
+        Spark.get("devices/checkImei", (req, res) -> {
+            RequestContext context = new RequestContext(req, res);
+            DevicesController dc = new DevicesController(context);
+            return render(dc.checkImei(req.queryParams("imei")), res);
+        });
         
         Spark.get("devices/:id", (req, res) -> {            
             RequestContext context = new RequestContext(req, res);
