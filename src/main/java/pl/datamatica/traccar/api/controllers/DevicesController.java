@@ -21,6 +21,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 import pl.datamatica.traccar.api.Context;
 import pl.datamatica.traccar.api.providers.DeviceProvider;
+import pl.datamatica.traccar.api.responses.IHttpResponse;
 import pl.datamatica.traccar.api.transformers.DeviceTransformer;
 import pl.datamatica.traccar.model.Device;
 import pl.datamatica.traccar.model.User;
@@ -39,14 +40,14 @@ public class DevicesController extends ControllerBase<Device> {
         dp = new DeviceProvider(context.getEntityManager());
     }
     
-    public List<Device> get() {
+    public IHttpResponse get() {
         User user = requestContext.getUser();
         List<Device> devices = dp.getAllAvailableDevices(user).collect(Collectors.toList());
         
         return ok(devices);
     }
     
-    public Device get(long id) {
+    public IHttpResponse get(long id) {
         Device device = dp.getDevice(id);
         
         if(device == null) {
@@ -65,13 +66,13 @@ public class DevicesController extends ControllerBase<Device> {
         Spark.get("devices", (req, res) -> { 
             RequestContext context = new RequestContext(req, res);
             DevicesController dc = new DevicesController(context);
-            return dc.get();
+            return render(dc.get(), res);
         }, responseTransformer);
         
         Spark.get("devices/:id", (req, res) -> {            
             RequestContext context = new RequestContext(req, res);
             DevicesController dc = new DevicesController(context);
-            return dc.get(Long.parseLong(req.params(":id")));
+            return render(dc.get(Long.parseLong(req.params(":id"))), res);
         }, responseTransformer);
     }
 }

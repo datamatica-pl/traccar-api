@@ -18,50 +18,46 @@ package pl.datamatica.traccar.api.controllers;
 
 import java.util.Date;
 import java.util.List;
+import pl.datamatica.traccar.api.responses.*;
 import pl.datamatica.traccar.model.TimestampedEntity;
-import spark.Spark;
+import spark.Response;
 
 public abstract class ControllerBase<T extends TimestampedEntity> {
     protected RequestContext requestContext;
-    
-    public abstract T get(long id);
-    public abstract List<T> get();
     
     public ControllerBase(RequestContext requestContext) {
         this.requestContext = requestContext;
     }
     
-    protected List<T> ok(List<T> list) {
+    protected IHttpResponse ok(List<T> list) {
         Date modificationTime = new Date(list.stream()
                 .mapToLong(d -> d.getLastUpdate().getTime())
                 .max()
-                .orElse(0));
+                .orElse(1000));
         
         requestContext.setLastModified(modificationTime);
-        if(!requestContext.isModified()) {
-            Spark.halt(304);
-            return null;
-        }
+        if(!requestContext.isModified())
+            return new NotModifiedResponse();
         
-        return list;
+        return new OkResponse(list);
     }
     
-    protected T ok(T item) {
+    protected IHttpResponse ok(T item) {
         requestContext.setLastModified(item.getLastUpdate());
-        if(!requestContext.isModified()) {
-            Spark.halt(304);
-            return null;
-        }
-        return item;
+        if(!requestContext.isModified())
+            return new NotModifiedResponse();
+        return new OkResponse(item);
     }
     
-    protected T notFound() {
-        Spark.halt(404);
-        return null;
+    protected IHttpResponse notFound() {
+        return new NotFoundResponse();
     }
     
-    protected T forbidden() {
-        Spark.halt(403);
-        return null;
+    protected IHttpResponse forbidden() {
+        return new ForbiddenResponse();
+    }
+    
+    public static Object render(IHttpResponse result, Response response) {
+        return result.write(response);
     }
 }
