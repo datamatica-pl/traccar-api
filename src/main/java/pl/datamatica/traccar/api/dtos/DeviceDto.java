@@ -21,33 +21,35 @@ import pl.datamatica.traccar.model.Position;
 
 public class DeviceDto {
     private final long id;
-    private String iconKey;
     private String deviceName;
+    private long deviceModelId;
+    private String iconKey;
+    private String color;
     private String phoneNumber;
     private String plateNumber;
     private String description;
     private String status;
     private String uniqueId;
-    private PositionDto lastEvent;
+    private PositionDto lastPosition;
+    private boolean isDeleted;
     private long accountId;
-    private Long groupId;
     
     public DeviceDto(Device device) {
         this.id = device.getId();
-        this.iconKey = device.getIconType().toString();
         this.deviceName = device.getName();
+        this.deviceModelId = device.getDeviceModelId();
+        this.iconKey = device.getIconType().toString();
+        this.color = device.getColor();
         this.phoneNumber = device.getPhoneNumber();
         this.plateNumber = device.getPlateNumber();
         this.description = device.getDescription();
         this.status = device.getStatus();
         this.uniqueId = device.getUniqueId();
-        this.accountId = device.getOwner().getId();
-        if(device.getGroup() != null)
-            this.groupId = device.getGroup().getId();
         Position latestPosition = device.getLatestPosition();
-        if(latestPosition != null) {
-            this.lastEvent = new PositionDto(latestPosition);
-        }
+        if(latestPosition != null)
+            this.lastPosition = new PositionDto(latestPosition);
+        this.isDeleted = device.isDeleted();
+        this.accountId = device.getOwner().getId();
     }
     
     public long getId() {
@@ -63,7 +65,7 @@ public class DeviceDto {
     }
 
     public PositionDto getLatestPosition() {
-        return lastEvent;
+        return lastPosition;
     }
 
     public String getDeviceName() {
@@ -91,16 +93,26 @@ public class DeviceDto {
     }
 
     public PositionDto getLastEvent() {
-        return lastEvent;
+        return lastPosition;
     }
 
     public long getAccountId() {
         return accountId;
     }
 
-    public Long getGroupId() {
-        return groupId;
+    public long getDeviceModelId() {
+        return deviceModelId;
     }
-    
-    
+
+    public String getColor() {
+        return color;
+    }
+
+    public PositionDto getLastPosition() {
+        return lastPosition;
+    }
+
+    public boolean isDeleted() {
+        return isDeleted;
+    }
 }

@@ -17,6 +17,7 @@
 package pl.datamatica.traccar.api;
 
 import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.Persistence;
@@ -45,7 +46,7 @@ public class Context {
         TypedQuery<ApplicationSettings> tq = em.createQuery("Select x from ApplicationSettings x", ApplicationSettings.class);
         tq.setMaxResults(1);
         settings = tq.getSingleResult();
-        gson = new Gson();
+        gson = new GsonBuilder().setPrettyPrinting().create();
     }
     
     public EntityManager getEntityManager() {
