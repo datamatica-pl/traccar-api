@@ -58,16 +58,20 @@ public class UsersController extends ControllerBase {
         Gson gson = Context.getInstance().getGson();
         UserTransformer userTransformer = new UserTransformer(gson);
         
-        Spark.get("users", (req, res) -> {
+        Spark.get(rootUrl(), (req, res) -> {
             RequestContext context = new RequestContext(req, res);
             UsersController uc = new UsersController(context);
             return render(uc.get(), res);
         }, userTransformer);
         
-        Spark.get("users/:id", (req, res) -> {
+        Spark.get(rootUrl() + "/:id", (req, res) -> {
             RequestContext context = new RequestContext(req, res);
             UsersController uc = new UsersController(context);
             return render(uc.get(Long.parseLong(req.params(":id"))), res);
         }, userTransformer);
+    }
+    
+    public static String rootUrl() {
+        return ControllerBase.rootUrl() + "/users";
     }
 }

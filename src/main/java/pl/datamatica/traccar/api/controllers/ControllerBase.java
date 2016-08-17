@@ -23,6 +23,11 @@ import pl.datamatica.traccar.model.TimestampedEntity;
 import spark.Response;
 
 public abstract class ControllerBase {
+    
+    public static String rootUrl() {
+        return "v1";
+    }
+    
     protected RequestContext requestContext;
     
     public ControllerBase(RequestContext requestContext) {
