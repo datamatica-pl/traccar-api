@@ -39,7 +39,7 @@ public class PasswordValidator implements IPasswordValidator {
     @Override
     public User getUser(Credentials credentials) {
         try{
-            User user = getUserByLogin(credentials.getLogin());
+            User user = getUserByMail(credentials.getLogin());
             String hashedPassword = getHashedPassword(user, credentials.getPassword());
             return hashedPassword.equals(user.getPassword()) ? user : null;
         } catch(NoResultException e) {
@@ -54,9 +54,9 @@ public class PasswordValidator implements IPasswordValidator {
             return password;
     }
     
-    public User getUserByLogin(String login) {
-        TypedQuery<User> tq = em.createQuery("Select x from User x where x.login = :login", User.class);
-        tq.setParameter("login", login);
+    public User getUserByMail(String email) {
+        TypedQuery<User> tq = em.createQuery("Select x from User x where x.email = :email", User.class);
+        tq.setParameter("email", email);
         return tq.getSingleResult();
     }
 }
