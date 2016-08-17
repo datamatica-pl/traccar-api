@@ -51,18 +51,18 @@ public class DevicesController extends ControllerBase {
     public IHttpResponse get(long id) {
         Device device = dp.getDevice(id);
         
-        if(device == null) {
+        if(device == null)
             return notFound();
-        } else if(!DeviceProvider.isVisibleToUser(device, requestContext.getUser())) {
+        if(DeviceProvider.isVisibleToUser(device, requestContext.getUser())) 
+            return ok(device);
+        else
             return forbidden();
-        }
-        
-        return ok(device);
     }
     
     public IHttpResponse post(AddDeviceDto deviceDto) {
         if(deviceDto == null || deviceDto.getImei() == null)
             return badRequest();
+        //todo - createDevice error handling
         long id = dp.createDevice(deviceDto.getImei());            
         return created("devices/"+id);
     }
