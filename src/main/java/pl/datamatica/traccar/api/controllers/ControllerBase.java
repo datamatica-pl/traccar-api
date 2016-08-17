@@ -65,6 +65,10 @@ public abstract class ControllerBase<T extends TimestampedEntity> {
         return new BadRequestResponse();
     }
     
+    protected IHttpResponse created(String route) {
+        return new CreatedResponse(route);
+    }
+    
     public static Object render(IHttpResponse result, Response response) {
         return result.write(response);
     }
