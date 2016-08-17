@@ -22,18 +22,18 @@ import pl.datamatica.traccar.api.responses.*;
 import pl.datamatica.traccar.model.TimestampedEntity;
 import spark.Response;
 
-public abstract class ControllerBase<T extends TimestampedEntity> {
+public abstract class ControllerBase {
     protected RequestContext requestContext;
     
     public ControllerBase(RequestContext requestContext) {
         this.requestContext = requestContext;
     }
     
-    protected<Type> IHttpResponse okNoTimestamp(Type result) {
+    protected IHttpResponse ok(Object result) {
         return new OkResponse(result);
     }
     
-    protected IHttpResponse ok(List<T> list) {
+    protected IHttpResponse ok(List<TimestampedEntity> list) {
         Date modificationTime = new Date(list.stream()
                 .mapToLong(d -> d.getLastUpdate().getTime())
                 .max()
@@ -46,7 +46,7 @@ public abstract class ControllerBase<T extends TimestampedEntity> {
         return new OkResponse(list);
     }
     
-    protected IHttpResponse ok(T item) {
+    protected IHttpResponse ok(TimestampedEntity item) {
         requestContext.setLastModified(item.getLastUpdate());
         if(!requestContext.isModified())
             return new NotModifiedResponse();

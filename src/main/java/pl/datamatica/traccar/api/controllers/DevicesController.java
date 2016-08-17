@@ -28,7 +28,7 @@ import pl.datamatica.traccar.model.Device;
 import pl.datamatica.traccar.model.User;
 import spark.Spark;
 
-public class DevicesController extends ControllerBase<Device> {
+public class DevicesController extends ControllerBase {
     
     private DeviceProvider dp;
     
