@@ -34,6 +34,7 @@ public class BasicAuthFilter extends FilterImpl {
     private static final Charset CHARSET = StandardCharsets.UTF_8;
     private static final String AUTH_INFO_SEPARATOR = " ";
     private static final String CREDENTIALS_SEPARATOR = ":";
+    public static final String USER_ID_SESSION_KEY = "userId";
     
     private static final String NO_CREDENTIALS_MSG = "";
     private static final String INVALID_CREDENTIALS_MSG = "Invalid username or password";
@@ -52,10 +53,10 @@ public class BasicAuthFilter extends FilterImpl {
     
     @Override
     public void handle(Request request, Response response) throws Exception { 
-        String errorMessage = null;
-        User user = request.session().attribute("user");
-        if(user != null) 
+        if(request.session().attributes().contains(USER_ID_SESSION_KEY))
             return;
+        String errorMessage = null;
+        User user = null;
         try {
             Credentials credentials = readCredentials(request);
             if(credentials == null)
@@ -75,7 +76,7 @@ public class BasicAuthFilter extends FilterImpl {
             unauthorized(response, errorMessage);
         } else if(user != null) {
             request.session(true).maxInactiveInterval(SESSION_MAX_INACTIVE_INTERVAL);
-            request.session().attribute("user", user);
+            request.session().attribute(USER_ID_SESSION_KEY, user.getId());
         }
     }
 
