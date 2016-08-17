@@ -27,7 +27,7 @@ import pl.datamatica.traccar.model.Device;
 import pl.datamatica.traccar.model.User;
 import spark.Spark;
 
-public class DevicesController extends ControllerBase<Device> {
+public class DevicesController extends ControllerBase {
     
     private DeviceProvider dp;
     
@@ -62,7 +62,7 @@ public class DevicesController extends ControllerBase<Device> {
     public IHttpResponse checkImei(String imei) {
         if(imei == null)
             return badRequest();
-        return okNoTimestamp(dp.isImeiValid(imei));
+        return ok(dp.isImeiValid(imei));
     }
     
     public static void registerMethods() {

@@ -20,6 +20,7 @@ import java.io.UnsupportedEncodingException;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
+import java.util.concurrent.TimeUnit;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import spark.*;
@@ -33,9 +34,12 @@ public class BasicAuthFilter extends FilterImpl {
     private static final Charset CHARSET = StandardCharsets.UTF_8;
     private static final String AUTH_INFO_SEPARATOR = " ";
     private static final String CREDENTIALS_SEPARATOR = ":";
+    public static final String USER_ID_SESSION_KEY = "userId";
     
     private static final String NO_CREDENTIALS_MSG = "";
     private static final String INVALID_CREDENTIALS_MSG = "Invalid username or password";
+    
+    private static final int SESSION_MAX_INACTIVE_INTERVAL = (int)TimeUnit.SECONDS.convert(14, TimeUnit.DAYS);
     
     private static final Logger logger = LoggerFactory.getLogger(BasicAuthFilter.class);
     
@@ -49,6 +53,8 @@ public class BasicAuthFilter extends FilterImpl {
     
     @Override
     public void handle(Request request, Response response) throws Exception { 
+        if(request.session().attributes().contains(USER_ID_SESSION_KEY))
+            return;
         String errorMessage = null;
         User user = null;
         try {
@@ -69,8 +75,8 @@ public class BasicAuthFilter extends FilterImpl {
         if(errorMessage != null) {
             unauthorized(response, errorMessage);
         } else if(user != null) {
-            request.session(true);
-            request.session().attribute("user", user);
+            request.session(true).maxInactiveInterval(SESSION_MAX_INACTIVE_INTERVAL);
+            request.session().attribute(USER_ID_SESSION_KEY, user.getId());
         }
     }
 
