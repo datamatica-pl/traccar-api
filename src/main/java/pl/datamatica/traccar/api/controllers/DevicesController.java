@@ -20,6 +20,7 @@ import com.google.gson.Gson;
 import java.util.List;
 import java.util.stream.Collectors;
 import pl.datamatica.traccar.api.Context;
+import pl.datamatica.traccar.api.dtos.in.AddDeviceDto;
 import pl.datamatica.traccar.api.providers.DeviceProvider;
 import pl.datamatica.traccar.api.responses.IHttpResponse;
 import pl.datamatica.traccar.api.transformers.DeviceTransformer;
@@ -59,10 +60,11 @@ public class DevicesController extends ControllerBase {
         return ok(device);
     }
     
-    public IHttpResponse checkImei(String imei) {
-        if(imei == null)
+    public IHttpResponse post(AddDeviceDto deviceDto) {
+        if(deviceDto == null || deviceDto.getImei() == null)
             return badRequest();
-        return ok(dp.isImeiValid(imei));
+        long id = dp.createDevice(deviceDto.getImei());            
+        return created("devices/"+id);
     }
     
     public static void registerMethods() {
@@ -75,10 +77,11 @@ public class DevicesController extends ControllerBase {
             return render(dc.get(), res);
         }, responseTransformer);
         
-        Spark.get("devices/checkImei", (req, res) -> {
+        Spark.post("devices", (req, res) -> {
             RequestContext context = new RequestContext(req, res);
             DevicesController dc = new DevicesController(context);
-            return render(dc.checkImei(req.queryParams("imei")), res);
+            AddDeviceDto deviceDto = gson.fromJson(req.body(), AddDeviceDto.class);
+            return render(dc.post(deviceDto), res);
         });
         
         Spark.get("devices/:id", (req, res) -> {            
