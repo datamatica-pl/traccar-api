@@ -19,6 +19,7 @@ package pl.datamatica.traccar.api;
 import pl.datamatica.traccar.api.auth.BasicAuthFilter;
 import pl.datamatica.traccar.api.auth.PasswordValidator;
 import pl.datamatica.traccar.api.controllers.DevicesController;
+import pl.datamatica.traccar.api.controllers.UsersController;
 import spark.Spark;
 import spark.utils.SparkUtils;
 
@@ -37,5 +38,6 @@ public class Application implements spark.servlet.SparkApplication {
         });
         
         DevicesController.registerMethods();
+        UsersController.registerMethods();
     }
 }
