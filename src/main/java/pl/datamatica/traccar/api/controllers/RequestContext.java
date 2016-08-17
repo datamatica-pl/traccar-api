@@ -40,7 +40,6 @@ public class RequestContext {
             this.ifModifiedSince = DateUtil.parseDate(request.headers(IF_MODIFIED_SINCE_HEADER));
         this.response = response;
         this.user = request.session().attribute("user");
-        request.session().invalidate();
     }
     
     public Date getModificationDate() {
