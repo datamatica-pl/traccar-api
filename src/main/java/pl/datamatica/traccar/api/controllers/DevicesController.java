@@ -71,23 +71,27 @@ public class DevicesController extends ControllerBase {
         Gson gson = Context.getInstance().getGson();
         DeviceTransformer responseTransformer = new DeviceTransformer(gson);
         
-        Spark.get("devices", (req, res) -> { 
+        Spark.get(rootUrl(), (req, res) -> { 
             RequestContext context = new RequestContext(req, res);
             DevicesController dc = new DevicesController(context);
             return render(dc.get(), res);
         }, responseTransformer);
         
-        Spark.post("devices", (req, res) -> {
+        Spark.post(rootUrl(), (req, res) -> {
             RequestContext context = new RequestContext(req, res);
             DevicesController dc = new DevicesController(context);
             AddDeviceDto deviceDto = gson.fromJson(req.body(), AddDeviceDto.class);
             return render(dc.post(deviceDto), res);
         });
         
-        Spark.get("devices/:id", (req, res) -> {            
+        Spark.get(rootUrl()+"/:id", (req, res) -> {            
             RequestContext context = new RequestContext(req, res);
             DevicesController dc = new DevicesController(context);
             return render(dc.get(Long.parseLong(req.params(":id"))), res);
         }, responseTransformer);
+    }
+    
+    public static String rootUrl() {
+        return ControllerBase.rootUrl() + "/devices";
     }
 }
