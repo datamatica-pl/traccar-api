@@ -41,7 +41,7 @@ public class RequestContext {
         if(request.headers(IF_MODIFIED_SINCE_HEADER) != null)
             this.ifModifiedSince = DateUtil.parseDate(request.headers(IF_MODIFIED_SINCE_HEADER));
         this.response = response;
-        this.user = Context.getInstance().getEntityManager().find(User.class, 
+        this.user = Context.getInstance().createEntityManager().find(User.class, 
                 request.session().attribute(BasicAuthFilter.USER_ID_SESSION_KEY));
     }
     

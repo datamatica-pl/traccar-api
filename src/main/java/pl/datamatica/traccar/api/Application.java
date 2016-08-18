@@ -33,14 +33,17 @@ public class Application implements spark.servlet.SparkApplication {
         Spark.get("test", (req, res) -> {
                 return "Hello world";
         });
-        PasswordValidator passValidator = new PasswordValidator(Context.getInstance());
+        PasswordValidator passValidator = new PasswordValidator();
         Spark.before(new BasicAuthFilter(SparkUtils.ALL_PATHS, passValidator));
-        Spark.exception(Exception.class, (exception, request, response) -> {
-            StringWriter sw = new StringWriter();
-            exception.printStackTrace(new PrintWriter(sw));
-            response.status(500);
-            response.body(sw.toString());
-        });
+        if(Context.getInstance().isInDevMode()) {
+            Spark.exception(Exception.class, (exception, request, response) -> {
+                StringWriter sw = new StringWriter();
+                exception.printStackTrace(new PrintWriter(sw));
+                response.status(500);
+                response.type("text/plain");
+                response.body(sw.toString());
+            });
+        }
         
         DevicesController.registerMethods();
         UsersController.registerMethods();

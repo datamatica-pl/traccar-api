@@ -26,32 +26,30 @@ import pl.datamatica.traccar.api.transformers.UserTransformer;
 import pl.datamatica.traccar.model.User;
 import spark.Spark;
 
-public class UsersController extends ControllerBase {
-    private UserProvider up;
-    
+public class UsersController extends ControllerBase { 
     
     public UsersController(RequestContext requestContext) {
-        this(requestContext, Context.getInstance());
-    }
-    
-    public UsersController(RequestContext requestContext, Context context) {
         super(requestContext);
-        this.up = new UserProvider(context.getEntityManager());
     }
     
-    public IHttpResponse get() {
-        List<User> users = up.getAllAvailableUsers(requestContext.getUser()).collect(Collectors.toList());
-        return ok(users);
+    public IHttpResponse get() throws Exception {
+        try(UserProvider up = new UserProvider()) {
+            List<User> users = up.getAllAvailableUsers(requestUser())
+                    .collect(Collectors.toList());
+            return ok(users);
+        }
     }
     
-    public IHttpResponse get(long id) {
-        User other = up.getUser(id);
-        if(other == null)
-            return notFound();
-        if(UserProvider.isVisibleToUser(other, requestContext.getUser()))
-            return ok(other);
-        else
-            return forbidden();
+    public IHttpResponse get(long id) throws Exception {
+        try(UserProvider up = new UserProvider()) {
+            User other = up.getUser(id);
+            if(other == null)
+                return notFound();
+            if(UserProvider.isVisibleToUser(other, requestUser()))
+                return ok(other);
+            else
+                return forbidden();
+        }
     }
     
     public static void registerMethods() {

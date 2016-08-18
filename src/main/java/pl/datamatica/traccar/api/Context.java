@@ -16,45 +16,25 @@
  */
 package pl.datamatica.traccar.api;
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import javax.persistence.EntityManager;
-import javax.persistence.EntityManagerFactory;
-import javax.persistence.Persistence;
-import javax.persistence.TypedQuery;
-import pl.datamatica.traccar.model.ApplicationSettings;
+import com.google.gson.*;
+import javax.persistence.*;
 
 public class Context {
+    private static final Context INSTANCE = new Context();
     
-    private static final ThreadLocal<Context> instance = new ThreadLocal<Context>(){
-        @Override
-        protected Context initialValue() {
-            return new Context();
-        }
-    };
     public static Context getInstance() {
-        return instance.get();
+        return INSTANCE;
     }
    
-    private final EntityManager em;
-    private final ApplicationSettings settings;
+    private final EntityManagerFactory emf;
     private final Gson gson;
     
     private Context() {
-        EntityManagerFactory emf = Persistence.createEntityManagerFactory("release");
-        em = emf.createEntityManager();
-        TypedQuery<ApplicationSettings> tq = em.createQuery("Select x from ApplicationSettings x", ApplicationSettings.class);
-        tq.setMaxResults(1);
-        settings = tq.getSingleResult();
-        gson = new GsonBuilder().setPrettyPrinting().create();
-    }
-    
-    public EntityManager getEntityManager() {
-        return em;
-    }
-    
-    public String getSalt() {
-        return settings.getSalt();
+        emf = Persistence.createEntityManagerFactory("release");
+        if(isInDevMode())
+            gson = new GsonBuilder().setPrettyPrinting().create();
+        else
+            gson = new Gson();
     }
     
     public boolean isInDevMode() {
@@ -63,5 +43,9 @@ public class Context {
     
     public Gson getGson() {
         return gson;
+    }
+    
+    public EntityManager createEntityManager() {
+        return emf.createEntityManager();
     }
 }
