@@ -22,6 +22,7 @@ public class NotFoundResponse implements IHttpResponse {
     @Override
     public Object write(Response response) {
         response.status(404);
+        response.type("application/json");
         return "404 Not Found";
     }
 }

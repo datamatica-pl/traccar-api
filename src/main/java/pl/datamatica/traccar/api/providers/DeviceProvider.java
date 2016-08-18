@@ -16,6 +16,7 @@
  */
 package pl.datamatica.traccar.api.providers;
 
+import java.util.Collections;
 import java.util.stream.Stream;
 import javax.persistence.EntityManager;
 import javax.persistence.TypedQuery;
@@ -63,13 +64,15 @@ public class DeviceProvider {
         return true;
     }
 
-    public long createDevice(String imei) {
+    public long createDevice(String imei, User user) {
         if(!isImeiValid(imei))
             throw new IllegalArgumentException();
         
         em.getTransaction().begin();
         Device device = new Device();
         device.setUniqueId(imei);
+        device.setUsers(Collections.singleton(user));
+        device.setOwner(user);
         em.persist(device);
         em.getTransaction().commit();
         

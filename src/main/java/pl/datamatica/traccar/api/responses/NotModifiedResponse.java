@@ -23,6 +23,7 @@ public class NotModifiedResponse implements IHttpResponse {
     @Override
     public Object write(Response response) {
         response.status(304);
+        response.type("application/json");
         return null;
     }
     

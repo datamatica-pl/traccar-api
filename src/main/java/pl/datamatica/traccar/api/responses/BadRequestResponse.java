@@ -23,6 +23,7 @@ public class BadRequestResponse implements IHttpResponse {
     @Override
     public Object write(Response response) {
         response.status(400);
+        response.type("application/json");
         return "";
     }
 }

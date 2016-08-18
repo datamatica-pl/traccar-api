@@ -25,6 +25,7 @@ import pl.datamatica.traccar.api.providers.DeviceProvider;
 import pl.datamatica.traccar.api.responses.IHttpResponse;
 import pl.datamatica.traccar.api.transformers.DeviceTransformer;
 import pl.datamatica.traccar.model.Device;
+import pl.datamatica.traccar.model.TimestampedEntity;
 import pl.datamatica.traccar.model.User;
 import spark.Spark;
 
@@ -43,7 +44,7 @@ public class DevicesController extends ControllerBase {
     
     public IHttpResponse get() {
         User user = requestContext.getUser();
-        List<Device> devices = dp.getAllAvailableDevices(user).collect(Collectors.toList());
+        List<TimestampedEntity> devices = dp.getAllAvailableDevices(user).collect(Collectors.toList());
         
         return ok(devices);
     }
@@ -63,7 +64,7 @@ public class DevicesController extends ControllerBase {
         if(deviceDto == null || deviceDto.getImei() == null)
             return badRequest();
         //todo - createDevice error handling
-        long id = dp.createDevice(deviceDto.getImei());            
+        long id = dp.createDevice(deviceDto.getImei(), requestContext.getUser());            
         return created("devices/"+id);
     }
     

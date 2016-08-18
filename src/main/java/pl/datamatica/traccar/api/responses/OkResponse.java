@@ -28,6 +28,7 @@ public class OkResponse<T> implements IHttpResponse {
     @Override
     public Object write(Response response) {
         response.status(200);
+        response.type("application/json");
         return item;
     }
     

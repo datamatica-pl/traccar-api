@@ -29,6 +29,7 @@ public class CreatedResponse implements IHttpResponse {
     public Object write(Response response) {
         response.status(201);
         response.header("Location", route);
+        response.type("application/json");
         return "";
     }
 }
