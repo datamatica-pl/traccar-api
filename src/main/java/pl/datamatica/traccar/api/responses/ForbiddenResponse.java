@@ -23,6 +23,7 @@ public class ForbiddenResponse implements IHttpResponse{
     @Override
     public Object write(Response response) {
         response.status(403);
-        return null;
+        response.type("application/json");
+        return "";
     }
 }
