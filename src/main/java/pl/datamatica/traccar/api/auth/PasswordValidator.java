@@ -27,10 +27,14 @@ public class PasswordValidator implements IPasswordValidator {
     
 
     @Override
-    public User getUser(Credentials credentials) {
-        try(UserProvider users = new UserProvider()) {
+    public User getUser(Credentials credentials, EntityManager em) {
+        UserProvider users = new UserProvider(em);
+        ApplicationSettingsProvider appSettings = new ApplicationSettingsProvider(em);
+        try {
             User user = users.getUserByMail(credentials.getLogin());
-            String hashedPassword = getHashedPassword(user, credentials.getPassword());
+            String pass = credentials.getPassword();
+            String salt = appSettings.get().getSalt();
+            String hashedPassword = getHashedPassword(user, pass, salt);
             return hashedPassword.equals(user.getPassword()) ? user : null;
         } catch(NoResultException e) {
             return null;
@@ -39,9 +43,7 @@ public class PasswordValidator implements IPasswordValidator {
         }
     }
 
-    private String getHashedPassword(User user, String password) {
-        ApplicationSettingsProvider asp = new ApplicationSettingsProvider();
-        final String salt = asp.get().getSalt();
+    private String getHashedPassword(User user, String password, String salt) {
         if(shouldHashPassword)
             return user.getPasswordHashMethod().doHash(password, salt);
         else

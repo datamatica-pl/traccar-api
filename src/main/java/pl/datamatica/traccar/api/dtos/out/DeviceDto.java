@@ -16,6 +16,7 @@
  */
 package pl.datamatica.traccar.api.dtos.out;
 
+import java.util.Date;
 import pl.datamatica.traccar.model.Device;
 import pl.datamatica.traccar.model.Position;
 
@@ -31,6 +32,7 @@ public class DeviceDto {
     private String status;
     private String uniqueId;
     private PositionDto lastPosition;
+    private Date oldestPositionTime;
     private boolean isDeleted;
     private long accountId;
     
@@ -50,6 +52,10 @@ public class DeviceDto {
             this.lastPosition = new PositionDto(latestPosition);
         this.isDeleted = device.isDeleted();
         this.accountId = device.getOwner().getId();
+        this.oldestPositionTime = device.getPositions().stream()
+                .map(p -> p.getTime())
+                .min((d1, d2) -> d1.compareTo(d2))
+                .orElse(null);
     }
     
     public long getId() {
@@ -112,6 +118,10 @@ public class DeviceDto {
         return lastPosition;
     }
 
+    public Date getOldestPositionTime() {
+        return oldestPositionTime;
+    }
+    
     public boolean isDeleted() {
         return isDeleted;
     }

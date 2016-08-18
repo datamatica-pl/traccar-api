@@ -31,10 +31,11 @@ public class Context {
     
     private Context() {
         emf = Persistence.createEntityManagerFactory("release");
+        GsonBuilder gsonBuilder = new GsonBuilder();
+        gsonBuilder.setDateFormat("yyyy-MM-dd'T'HH:mm:ssX");
         if(isInDevMode())
-            gson = new GsonBuilder().setPrettyPrinting().create();
-        else
-            gson = new Gson();
+            gsonBuilder.setPrettyPrinting();
+        gson = gsonBuilder.create();
     }
     
     public boolean isInDevMode() {

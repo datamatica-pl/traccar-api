@@ -24,7 +24,7 @@ public class NotModifiedResponse implements IHttpResponse {
     public Object write(Response response) {
         response.status(304);
         response.type("application/json");
-        return null;
+        return "";
     }
     
 }

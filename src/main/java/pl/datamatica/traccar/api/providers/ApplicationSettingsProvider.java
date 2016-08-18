@@ -18,15 +18,10 @@ package pl.datamatica.traccar.api.providers;
 
 import javax.persistence.EntityManager;
 import javax.persistence.TypedQuery;
-import pl.datamatica.traccar.api.Context;
 import pl.datamatica.traccar.model.ApplicationSettings;
 
 public class ApplicationSettingsProvider implements AutoCloseable{
     private EntityManager em;
-    
-    public ApplicationSettingsProvider() {
-        this(Context.getInstance().createEntityManager());
-    }
     
     public ApplicationSettingsProvider(EntityManager em) {
         this.em = em;

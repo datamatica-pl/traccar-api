@@ -17,6 +17,7 @@
 package pl.datamatica.traccar.api.auth;
 
 import java.nio.charset.StandardCharsets;
+import javax.persistence.EntityManager;
 import org.junit.Before;
 import org.junit.Test;
 import pl.datamatica.traccar.model.User;
@@ -42,7 +43,7 @@ public class BasicAuthFilterTest {
     public void testInit() {
         filter = new BasicAuthFilter(new IPasswordValidator() {
             @Override
-            public User getUser(Credentials credentials) {
+            public User getUser(Credentials credentials, EntityManager em) {
                 return validCredentials.equals(credentials) ? validUser : null;
             }  
         });
@@ -50,14 +51,14 @@ public class BasicAuthFilterTest {
     
     @Test
     public void verifyCredentials_validCredentials() {
-        User actual = filter.verifyCredentials(validCredentials);
+        User actual = filter.verifyCredentials(validCredentials, null);
         assertEquals(validUser, actual);
     }
     
     @Test
     public void verifyCredentials_noSuchUser() {
         try {
-            filter.verifyCredentials(invalidCredentials);
+            filter.verifyCredentials(invalidCredentials, null);
         } catch(AuthenticationException e) {
             assertEquals(e.type, ErrorType.NO_SUCH_USER);
             return;
@@ -67,7 +68,7 @@ public class BasicAuthFilterTest {
     
     @Test(expected=IllegalArgumentException.class)
     public void verifyCredentials_noCredentials() {
-        filter.verifyCredentials(null);
+        filter.verifyCredentials(null, null);
     }
     
     @Test

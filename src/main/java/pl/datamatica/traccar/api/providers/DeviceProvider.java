@@ -20,16 +20,11 @@ import java.util.Collections;
 import java.util.stream.Stream;
 import javax.persistence.EntityManager;
 import javax.persistence.TypedQuery;
-import pl.datamatica.traccar.api.Context;
 import pl.datamatica.traccar.model.Device;
 import pl.datamatica.traccar.model.User;
 
 public class DeviceProvider implements AutoCloseable{
     private EntityManager em;
-    
-    public DeviceProvider() {
-        this(Context.getInstance().createEntityManager());
-    }
     
     public DeviceProvider(EntityManager em) {
         this.em = em;

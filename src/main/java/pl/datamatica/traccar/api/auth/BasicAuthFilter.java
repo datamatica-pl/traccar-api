@@ -48,11 +48,12 @@ public class BasicAuthFilter {
         
     public void handle(Request request, Response response) throws Exception {
         try {
+            EntityManager em = request.attribute(Application.ENTITY_MANAGER_KEY);
             User user;
             if(request.session().attributes().contains(USER_ID_SESSION_KEY))
-                user = continueSession(request);
+                user = continueSession(request, em);
             else
-                user = beginSession(request);
+                user = beginSession(request, em);
             request.attribute(Application.REQUEST_USER_KEY, user);
         } catch(AuthenticationException e) {
             unauthorized(response, e.getMessage());
@@ -61,16 +62,15 @@ public class BasicAuthFilter {
         }
     }
 
-    private User beginSession(Request request) throws IllegalArgumentException, AuthenticationException {
+    private User beginSession(Request request, EntityManager em) throws IllegalArgumentException, AuthenticationException {
         Credentials credentials = readCredentials(request.headers(AUTH_HEADER_NAME));
-        User user = verifyCredentials(credentials);
+        User user = verifyCredentials(credentials, em);
         request.session().maxInactiveInterval(SESSION_MAX_INACTIVE_INTERVAL);
         request.session().attribute(USER_ID_SESSION_KEY, user.getId());
         return user;
     }
     
-    private User continueSession(Request request) throws Exception {
-        EntityManager em = request.attribute(Application.ENTITY_MANAGER_KEY);
+    private User continueSession(Request request, EntityManager em) throws Exception {
         long userId = request.session().attribute(USER_ID_SESSION_KEY);
         UserProvider up = new UserProvider(em);
         User user = up.getUser(userId);
@@ -79,13 +79,13 @@ public class BasicAuthFilter {
         return user;
     }
     
-    public User verifyCredentials(Credentials credentials) throws AuthenticationException {
+    public User verifyCredentials(Credentials credentials, EntityManager em) throws AuthenticationException {
         User user;
         if(credentials == null)
             throw new IllegalArgumentException("Credentials can't be null");
         if(credentials.getPassword().isEmpty())
             throw new AuthenticationException(ErrorType.NO_PASSWORD);
-        user = passwordValidator.getUser(credentials);
+        user = passwordValidator.getUser(credentials, em);
         if(user == null)
             throw new AuthenticationException(ErrorType.NO_SUCH_USER);
         return user;
