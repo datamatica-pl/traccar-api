@@ -32,7 +32,6 @@ public class BasicAuthFilter extends FilterImpl {
     private static final String REALM = "traccar-api";
     private static final Charset CHARSET = StandardCharsets.UTF_8;
     private static final String AUTH_INFO_SEPARATOR = " ";
-    private static final String CREDENTIALS_SEPARATOR = ":";
     public static final String USER_ID_SESSION_KEY = "userId";
     
     private static final int SESSION_MAX_INACTIVE_INTERVAL = (int)TimeUnit.SECONDS.convert(14, TimeUnit.DAYS);
@@ -52,7 +51,7 @@ public class BasicAuthFilter extends FilterImpl {
         if(request.session().attributes().contains(USER_ID_SESSION_KEY))
             return;
         try {
-            Credentials credentials = readCredentials(request);
+            Credentials credentials = readCredentials(request.headers(AUTH_HEADER_NAME));
             User user = verifyCredentials(credentials);
             request.session().maxInactiveInterval(SESSION_MAX_INACTIVE_INTERVAL);
             request.session().attribute(USER_ID_SESSION_KEY, user.getId());
@@ -66,19 +65,18 @@ public class BasicAuthFilter extends FilterImpl {
     public User verifyCredentials(Credentials credentials) throws AuthenticationException {
         User user;
         if(credentials == null)
-            throw new AuthenticationException(ErrorType.NO_CREDENTIALS);
-        else {
-            user = passwordValidator.getUser(credentials);
-            if(user == null)
-                throw new AuthenticationException(ErrorType.NO_SUCH_USER);
-            return user;
-        }
+            throw new IllegalArgumentException("Credentials can't be null");
+        if(credentials.getPassword().isEmpty())
+            throw new AuthenticationException(ErrorType.NO_PASSWORD);
+        user = passwordValidator.getUser(credentials);
+        if(user == null)
+            throw new AuthenticationException(ErrorType.NO_SUCH_USER);
+        return user;
     }
     
-    public Credentials readCredentials(Request request) throws IllegalArgumentException {
-        String header = request.headers(AUTH_HEADER_NAME);
+    public Credentials readCredentials(String header) throws IllegalArgumentException {
         if(header == null)
-            return null;
+            throw new AuthenticationException(ErrorType.NO_CREDENTIALS);
         
         String param = checkAndRemoveScheme(header);
         try {
@@ -92,7 +90,7 @@ public class BasicAuthFilter extends FilterImpl {
         if(authInfo == null)
             throw new IllegalArgumentException("authInfo can't be null");
         String[] authInfoParts = authInfo.split(AUTH_INFO_SEPARATOR);
-        if(authInfoParts.length != 2)
+        if(authInfoParts.length != 2 || authInfoParts[1].isEmpty())
             throw new AuthenticationException(ErrorType.HEADER_FORMAT);
         if(!authInfoParts[0].equalsIgnoreCase(SCHEME))
             throw new AuthenticationException(ErrorType.INVALID_SCHEME);
@@ -100,13 +98,7 @@ public class BasicAuthFilter extends FilterImpl {
     }
     
     private Credentials decodeCredentials(String credentials) {
-        String decoded = new String(Base64.getDecoder().decode(credentials), CHARSET);
-        int firstSeparator = decoded.indexOf(CREDENTIALS_SEPARATOR);
-        if(firstSeparator == -1)
-            throw new AuthenticationException(ErrorType.NO_PASSWORD);
-        String login = decoded.substring(0, firstSeparator);
-        String password = decoded.substring(firstSeparator + 1);
-        return new Credentials(login, password);
+        return Credentials.fromBasic(credentials, CHARSET);
     }
 
     private void unauthorized(Response response, String errorMessage) {

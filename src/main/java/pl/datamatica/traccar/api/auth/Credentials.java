@@ -16,9 +16,14 @@
  */
 package pl.datamatica.traccar.api.auth;
 
+import java.nio.charset.Charset;
+import java.util.Base64;
 import java.util.Objects;
+import pl.datamatica.traccar.api.auth.AuthenticationException.ErrorType;
 
 public class Credentials {
+    private static final String BASIC_AUTH_SEPARATOR = ":";
+    
     private final String login;
     private final String password;
     
@@ -33,6 +38,26 @@ public class Credentials {
     
     public String getPassword() {
         return password;
+    }
+    
+    public String toBasic(Charset charset) {
+        String parameter = login + BASIC_AUTH_SEPARATOR + password;
+        return Base64.getEncoder().encodeToString(parameter.getBytes(charset));
+    }
+    
+    public static Credentials fromBasic(String credentials, Charset charset) {
+        String decoded = null;
+        try {
+            decoded = new String(Base64.getDecoder().decode(credentials), charset);
+        } catch(IllegalArgumentException e) {
+            throw new AuthenticationException(ErrorType.PARAMETER_NOT_BASE64);
+        }
+        int firstSeparator = decoded.indexOf(BASIC_AUTH_SEPARATOR);
+        if(firstSeparator == -1)
+            throw new AuthenticationException(ErrorType.NO_COLON_IN_PARAMETER);
+        String login = decoded.substring(0, firstSeparator);
+        String password = decoded.substring(firstSeparator + 1);
+        return new Credentials(login, password);
     }
 
     @Override

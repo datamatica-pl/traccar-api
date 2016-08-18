@@ -24,7 +24,8 @@ public class AuthenticationException extends IllegalArgumentException {
         PARAMETER_NOT_BASE64("Authentication parameter not in base 64"),
         NO_PASSWORD("Password not found in parameter"),
         NO_CREDENTIALS("No credentials were included in request"),
-        NO_SUCH_USER("Invalid username or password");
+        NO_SUCH_USER("Invalid username or password"), 
+        NO_COLON_IN_PARAMETER("Authentication parameter doesn't contain ':'");
         
         private String msg;
         ErrorType(String msg) {
