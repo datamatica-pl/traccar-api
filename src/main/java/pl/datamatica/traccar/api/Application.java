@@ -18,6 +18,7 @@ package pl.datamatica.traccar.api;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import javax.persistence.EntityManager;
 import pl.datamatica.traccar.api.auth.BasicAuthFilter;
 import pl.datamatica.traccar.api.auth.PasswordValidator;
 import pl.datamatica.traccar.api.controllers.DevicesController;
@@ -28,19 +29,35 @@ import spark.utils.SparkUtils;
 
 public class Application implements spark.servlet.SparkApplication {
     
+    public static final String ENTITY_MANAGER_KEY = "pl.datamatica.traccar.api.EntityManager";
+    public static final String REQUEST_USER_KEY = "pl.datamatica.traccar.api.RequestUser";
+    
     @Override
     public void init() {
         Spark.get("test", (req, res) -> {
                 return "Hello world";
         });
-        PasswordValidator passValidator = new PasswordValidator(Context.getInstance());
-        Spark.before(new BasicAuthFilter(SparkUtils.ALL_PATHS, passValidator));
-        Spark.exception(Exception.class, (exception, request, response) -> {
-            StringWriter sw = new StringWriter();
-            exception.printStackTrace(new PrintWriter(sw));
-            response.status(500);
-            response.body(sw.toString());
+        PasswordValidator passValidator = new PasswordValidator();
+        BasicAuthFilter baf = new BasicAuthFilter(passValidator);
+        
+        Spark.before((req, res) -> {
+            EntityManager em = Context.getInstance().createEntityManager();
+            req.attribute(ENTITY_MANAGER_KEY, em);
+            baf.handle(req, res);
         });
+        Spark.after((req, res)-> {
+            ((EntityManager)req.attribute(ENTITY_MANAGER_KEY)).close();
+        });
+        
+        if(Context.getInstance().isInDevMode()) {
+            Spark.exception(Exception.class, (exception, request, response) -> {
+                StringWriter sw = new StringWriter();
+                exception.printStackTrace(new PrintWriter(sw));
+                response.status(500);
+                response.type("text/plain");
+                response.body(sw.toString());
+            });
+        }
         
         DevicesController.registerMethods();
         UsersController.registerMethods();

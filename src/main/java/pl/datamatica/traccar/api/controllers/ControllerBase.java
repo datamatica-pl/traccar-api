@@ -18,8 +18,10 @@ package pl.datamatica.traccar.api.controllers;
 
 import java.util.Date;
 import java.util.List;
+import javax.persistence.EntityManager;
 import pl.datamatica.traccar.api.responses.*;
 import pl.datamatica.traccar.model.TimestampedEntity;
+import pl.datamatica.traccar.model.User;
 import spark.Response;
 
 public abstract class ControllerBase {
@@ -32,6 +34,14 @@ public abstract class ControllerBase {
     
     public ControllerBase(RequestContext requestContext) {
         this.requestContext = requestContext;
+    }
+    
+    protected EntityManager entityManager() {
+        return requestContext.getEntityManager();
+    }
+    
+    protected User requestUser() {
+        return requestContext.getUser();
     }
     
     protected IHttpResponse ok(Object result) {

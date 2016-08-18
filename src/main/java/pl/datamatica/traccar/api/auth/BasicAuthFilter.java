@@ -18,15 +18,17 @@ package pl.datamatica.traccar.api.auth;
 
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
-import java.util.Base64;
 import java.util.concurrent.TimeUnit;
+import javax.persistence.EntityManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import pl.datamatica.traccar.api.Application;
 import spark.*;
 import static pl.datamatica.traccar.api.auth.AuthenticationException.*;
+import pl.datamatica.traccar.api.providers.UserProvider;
 import pl.datamatica.traccar.model.User;
 
-public class BasicAuthFilter extends FilterImpl {
+public class BasicAuthFilter {
     private static final String AUTH_HEADER_NAME = "Authorization";
     private static final String SCHEME = "Basic";
     private static final String REALM = "traccar-api";
@@ -40,26 +42,41 @@ public class BasicAuthFilter extends FilterImpl {
     
     private final IPasswordValidator passwordValidator;
     
-    public BasicAuthFilter(final String path, IPasswordValidator passwordValidator) {
-        super(path, "*/*");
-        
+    public BasicAuthFilter(IPasswordValidator passwordValidator) {        
         this.passwordValidator = passwordValidator;
     }
         
-    @Override
-    public void handle(Request request, Response response) throws Exception { 
-        if(request.session().attributes().contains(USER_ID_SESSION_KEY))
-            return;
+    public void handle(Request request, Response response) throws Exception {
         try {
-            Credentials credentials = readCredentials(request.headers(AUTH_HEADER_NAME));
-            User user = verifyCredentials(credentials);
-            request.session().maxInactiveInterval(SESSION_MAX_INACTIVE_INTERVAL);
-            request.session().attribute(USER_ID_SESSION_KEY, user.getId());
+            User user;
+            if(request.session().attributes().contains(USER_ID_SESSION_KEY))
+                user = continueSession(request);
+            else
+                user = beginSession(request);
+            request.attribute(Application.REQUEST_USER_KEY, user);
         } catch(AuthenticationException e) {
             unauthorized(response, e.getMessage());
         } catch(IllegalArgumentException e) {
             serverError(response, e.getMessage());
         }
+    }
+
+    private User beginSession(Request request) throws IllegalArgumentException, AuthenticationException {
+        Credentials credentials = readCredentials(request.headers(AUTH_HEADER_NAME));
+        User user = verifyCredentials(credentials);
+        request.session().maxInactiveInterval(SESSION_MAX_INACTIVE_INTERVAL);
+        request.session().attribute(USER_ID_SESSION_KEY, user.getId());
+        return user;
+    }
+    
+    private User continueSession(Request request) throws Exception {
+        EntityManager em = request.attribute(Application.ENTITY_MANAGER_KEY);
+        long userId = request.session().attribute(USER_ID_SESSION_KEY);
+        UserProvider up = new UserProvider(em);
+        User user = up.getUser(userId);
+        if(user == null)
+            throw new AuthenticationException(ErrorType.NO_SUCH_USER);
+        return user;
     }
     
     public User verifyCredentials(Credentials credentials) throws AuthenticationException {

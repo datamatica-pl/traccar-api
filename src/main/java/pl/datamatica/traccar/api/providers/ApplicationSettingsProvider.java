@@ -16,47 +16,26 @@
  */
 package pl.datamatica.traccar.api.providers;
 
-import java.util.stream.Stream;
 import javax.persistence.EntityManager;
 import javax.persistence.TypedQuery;
 import pl.datamatica.traccar.api.Context;
-import pl.datamatica.traccar.model.User;
+import pl.datamatica.traccar.model.ApplicationSettings;
 
-public class UserProvider implements AutoCloseable{
+public class ApplicationSettingsProvider implements AutoCloseable{
     private EntityManager em;
     
-    public UserProvider() {
+    public ApplicationSettingsProvider() {
         this(Context.getInstance().createEntityManager());
     }
     
-    public UserProvider(EntityManager entityManager) {
-        this.em = entityManager;
+    public ApplicationSettingsProvider(EntityManager em) {
+        this.em = em;
     }
     
-    public Stream<User> getAllAvailableUsers(User user) {
-        if(user.getAdmin()) 
-            return getAllUsers();
-        //todo
-        return getAllUsers();
-    }
-    
-    private Stream<User> getAllUsers() {
-        TypedQuery<User> tq = em.createQuery("Select x from User x", User.class);
-        return tq.getResultList().stream();
-    }
-    
-    public User getUser(long id) {
-        return em.find(User.class, id);
-    }
-    
-    public User getUserByMail(String email) {
-        TypedQuery<User> tq = em.createQuery("Select x from User x where x.email = :email", User.class);
-        tq.setParameter("email", email);
+    public ApplicationSettings get() {
+        TypedQuery<ApplicationSettings> tq = em.createQuery("Select x from ApplicationSettings x", ApplicationSettings.class);
+        tq.setMaxResults(1);
         return tq.getSingleResult();
-    }
-    
-    public static boolean isVisibleToUser(User other, User user) {
-        return true;
     }
 
     @Override

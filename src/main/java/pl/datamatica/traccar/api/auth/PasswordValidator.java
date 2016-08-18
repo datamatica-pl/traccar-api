@@ -17,46 +17,34 @@
 package pl.datamatica.traccar.api.auth;
 
 import javax.persistence.*;
-import pl.datamatica.traccar.api.Context;
+import pl.datamatica.traccar.api.providers.ApplicationSettingsProvider;
+import pl.datamatica.traccar.api.providers.UserProvider;
 import pl.datamatica.traccar.model.User;
 
 public class PasswordValidator implements IPasswordValidator {
     
     private static final boolean shouldHashPassword = true;
     
-    private final EntityManager em;
-    private final String salt;
-    
-    public PasswordValidator(Context context) {
-        this(context.getEntityManager(), context.getSalt());
-    }
-    
-    public PasswordValidator(EntityManager em, String salt) {
-        this.em = em;
-        this.salt = salt;
-    }
 
     @Override
     public User getUser(Credentials credentials) {
-        try{
-            User user = getUserByMail(credentials.getLogin());
+        try(UserProvider users = new UserProvider()) {
+            User user = users.getUserByMail(credentials.getLogin());
             String hashedPassword = getHashedPassword(user, credentials.getPassword());
             return hashedPassword.equals(user.getPassword()) ? user : null;
         } catch(NoResultException e) {
+            return null;
+        } catch (Exception ex) {
             return null;
         }
     }
 
     private String getHashedPassword(User user, String password) {
+        ApplicationSettingsProvider asp = new ApplicationSettingsProvider();
+        final String salt = asp.get().getSalt();
         if(shouldHashPassword)
             return user.getPasswordHashMethod().doHash(password, salt);
         else
             return password;
-    }
-    
-    public User getUserByMail(String email) {
-        TypedQuery<User> tq = em.createQuery("Select x from User x where x.email = :email", User.class);
-        tq.setParameter("email", email);
-        return tq.getSingleResult();
     }
 }

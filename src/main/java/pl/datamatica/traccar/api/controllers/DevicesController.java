@@ -34,37 +34,34 @@ public class DevicesController extends ControllerBase {
     private DeviceProvider dp;
     
     public DevicesController(RequestContext requestContext) {
-        this(Context.getInstance(), requestContext);
-    }
-    
-    public DevicesController(Context context, RequestContext requestContext) {
         super(requestContext);
-        dp = new DeviceProvider(context.getEntityManager());
+        dp = new DeviceProvider(entityManager());
     }
     
-    public IHttpResponse get() {
-        User user = requestContext.getUser();
-        List<TimestampedEntity> devices = dp.getAllAvailableDevices(user).collect(Collectors.toList());
-        
+    public IHttpResponse get() throws Exception {
+        User user = requestUser();
+        List<TimestampedEntity> devices = dp.getAllAvailableDevices(user)
+                .collect(Collectors.toList());
+
         return ok(devices);
     }
     
-    public IHttpResponse get(long id) {
+    public IHttpResponse get(long id) throws Exception {
         Device device = dp.getDevice(id);
-        
+
         if(device == null)
             return notFound();
-        if(DeviceProvider.isVisibleToUser(device, requestContext.getUser())) 
+        if(DeviceProvider.isVisibleToUser(device, requestUser())) 
             return ok(device);
         else
             return forbidden();
     }
     
-    public IHttpResponse post(AddDeviceDto deviceDto) {
+    public IHttpResponse post(AddDeviceDto deviceDto) throws Exception {
         if(deviceDto == null || deviceDto.getImei() == null)
             return badRequest();
         //todo - createDevice error handling
-        long id = dp.createDevice(deviceDto.getImei(), requestContext.getUser());            
+        long id = dp.createDevice(deviceDto.getImei(), requestUser());            
         return created("devices/"+id);
     }
     

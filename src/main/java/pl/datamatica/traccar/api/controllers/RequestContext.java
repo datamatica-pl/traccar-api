@@ -18,6 +18,8 @@ package pl.datamatica.traccar.api.controllers;
 
 import java.text.ParseException;
 import java.util.Date;
+import javax.persistence.EntityManager;
+import pl.datamatica.traccar.api.Application;
 import pl.datamatica.traccar.api.Context;
 import pl.datamatica.traccar.api.auth.BasicAuthFilter;
 import pl.datamatica.traccar.api.utils.DateUtil;
@@ -35,14 +37,15 @@ public class RequestContext {
     
     private final Response response;
     private final User user;
+    private final EntityManager em;
     
     public RequestContext(Request request, Response response) throws ParseException {
         this.ifModifiedSince = new Date(0);
         if(request.headers(IF_MODIFIED_SINCE_HEADER) != null)
             this.ifModifiedSince = DateUtil.parseDate(request.headers(IF_MODIFIED_SINCE_HEADER));
         this.response = response;
-        this.user = Context.getInstance().getEntityManager().find(User.class, 
-                request.session().attribute(BasicAuthFilter.USER_ID_SESSION_KEY));
+        this.user = request.attribute(Application.REQUEST_USER_KEY);
+        this.em = request.attribute(Application.ENTITY_MANAGER_KEY);
     }
     
     public Date getModificationDate() {
@@ -51,6 +54,10 @@ public class RequestContext {
     
     public User getUser() {
         return user;
+    }
+    
+    public EntityManager getEntityManager() {
+        return em;
     }
     
     public void setLastModified(Date lastModified) {
