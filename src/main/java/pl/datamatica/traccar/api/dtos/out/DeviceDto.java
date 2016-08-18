@@ -23,7 +23,7 @@ public class DeviceDto {
     private final long id;
     private String deviceName;
     private long deviceModelId;
-    private String iconKey;
+    private String iconId;
     private String color;
     private String phoneNumber;
     private String plateNumber;
@@ -38,7 +38,7 @@ public class DeviceDto {
         this.id = device.getId();
         this.deviceName = device.getName();
         this.deviceModelId = device.getDeviceModelId();
-        this.iconKey = device.getIconType().toString();
+        this.iconId = device.getIconType().toString();
         this.color = device.getColor();
         this.phoneNumber = device.getPhoneNumber();
         this.plateNumber = device.getPlateNumber();
@@ -56,8 +56,8 @@ public class DeviceDto {
         return id;
     }
 
-    public String getIconKey() {
-        return iconKey;
+    public String getIconId() {
+        return iconId;
     }
 
     public String getName() {
