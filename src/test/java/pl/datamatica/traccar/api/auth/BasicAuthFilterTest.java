@@ -40,7 +40,7 @@ public class BasicAuthFilterTest {
     
     @Before
     public void testInit() {
-        filter = new BasicAuthFilter("", new IPasswordValidator() {
+        filter = new BasicAuthFilter(new IPasswordValidator() {
             @Override
             public User getUser(Credentials credentials) {
                 return validCredentials.equals(credentials) ? validUser : null;

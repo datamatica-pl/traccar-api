@@ -31,41 +31,38 @@ import spark.Spark;
 
 public class DevicesController extends ControllerBase {
     
+    private DeviceProvider dp;
+    
     public DevicesController(RequestContext requestContext) {
         super(requestContext);
+        dp = new DeviceProvider(entityManager());
     }
     
     public IHttpResponse get() throws Exception {
-        try(DeviceProvider dp = new DeviceProvider()) {
-            User user = requestUser();
-            List<TimestampedEntity> devices = dp.getAllAvailableDevices(user)
-                    .collect(Collectors.toList());
+        User user = requestUser();
+        List<TimestampedEntity> devices = dp.getAllAvailableDevices(user)
+                .collect(Collectors.toList());
 
-            return ok(devices);
-        }
+        return ok(devices);
     }
     
     public IHttpResponse get(long id) throws Exception {
-        try(DeviceProvider dp = new DeviceProvider()) {
-            Device device = dp.getDevice(id);
+        Device device = dp.getDevice(id);
 
-            if(device == null)
-                return notFound();
-            if(DeviceProvider.isVisibleToUser(device, requestUser())) 
-                return ok(device);
-            else
-                return forbidden();
-        }
+        if(device == null)
+            return notFound();
+        if(DeviceProvider.isVisibleToUser(device, requestUser())) 
+            return ok(device);
+        else
+            return forbidden();
     }
     
     public IHttpResponse post(AddDeviceDto deviceDto) throws Exception {
-        try(DeviceProvider dp = new DeviceProvider()) {
-            if(deviceDto == null || deviceDto.getImei() == null)
-                return badRequest();
-            //todo - createDevice error handling
-            long id = dp.createDevice(deviceDto.getImei(), requestUser());            
-            return created("devices/"+id);
-        }
+        if(deviceDto == null || deviceDto.getImei() == null)
+            return badRequest();
+        //todo - createDevice error handling
+        long id = dp.createDevice(deviceDto.getImei(), requestUser());            
+        return created("devices/"+id);
     }
     
     public static void registerMethods() {

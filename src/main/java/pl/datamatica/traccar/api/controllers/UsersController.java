@@ -28,28 +28,27 @@ import spark.Spark;
 
 public class UsersController extends ControllerBase { 
     
+    private UserProvider up;
+    
     public UsersController(RequestContext requestContext) {
         super(requestContext);
+        up = new UserProvider(entityManager());
     }
     
     public IHttpResponse get() throws Exception {
-        try(UserProvider up = new UserProvider()) {
-            List<User> users = up.getAllAvailableUsers(requestUser())
-                    .collect(Collectors.toList());
-            return ok(users);
-        }
+        List<User> users = up.getAllAvailableUsers(requestUser())
+                .collect(Collectors.toList());
+        return ok(users);
     }
     
     public IHttpResponse get(long id) throws Exception {
-        try(UserProvider up = new UserProvider()) {
-            User other = up.getUser(id);
-            if(other == null)
-                return notFound();
-            if(UserProvider.isVisibleToUser(other, requestUser()))
-                return ok(other);
-            else
-                return forbidden();
-        }
+        User other = up.getUser(id);
+        if(other == null)
+            return notFound();
+        if(UserProvider.isVisibleToUser(other, requestUser()))
+            return ok(other);
+        else
+            return forbidden();
     }
     
     public static void registerMethods() {
