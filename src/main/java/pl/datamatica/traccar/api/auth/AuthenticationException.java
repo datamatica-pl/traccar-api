@@ -22,15 +22,16 @@ public class AuthenticationException extends IllegalArgumentException {
         HEADER_FORMAT("Too many words in authentication header"),
         INVALID_SCHEME("Invalid scheme name"),
         PARAMETER_NOT_BASE64("Authentication parameter not in base 64"),
-        NO_PASSWORD("Password not found in parameter");
+        NO_PASSWORD("Password not found in parameter"),
+        NO_CREDENTIALS("No credentials were included in request"),
+        NO_SUCH_USER("Invalid username or password");
         
         private String msg;
         ErrorType(String msg) {
             this.msg = msg;
         }
 
-        @Override
-        public String toString() {
+        public String getMessage() {
             return msg;
         }
         
@@ -49,8 +50,8 @@ public class AuthenticationException extends IllegalArgumentException {
     }
 
     @Override
-    public String toString() {
-        return type.toString();
+    public String getMessage() {
+        return type.getMessage();
     }
     
 }

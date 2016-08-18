@@ -16,7 +16,6 @@
  */
 package pl.datamatica.traccar.api.auth;
 
-import java.io.UnsupportedEncodingException;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
@@ -36,9 +35,6 @@ public class BasicAuthFilter extends FilterImpl {
     private static final String CREDENTIALS_SEPARATOR = ":";
     public static final String USER_ID_SESSION_KEY = "userId";
     
-    private static final String NO_CREDENTIALS_MSG = "";
-    private static final String INVALID_CREDENTIALS_MSG = "Invalid username or password";
-    
     private static final int SESSION_MAX_INACTIVE_INTERVAL = (int)TimeUnit.SECONDS.convert(14, TimeUnit.DAYS);
     
     private static final Logger logger = LoggerFactory.getLogger(BasicAuthFilter.class);
@@ -50,38 +46,36 @@ public class BasicAuthFilter extends FilterImpl {
         
         this.passwordValidator = passwordValidator;
     }
-    
+        
     @Override
     public void handle(Request request, Response response) throws Exception { 
         if(request.session().attributes().contains(USER_ID_SESSION_KEY))
             return;
-        String errorMessage = null;
-        User user = null;
         try {
             Credentials credentials = readCredentials(request);
-            if(credentials == null)
-                errorMessage = NO_CREDENTIALS_MSG;
-            else {
-                user = passwordValidator.getUser(credentials);
-                if(user == null)
-                    errorMessage = INVALID_CREDENTIALS_MSG;
-            }
+            User user = verifyCredentials(credentials);
+            request.session().maxInactiveInterval(SESSION_MAX_INACTIVE_INTERVAL);
+            request.session().attribute(USER_ID_SESSION_KEY, user.getId());
         } catch(AuthenticationException e) {
-            errorMessage = e.toString();
+            unauthorized(response, e.getMessage());
         } catch(IllegalArgumentException e) {
             serverError(response, e.getMessage());
-            return;
-        }
-        if(errorMessage != null) {
-            unauthorized(response, errorMessage);
-        } else if(user != null) {
-            request.session(true).maxInactiveInterval(SESSION_MAX_INACTIVE_INTERVAL);
-            request.session().attribute(USER_ID_SESSION_KEY, user.getId());
         }
     }
-
-    private Credentials readCredentials(Request request) throws IllegalArgumentException,
-            UnsupportedEncodingException {
+    
+    public User verifyCredentials(Credentials credentials) throws AuthenticationException {
+        User user;
+        if(credentials == null)
+            throw new AuthenticationException(ErrorType.NO_CREDENTIALS);
+        else {
+            user = passwordValidator.getUser(credentials);
+            if(user == null)
+                throw new AuthenticationException(ErrorType.NO_SUCH_USER);
+            return user;
+        }
+    }
+    
+    public Credentials readCredentials(Request request) throws IllegalArgumentException {
         String header = request.headers(AUTH_HEADER_NAME);
         if(header == null)
             return null;

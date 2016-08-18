@@ -16,9 +16,11 @@
  */
 package pl.datamatica.traccar.api.auth;
 
+import java.util.Objects;
+
 public class Credentials {
-    private String login;
-    private String password;
+    private final String login;
+    private final String password;
     
     public Credentials(String login, String password) {
         this.login = login;
@@ -32,4 +34,28 @@ public class Credentials {
     public String getPassword() {
         return password;
     }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(this.login, this.password);
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        final Credentials other = (Credentials) obj;
+        
+        return Objects.equals(this.login, other.login) 
+                && Objects.equals(this.password, other.password);
+    }
+    
+    
 }
