@@ -54,7 +54,7 @@ public class DeviceProvider implements AutoCloseable{
         return Stream.concat(me, user.getManagedUsers().stream());
     }
     
-    public Stream<Device> getAllDevices() {
+    private Stream<Device> getAllDevices() {
         TypedQuery<Device> tq = em.createQuery("Select x from Device x", Device.class);
         return tq.getResultList().stream();
     }

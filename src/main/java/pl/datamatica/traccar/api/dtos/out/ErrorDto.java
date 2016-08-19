@@ -14,26 +14,26 @@
  *  You should have received a copy of the GNU Affero General Public License
  *  along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-package pl.datamatica.traccar.api.responses;
+package pl.datamatica.traccar.api.dtos.out;
 
-import spark.Response;
-
-public class OkResponse<T> extends HttpResponse<T> {
-    private T item;
+public class ErrorDto {
+    private String messageKey;
+    private String localizedMessage;
     
-    public OkResponse(T item) {
-        this.item = item;
-    }
-
-    @Override
-    protected int getHttpStatus() {
-        return HttpStatuses.OK;
-    }
-
-    @Override
-    protected T getContent() {
-        return item;
+    public ErrorDto(String messageKey) {
+        this(messageKey, null);
     }
     
+    public ErrorDto(String messageKey, String localizedMessage) {
+        this.messageKey = messageKey;
+        this.localizedMessage = localizedMessage;
+    }
     
+    public String getMessageKey() {
+        return messageKey;
+    }
+
+    public String getLocalizedMessage() {
+        return localizedMessage;
+    }
 }

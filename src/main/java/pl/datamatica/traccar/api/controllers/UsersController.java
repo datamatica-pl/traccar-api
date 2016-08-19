@@ -21,7 +21,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 import pl.datamatica.traccar.api.Context;
 import pl.datamatica.traccar.api.providers.UserProvider;
-import pl.datamatica.traccar.api.responses.IHttpResponse;
+import pl.datamatica.traccar.api.responses.HttpResponse;
 import pl.datamatica.traccar.api.transformers.UserTransformer;
 import pl.datamatica.traccar.model.User;
 import spark.Spark;
@@ -35,13 +35,13 @@ public class UsersController extends ControllerBase {
         up = new UserProvider(entityManager());
     }
     
-    public IHttpResponse get() throws Exception {
+    public HttpResponse get() throws Exception {
         List<User> users = up.getAllAvailableUsers(requestUser())
                 .collect(Collectors.toList());
         return ok(users);
     }
     
-    public IHttpResponse get(long id) throws Exception {
+    public HttpResponse get(long id) throws Exception {
         User other = up.getUser(id);
         if(other == null)
             return notFound();
@@ -59,13 +59,13 @@ public class UsersController extends ControllerBase {
             RequestContext context = new RequestContext(req, res);
             UsersController uc = new UsersController(context);
             return render(uc.get(), res);
-        }, userTransformer);
+        }, gson::toJson);
         
         Spark.get(rootUrl() + "/:id", (req, res) -> {
             RequestContext context = new RequestContext(req, res);
             UsersController uc = new UsersController(context);
             return render(uc.get(Long.parseLong(req.params(":id"))), res);
-        }, userTransformer);
+        }, gson::toJson);
     }
     
     public static String rootUrl() {

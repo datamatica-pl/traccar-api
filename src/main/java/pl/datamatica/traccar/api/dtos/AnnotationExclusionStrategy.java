@@ -14,26 +14,21 @@
  *  You should have received a copy of the GNU Affero General Public License
  *  along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-package pl.datamatica.traccar.api.responses;
+package pl.datamatica.traccar.api.dtos;
 
-import spark.Response;
+import com.google.gson.ExclusionStrategy;
+import com.google.gson.FieldAttributes;
 
-public class OkResponse<T> extends HttpResponse<T> {
-    private T item;
-    
-    public OkResponse(T item) {
-        this.item = item;
+public class AnnotationExclusionStrategy implements ExclusionStrategy {
+
+    @Override
+    public boolean shouldSkipField(FieldAttributes fa) {
+        return fa.getAnnotation(JsonIgnore.class) != null;
     }
 
     @Override
-    protected int getHttpStatus() {
-        return HttpStatuses.OK;
+    public boolean shouldSkipClass(Class<?> type) {
+        return false;
     }
-
-    @Override
-    protected T getContent() {
-        return item;
-    }
-    
     
 }

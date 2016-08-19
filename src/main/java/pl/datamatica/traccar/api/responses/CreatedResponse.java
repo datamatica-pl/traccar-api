@@ -16,20 +16,29 @@
  */
 package pl.datamatica.traccar.api.responses;
 
+import java.util.Collections;
+import java.util.List;
 import spark.Response;
 
-public class CreatedResponse implements IHttpResponse {
-    private String route;
+public class CreatedResponse extends HttpResponse {
+    private HttpHeader locationHeader;
     
     public CreatedResponse(String route) {
-        this.route = route;
+        this.locationHeader = new HttpHeader("Location", route);
     }
 
     @Override
-    public Object write(Response response) {
-        response.status(201);
-        response.header("Location", route);
-        response.type("application/json");
+    protected int getHttpStatus() {
+        return HttpStatuses.CREATED;
+    }
+
+    @Override
+    protected Iterable<HttpHeader> getHeaders() {
+        return Collections.singleton(locationHeader);
+    }
+    
+    @Override
+    protected Object getContent() {
         return "";
     }
 }

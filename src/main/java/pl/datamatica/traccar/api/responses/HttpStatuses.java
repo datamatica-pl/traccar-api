@@ -16,15 +16,13 @@
  */
 package pl.datamatica.traccar.api.responses;
 
-import spark.Response;
-
-public class NotModifiedResponse implements IHttpResponse {
-
-    @Override
-    public Object write(Response response) {
-        response.status(304);
-        response.type("application/json");
-        return "";
-    }
+public class HttpStatuses {
+    public static int OK = 200;
+    public static int CREATED = 201;
     
+    public static int NOT_MODIFIED = 304;
+    
+    public static int BAD_REQUEST = 400;
+    public static int FORBIDDEN = 403;
+    public static int NOT_FOUND = 404;
 }

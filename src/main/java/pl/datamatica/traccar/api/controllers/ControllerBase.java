@@ -16,9 +16,11 @@
  */
 package pl.datamatica.traccar.api.controllers;
 
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import javax.persistence.EntityManager;
+import pl.datamatica.traccar.api.dtos.out.ICachedDto;
 import pl.datamatica.traccar.api.responses.*;
 import pl.datamatica.traccar.model.TimestampedEntity;
 import pl.datamatica.traccar.model.User;
@@ -44,47 +46,35 @@ public abstract class ControllerBase {
         return requestContext.getUser();
     }
     
-    protected IHttpResponse ok(Object result) {
+    protected HttpResponse ok(Object result) {
         return new OkResponse(result);
     }
     
-    protected IHttpResponse ok(List<TimestampedEntity> list) {
-        Date modificationTime = new Date(list.stream()
-                .mapToLong(d -> d.getLastUpdate().getTime())
-                .max()
-                .orElse(1000));
-        
-        requestContext.setLastModified(modificationTime);
-        if(!requestContext.isModified())
-            return new NotModifiedResponse();
-        
-        return new OkResponse(list);
+    protected HttpResponse okCached(ICachedDto content) {
+        return new OkCachedResponse(content, requestContext.getModificationDate());
     }
     
-    protected IHttpResponse ok(TimestampedEntity item) {
-        requestContext.setLastModified(item.getLastUpdate());
-        if(!requestContext.isModified())
-            return new NotModifiedResponse();
-        return new OkResponse(item);
+    protected<T extends ICachedDto> HttpResponse okCached(List<T> content) {
+        return new OkCachedResponse(content, requestContext.getModificationDate());
     }
     
-    protected IHttpResponse notFound() {
-        return new NotFoundResponse();
+    protected HttpResponse notFound() {
+        return new ErrorResponse(HttpStatuses.NOT_FOUND, Collections.emptyList());
     }
     
-    protected IHttpResponse forbidden() {
-        return new ForbiddenResponse();
+    protected HttpResponse forbidden() {
+        return new ErrorResponse(HttpStatuses.FORBIDDEN, Collections.emptyList());
     }
     
-    protected IHttpResponse badRequest() {
-        return new BadRequestResponse();
+    protected HttpResponse badRequest() {
+        return new ErrorResponse(HttpStatuses.BAD_REQUEST, Collections.emptyList());
     }
     
-    protected IHttpResponse created(String route) {
+    protected HttpResponse created(String route) {
         return new CreatedResponse(route);
     }
     
-    public static Object render(IHttpResponse result, Response response) {
+    public static Object render(HttpResponse result, Response response) {
         return result.write(response);
     }
 }
