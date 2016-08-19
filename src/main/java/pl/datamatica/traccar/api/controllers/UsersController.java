@@ -20,6 +20,7 @@ import com.google.gson.Gson;
 import java.util.List;
 import java.util.stream.Collectors;
 import pl.datamatica.traccar.api.Context;
+import pl.datamatica.traccar.api.dtos.out.UserDto;
 import pl.datamatica.traccar.api.providers.UserProvider;
 import pl.datamatica.traccar.api.responses.HttpResponse;
 import pl.datamatica.traccar.api.transformers.UserTransformer;
@@ -36,7 +37,8 @@ public class UsersController extends ControllerBase {
     }
     
     public HttpResponse get() throws Exception {
-        List<User> users = up.getAllAvailableUsers(requestUser())
+        List<UserDto> users = up.getAllAvailableUsers(requestUser())
+                .map(user -> new UserDto(user))
                 .collect(Collectors.toList());
         return ok(users);
     }
@@ -46,7 +48,7 @@ public class UsersController extends ControllerBase {
         if(other == null)
             return notFound();
         if(UserProvider.isVisibleToUser(other, requestUser()))
-            return ok(other);
+            return ok(new UserDto(other));
         else
             return forbidden();
     }
