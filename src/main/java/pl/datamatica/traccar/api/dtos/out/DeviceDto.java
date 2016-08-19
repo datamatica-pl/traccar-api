@@ -17,10 +17,11 @@
 package pl.datamatica.traccar.api.dtos.out;
 
 import java.util.Date;
+import pl.datamatica.traccar.api.dtos.JsonIgnore;
 import pl.datamatica.traccar.model.Device;
 import pl.datamatica.traccar.model.Position;
 
-public class DeviceDto {
+public class DeviceDto implements ICachedDto{
     private final long id;
     private String deviceName;
     private long deviceModelId;
@@ -35,6 +36,9 @@ public class DeviceDto {
     private Date oldestPositionTime;
     private boolean isDeleted;
     private long accountId;
+    
+    @JsonIgnore
+    private Date modificationTime;
     
     public DeviceDto(Device device) {
         this.id = device.getId();
@@ -56,6 +60,7 @@ public class DeviceDto {
                 .map(p -> p.getTime())
                 .min((d1, d2) -> d1.compareTo(d2))
                 .orElse(null);
+        this.modificationTime = device.getLastUpdate();
     }
     
     public long getId() {
@@ -124,5 +129,10 @@ public class DeviceDto {
     
     public boolean isDeleted() {
         return isDeleted;
+    }
+
+    @Override
+    public Date getModificationTime() {
+        return modificationTime;
     }
 }

@@ -16,14 +16,20 @@
  */
 package pl.datamatica.traccar.api.responses;
 
-import spark.Response;
+public class HttpHeader {
+    private final String name;
+    private final String value;
+    
+    public HttpHeader(String name, String value) {
+        this.name = name;
+        this.value = value;
+    }
 
-public class ForbiddenResponse implements IHttpResponse{
+    public String getName() {
+        return name;
+    }
 
-    @Override
-    public Object write(Response response) {
-        response.status(403);
-        response.type("application/json");
-        return "";
+    public String getValue() {
+        return value;
     }
 }

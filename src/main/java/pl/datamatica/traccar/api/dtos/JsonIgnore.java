@@ -14,26 +14,11 @@
  *  You should have received a copy of the GNU Affero General Public License
  *  along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-package pl.datamatica.traccar.api.responses;
+package pl.datamatica.traccar.api.dtos;
 
-import spark.Response;
+import java.lang.annotation.*;
 
-public class OkResponse<T> extends HttpResponse<T> {
-    private T item;
-    
-    public OkResponse(T item) {
-        this.item = item;
-    }
-
-    @Override
-    protected int getHttpStatus() {
-        return HttpStatuses.OK;
-    }
-
-    @Override
-    protected T getContent() {
-        return item;
-    }
-    
-    
+@Retention(RetentionPolicy.RUNTIME)
+@Target(ElementType.FIELD)
+public @interface JsonIgnore { 
 }

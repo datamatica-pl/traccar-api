@@ -16,8 +16,21 @@
  */
 package pl.datamatica.traccar.api.responses;
 
+import java.util.Collections;
 import spark.Response;
 
-public interface IHttpResponse {
-    public Object write(Response response);
+public abstract class HttpResponse<T>{
+    protected abstract int getHttpStatus();
+    protected abstract T getContent();
+    protected Iterable<HttpHeader> getHeaders() {
+        return Collections.EMPTY_LIST;
+    }
+
+    public final Object write(Response response) {
+        response.status(getHttpStatus());
+        response.type("application/json");
+        for(HttpHeader header : getHeaders())
+            response.header(header.getName(), header.getValue());
+        return getContent();
+    }
 }

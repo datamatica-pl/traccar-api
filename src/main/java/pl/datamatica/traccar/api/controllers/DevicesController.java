@@ -18,11 +18,13 @@ package pl.datamatica.traccar.api.controllers;
 
 import com.google.gson.Gson;
 import java.util.List;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import pl.datamatica.traccar.api.Context;
 import pl.datamatica.traccar.api.dtos.in.AddDeviceDto;
+import pl.datamatica.traccar.api.dtos.out.DeviceDto;
 import pl.datamatica.traccar.api.providers.DeviceProvider;
-import pl.datamatica.traccar.api.responses.IHttpResponse;
+import pl.datamatica.traccar.api.responses.HttpResponse;
 import pl.datamatica.traccar.api.transformers.DeviceTransformer;
 import pl.datamatica.traccar.model.Device;
 import pl.datamatica.traccar.model.TimestampedEntity;
@@ -34,30 +36,35 @@ public class DevicesController extends ControllerBase {
     private DeviceProvider dp;
     
     public DevicesController(RequestContext requestContext) {
-        super(requestContext);
-        dp = new DeviceProvider(entityManager());
+        this(requestContext, ctx -> new DeviceProvider(ctx.getEntityManager()));
     }
     
-    public IHttpResponse get() throws Exception {
+    public DevicesController(RequestContext requestContext, Function<RequestContext, DeviceProvider> dpf) {
+        super(requestContext);
+        this.dp = dpf.apply(requestContext);
+    }
+    
+    public HttpResponse get() throws Exception {
         User user = requestUser();
-        List<TimestampedEntity> devices = dp.getAllAvailableDevices(user)
+        List<DeviceDto> devices = dp.getAllAvailableDevices(user)
+                .map(d -> new DeviceDto(d))
                 .collect(Collectors.toList());
 
-        return ok(devices);
+        return okCached(devices);
     }
     
-    public IHttpResponse get(long id) throws Exception {
+    public HttpResponse get(long id) throws Exception {
         Device device = dp.getDevice(id);
 
         if(device == null)
             return notFound();
         if(DeviceProvider.isVisibleToUser(device, requestUser())) 
-            return ok(device);
+            return okCached(new DeviceDto(device));
         else
             return forbidden();
     }
     
-    public IHttpResponse post(AddDeviceDto deviceDto) throws Exception {
+    public HttpResponse post(AddDeviceDto deviceDto) throws Exception {
         if(deviceDto == null || deviceDto.getImei() == null)
             return badRequest();
         //todo - createDevice error handling
@@ -73,7 +80,7 @@ public class DevicesController extends ControllerBase {
             RequestContext context = new RequestContext(req, res);
             DevicesController dc = new DevicesController(context);
             return render(dc.get(), res);
-        }, responseTransformer);
+        }, gson::toJson);
         
         Spark.post(rootUrl(), (req, res) -> {
             RequestContext context = new RequestContext(req, res);
@@ -86,7 +93,7 @@ public class DevicesController extends ControllerBase {
             RequestContext context = new RequestContext(req, res);
             DevicesController dc = new DevicesController(context);
             return render(dc.get(Long.parseLong(req.params(":id"))), res);
-        }, responseTransformer);
+        }, gson::toJson);
     }
     
     public static String rootUrl() {

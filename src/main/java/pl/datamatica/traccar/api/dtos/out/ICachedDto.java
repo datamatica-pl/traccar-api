@@ -14,16 +14,10 @@
  *  You should have received a copy of the GNU Affero General Public License
  *  along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-package pl.datamatica.traccar.api.responses;
+package pl.datamatica.traccar.api.dtos.out;
 
-import spark.Response;
+import java.util.Date;
 
-public class BadRequestResponse implements IHttpResponse {
-
-    @Override
-    public Object write(Response response) {
-        response.status(400);
-        response.type("application/json");
-        return "";
-    }
+public interface ICachedDto {
+    Date getModificationTime();
 }

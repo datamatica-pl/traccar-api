@@ -16,13 +16,26 @@
  */
 package pl.datamatica.traccar.api.responses;
 
-import spark.Response;
+import java.util.List;
+import pl.datamatica.traccar.api.dtos.out.ErrorDto;
 
-public class NotFoundResponse implements IHttpResponse {
+public class ErrorResponse extends HttpResponse {
+    
+    private final int httpStatus;
+    private final List<ErrorDto> errors;
+
+    public ErrorResponse(int httpStatus, List<ErrorDto> errors) {
+        this.httpStatus = httpStatus;
+        this.errors = errors;
+    }
+    
     @Override
-    public Object write(Response response) {
-        response.status(404);
-        response.type("application/json");
-        return "404 Not Found";
+    protected int getHttpStatus() {
+        return httpStatus;
+    }
+
+    @Override
+    protected Object getContent() {
+        return errors;
     }
 }

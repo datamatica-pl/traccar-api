@@ -18,6 +18,7 @@ package pl.datamatica.traccar.api;
 
 import com.google.gson.*;
 import javax.persistence.*;
+import pl.datamatica.traccar.api.dtos.AnnotationExclusionStrategy;
 
 public class Context {
     private static final Context INSTANCE = new Context();
@@ -32,7 +33,8 @@ public class Context {
     private Context() {
         emf = Persistence.createEntityManagerFactory("release");
         GsonBuilder gsonBuilder = new GsonBuilder();
-        gsonBuilder.setDateFormat("yyyy-MM-dd'T'HH:mm:ssX");
+        gsonBuilder.setDateFormat(Application.DATE_FORMAT);
+        gsonBuilder.setExclusionStrategies(new AnnotationExclusionStrategy());
         if(isInDevMode())
             gsonBuilder.setPrettyPrinting();
         gson = gsonBuilder.create();
