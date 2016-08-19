@@ -25,7 +25,7 @@ public class DeviceDto implements ICachedDto{
     private final long id;
     private String deviceName;
     private long deviceModelId;
-    private String iconId;
+    private int iconId;
     private String color;
     private String phoneNumber;
     private String plateNumber;
@@ -44,7 +44,7 @@ public class DeviceDto implements ICachedDto{
         this.id = device.getId();
         this.deviceName = device.getName();
         this.deviceModelId = device.getDeviceModelId();
-        this.iconId = device.getIconType().toString();
+        this.iconId = device.getIconType().getId();
         this.color = device.getColor();
         this.phoneNumber = device.getPhoneNumber();
         this.plateNumber = device.getPlateNumber();
@@ -67,7 +67,7 @@ public class DeviceDto implements ICachedDto{
         return id;
     }
 
-    public String getIconId() {
+    public int getIconId() {
         return iconId;
     }
 
