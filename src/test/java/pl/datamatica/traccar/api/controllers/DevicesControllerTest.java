@@ -16,6 +16,7 @@
  */
 package pl.datamatica.traccar.api.controllers;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -107,7 +108,7 @@ public class DevicesControllerTest {
     @Test
     public void post_validImei()  throws Exception {
         final String uniqueId = "5";
-        final long id = 7;
+        final long id = 0;
         
         Device expectedContent = new Device();
         expectedContent.setUniqueId(uniqueId);
@@ -121,5 +122,28 @@ public class DevicesControllerTest {
         Stream<HttpHeader> headers = StreamSupport.stream(response.getHeaders().spliterator(), false);
         assertTrue(headers.anyMatch(h -> h.equals(expectedHdr)));
         assertEquals(expectedContent, response.getContent());
+    }
+    
+    @Test
+    public void post_noImei() throws Exception {
+        AddDeviceDto deviceDto = new AddDeviceDto();
+        
+        HttpResponse response = dc.post(deviceDto);
+             
+        assertTrue(response instanceof ErrorResponse);
+        assertEquals(400, response.getHttpStatus());
+        assertEquals(Collections.EMPTY_LIST, response.getContent());
+    }
+    
+    @Test
+    public void post_invalidImei() throws Exception {
+        String imei = "8";
+        AddDeviceDto deviceDto = new AddDeviceDto(imei);
+        
+        HttpResponse response = dc.post(deviceDto);
+        
+        assertTrue(response instanceof ErrorResponse);
+        assertEquals(400, response.getHttpStatus());
+        assertEquals(Collections.EMPTY_LIST, response.getContent());
     }
 }

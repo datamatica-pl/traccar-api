@@ -25,7 +25,6 @@ import pl.datamatica.traccar.api.dtos.in.AddDeviceDto;
 import pl.datamatica.traccar.api.dtos.out.DeviceDto;
 import pl.datamatica.traccar.api.providers.DeviceProvider;
 import pl.datamatica.traccar.api.responses.HttpResponse;
-import pl.datamatica.traccar.api.transformers.DeviceTransformer;
 import pl.datamatica.traccar.model.Device;
 import pl.datamatica.traccar.model.TimestampedEntity;
 import pl.datamatica.traccar.model.User;
@@ -68,7 +67,9 @@ public class DevicesController extends ControllerBase {
         if(deviceDto == null || deviceDto.getImei() == null)
             return badRequest();
         //todo - createDevice error handling
-        Device device = dp.createDevice(deviceDto.getImei(), requestUser());            
+        Device device = dp.createDevice(deviceDto.getImei(), requestUser());   
+        if(device == null)
+            return badRequest();
         return created("devices/"+device.getId(), device);
     }
     

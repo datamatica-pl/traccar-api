@@ -66,7 +66,7 @@ public class DeviceProvider implements AutoCloseable{
 
     public Device createDevice(String imei, User user) {
         if(!isImeiValid(imei))
-            throw new IllegalArgumentException();
+            return null;
         
         em.getTransaction().begin();
         Device device = new Device();
