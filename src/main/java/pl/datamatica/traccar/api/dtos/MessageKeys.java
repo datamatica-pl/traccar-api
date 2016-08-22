@@ -14,24 +14,9 @@
  *  You should have received a copy of the GNU Affero General Public License
  *  along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-package pl.datamatica.traccar.api.responses;
+package pl.datamatica.traccar.api.dtos;
 
-import java.util.Collections;
-import java.util.Date;
-import java.util.List;
-import pl.datamatica.traccar.api.utils.DateUtil;
-
-public class OkCachedResponse extends OkResponse {
-    private final Date serverModification;
-    
-    public OkCachedResponse(Object item, Date serverModification) {
-        super(item);
-        this.serverModification = serverModification;
-    }
-
-    @Override
-    public Iterable getHeaders() {
-        return Collections.singleton(new HttpHeader(HttpHeaders.LAST_MODIFIED, 
-                DateUtil.formatDate(serverModification)));
-    }
+public class MessageKeys {
+    public static final String ERR_IMEI_NOT_PROVIDED = "err_imei_not_provided";
+    public static final String ERR_INVALID_IMEI = "err_invalid_imei";
 }

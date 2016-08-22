@@ -26,8 +26,10 @@ import static org.junit.Assert.*;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
+import pl.datamatica.traccar.api.dtos.MessageKeys;
 import pl.datamatica.traccar.api.dtos.in.AddDeviceDto;
 import pl.datamatica.traccar.api.dtos.out.DeviceDto;
+import pl.datamatica.traccar.api.dtos.out.ErrorDto;
 import pl.datamatica.traccar.api.providers.DeviceProvider;
 import pl.datamatica.traccar.api.responses.*;
 import pl.datamatica.traccar.model.Device;
@@ -123,5 +125,34 @@ public class DevicesControllerTest {
         Stream<HttpHeader> headers = StreamSupport.stream(response.getHeaders().spliterator(), false);
         assertTrue(headers.anyMatch(h -> h.equals(expectedHdr)));
         assertEquals(expectedContent, response.getContent());
+    }
+    
+    @Test
+    public void post_noImei() throws Exception {
+        AddDeviceDto deviceDto = new AddDeviceDto();
+        ErrorDto expectedError = new ErrorDto(MessageKeys.ERR_IMEI_NOT_PROVIDED);
+        
+        HttpResponse response = dc.post(deviceDto);
+             
+        assertTrue(response instanceof ErrorResponse);
+        assertEquals(400, response.getHttpStatus());
+        List<ErrorDto> errors = (List<ErrorDto>)response.getContent();
+        assertEquals(1, errors.size());
+        assertEquals(expectedError, errors.get(0));
+    }
+    
+    @Test
+    public void post_invalidImei() throws Exception {
+        String imei = "8";
+        AddDeviceDto deviceDto = new AddDeviceDto(imei);
+        ErrorDto expectedError = new ErrorDto(MessageKeys.ERR_INVALID_IMEI);
+        
+        HttpResponse response = dc.post(deviceDto);
+        
+        assertTrue(response instanceof ErrorResponse);
+        assertEquals(400, response.getHttpStatus());
+        List<ErrorDto> errors = (List<ErrorDto>)response.getContent();
+        assertEquals(1, errors.size());
+        assertEquals(expectedError, errors.get(0));
     }
 }

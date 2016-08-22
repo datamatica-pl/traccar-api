@@ -22,6 +22,9 @@ public class AddDeviceDto {
     public AddDeviceDto(String imei) {
         this.imei = imei;
     }
+
+    public AddDeviceDto() {
+    }
     
     public String getImei() {
         return imei;
