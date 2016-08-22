@@ -22,7 +22,6 @@ import java.util.List;
 import pl.datamatica.traccar.api.Application;
 import pl.datamatica.traccar.api.dtos.out.ICachedDto;
 import pl.datamatica.traccar.api.utils.DateUtil;
-import spark.Response;
 
 public class OkCachedResponse extends OkResponse {
     
@@ -47,19 +46,19 @@ public class OkCachedResponse extends OkResponse {
     }
 
     @Override
-    protected Object getContent() {
+    public Object getContent() {
         if(isModified())
             return "";
         return super.getContent();
     }
 
     @Override
-    protected Iterable getHeaders() {
+    public Iterable getHeaders() {
         return Collections.singleton(new HttpHeader(LAST_MODIFIED_HEADER, DateUtil.formatDate(serverModification)));
     }
    
     @Override
-    protected int getHttpStatus() {
+    public int getHttpStatus() {
         if(isModified())
             return HttpStatuses.NOT_MODIFIED;
         return super.getHttpStatus();

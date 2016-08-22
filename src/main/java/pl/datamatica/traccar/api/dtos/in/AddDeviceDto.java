@@ -19,6 +19,10 @@ package pl.datamatica.traccar.api.dtos.in;
 public class AddDeviceDto {
     private String imei;
     
+    public AddDeviceDto(String imei) {
+        this.imei = imei;
+    }
+    
     public String getImei() {
         return imei;
     }
