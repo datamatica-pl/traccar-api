@@ -30,7 +30,7 @@ public class PositionDto {
     private double longitude;
     private Date deviceTime;
     private Boolean ignition;
-    private Integer battery;
+    private Double battery;
     private boolean isValid;
     private long deviceId;
     
@@ -48,7 +48,7 @@ public class PositionDto {
         this.isValid = position.getValid();
         this.deviceId = position.getDevice().getId();
         this.ignition = (Boolean)other.get("ignition");
-        this.battery = (Integer)other.get("battery");
+        this.battery = (Double)other.get("battery");
     }
 
     public double getLatitude() {
@@ -63,17 +63,39 @@ public class PositionDto {
         return deviceTime;
     }
 
-    public double getSpeed() {
+    public Double getSpeed() {
         return speed;
     }
 
-    public boolean isIgnition() {
+    public Boolean isIgnition() {
         return ignition;
     }
 
-    public int getBattery() {
+    public Double getBattery() {
         return battery;
     }
-    
-    
+
+    public long getId() {
+        return id;
+    }
+
+    public Double getAltitude() {
+        return altitude;
+    }
+
+    public Double getCourse() {
+        return course;
+    }
+
+    public Boolean getIgnition() {
+        return ignition;
+    }
+
+    public boolean isValid() {
+        return isValid;
+    }
+
+    public long getDeviceId() {
+        return deviceId;
+    }
 }
