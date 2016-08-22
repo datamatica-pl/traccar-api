@@ -17,28 +17,28 @@
 package pl.datamatica.traccar.api.responses;
 
 import java.util.Collections;
-import java.util.List;
-import spark.Response;
 
-public class CreatedResponse extends HttpResponse {
-    private HttpHeader locationHeader;
+public class CreatedResponse<T> extends HttpResponse {
+    private final HttpHeader locationHeader;
+    private final T resource;
     
-    public CreatedResponse(String route) {
+    public CreatedResponse(String route, T resource) {
         this.locationHeader = new HttpHeader("Location", route);
+        this.resource = resource;
     }
 
     @Override
-    protected int getHttpStatus() {
+    public int getHttpStatus() {
         return HttpStatuses.CREATED;
     }
 
     @Override
-    protected Iterable<HttpHeader> getHeaders() {
+    public Iterable<HttpHeader> getHeaders() {
         return Collections.singleton(locationHeader);
     }
     
     @Override
-    protected Object getContent() {
-        return "";
+    public Object getContent() {
+        return resource;
     }
 }

@@ -17,12 +17,10 @@
 package pl.datamatica.traccar.api.controllers;
 
 import java.util.Collections;
-import java.util.Date;
 import java.util.List;
 import javax.persistence.EntityManager;
 import pl.datamatica.traccar.api.dtos.out.ICachedDto;
 import pl.datamatica.traccar.api.responses.*;
-import pl.datamatica.traccar.model.TimestampedEntity;
 import pl.datamatica.traccar.model.User;
 import spark.Response;
 
@@ -70,8 +68,8 @@ public abstract class ControllerBase {
         return new ErrorResponse(HttpStatuses.BAD_REQUEST, Collections.emptyList());
     }
     
-    protected HttpResponse created(String route) {
-        return new CreatedResponse(route);
+    protected HttpResponse created(String route, Object resource) {
+        return new CreatedResponse(route, resource);
     }
     
     public static Object render(HttpResponse result, Response response) {

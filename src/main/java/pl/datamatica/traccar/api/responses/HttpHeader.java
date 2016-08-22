@@ -16,6 +16,8 @@
  */
 package pl.datamatica.traccar.api.responses;
 
+import java.util.Objects;
+
 public class HttpHeader {
     private final String name;
     private final String value;
@@ -32,4 +34,32 @@ public class HttpHeader {
     public String getValue() {
         return value;
     }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(this.name, this.value);
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        final HttpHeader other = (HttpHeader) obj;
+        if (!Objects.equals(this.name, other.name)) {
+            return false;
+        }
+        if (!Objects.equals(this.value, other.value)) {
+            return false;
+        }
+        return true;
+    }
+    
+    
 }

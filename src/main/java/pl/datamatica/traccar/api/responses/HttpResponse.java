@@ -20,9 +20,9 @@ import java.util.Collections;
 import spark.Response;
 
 public abstract class HttpResponse<T>{
-    protected abstract int getHttpStatus();
-    protected abstract T getContent();
-    protected Iterable<HttpHeader> getHeaders() {
+    public abstract int getHttpStatus();
+    public abstract T getContent();
+    public Iterable<HttpHeader> getHeaders() {
         return Collections.EMPTY_LIST;
     }
 

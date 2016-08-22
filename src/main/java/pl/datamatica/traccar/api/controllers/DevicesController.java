@@ -39,9 +39,9 @@ public class DevicesController extends ControllerBase {
         this(requestContext, ctx -> new DeviceProvider(ctx.getEntityManager()));
     }
     
-    public DevicesController(RequestContext requestContext, Function<RequestContext, DeviceProvider> dpf) {
-        super(requestContext);
-        this.dp = dpf.apply(requestContext);
+    public DevicesController(RequestContext rc, Function<RequestContext, DeviceProvider> dpf) {
+        super(rc);
+        this.dp = dpf.apply(rc);
     }
     
     public HttpResponse get() throws Exception {
@@ -49,7 +49,7 @@ public class DevicesController extends ControllerBase {
         List<DeviceDto> devices = dp.getAllAvailableDevices(user)
                 .map(d -> new DeviceDto(d))
                 .collect(Collectors.toList());
-
+        
         return okCached(devices);
     }
     
@@ -58,7 +58,7 @@ public class DevicesController extends ControllerBase {
 
         if(device == null)
             return notFound();
-        if(DeviceProvider.isVisibleToUser(device, requestUser())) 
+        if(dp.isVisibleToUser(device, requestUser())) 
             return okCached(new DeviceDto(device));
         else
             return forbidden();
@@ -68,13 +68,12 @@ public class DevicesController extends ControllerBase {
         if(deviceDto == null || deviceDto.getImei() == null)
             return badRequest();
         //todo - createDevice error handling
-        long id = dp.createDevice(deviceDto.getImei(), requestUser());            
-        return created("devices/"+id);
+        Device device = dp.createDevice(deviceDto.getImei(), requestUser());            
+        return created("devices/"+device.getId(), device);
     }
     
     public static void registerMethods() {
         Gson gson = Context.getInstance().getGson();
-        DeviceTransformer responseTransformer = new DeviceTransformer(gson);
         
         Spark.get(rootUrl(), (req, res) -> { 
             RequestContext context = new RequestContext(req, res);
