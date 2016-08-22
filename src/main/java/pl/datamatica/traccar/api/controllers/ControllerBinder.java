@@ -14,21 +14,21 @@
  *  You should have received a copy of the GNU Affero General Public License
  *  along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-package pl.datamatica.traccar.api.transformers;
+package pl.datamatica.traccar.api.controllers;
 
 import com.google.gson.Gson;
-import pl.datamatica.traccar.api.dtos.out.DeviceDto;
-import pl.datamatica.traccar.model.Device;
+import pl.datamatica.traccar.api.Context;
 
-public class DeviceTransformer extends TransformerBase<Device> {
+public abstract class ControllerBinder { 
+    protected Gson gson;
 
-    public DeviceTransformer(Gson gson) {
-        super(gson, Device.class);
+    public ControllerBinder() {
+        gson = Context.getInstance().getGson();
     }
 
-    @Override
-    public Object transform(Device element) {
-        return new DeviceDto(element);
+    public String rootUrl() {
+        return "v1";
     }
-    
+
+    public abstract void bind();
 }

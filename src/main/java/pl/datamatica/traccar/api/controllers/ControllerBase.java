@@ -16,7 +16,6 @@
  */
 package pl.datamatica.traccar.api.controllers;
 
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
@@ -31,10 +30,6 @@ import pl.datamatica.traccar.model.User;
 import spark.Response;
 
 public abstract class ControllerBase {
-    
-    public static String rootUrl() {
-        return "v1";
-    }
     
     protected RequestContext requestContext;
     

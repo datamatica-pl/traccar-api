@@ -20,23 +20,25 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.Date;
 import javax.naming.InitialContext;
-import javax.persistence.EntityManager;
+import spark.Spark;
+
+import pl.datamatica.traccar.api.controllers.*;
 import pl.datamatica.traccar.api.auth.BasicAuthFilter;
 import pl.datamatica.traccar.api.auth.PasswordValidator;
-import pl.datamatica.traccar.api.controllers.DevicesController;
-import pl.datamatica.traccar.api.controllers.StringsController;
-import pl.datamatica.traccar.api.controllers.UsersController;
-import spark.Spark;
 
 
 public class Application implements spark.servlet.SparkApplication {
     
-    public static final String ENTITY_MANAGER_KEY = "pl.datamatica.traccar.api.EntityManager";
-    public static final String REQUEST_USER_KEY = "pl.datamatica.traccar.api.RequestUser";
+    public static final String REQUEST_CONTEXT_KEY = "pl.datamatica.traccar.api.RequestContext";
     public static final String DATE_FORMAT = "yyyy-MM-dd'T'HH:mm:ssX";
     public static final Date EMPTY_RESPONSE_MODIFICATION_DATE = new Date(1000);
     
     private static final String STRINGS_DIR_NAME = "java:/StringsDir";
+    private final ControllerBinder[] BINDERS = new ControllerBinder[] {
+            new DevicesController.Binder(),
+            new UsersController.Binder(),
+            new StringsController.Binder()
+        };
        
     @Override
     public void init() {
@@ -47,13 +49,17 @@ public class Application implements spark.servlet.SparkApplication {
         BasicAuthFilter baf = new BasicAuthFilter(passValidator);
         
         Spark.before((req, res) -> {
-            EntityManager em = Context.getInstance().createEntityManager();
-            req.attribute(ENTITY_MANAGER_KEY, em);
+            RequestContext rc = new RequestContext(req, res);
+            req.attribute(REQUEST_CONTEXT_KEY, rc);
             baf.handle(req, res);
         });
+        
         Spark.after((req, res)-> {
-            ((EntityManager)req.attribute(ENTITY_MANAGER_KEY)).close();
+            ((RequestContext)req.attribute(REQUEST_CONTEXT_KEY)).close();
         });
+        
+        for(ControllerBinder binder : BINDERS) 
+            binder.bind();
         
         if(Context.getInstance().isInDevMode()) {
             Spark.exception(Exception.class, (exception, request, response) -> {
@@ -64,10 +70,6 @@ public class Application implements spark.servlet.SparkApplication {
                 response.body(sw.toString());
             });
         }
-        
-        DevicesController.registerMethods();
-        UsersController.registerMethods();
-        StringsController.registerMethods();
     }
     
     public static String getStringsDir() throws Exception {

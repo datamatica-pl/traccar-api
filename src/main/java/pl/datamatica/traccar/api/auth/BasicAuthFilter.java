@@ -25,6 +25,7 @@ import org.slf4j.LoggerFactory;
 import pl.datamatica.traccar.api.Application;
 import spark.*;
 import static pl.datamatica.traccar.api.auth.AuthenticationException.*;
+import pl.datamatica.traccar.api.controllers.RequestContext;
 import pl.datamatica.traccar.api.providers.UserProvider;
 import pl.datamatica.traccar.model.User;
 
@@ -48,13 +49,14 @@ public class BasicAuthFilter {
         
     public void handle(Request request, Response response) throws Exception {
         try {
-            EntityManager em = request.attribute(Application.ENTITY_MANAGER_KEY);
+            RequestContext rc = request.attribute(Application.REQUEST_CONTEXT_KEY);
+            EntityManager em = rc.getEntityManager();
             User user;
             if(request.session().attributes().contains(USER_ID_SESSION_KEY))
                 user = continueSession(request, em);
             else
                 user = beginSession(request, em);
-            request.attribute(Application.REQUEST_USER_KEY, user);
+            rc.setUser(user);
         } catch(AuthenticationException e) {
             unauthorized(response, e.getMessage());
         } catch(IllegalArgumentException e) {

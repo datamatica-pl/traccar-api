@@ -16,7 +16,7 @@
  */
 package pl.datamatica.traccar.api.controllers;
 
-import java.util.Collections;
+import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -48,7 +48,8 @@ public class DevicesControllerTest {
     public void testInit() {
         user = new User();
         dp = Mockito.mock(DeviceProvider.class);
-        rc = new RequestContext(user);
+        rc = new RequestContext(new Date(0));
+        rc.setUser(user);
         dc = new DevicesController(rc, rc -> dp);
         devices = IntStream.range(0, 3)
                 .mapToObj(i -> {

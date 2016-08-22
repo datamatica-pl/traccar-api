@@ -19,49 +19,51 @@ package pl.datamatica.traccar.api.controllers;
 import java.text.ParseException;
 import java.util.Date;
 import javax.persistence.EntityManager;
-import pl.datamatica.traccar.api.Application;
+import pl.datamatica.traccar.api.Context;
 import pl.datamatica.traccar.api.utils.DateUtil;
 import pl.datamatica.traccar.model.User;
 import spark.Request;
 import spark.Response;
 
-public class RequestContext {
+public class RequestContext implements AutoCloseable{
     
     private static final String IF_MODIFIED_SINCE_HEADER = "If-Modified-Since";
     
     private Date ifModifiedSince;
     
-    private final User user;
+    private User user;
     private final EntityManager em;
     
-    //only for testing!
-    RequestContext(User user) {
-        this.user = user;
+    RequestContext(Date ifModifiedSince) {
         this.em = null;
-        this.ifModifiedSince = new Date(0);
+        this.ifModifiedSince = ifModifiedSince;
     }
     
     public RequestContext(Request request, Response response) throws ParseException {
         this.ifModifiedSince = new Date(0);
         if(request.headers(IF_MODIFIED_SINCE_HEADER) != null)
             this.ifModifiedSince = DateUtil.parseDate(request.headers(IF_MODIFIED_SINCE_HEADER));
-        this.user = request.attribute(Application.REQUEST_USER_KEY);
-        this.em = request.attribute(Application.ENTITY_MANAGER_KEY);
+        this.em = Context.getInstance().createEntityManager();
     }
     
     public Date getModificationDate() {
         return ifModifiedSince;
     }
     
-    public void setModificationDate(Date newDate) {
-        ifModifiedSince = newDate;
-    }
-    
     public User getUser() {
         return user;
     }
     
+    public void setUser(User user) {
+        this.user = user;
+    }
+        
     public EntityManager getEntityManager() {
         return em;
+    }
+
+    @Override
+    public void close() throws Exception {
+        em.close();
     }
 }
