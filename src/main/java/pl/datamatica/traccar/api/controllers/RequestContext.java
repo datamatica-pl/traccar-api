@@ -27,34 +27,34 @@ import spark.Response;
 
 public class RequestContext {
     
-    private static final String LAST_MODIFIED_HEADER = "Last-Modified";
     private static final String IF_MODIFIED_SINCE_HEADER = "If-Modified-Since";
     
     private Date ifModifiedSince;
-    private Date lastModified;
     
-    private final Response response;
     private final User user;
     private final EntityManager em;
     
     //only for testing!
     RequestContext(User user) {
         this.user = user;
-        this.response = null;
         this.em = null;
+        this.ifModifiedSince = new Date(0);
     }
     
     public RequestContext(Request request, Response response) throws ParseException {
         this.ifModifiedSince = new Date(0);
         if(request.headers(IF_MODIFIED_SINCE_HEADER) != null)
             this.ifModifiedSince = DateUtil.parseDate(request.headers(IF_MODIFIED_SINCE_HEADER));
-        this.response = response;
         this.user = request.attribute(Application.REQUEST_USER_KEY);
         this.em = request.attribute(Application.ENTITY_MANAGER_KEY);
     }
     
     public Date getModificationDate() {
         return ifModifiedSince;
+    }
+    
+    public void setModificationDate(Date newDate) {
+        ifModifiedSince = newDate;
     }
     
     public User getUser() {

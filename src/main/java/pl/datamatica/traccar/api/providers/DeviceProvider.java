@@ -41,7 +41,7 @@ public class DeviceProvider implements AutoCloseable{
             return managedAndMe(user).flatMap(u -> u.getDevices().stream()).distinct();
     }
     
-    public static boolean isVisibleToUser(Device device, User user) {
+    public boolean isVisibleToUser(Device device, User user) {
         if(user.getAdmin())
             return true;
         return managedAndMe(user).anyMatch((managed) -> (managed.getDevices().contains(device)));
@@ -64,7 +64,7 @@ public class DeviceProvider implements AutoCloseable{
         return true;
     }
 
-    public long createDevice(String imei, User user) {
+    public Device createDevice(String imei, User user) {
         if(!isImeiValid(imei))
             throw new IllegalArgumentException();
         
@@ -76,7 +76,7 @@ public class DeviceProvider implements AutoCloseable{
         em.persist(device);
         em.getTransaction().commit();
         
-        return device.getId();
+        return device;
     }
 
     @Override

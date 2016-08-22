@@ -30,12 +30,12 @@ public class ErrorResponse extends HttpResponse {
     }
     
     @Override
-    protected int getHttpStatus() {
+    public int getHttpStatus() {
         return httpStatus;
     }
 
     @Override
-    protected Object getContent() {
+    public Object getContent() {
         return errors;
     }
 }

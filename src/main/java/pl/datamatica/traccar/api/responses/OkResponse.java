@@ -16,8 +16,6 @@
  */
 package pl.datamatica.traccar.api.responses;
 
-import spark.Response;
-
 public class OkResponse<T> extends HttpResponse<T> {
     private T item;
     
@@ -26,12 +24,12 @@ public class OkResponse<T> extends HttpResponse<T> {
     }
 
     @Override
-    protected int getHttpStatus() {
+    public int getHttpStatus() {
         return HttpStatuses.OK;
     }
 
     @Override
-    protected T getContent() {
+    public T getContent() {
         return item;
     }
     
