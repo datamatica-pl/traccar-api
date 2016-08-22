@@ -20,7 +20,6 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.Date;
 import javax.naming.InitialContext;
-import javax.naming.NamingException;
 import javax.persistence.EntityManager;
 import pl.datamatica.traccar.api.auth.BasicAuthFilter;
 import pl.datamatica.traccar.api.auth.PasswordValidator;
@@ -36,6 +35,8 @@ public class Application implements spark.servlet.SparkApplication {
     public static final String REQUEST_USER_KEY = "pl.datamatica.traccar.api.RequestUser";
     public static final String DATE_FORMAT = "yyyy-MM-dd'T'HH:mm:ssX";
     public static final Date EMPTY_RESPONSE_MODIFICATION_DATE = new Date(1000);
+    
+    private static final String STRINGS_DIR_NAME = "java:/StringsDir";
        
     @Override
     public void init() {
@@ -71,6 +72,6 @@ public class Application implements spark.servlet.SparkApplication {
     
     public static String getStringsDir() throws Exception {
         InitialContext context = new InitialContext();
-        return (String)context.lookup("java:/StringsDir");
+        return (String)context.lookup(STRINGS_DIR_NAME);
     }
 }
