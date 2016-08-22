@@ -22,6 +22,9 @@ import java.util.Map;
 import pl.datamatica.traccar.model.Position;
 
 public class PositionDto {
+    private static final String IGNITION_KEY="ignition";
+    private static final String BATTERY_KEY = "battery";
+    
     private long id;
     private Double altitude;
     private Double course;
@@ -47,8 +50,9 @@ public class PositionDto {
         this.deviceTime = position.getTime();
         this.isValid = position.getValid();
         this.deviceId = position.getDevice().getId();
-        this.ignition = (Boolean)other.get("ignition");
-        this.battery = (Double)other.get("battery");
+        this.ignition = (Boolean)other.get(IGNITION_KEY);
+        if(other.containsKey(BATTERY_KEY))
+            this.battery = Double.parseDouble(other.get(BATTERY_KEY).toString());
     }
 
     public double getLatitude() {
@@ -65,10 +69,6 @@ public class PositionDto {
 
     public Double getSpeed() {
         return speed;
-    }
-
-    public Boolean isIgnition() {
-        return ignition;
     }
 
     public Double getBattery() {
