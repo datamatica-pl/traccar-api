@@ -23,15 +23,14 @@ import javax.persistence.EntityManager;
 import pl.datamatica.traccar.api.auth.BasicAuthFilter;
 import pl.datamatica.traccar.api.auth.PasswordValidator;
 import pl.datamatica.traccar.api.controllers.DevicesController;
+import pl.datamatica.traccar.api.controllers.RequestContext;
 import pl.datamatica.traccar.api.controllers.UsersController;
 import spark.Spark;
-import spark.utils.SparkUtils;
 
 
 public class Application implements spark.servlet.SparkApplication {
     
-    public static final String ENTITY_MANAGER_KEY = "pl.datamatica.traccar.api.EntityManager";
-    public static final String REQUEST_USER_KEY = "pl.datamatica.traccar.api.RequestUser";
+    public static final String REQUEST_CONTEXT_KEY = "pl.datamatica.traccar.api.RequestContext";
     public static final String DATE_FORMAT = "yyyy-MM-dd'T'HH:mm:ssX";
     public static final Date EMPTY_RESPONSE_MODIFICATION_DATE = new Date(1000);
     
@@ -44,12 +43,12 @@ public class Application implements spark.servlet.SparkApplication {
         BasicAuthFilter baf = new BasicAuthFilter(passValidator);
         
         Spark.before((req, res) -> {
-            EntityManager em = Context.getInstance().createEntityManager();
-            req.attribute(ENTITY_MANAGER_KEY, em);
+            RequestContext rc = new RequestContext(req, res);
+            req.attribute(REQUEST_CONTEXT_KEY, rc);
             baf.handle(req, res);
         });
         Spark.after((req, res)-> {
-            ((EntityManager)req.attribute(ENTITY_MANAGER_KEY)).close();
+            ((EntityManager)req.attribute(REQUEST_CONTEXT_KEY)).close();
         });
         
         if(Context.getInstance().isInDevMode()) {

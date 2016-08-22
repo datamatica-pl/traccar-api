@@ -19,6 +19,7 @@ package pl.datamatica.traccar.api.controllers;
 import com.google.gson.Gson;
 import java.util.List;
 import java.util.stream.Collectors;
+import pl.datamatica.traccar.api.Application;
 import pl.datamatica.traccar.api.Context;
 import pl.datamatica.traccar.api.dtos.out.UserDto;
 import pl.datamatica.traccar.api.providers.UserProvider;
@@ -58,13 +59,13 @@ public class UsersController extends ControllerBase {
         UserTransformer userTransformer = new UserTransformer(gson);
         
         Spark.get(rootUrl(), (req, res) -> {
-            RequestContext context = new RequestContext(req, res);
+            RequestContext context = req.attribute(Application.REQUEST_CONTEXT_KEY);
             UsersController uc = new UsersController(context);
             return render(uc.get(), res);
         }, gson::toJson);
         
         Spark.get(rootUrl() + "/:id", (req, res) -> {
-            RequestContext context = new RequestContext(req, res);
+            RequestContext context = req.attribute(Application.REQUEST_CONTEXT_KEY);
             UsersController uc = new UsersController(context);
             return render(uc.get(Long.parseLong(req.params(":id"))), res);
         }, gson::toJson);
