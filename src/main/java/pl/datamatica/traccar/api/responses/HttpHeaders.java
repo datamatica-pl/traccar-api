@@ -16,22 +16,6 @@
  */
 package pl.datamatica.traccar.api.responses;
 
-import java.util.Collections;
-import java.util.Date;
-import java.util.List;
-import pl.datamatica.traccar.api.utils.DateUtil;
-
-public class OkCachedResponse extends OkResponse {
-    private final Date serverModification;
-    
-    public OkCachedResponse(Object item, Date serverModification) {
-        super(item);
-        this.serverModification = serverModification;
-    }
-
-    @Override
-    public Iterable getHeaders() {
-        return Collections.singleton(new HttpHeader(HttpHeaders.LAST_MODIFIED, 
-                DateUtil.formatDate(serverModification)));
-    }
+public class HttpHeaders {
+    public static final String LAST_MODIFIED = "Last-Modified";
 }
