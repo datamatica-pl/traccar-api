@@ -19,7 +19,6 @@ package pl.datamatica.traccar.api.controllers;
 import java.text.ParseException;
 import java.util.Date;
 import javax.persistence.EntityManager;
-import pl.datamatica.traccar.api.Application;
 import pl.datamatica.traccar.api.Context;
 import pl.datamatica.traccar.api.utils.DateUtil;
 import pl.datamatica.traccar.model.User;
@@ -35,11 +34,9 @@ public class RequestContext implements AutoCloseable{
     private User user;
     private final EntityManager em;
     
-    //only for testing!
-    RequestContext(User user) {
-        this.user = user;
+    RequestContext(Date ifModifiedSince) {
         this.em = null;
-        this.ifModifiedSince = new Date(0);
+        this.ifModifiedSince = ifModifiedSince;
     }
     
     public RequestContext(Request request, Response response) throws ParseException {
@@ -53,10 +50,6 @@ public class RequestContext implements AutoCloseable{
         return ifModifiedSince;
     }
     
-    public void setModificationDate(Date newDate) {
-        ifModifiedSince = newDate;
-    }
-    
     public User getUser() {
         return user;
     }
@@ -64,7 +57,7 @@ public class RequestContext implements AutoCloseable{
     public void setUser(User user) {
         this.user = user;
     }
-    
+        
     public EntityManager getEntityManager() {
         return em;
     }

@@ -16,12 +16,11 @@
  */
 package pl.datamatica.traccar.api.controllers;
 
-import com.google.gson.Gson;
 import java.util.List;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import pl.datamatica.traccar.api.Application;
-import pl.datamatica.traccar.api.Context;
+import static pl.datamatica.traccar.api.controllers.ControllerBase.render;
 import pl.datamatica.traccar.api.dtos.in.AddDeviceDto;
 import pl.datamatica.traccar.api.dtos.out.DeviceDto;
 import pl.datamatica.traccar.api.providers.DeviceProvider;
@@ -31,6 +30,37 @@ import pl.datamatica.traccar.model.User;
 import spark.Spark;
 
 public class DevicesController extends ControllerBase {
+    
+    public static class Binder extends ControllerBinder { 
+        
+        @Override
+        public void bind() {
+            Spark.get(rootUrl(), (req, res) -> { 
+                RequestContext context = req.attribute(Application.REQUEST_CONTEXT_KEY);
+                DevicesController dc = new DevicesController(context);
+                return render(dc.get(), res);
+            }, gson::toJson);
+
+            Spark.post(rootUrl(), (req, res) -> {
+                RequestContext context = req.attribute(Application.REQUEST_CONTEXT_KEY);
+                DevicesController dc = new DevicesController(context);
+                AddDeviceDto deviceDto = gson.fromJson(req.body(), AddDeviceDto.class);
+                return render(dc.post(deviceDto), res);
+            }, gson::toJson);
+
+            Spark.get(rootUrl()+"/:id", (req, res) -> {            
+                RequestContext context = req.attribute(Application.REQUEST_CONTEXT_KEY);
+                DevicesController dc = new DevicesController(context);
+                return render(dc.get(Long.parseLong(req.params(":id"))), res);
+            }, gson::toJson);
+        }
+        
+        @Override
+        public String rootUrl() {
+            return super.rootUrl() + "/devices";
+        }
+    }
+
     
     private DeviceProvider dp;
     
@@ -69,32 +99,5 @@ public class DevicesController extends ControllerBase {
         //todo - createDevice error handling
         Device device = dp.createDevice(deviceDto.getImei(), requestUser());            
         return created("devices/"+device.getId(), device);
-    }
-    
-    public static void registerMethods() {
-        Gson gson = Context.getInstance().getGson();
-        
-        Spark.get(rootUrl(), (req, res) -> { 
-            RequestContext context = req.attribute(Application.REQUEST_CONTEXT_KEY);
-            DevicesController dc = new DevicesController(context);
-            return render(dc.get(), res);
-        }, gson::toJson);
-        
-        Spark.post(rootUrl(), (req, res) -> {
-            RequestContext context = req.attribute(Application.REQUEST_CONTEXT_KEY);
-            DevicesController dc = new DevicesController(context);
-            AddDeviceDto deviceDto = gson.fromJson(req.body(), AddDeviceDto.class);
-            return render(dc.post(deviceDto), res);
-        });
-        
-        Spark.get(rootUrl()+"/:id", (req, res) -> {            
-            RequestContext context = req.attribute(Application.REQUEST_CONTEXT_KEY);
-            DevicesController dc = new DevicesController(context);
-            return render(dc.get(Long.parseLong(req.params(":id"))), res);
-        }, gson::toJson);
-    }
-    
-    public static String rootUrl() {
-        return ControllerBase.rootUrl() + "/devices";
     }
 }

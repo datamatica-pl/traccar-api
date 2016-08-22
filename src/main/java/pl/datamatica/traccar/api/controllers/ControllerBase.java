@@ -16,19 +16,17 @@
  */
 package pl.datamatica.traccar.api.controllers;
 
+import com.google.gson.Gson;
 import java.util.Collections;
 import java.util.List;
 import javax.persistence.EntityManager;
+import pl.datamatica.traccar.api.Context;
 import pl.datamatica.traccar.api.dtos.out.ICachedDto;
 import pl.datamatica.traccar.api.responses.*;
 import pl.datamatica.traccar.model.User;
 import spark.Response;
 
 public abstract class ControllerBase {
-    
-    public static String rootUrl() {
-        return "v1";
-    }
     
     protected RequestContext requestContext;
     

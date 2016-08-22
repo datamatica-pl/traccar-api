@@ -16,19 +16,41 @@
  */
 package pl.datamatica.traccar.api.controllers;
 
-import com.google.gson.Gson;
 import java.util.List;
 import java.util.stream.Collectors;
 import pl.datamatica.traccar.api.Application;
-import pl.datamatica.traccar.api.Context;
+import static pl.datamatica.traccar.api.controllers.ControllerBase.render;
 import pl.datamatica.traccar.api.dtos.out.UserDto;
 import pl.datamatica.traccar.api.providers.UserProvider;
 import pl.datamatica.traccar.api.responses.HttpResponse;
-import pl.datamatica.traccar.api.transformers.UserTransformer;
 import pl.datamatica.traccar.model.User;
 import spark.Spark;
 
-public class UsersController extends ControllerBase { 
+public class UsersController extends ControllerBase {
+    
+    public static class Binder extends ControllerBinder{
+
+        @Override
+        public void bind() {      
+            Spark.get(rootUrl(), (req, res) -> {
+                RequestContext context = req.attribute(Application.REQUEST_CONTEXT_KEY);
+                UsersController uc = new UsersController(context);
+                return render(uc.get(), res);
+            }, gson::toJson);
+
+            Spark.get(rootUrl() + "/:id", (req, res) -> {
+                RequestContext context = req.attribute(Application.REQUEST_CONTEXT_KEY);
+                UsersController uc = new UsersController(context);
+                return render(uc.get(Long.parseLong(req.params(":id"))), res);
+            }, gson::toJson);
+        }
+
+        @Override
+        public String rootUrl() {
+            return super.rootUrl() + "/users";
+        }
+
+    }
     
     private UserProvider up;
     
@@ -52,26 +74,5 @@ public class UsersController extends ControllerBase {
             return ok(new UserDto(other));
         else
             return forbidden();
-    }
-    
-    public static void registerMethods() {
-        Gson gson = Context.getInstance().getGson();
-        UserTransformer userTransformer = new UserTransformer(gson);
-        
-        Spark.get(rootUrl(), (req, res) -> {
-            RequestContext context = req.attribute(Application.REQUEST_CONTEXT_KEY);
-            UsersController uc = new UsersController(context);
-            return render(uc.get(), res);
-        }, gson::toJson);
-        
-        Spark.get(rootUrl() + "/:id", (req, res) -> {
-            RequestContext context = req.attribute(Application.REQUEST_CONTEXT_KEY);
-            UsersController uc = new UsersController(context);
-            return render(uc.get(Long.parseLong(req.params(":id"))), res);
-        }, gson::toJson);
-    }
-    
-    public static String rootUrl() {
-        return ControllerBase.rootUrl() + "/users";
     }
 }
