@@ -21,6 +21,7 @@ import java.util.List;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import pl.datamatica.traccar.api.Context;
+import pl.datamatica.traccar.api.dtos.MessageKeys;
 import pl.datamatica.traccar.api.dtos.in.AddDeviceDto;
 import pl.datamatica.traccar.api.dtos.out.DeviceDto;
 import pl.datamatica.traccar.api.providers.DeviceProvider;
@@ -64,11 +65,11 @@ public class DevicesController extends ControllerBase {
     
     public HttpResponse post(AddDeviceDto deviceDto) throws Exception {
         if(deviceDto == null || deviceDto.getImei() == null)
-            return badRequest();
+            return badRequest(MessageKeys.ERR_IMEI_NOT_PROVIDED);
         //todo - createDevice error handling
         Device device = dp.createDevice(deviceDto.getImei(), requestUser());   
         if(device == null)
-            return badRequest();
+            return badRequest(MessageKeys.ERR_INVALID_IMEI);
         return created("devices/"+device.getId(), device);
     }
     

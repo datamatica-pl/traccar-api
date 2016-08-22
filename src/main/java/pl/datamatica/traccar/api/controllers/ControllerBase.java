@@ -16,11 +16,15 @@
  */
 package pl.datamatica.traccar.api.controllers;
 
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import javax.persistence.EntityManager;
 import pl.datamatica.traccar.api.Application;
+import pl.datamatica.traccar.api.dtos.out.ErrorDto;
 import pl.datamatica.traccar.api.dtos.out.ICachedDto;
 import pl.datamatica.traccar.api.responses.*;
 import pl.datamatica.traccar.model.User;
@@ -76,6 +80,13 @@ public abstract class ControllerBase {
     
     protected HttpResponse forbidden() {
         return new ErrorResponse(HttpStatuses.FORBIDDEN, Collections.emptyList());
+    }
+    
+    protected HttpResponse badRequest(String... errorKeys) {
+        List<ErrorDto> errors = Stream.of(errorKeys)
+                .map(key -> new ErrorDto(key))
+                .collect(Collectors.toList());
+        return new ErrorResponse(HttpStatuses.BAD_REQUEST, errors);
     }
     
     protected HttpResponse badRequest() {
