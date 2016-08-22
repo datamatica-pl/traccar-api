@@ -107,7 +107,7 @@ public class DevicesControllerTest {
     @Test
     public void post_validImei()  throws Exception {
         final String uniqueId = "5";
-        final long id = 7;
+        final long id = 0;
         
         Device expectedContent = new Device();
         expectedContent.setUniqueId(uniqueId);
