@@ -26,7 +26,6 @@ import pl.datamatica.traccar.api.dtos.out.DeviceDto;
 import pl.datamatica.traccar.api.providers.DeviceProvider;
 import pl.datamatica.traccar.api.responses.HttpResponse;
 import pl.datamatica.traccar.model.Device;
-import pl.datamatica.traccar.model.TimestampedEntity;
 import pl.datamatica.traccar.model.User;
 import spark.Spark;
 

@@ -17,8 +17,10 @@
 package pl.datamatica.traccar.api.controllers;
 
 import java.util.Collections;
+import java.util.Date;
 import java.util.List;
 import javax.persistence.EntityManager;
+import pl.datamatica.traccar.api.Application;
 import pl.datamatica.traccar.api.dtos.out.ICachedDto;
 import pl.datamatica.traccar.api.responses.*;
 import pl.datamatica.traccar.model.User;
@@ -53,7 +55,19 @@ public abstract class ControllerBase {
     }
     
     protected<T extends ICachedDto> HttpResponse okCached(List<T> content) {
-        return new OkCachedResponse(content, requestContext.getModificationDate());
+        Date serverModification = content.stream()
+                .map(i -> i.getModificationTime())
+                .max((d1, d2) -> d1.compareTo(d2))
+                .orElse(Application.EMPTY_RESPONSE_MODIFICATION_DATE);
+        if(isModified(serverModification))
+            return new OkCachedResponse(content, serverModification);
+        return new NotModifiedResponse(serverModification);
+    }
+    
+    protected HttpResponse okCached(Object content, Date serverModification) {
+        if(isModified(serverModification))
+            return new OkCachedResponse(content, serverModification);
+        return new NotModifiedResponse(serverModification);
     }
     
     protected HttpResponse notFound() {
@@ -70,6 +84,11 @@ public abstract class ControllerBase {
     
     protected HttpResponse created(String route, Object resource) {
         return new CreatedResponse(route, resource);
+    }
+    
+    private boolean isModified(Date serverModification) {
+        Date userModification = requestContext.getModificationDate();
+        return userModification.getTime()/1000 < serverModification.getTime()/1000;
     }
     
     public static Object render(HttpResponse result, Response response) {
