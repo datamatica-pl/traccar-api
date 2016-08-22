@@ -36,7 +36,8 @@ public class Application implements spark.servlet.SparkApplication {
     private static final String STRINGS_DIR_NAME = "java:/StringsDir";
     private final ControllerBinder[] BINDERS = new ControllerBinder[] {
             new DevicesController.Binder(),
-            new UsersController.Binder()
+            new UsersController.Binder(),
+            new StringsController.Binder()
         };
        
     @Override

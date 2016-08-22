@@ -27,10 +27,35 @@ import java.util.Date;
 import java.util.stream.Stream;
 import pl.datamatica.traccar.api.Application;
 import pl.datamatica.traccar.api.Context;
+import static pl.datamatica.traccar.api.controllers.ControllerBase.render;
 import pl.datamatica.traccar.api.responses.HttpResponse;
 import spark.Spark;
 
 public class StringsController extends ControllerBase {
+    
+    public static class Binder extends ControllerBinder {
+
+        @Override
+        public void bind() {
+            Spark.get(rootUrl(), (req, res) -> {
+                RequestContext rc = req.attribute(Application.REQUEST_CONTEXT_KEY);
+                StringsController sc = new StringsController(rc);
+                return render(sc.get(), res);
+            }, gson::toJson);
+
+            Spark.get(rootUrl()+"/:lang", (req, res) -> {
+                RequestContext rc = req.attribute(Application.REQUEST_CONTEXT_KEY);
+                StringsController sc = new StringsController(rc);
+                return render(sc.get(req.params(":lang")), res);
+            });
+        }
+        
+        @Override
+        public String rootUrl() {
+            return super.rootUrl() + "/strings";
+        }
+        
+    }
     
     private static final Charset CHARSET = StandardCharsets.UTF_8;
     private String path;
@@ -62,22 +87,4 @@ public class StringsController extends ControllerBase {
         String content = new String(Files.readAllBytes(file.toPath()), CHARSET);
         return okCached(content, serverModification);
     }
-    
-    public static void registerMethods() {
-        Gson gson = Context.getInstance().getGson();
-        
-        Spark.get("v1/strings", (req, res) -> {
-            RequestContext rc = new RequestContext(req, res);
-            StringsController sc = new StringsController(rc);
-            return render(sc.get(), res);
-        }, gson::toJson);
-        
-        Spark.get("v1/strings/:lang", (req, res) -> {
-            RequestContext rc = new RequestContext(req, res);
-            StringsController sc = new StringsController(rc);
-            return render(sc.get(req.params(":lang")), res);
-        });
-    }
-    
-    
 }
