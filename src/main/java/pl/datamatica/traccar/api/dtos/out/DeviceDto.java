@@ -56,10 +56,11 @@ public class DeviceDto implements ICachedDto{
             this.lastPosition = new PositionDto(latestPosition);
         this.isDeleted = device.isDeleted();
         this.accountId = device.getOwner().getId();
-        this.oldestPositionTime = device.getPositions().stream()
-                .map(p -> p.getTime())
-                .min((d1, d2) -> d1.compareTo(d2))
-                .orElse(null);
+        if(device.getPositions() != null) 
+            this.oldestPositionTime = device.getPositions().stream()
+                    .map(p -> p.getTime())
+                    .min((d1, d2) -> d1.compareTo(d2))
+                    .orElse(null);
         this.modificationTime = device.getLastUpdate();
     }
     
