@@ -14,20 +14,8 @@
  *  You should have received a copy of the GNU Affero General Public License
  *  along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-package pl.datamatica.traccar.api.dtos.in;
+package pl.datamatica.traccar.api.responses;
 
-public class AddDeviceDto {
-    private String imei;
-    
-    public AddDeviceDto() {
-        
-    }
-    
-    public AddDeviceDto(String imei) {
-        this.imei = imei;
-    }
-    
-    public String getImei() {
-        return imei;
-    }
+public class HttpHeaders {
+    public static final String LAST_MODIFIED = "Last-Modified";
 }

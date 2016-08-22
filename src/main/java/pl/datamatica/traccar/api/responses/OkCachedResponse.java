@@ -19,52 +19,19 @@ package pl.datamatica.traccar.api.responses;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
-import pl.datamatica.traccar.api.Application;
-import pl.datamatica.traccar.api.dtos.out.ICachedDto;
 import pl.datamatica.traccar.api.utils.DateUtil;
 
 public class OkCachedResponse extends OkResponse {
-    
-    private static final String LAST_MODIFIED_HEADER = "Last-Modified";
-    
-    private final Date userModification;
     private final Date serverModification;
     
-    public OkCachedResponse(ICachedDto item, Date userVersion) {
+    public OkCachedResponse(Object item, Date serverModification) {
         super(item);
-        this.userModification = userVersion;
-        this.serverModification = item.getModificationTime();
-    }
-    
-    public <T extends ICachedDto> OkCachedResponse(List<T> items, Date userVersion) {
-        super(items);
-        this.userModification = userVersion;
-        this.serverModification = items.stream()
-                .map(i -> i.getModificationTime())
-                .max((d1, d2) -> d1.compareTo(d2))
-                .orElse(Application.EMPTY_RESPONSE_MODIFICATION_DATE);
-    }
-
-    @Override
-    public Object getContent() {
-        if(isModified())
-            return "";
-        return super.getContent();
+        this.serverModification = serverModification;
     }
 
     @Override
     public Iterable getHeaders() {
-        return Collections.singleton(new HttpHeader(LAST_MODIFIED_HEADER, DateUtil.formatDate(serverModification)));
-    }
-   
-    @Override
-    public int getHttpStatus() {
-        if(isModified())
-            return HttpStatuses.NOT_MODIFIED;
-        return super.getHttpStatus();
-    }
-    
-    private boolean isModified() {
-        return userModification.compareTo(serverModification) >= 0;
+        return Collections.singleton(new HttpHeader(HttpHeaders.LAST_MODIFIED, 
+                DateUtil.formatDate(serverModification)));
     }
 }

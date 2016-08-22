@@ -14,20 +14,9 @@
  *  You should have received a copy of the GNU Affero General Public License
  *  along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-package pl.datamatica.traccar.api.dtos.in;
+package pl.datamatica.traccar.api.dtos;
 
-public class AddDeviceDto {
-    private String imei;
-    
-    public AddDeviceDto() {
-        
-    }
-    
-    public AddDeviceDto(String imei) {
-        this.imei = imei;
-    }
-    
-    public String getImei() {
-        return imei;
-    }
+public class MessageKeys {
+    public static final String ERR_IMEI_NOT_PROVIDED = "err_imei_not_provided";
+    public static final String ERR_INVALID_IMEI = "err_invalid_imei";
 }

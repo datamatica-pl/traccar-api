@@ -16,9 +16,11 @@
  */
 package pl.datamatica.traccar.api.dtos.out;
 
+import java.util.Objects;
+
 public class ErrorDto {
-    private String messageKey;
-    private String localizedMessage;
+    private final String messageKey;
+    private final String localizedMessage;
     
     public ErrorDto(String messageKey) {
         this(messageKey, null);
@@ -36,4 +38,27 @@ public class ErrorDto {
     public String getLocalizedMessage() {
         return localizedMessage;
     }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(this.messageKey, this.localizedMessage);
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        final ErrorDto other = (ErrorDto) obj;
+        return Objects.equals(this.localizedMessage, other.localizedMessage)
+                && Objects.equals(this.messageKey, other.messageKey);
+    }
+    
+    
 }

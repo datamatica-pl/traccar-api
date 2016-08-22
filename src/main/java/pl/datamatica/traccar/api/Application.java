@@ -19,13 +19,14 @@ package pl.datamatica.traccar.api;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.Date;
+import javax.naming.InitialContext;
 import javax.persistence.EntityManager;
 import pl.datamatica.traccar.api.auth.BasicAuthFilter;
 import pl.datamatica.traccar.api.auth.PasswordValidator;
 import pl.datamatica.traccar.api.controllers.DevicesController;
+import pl.datamatica.traccar.api.controllers.StringsController;
 import pl.datamatica.traccar.api.controllers.UsersController;
 import spark.Spark;
-import spark.utils.SparkUtils;
 
 
 public class Application implements spark.servlet.SparkApplication {
@@ -35,6 +36,8 @@ public class Application implements spark.servlet.SparkApplication {
     public static final String DATE_FORMAT = "yyyy-MM-dd'T'HH:mm:ssX";
     public static final Date EMPTY_RESPONSE_MODIFICATION_DATE = new Date(1000);
     
+    private static final String STRINGS_DIR_NAME = "java:/StringsDir";
+       
     @Override
     public void init() {
         Spark.get("test", (req, res) -> {
@@ -64,5 +67,11 @@ public class Application implements spark.servlet.SparkApplication {
         
         DevicesController.registerMethods();
         UsersController.registerMethods();
+        StringsController.registerMethods();
+    }
+    
+    public static String getStringsDir() throws Exception {
+        InitialContext context = new InitialContext();
+        return (String)context.lookup(STRINGS_DIR_NAME);
     }
 }

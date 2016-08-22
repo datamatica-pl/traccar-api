@@ -1,0 +1,4 @@
+{
+	err_imei_not_provided: "Nie podano numeru IMEI",
+	err_invalid_imei: "Nieprawidłowy numer IMEI"
+}
