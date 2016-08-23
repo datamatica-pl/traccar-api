@@ -22,10 +22,9 @@ import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import pl.datamatica.traccar.api.Application;
-import pl.datamatica.traccar.api.dtos.out.ErrorDto;
 import pl.datamatica.traccar.api.dtos.out.ICachedDto;
+import pl.datamatica.traccar.api.dtos.out.ErrorDto;
 import pl.datamatica.traccar.api.responses.*;
-import pl.datamatica.traccar.model.User;
 import spark.Response;
 
 public abstract class ControllerBase {
@@ -56,6 +55,10 @@ public abstract class ControllerBase {
     protected HttpResponse okCached(Object content, Date serverModification) {
         if(isModified(serverModification))
             return new OkCachedResponse(content, serverModification);
+        return notModified(serverModification);
+    }
+    
+    protected HttpResponse notModified(Date serverModification) {
         return new NotModifiedResponse(serverModification);
     }
     
@@ -82,7 +85,7 @@ public abstract class ControllerBase {
         return new CreatedResponse(route, resource);
     }
     
-    private boolean isModified(Date serverModification) {
+    protected boolean isModified(Date serverModification) {
         Date userModification = requestContext.getModificationDate();
         return userModification.getTime()/1000 < serverModification.getTime()/1000;
     }

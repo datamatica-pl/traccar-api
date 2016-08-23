@@ -14,23 +14,27 @@
  *  You should have received a copy of the GNU Affero General Public License
  *  along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-package pl.datamatica.traccar.api.responses;
+package pl.datamatica.traccar.api.dtos.out;
 
-import java.util.Collections;
 import java.util.Date;
-import pl.datamatica.traccar.api.utils.DateUtil;
+import pl.datamatica.traccar.api.dtos.JsonIgnore;
 
-public class OkCachedResponse extends OkResponse {
-    private final Date serverModification;
+public class FileDto implements ICachedDto{
+    private final String name;
+    @JsonIgnore
+    private final Date modificationTime;
     
-    public OkCachedResponse(Object item, Date serverModification) {
-        super(item);
-        this.serverModification = serverModification;
+    public FileDto(String name, long modificationTimestamp) {
+        this.name = name;
+        this.modificationTime = new Date(modificationTimestamp);
     }
-
+    
+    public String getName() {
+        return name;
+    }
+    
     @Override
-    public Iterable getHeaders() {
-        return Collections.singleton(new HttpHeader(HttpHeaders.LAST_MODIFIED, 
-                DateUtil.formatDate(serverModification)));
+    public Date getModificationTime() {
+        return modificationTime;
     }
 }

@@ -21,18 +21,17 @@ import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
-import java.util.stream.StreamSupport;
 import static org.junit.Assert.*;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
+import static pl.datamatica.traccar.api.controllers.ControllerTest.*;
 import pl.datamatica.traccar.api.dtos.MessageKeys;
 import pl.datamatica.traccar.api.dtos.in.AddDeviceDto;
 import pl.datamatica.traccar.api.dtos.out.DeviceDto;
 import pl.datamatica.traccar.api.dtos.out.ErrorDto;
 import pl.datamatica.traccar.api.providers.DeviceProvider;
 import pl.datamatica.traccar.api.responses.*;
-import pl.datamatica.traccar.api.utils.DateUtil;
 import pl.datamatica.traccar.model.Device;
 import pl.datamatica.traccar.model.User;
 
@@ -69,6 +68,7 @@ public class DevicesControllerTest {
         Mockito.when(dp.isVisible(devices.get(0))).thenReturn(true);
         Mockito.when(dp.getDevice(2)).thenReturn(devices.get(2));
         Mockito.when(dp.isVisible(devices.get(2))).thenReturn(false);
+        Mockito.when(dp.getAllAvailableDevices()).thenReturn(devices.stream());
     }
     
     @Test
@@ -97,9 +97,22 @@ public class DevicesControllerTest {
     }
     
     @Test
-    public void getAll_nonEmptyList() throws Exception {
-        Mockito.when(dp.getAllAvailableDevices()).thenReturn(devices.stream());
+    public void getAll_expectedOnlyModified() throws Exception {
+        HttpHeader expected = lastModifiedHeader(new Date(3000));
+        Mockito.when(rc.getModificationDate()).thenReturn(new Date(2000));
+        
         HttpResponse response = dc.get();
+        
+        assertTrue(response instanceof OkResponse);
+        assertTrue(getHeaderStream(response).anyMatch(h -> h.equals(expected)));
+        List<DeviceDto> actual = (List<DeviceDto>)response.getContent();
+        assertEquals(1, actual.size());
+    }
+    
+    @Test
+    public void getAll_nonEmptyList() throws Exception {
+        HttpResponse response = dc.get();
+        
         assertTrue(response instanceof OkCachedResponse);
         assertTrue(response.getContent() instanceof List);
         List<DeviceDto> actual = (List<DeviceDto>)response.getContent();
@@ -129,15 +142,6 @@ public class DevicesControllerTest {
         
         assertTrue(response instanceof NotModifiedResponse);   
         assertTrue(getHeaderStream(response).anyMatch(h -> h.equals(expected)));
-    }
-
-    private static HttpHeader lastModifiedHeader(Date date) {
-        return new HttpHeader(HttpHeaders.LAST_MODIFIED, 
-                DateUtil.formatDate(date));
-    }
-
-    private static Stream getHeaderStream(HttpResponse response) {
-        return StreamSupport.stream(response.getHeaders().spliterator(), false);
     }
     
     @Test
