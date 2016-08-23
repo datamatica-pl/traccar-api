@@ -16,8 +16,8 @@
  */
 package pl.datamatica.traccar.api.controllers;
 
+import java.util.Date;
 import java.util.List;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 import pl.datamatica.traccar.api.Application;
 import static pl.datamatica.traccar.api.controllers.ControllerBase.render;
@@ -27,7 +27,6 @@ import pl.datamatica.traccar.api.dtos.out.DeviceDto;
 import pl.datamatica.traccar.api.providers.DeviceProvider;
 import pl.datamatica.traccar.api.responses.HttpResponse;
 import pl.datamatica.traccar.model.Device;
-import pl.datamatica.traccar.model.User;
 import spark.Spark;
 
 public class DevicesController extends ControllerBase {
@@ -63,7 +62,7 @@ public class DevicesController extends ControllerBase {
     }
 
     
-    private DeviceProvider dp;
+    private final DeviceProvider dp;
     
     public DevicesController(RequestContext requestContext) {
         super(requestContext);
@@ -73,6 +72,7 @@ public class DevicesController extends ControllerBase {
     public HttpResponse get() throws Exception {
         List<DeviceDto> devices = dp.getAllAvailableDevices()
                 .map(d -> new DeviceDto(d))
+                .filter(d -> isModified(d.getModificationTime()))
                 .collect(Collectors.toList());
         
         return okCached(devices);

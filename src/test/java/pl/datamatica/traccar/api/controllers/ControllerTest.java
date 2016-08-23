@@ -14,23 +14,23 @@
  *  You should have received a copy of the GNU Affero General Public License
  *  along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-package pl.datamatica.traccar.api.responses;
+package pl.datamatica.traccar.api.controllers;
 
-import java.util.Collections;
 import java.util.Date;
+import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
+import pl.datamatica.traccar.api.responses.HttpHeader;
+import pl.datamatica.traccar.api.responses.HttpHeaders;
+import pl.datamatica.traccar.api.responses.HttpResponse;
 import pl.datamatica.traccar.api.utils.DateUtil;
 
-public class OkCachedResponse extends OkResponse {
-    private final Date serverModification;
-    
-    public OkCachedResponse(Object item, Date serverModification) {
-        super(item);
-        this.serverModification = serverModification;
+public class ControllerTest {
+    public static HttpHeader lastModifiedHeader(Date date) {
+        return new HttpHeader(HttpHeaders.LAST_MODIFIED, 
+                DateUtil.formatDate(date));
     }
 
-    @Override
-    public Iterable getHeaders() {
-        return Collections.singleton(new HttpHeader(HttpHeaders.LAST_MODIFIED, 
-                DateUtil.formatDate(serverModification)));
+    public static Stream getHeaderStream(HttpResponse response) {
+        return StreamSupport.stream(response.getHeaders().spliterator(), false);
     }
 }

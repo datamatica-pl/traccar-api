@@ -23,8 +23,10 @@ import java.nio.charset.StandardCharsets;
 import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import pl.datamatica.traccar.api.Application;
 import static pl.datamatica.traccar.api.controllers.ControllerBase.render;
+import pl.datamatica.traccar.api.dtos.out.FileDto;
 import pl.datamatica.traccar.api.providers.FileProvider;
 import pl.datamatica.traccar.api.responses.HttpResponse;
 import spark.Spark;
@@ -63,23 +65,19 @@ public class StringsController extends ControllerBase {
     }
     
     public HttpResponse get() throws Exception {
-        List<File> files = fp.getAllFiles().collect(Collectors.toList());
+        List<FileDto> files = fp.getAllFiles().collect(Collectors.toList());
         
-        Date serverModification = files.stream()
-                .map(f -> new Date(f.lastModified()))
+        Date listLastModified = fp.getListLastModified();
+        Date serverModification = Stream.concat(Stream.of(listLastModified), 
+                files.stream().map(FileDto::getModificationTime))
                 .max((d1, d2) -> d1.compareTo(d2))
                 .orElse(Application.EMPTY_RESPONSE_MODIFICATION_DATE);
         
-        List<String> content = files.stream()
-                .skip(1)
-                .map(f -> f.getName())
-                .collect(Collectors.toList());
-        
-        return okCached(content, serverModification);
+        return okCached(files, serverModification);
     }
     
     public HttpResponse get(String lang) throws IOException {
-        Date serverModification = fp.getFileModificationTime(lang);
+        Date serverModification = fp.getFileInfo(lang).getModificationTime();
         
         if(isModified(serverModification)) {
             String content = fp.getFileContent(lang);

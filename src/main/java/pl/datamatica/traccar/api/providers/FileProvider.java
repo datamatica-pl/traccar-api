@@ -16,6 +16,7 @@
  */
 package pl.datamatica.traccar.api.providers;
 
+import pl.datamatica.traccar.api.dtos.out.FileDto;
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.Charset;
@@ -33,20 +34,22 @@ public class FileProvider {
         this.charset = StandardCharsets.UTF_8;
     }
     
-    public Stream<File> getAllFiles() {
-        return Stream.concat(Stream.of(rootDirectory), 
-                Stream.of(rootDirectory.listFiles()));
+    public Date getListLastModified() {
+        return new Date(rootDirectory.lastModified());
     }
     
-    public Date getFileModificationTime(String id) {
-        return new Date(getFile(id).lastModified());
+    public Stream<FileDto> getAllFiles() {
+        return Stream.of(rootDirectory.listFiles())
+                .map(f -> new FileDto(f.getName(), f.lastModified()));
     }
     
     public String getFileContent(String id) throws IOException {
-        return new String(Files.readAllBytes(getFile(id).toPath()), charset);
+        File file = new File(rootDirectory, id);
+        return new String(Files.readAllBytes(file.toPath()), charset);
     }
     
-    private File getFile(String id) {
-        return new File(rootDirectory, id);
+    public FileDto getFileInfo(String id) {
+        File file = new File(rootDirectory, id);
+        return new FileDto(file.getName(), file.lastModified());
     }
 }
