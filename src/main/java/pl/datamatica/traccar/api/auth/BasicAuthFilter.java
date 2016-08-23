@@ -26,6 +26,7 @@ import pl.datamatica.traccar.api.Application;
 import spark.*;
 import static pl.datamatica.traccar.api.auth.AuthenticationException.*;
 import pl.datamatica.traccar.api.controllers.RequestContext;
+import pl.datamatica.traccar.api.providers.ApplicationSettingsProvider;
 import pl.datamatica.traccar.api.providers.UserProvider;
 import pl.datamatica.traccar.model.User;
 
@@ -50,12 +51,13 @@ public class BasicAuthFilter {
     public void handle(Request request, Response response) throws Exception {
         try {
             RequestContext rc = request.attribute(Application.REQUEST_CONTEXT_KEY);
-            EntityManager em = rc.getEntityManager();
+            UserProvider up = rc.getUserProvider();
+            ApplicationSettingsProvider asp = rc.createApplicationSettingsProvider();
             User user;
             if(request.session().attributes().contains(USER_ID_SESSION_KEY))
-                user = continueSession(request, em);
+                user = continueSession(request, up);
             else
-                user = beginSession(request, em);
+                user = beginSession(request, up, asp);
             rc.setUser(user);
         } catch(AuthenticationException e) {
             unauthorized(response, e.getMessage());
@@ -64,30 +66,30 @@ public class BasicAuthFilter {
         }
     }
 
-    private User beginSession(Request request, EntityManager em) throws IllegalArgumentException, AuthenticationException {
+    private User beginSession(Request request, UserProvider up, ApplicationSettingsProvider asp) throws IllegalArgumentException, AuthenticationException {
         Credentials credentials = readCredentials(request.headers(AUTH_HEADER_NAME));
-        User user = verifyCredentials(credentials, em);
+        User user = verifyCredentials(credentials, up, asp);
         request.session().maxInactiveInterval(SESSION_MAX_INACTIVE_INTERVAL);
         request.session().attribute(USER_ID_SESSION_KEY, user.getId());
         return user;
     }
     
-    private User continueSession(Request request, EntityManager em) throws Exception {
+    private User continueSession(Request request, UserProvider up) throws Exception {
         long userId = request.session().attribute(USER_ID_SESSION_KEY);
-        UserProvider up = new UserProvider(em);
         User user = up.getUser(userId);
         if(user == null)
             throw new AuthenticationException(ErrorType.NO_SUCH_USER);
         return user;
     }
     
-    public User verifyCredentials(Credentials credentials, EntityManager em) throws AuthenticationException {
+    public User verifyCredentials(Credentials credentials, UserProvider up, ApplicationSettingsProvider asp) 
+            throws AuthenticationException {
         User user;
         if(credentials == null)
             throw new IllegalArgumentException("Credentials can't be null");
         if(credentials.getPassword().isEmpty())
             throw new AuthenticationException(ErrorType.NO_PASSWORD);
-        user = passwordValidator.getUser(credentials, em);
+        user = passwordValidator.getUser(credentials, up, asp);
         if(user == null)
             throw new AuthenticationException(ErrorType.NO_SUCH_USER);
         return user;

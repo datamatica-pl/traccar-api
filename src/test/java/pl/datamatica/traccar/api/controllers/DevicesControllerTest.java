@@ -32,6 +32,7 @@ import pl.datamatica.traccar.api.dtos.out.DeviceDto;
 import pl.datamatica.traccar.api.dtos.out.ErrorDto;
 import pl.datamatica.traccar.api.providers.DeviceProvider;
 import pl.datamatica.traccar.api.responses.*;
+import pl.datamatica.traccar.api.utils.DateUtil;
 import pl.datamatica.traccar.model.Device;
 import pl.datamatica.traccar.model.User;
 
@@ -47,37 +48,61 @@ public class DevicesControllerTest {
     @Before
     public void testInit() {
         user = new User();
+        rc = Mockito.mock(RequestContext.class);
         dp = Mockito.mock(DeviceProvider.class);
-        rc = new RequestContext(new Date(0));
-        rc.setUser(user);
-        dc = new DevicesController(rc, rc -> dp);
+        Mockito.when(rc.getDeviceProvider()).thenReturn(dp);
+        Mockito.when(rc.getUser()).thenReturn(user);
+        Mockito.when(rc.getModificationDate()).thenReturn(new Date(0));
+        dc = new DevicesController(rc);
         devices = IntStream.range(0, 3)
                 .mapToObj(i -> {
                     Device device = new Device();
                     device.setUniqueId(i+"");
                     device.setOwner(user);
+                    device.setLastUpdate(new Date((i+1)*1000));
                     return device;
                 })
                 .collect(Collectors.toList());
         user.getDevices().add(devices.get(0));
+        
+        Mockito.when(dp.getDevice(0)).thenReturn(devices.get(0));
+        Mockito.when(dp.isVisible(devices.get(0))).thenReturn(true);
+        Mockito.when(dp.getDevice(2)).thenReturn(devices.get(2));
+        Mockito.when(dp.isVisible(devices.get(2))).thenReturn(false);
     }
     
     @Test
     public void getAll_emptyList() throws Exception {
-        Mockito.when(dp.getAllAvailableDevices(user)).thenReturn(Stream.empty());
+        HttpHeader expected = lastModifiedHeader(new Date(1000));
+        Mockito.when(dp.getAllAvailableDevices()).thenReturn(Stream.empty());
+        
         HttpResponse response = dc.get();
+        
         assertTrue(response instanceof OkCachedResponse);
         List<DeviceDto> actual = (List<DeviceDto>)response.getContent();
         assertTrue(actual.isEmpty());
+        assertTrue(getHeaderStream(response).anyMatch(h -> h.equals(expected)));
+    }
+    
+    @Test
+    public void getAll_emptyListCached() throws Exception {
+        HttpHeader expected = lastModifiedHeader(new Date(1000));
+        Mockito.when(rc.getModificationDate()).thenReturn(new Date(5000));
+        Mockito.when(dp.getAllAvailableDevices()).thenReturn(Stream.empty());
+        
+        HttpResponse response = dc.get();
+        
+        assertTrue(response instanceof NotModifiedResponse);
+        assertTrue(getHeaderStream(response).anyMatch(h -> h.equals(expected)));
     }
     
     @Test
     public void getAll_nonEmptyList() throws Exception {
-        Mockito.when(dp.getAllAvailableDevices(user)).thenReturn(devices.stream());
+        Mockito.when(dp.getAllAvailableDevices()).thenReturn(devices.stream());
         HttpResponse response = dc.get();
         assertTrue(response instanceof OkCachedResponse);
         assertTrue(response.getContent() instanceof List);
-        List actual = (List)response.getContent();
+        List<DeviceDto> actual = (List<DeviceDto>)response.getContent();
         assertEquals(3, actual.size());
         for(Object item : actual)
             assertTrue(item instanceof DeviceDto);
@@ -85,17 +110,38 @@ public class DevicesControllerTest {
     
     @Test
     public void getOne_ok() throws Exception {
-        Mockito.when(dp.getDevice(0)).thenReturn(devices.get(0));
-        Mockito.when(dp.isVisibleToUser(devices.get(0), user)).thenReturn(true);
+        HttpHeader expected = lastModifiedHeader(new Date(1000));
+        
         HttpResponse response = dc.get(0);
+        
         assertTrue(response instanceof OkCachedResponse);
         assertTrue(response.getContent() instanceof DeviceDto);
+        Stream<HttpHeader> headers= getHeaderStream(response);
+        assertTrue(headers.anyMatch(h-> h.equals(expected)));
+    }
+    
+    @Test
+    public void getOne_cached() throws Exception {
+        HttpHeader expected = lastModifiedHeader(new Date(1000));
+        Mockito.when(rc.getModificationDate()).thenReturn(new Date(1000));
+        
+        HttpResponse response = dc.get(0);
+        
+        assertTrue(response instanceof NotModifiedResponse);   
+        assertTrue(getHeaderStream(response).anyMatch(h -> h.equals(expected)));
+    }
+
+    private static HttpHeader lastModifiedHeader(Date date) {
+        return new HttpHeader(HttpHeaders.LAST_MODIFIED, 
+                DateUtil.formatDate(date));
+    }
+
+    private static Stream getHeaderStream(HttpResponse response) {
+        return StreamSupport.stream(response.getHeaders().spliterator(), false);
     }
     
     @Test
     public void getOne_forbidden() throws Exception {
-        Mockito.when(dp.getDevice(2)).thenReturn(devices.get(2));
-        Mockito.when(dp.isVisibleToUser(devices.get(2), user)).thenReturn(false);
         HttpResponse response = dc.get(2);
         assertTrue(response instanceof ErrorResponse);
         assertEquals(403, response.getHttpStatus());
@@ -115,14 +161,14 @@ public class DevicesControllerTest {
         
         Device expectedContent = new Device();
         expectedContent.setUniqueId(uniqueId);
-        Mockito.when(dp.createDevice(uniqueId, user)).thenReturn(expectedContent);
+        Mockito.when(dp.createDevice(uniqueId)).thenReturn(expectedContent);
         AddDeviceDto deviceDto = new AddDeviceDto(uniqueId);
         
         HttpResponse response = dc.post(deviceDto);
         
         HttpHeader expectedHdr = new HttpHeader("Location", "devices/"+id);
         assertTrue(response instanceof CreatedResponse);
-        Stream<HttpHeader> headers = StreamSupport.stream(response.getHeaders().spliterator(), false);
+        Stream<HttpHeader> headers = getHeaderStream(response);
         assertTrue(headers.anyMatch(h -> h.equals(expectedHdr)));
         assertEquals(expectedContent, response.getContent());
     }

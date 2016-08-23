@@ -27,9 +27,8 @@ public class PasswordValidator implements IPasswordValidator {
     
 
     @Override
-    public User getUser(Credentials credentials, EntityManager em) {
-        UserProvider users = new UserProvider(em);
-        ApplicationSettingsProvider appSettings = new ApplicationSettingsProvider(em);
+    public User getUser(Credentials credentials, UserProvider users,
+            ApplicationSettingsProvider appSettings) {
         try {
             User user = users.getUserByMail(credentials.getLogin());
             String pass = credentials.getPassword();

@@ -26,7 +26,6 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.stream.Stream;
 import pl.datamatica.traccar.api.Application;
-import pl.datamatica.traccar.api.Context;
 import static pl.datamatica.traccar.api.controllers.ControllerBase.render;
 import pl.datamatica.traccar.api.responses.HttpResponse;
 import spark.Spark;

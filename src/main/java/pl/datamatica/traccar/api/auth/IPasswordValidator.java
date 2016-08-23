@@ -16,9 +16,10 @@
  */
 package pl.datamatica.traccar.api.auth;
 
-import javax.persistence.EntityManager;
+import pl.datamatica.traccar.api.providers.ApplicationSettingsProvider;
+import pl.datamatica.traccar.api.providers.UserProvider;
 import pl.datamatica.traccar.model.User;
 
 public interface IPasswordValidator {
-    User getUser(Credentials credentials, EntityManager em);
+    User getUser(Credentials credentials, UserProvider up, ApplicationSettingsProvider asp);
 }

@@ -23,35 +23,40 @@ import javax.persistence.TypedQuery;
 import pl.datamatica.traccar.model.Device;
 import pl.datamatica.traccar.model.User;
 
-public class DeviceProvider implements AutoCloseable{
-    private EntityManager em;
+public class DeviceProvider {
+    private final EntityManager em;
+    private User requestUser;
     
     public DeviceProvider(EntityManager em) {
         this.em = em;
+    }
+    
+    public void setRequestUser(User requestUser) {
+        this.requestUser = requestUser;
     }
     
     public Device getDevice(long id) {
         return em.find(Device.class, id);
     }
     
-    public Stream<Device> getAllAvailableDevices(User user) {
-        if(user.getAdmin())
+    public Stream<Device> getAllAvailableDevices() {
+        if(requestUser.getAdmin())
             return getAllDevices();
         else
-            return managedAndMe(user).flatMap(u -> u.getDevices().stream()).distinct();
+            return managedAndMe().flatMap(u -> u.getDevices().stream()).distinct();
     }
     
-    public boolean isVisibleToUser(Device device, User user) {
-        if(user.getAdmin())
+    public boolean isVisible(Device device) {
+        if(requestUser.getAdmin())
             return true;
-        return managedAndMe(user).anyMatch((managed) -> (managed.getDevices().contains(device)));
+        return managedAndMe().anyMatch((managed) -> (managed.getDevices().contains(device)));
     }
     
-    private static Stream<User> managedAndMe(User user) {
-        Stream<User> me = Stream.of(user);
-        if(!user.getManager())
-            return me;
-        return Stream.concat(me, user.getManagedUsers().stream());
+    private Stream<User> managedAndMe() {
+        Stream<User> meStream = Stream.of(requestUser);
+        if(!requestUser.getManager())
+            return meStream;
+        return Stream.concat(meStream, requestUser.getManagedUsers().stream());
     }
     
     private Stream<Device> getAllDevices() {
@@ -64,23 +69,18 @@ public class DeviceProvider implements AutoCloseable{
         return true;
     }
 
-    public Device createDevice(String imei, User user) {
+    public Device createDevice(String imei) {
         if(!isImeiValid(imei))
             return null;
         
         em.getTransaction().begin();
         Device device = new Device();
         device.setUniqueId(imei);
-        device.setUsers(Collections.singleton(user));
-        device.setOwner(user);
+        device.setUsers(Collections.singleton(requestUser));
+        device.setOwner(requestUser);
         em.persist(device);
         em.getTransaction().commit();
         
         return device;
-    }
-
-    @Override
-    public void close() throws Exception {
-        em.close();
     }
 }
