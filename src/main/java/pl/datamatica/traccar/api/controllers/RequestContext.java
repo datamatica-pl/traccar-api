@@ -19,9 +19,11 @@ package pl.datamatica.traccar.api.controllers;
 import java.text.ParseException;
 import java.util.Date;
 import javax.persistence.EntityManager;
+import pl.datamatica.traccar.api.Application;
 import pl.datamatica.traccar.api.Context;
 import pl.datamatica.traccar.api.providers.ApplicationSettingsProvider;
 import pl.datamatica.traccar.api.providers.DeviceProvider;
+import pl.datamatica.traccar.api.providers.FileProvider;
 import pl.datamatica.traccar.api.providers.UserProvider;
 import pl.datamatica.traccar.api.utils.DateUtil;
 import pl.datamatica.traccar.model.User;
@@ -68,8 +70,12 @@ public class RequestContext implements AutoCloseable{
         return up;
     }
     
-    public ApplicationSettingsProvider createApplicationSettingsProvider() {
+    public ApplicationSettingsProvider getApplicationSettingsProvider() {
         return new ApplicationSettingsProvider(em);
+    }
+    
+    public FileProvider getFileProvider() throws Exception {
+        return new FileProvider(Application.getStringsDir());
     }
 
     @Override

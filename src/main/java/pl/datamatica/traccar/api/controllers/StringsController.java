@@ -16,17 +16,16 @@
  */
 package pl.datamatica.traccar.api.controllers;
 
-import com.google.gson.Gson;
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.util.Collections;
 import java.util.Date;
-import java.util.stream.Stream;
+import java.util.List;
+import java.util.stream.Collectors;
 import pl.datamatica.traccar.api.Application;
 import static pl.datamatica.traccar.api.controllers.ControllerBase.render;
+import pl.datamatica.traccar.api.providers.FileProvider;
 import pl.datamatica.traccar.api.responses.HttpResponse;
 import spark.Spark;
 
@@ -56,34 +55,36 @@ public class StringsController extends ControllerBase {
         
     }
     
-    private static final Charset CHARSET = StandardCharsets.UTF_8;
-    private String path;
+    private final FileProvider fp;
     
     public StringsController(RequestContext rc) throws Exception {
-        this(rc, Application.getStringsDir());
-    }
-    
-    public StringsController(RequestContext rc, String path) {
         super(rc);
-        this.path = path;
+        this.fp = rc.getFileProvider();
     }
     
     public HttpResponse get() throws Exception {
-        File directory = new File(path);
-        File[] files = directory.listFiles();
-        Date serverModification = Stream.concat(Collections.singleton(directory).stream(), 
-                Stream.of(files))
+        List<File> files = fp.getAllFiles().collect(Collectors.toList());
+        
+        Date serverModification = files.stream()
                 .map(f -> new Date(f.lastModified()))
                 .max((d1, d2) -> d1.compareTo(d2))
                 .orElse(Application.EMPTY_RESPONSE_MODIFICATION_DATE);
-        String[] content = directory.list();
+        
+        List<String> content = files.stream()
+                .skip(1)
+                .map(f -> f.getName())
+                .collect(Collectors.toList());
+        
         return okCached(content, serverModification);
     }
     
     public HttpResponse get(String lang) throws IOException {
-        File file = new File(path, lang);
-        Date serverModification = new Date(file.lastModified());
-        String content = new String(Files.readAllBytes(file.toPath()), CHARSET);
-        return okCached(content, serverModification);
+        Date serverModification = fp.getFileModificationTime(lang);
+        
+        if(isModified(serverModification)) {
+            String content = fp.getFileContent(lang);
+            return okCached(content, serverModification);
+        }
+        return notModified(serverModification);
     }
 }

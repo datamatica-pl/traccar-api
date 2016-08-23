@@ -56,6 +56,10 @@ public abstract class ControllerBase {
     protected HttpResponse okCached(Object content, Date serverModification) {
         if(isModified(serverModification))
             return new OkCachedResponse(content, serverModification);
+        return notModified(serverModification);
+    }
+    
+    protected HttpResponse notModified(Date serverModification) {
         return new NotModifiedResponse(serverModification);
     }
     
@@ -82,7 +86,7 @@ public abstract class ControllerBase {
         return new CreatedResponse(route, resource);
     }
     
-    private boolean isModified(Date serverModification) {
+    protected boolean isModified(Date serverModification) {
         Date userModification = requestContext.getModificationDate();
         return userModification.getTime()/1000 < serverModification.getTime()/1000;
     }

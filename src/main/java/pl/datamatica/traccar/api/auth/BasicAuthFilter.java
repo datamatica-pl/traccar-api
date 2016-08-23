@@ -52,7 +52,7 @@ public class BasicAuthFilter {
         try {
             RequestContext rc = request.attribute(Application.REQUEST_CONTEXT_KEY);
             UserProvider up = rc.getUserProvider();
-            ApplicationSettingsProvider asp = rc.createApplicationSettingsProvider();
+            ApplicationSettingsProvider asp = rc.getApplicationSettingsProvider();
             User user;
             if(request.session().attributes().contains(USER_ID_SESSION_KEY))
                 user = continueSession(request, up);
