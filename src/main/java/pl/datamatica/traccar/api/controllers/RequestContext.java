@@ -20,6 +20,9 @@ import java.text.ParseException;
 import java.util.Date;
 import javax.persistence.EntityManager;
 import pl.datamatica.traccar.api.Context;
+import pl.datamatica.traccar.api.providers.ApplicationSettingsProvider;
+import pl.datamatica.traccar.api.providers.DeviceProvider;
+import pl.datamatica.traccar.api.providers.UserProvider;
 import pl.datamatica.traccar.api.utils.DateUtil;
 import pl.datamatica.traccar.model.User;
 import spark.Request;
@@ -33,11 +36,6 @@ public class RequestContext implements AutoCloseable{
     
     private User user;
     private final EntityManager em;
-    
-    RequestContext(Date ifModifiedSince) {
-        this.em = null;
-        this.ifModifiedSince = ifModifiedSince;
-    }
     
     public RequestContext(Request request, Response response) throws ParseException {
         this.ifModifiedSince = new Date(0);
@@ -57,9 +55,21 @@ public class RequestContext implements AutoCloseable{
     public void setUser(User user) {
         this.user = user;
     }
-        
-    public EntityManager getEntityManager() {
-        return em;
+    
+    public DeviceProvider getDeviceProvider() {
+        DeviceProvider dp = new DeviceProvider(em);
+        dp.setRequestUser(user);
+        return dp;
+    }
+    
+    public UserProvider getUserProvider() {
+        UserProvider up = new UserProvider(em);
+        up.setRequestUser(user);
+        return up;
+    }
+    
+    public ApplicationSettingsProvider createApplicationSettingsProvider() {
+        return new ApplicationSettingsProvider(em);
     }
 
     @Override

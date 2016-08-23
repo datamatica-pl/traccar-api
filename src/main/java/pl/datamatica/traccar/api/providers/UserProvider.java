@@ -21,18 +21,22 @@ import javax.persistence.EntityManager;
 import javax.persistence.TypedQuery;
 import pl.datamatica.traccar.model.User;
 
-public class UserProvider implements AutoCloseable{
-    private EntityManager em;
+public class UserProvider {
+    private final EntityManager em;
+    private User requestUser;
     
     public UserProvider(EntityManager entityManager) {
         this.em = entityManager;
     }
     
-    public Stream<User> getAllAvailableUsers(User user) {
-        if(user.getAdmin()) 
+    public void setRequestUser(User requestUser) {
+        this.requestUser = requestUser;
+    }
+    
+    public Stream<User> getAllAvailableUsers() {
+        if(requestUser.getAdmin()) 
             return getAllUsers();
-        //todo
-        return getAllUsers();
+        return getAllUsers().filter(u -> isVisible(u));
     }
     
     private Stream<User> getAllUsers() {
@@ -50,12 +54,7 @@ public class UserProvider implements AutoCloseable{
         return tq.getSingleResult();
     }
     
-    public static boolean isVisibleToUser(User other, User user) {
+    public boolean isVisible(User other) {
         return true;
-    }
-
-    @Override
-    public void close() throws Exception {
-        em.close();
     }
 }

@@ -56,11 +56,11 @@ public class UsersController extends ControllerBase {
     
     public UsersController(RequestContext requestContext) {
         super(requestContext);
-        up = new UserProvider(entityManager());
+        up = requestContext.getUserProvider();
     }
     
     public HttpResponse get() throws Exception {
-        List<UserDto> users = up.getAllAvailableUsers(requestUser())
+        List<UserDto> users = up.getAllAvailableUsers()
                 .map(user -> new UserDto(user))
                 .collect(Collectors.toList());
         return ok(users);
@@ -70,7 +70,7 @@ public class UsersController extends ControllerBase {
         User other = up.getUser(id);
         if(other == null)
             return notFound();
-        if(UserProvider.isVisibleToUser(other, requestUser()))
+        if(up.isVisible(other))
             return ok(new UserDto(other));
         else
             return forbidden();

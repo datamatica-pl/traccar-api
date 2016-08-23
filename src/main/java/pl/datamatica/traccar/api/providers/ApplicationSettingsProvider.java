@@ -21,7 +21,7 @@ import javax.persistence.TypedQuery;
 import pl.datamatica.traccar.model.ApplicationSettings;
 
 public class ApplicationSettingsProvider implements AutoCloseable{
-    private EntityManager em;
+    private final EntityManager em;
     
     public ApplicationSettingsProvider(EntityManager em) {
         this.em = em;

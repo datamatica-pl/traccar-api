@@ -21,7 +21,6 @@ import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import javax.persistence.EntityManager;
 import pl.datamatica.traccar.api.Application;
 import pl.datamatica.traccar.api.dtos.out.ErrorDto;
 import pl.datamatica.traccar.api.dtos.out.ICachedDto;
@@ -35,10 +34,6 @@ public abstract class ControllerBase {
     
     public ControllerBase(RequestContext requestContext) {
         this.requestContext = requestContext;
-    }
-    
-    protected EntityManager entityManager() {
-        return requestContext.getEntityManager();
     }
     
     protected User requestUser() {

@@ -47,15 +47,18 @@ public class DevicesControllerTest {
     @Before
     public void testInit() {
         user = new User();
+        rc = Mockito.mock(RequestContext.class);
         dp = Mockito.mock(DeviceProvider.class);
-        rc = new RequestContext(new Date(0));
-        rc.setUser(user);
-        dc = new DevicesController(rc, rc -> dp);
+        Mockito.when(rc.getDeviceProvider()).thenReturn(dp);
+        Mockito.when(rc.getUser()).thenReturn(user);
+        Mockito.when(rc.getModificationDate()).thenReturn(new Date(0));
+        dc = new DevicesController(rc);
         devices = IntStream.range(0, 3)
                 .mapToObj(i -> {
                     Device device = new Device();
                     device.setUniqueId(i+"");
                     device.setOwner(user);
+                    device.setLastUpdate(new Date((i+1)*1000));
                     return device;
                 })
                 .collect(Collectors.toList());
@@ -64,7 +67,7 @@ public class DevicesControllerTest {
     
     @Test
     public void getAll_emptyList() throws Exception {
-        Mockito.when(dp.getAllAvailableDevices(user)).thenReturn(Stream.empty());
+        Mockito.when(dp.getAllAvailableDevices()).thenReturn(Stream.empty());
         HttpResponse response = dc.get();
         assertTrue(response instanceof OkCachedResponse);
         List<DeviceDto> actual = (List<DeviceDto>)response.getContent();
@@ -73,11 +76,11 @@ public class DevicesControllerTest {
     
     @Test
     public void getAll_nonEmptyList() throws Exception {
-        Mockito.when(dp.getAllAvailableDevices(user)).thenReturn(devices.stream());
+        Mockito.when(dp.getAllAvailableDevices()).thenReturn(devices.stream());
         HttpResponse response = dc.get();
         assertTrue(response instanceof OkCachedResponse);
         assertTrue(response.getContent() instanceof List);
-        List actual = (List)response.getContent();
+        List<DeviceDto> actual = (List<DeviceDto>)response.getContent();
         assertEquals(3, actual.size());
         for(Object item : actual)
             assertTrue(item instanceof DeviceDto);
@@ -86,7 +89,7 @@ public class DevicesControllerTest {
     @Test
     public void getOne_ok() throws Exception {
         Mockito.when(dp.getDevice(0)).thenReturn(devices.get(0));
-        Mockito.when(dp.isVisibleToUser(devices.get(0), user)).thenReturn(true);
+        Mockito.when(dp.isVisible(devices.get(0))).thenReturn(true);
         HttpResponse response = dc.get(0);
         assertTrue(response instanceof OkCachedResponse);
         assertTrue(response.getContent() instanceof DeviceDto);
@@ -95,7 +98,7 @@ public class DevicesControllerTest {
     @Test
     public void getOne_forbidden() throws Exception {
         Mockito.when(dp.getDevice(2)).thenReturn(devices.get(2));
-        Mockito.when(dp.isVisibleToUser(devices.get(2), user)).thenReturn(false);
+        Mockito.when(dp.isVisible(devices.get(2))).thenReturn(false);
         HttpResponse response = dc.get(2);
         assertTrue(response instanceof ErrorResponse);
         assertEquals(403, response.getHttpStatus());
@@ -115,7 +118,7 @@ public class DevicesControllerTest {
         
         Device expectedContent = new Device();
         expectedContent.setUniqueId(uniqueId);
-        Mockito.when(dp.createDevice(uniqueId, user)).thenReturn(expectedContent);
+        Mockito.when(dp.createDevice(uniqueId)).thenReturn(expectedContent);
         AddDeviceDto deviceDto = new AddDeviceDto(uniqueId);
         
         HttpResponse response = dc.post(deviceDto);

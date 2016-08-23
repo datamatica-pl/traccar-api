@@ -66,17 +66,12 @@ public class DevicesController extends ControllerBase {
     private DeviceProvider dp;
     
     public DevicesController(RequestContext requestContext) {
-        this(requestContext, ctx -> new DeviceProvider(ctx.getEntityManager()));
-    }
-    
-    public DevicesController(RequestContext rc, Function<RequestContext, DeviceProvider> dpf) {
-        super(rc);
-        this.dp = dpf.apply(rc);
+        super(requestContext);
+        this.dp = requestContext.getDeviceProvider();
     }
     
     public HttpResponse get() throws Exception {
-        User user = requestUser();
-        List<DeviceDto> devices = dp.getAllAvailableDevices(user)
+        List<DeviceDto> devices = dp.getAllAvailableDevices()
                 .map(d -> new DeviceDto(d))
                 .collect(Collectors.toList());
         
@@ -88,7 +83,7 @@ public class DevicesController extends ControllerBase {
 
         if(device == null)
             return notFound();
-        if(dp.isVisibleToUser(device, requestUser())) 
+        if(dp.isVisible(device)) 
             return okCached(new DeviceDto(device));
         else
             return forbidden();
@@ -97,8 +92,7 @@ public class DevicesController extends ControllerBase {
     public HttpResponse post(AddDeviceDto deviceDto) throws Exception {
         if(deviceDto == null || deviceDto.getImei() == null)
             return badRequest(MessageKeys.ERR_IMEI_NOT_PROVIDED);
-        //todo - createDevice error handling
-        Device device = dp.createDevice(deviceDto.getImei(), requestUser());   
+        Device device = dp.createDevice(deviceDto.getImei());   
         if(device == null)
             return badRequest(MessageKeys.ERR_INVALID_IMEI);
         return created("devices/"+device.getId(), device);
