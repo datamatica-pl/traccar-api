@@ -36,16 +36,13 @@ public abstract class ControllerBase {
         this.requestContext = requestContext;
     }
     
-    protected User requestUser() {
-        return requestContext.getUser();
-    }
-    
     protected HttpResponse ok(Object result) {
         return new OkResponse(result);
     }
     
     protected HttpResponse okCached(ICachedDto content) {
-        return new OkCachedResponse(content, requestContext.getModificationDate());
+        Date serverModification = content.getModificationTime();
+        return okCached(content, serverModification);
     }
     
     protected<T extends ICachedDto> HttpResponse okCached(List<T> content) {
@@ -53,9 +50,7 @@ public abstract class ControllerBase {
                 .map(i -> i.getModificationTime())
                 .max((d1, d2) -> d1.compareTo(d2))
                 .orElse(Application.EMPTY_RESPONSE_MODIFICATION_DATE);
-        if(isModified(serverModification))
-            return new OkCachedResponse(content, serverModification);
-        return new NotModifiedResponse(serverModification);
+        return okCached(content, serverModification);
     }
     
     protected HttpResponse okCached(Object content, Date serverModification) {

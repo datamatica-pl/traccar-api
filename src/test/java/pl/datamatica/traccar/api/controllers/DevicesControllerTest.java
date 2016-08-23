@@ -32,6 +32,7 @@ import pl.datamatica.traccar.api.dtos.out.DeviceDto;
 import pl.datamatica.traccar.api.dtos.out.ErrorDto;
 import pl.datamatica.traccar.api.providers.DeviceProvider;
 import pl.datamatica.traccar.api.responses.*;
+import pl.datamatica.traccar.api.utils.DateUtil;
 import pl.datamatica.traccar.model.Device;
 import pl.datamatica.traccar.model.User;
 
@@ -63,15 +64,36 @@ public class DevicesControllerTest {
                 })
                 .collect(Collectors.toList());
         user.getDevices().add(devices.get(0));
+        
+        Mockito.when(dp.getDevice(0)).thenReturn(devices.get(0));
+        Mockito.when(dp.isVisible(devices.get(0))).thenReturn(true);
+        Mockito.when(dp.getDevice(2)).thenReturn(devices.get(2));
+        Mockito.when(dp.isVisible(devices.get(2))).thenReturn(false);
     }
     
     @Test
     public void getAll_emptyList() throws Exception {
+        HttpHeader expected = lastModifiedHeader(new Date(1000));
         Mockito.when(dp.getAllAvailableDevices()).thenReturn(Stream.empty());
+        
         HttpResponse response = dc.get();
+        
         assertTrue(response instanceof OkCachedResponse);
         List<DeviceDto> actual = (List<DeviceDto>)response.getContent();
         assertTrue(actual.isEmpty());
+        assertTrue(getHeaderStream(response).anyMatch(h -> h.equals(expected)));
+    }
+    
+    @Test
+    public void getAll_emptyListCached() throws Exception {
+        HttpHeader expected = lastModifiedHeader(new Date(1000));
+        Mockito.when(rc.getModificationDate()).thenReturn(new Date(5000));
+        Mockito.when(dp.getAllAvailableDevices()).thenReturn(Stream.empty());
+        
+        HttpResponse response = dc.get();
+        
+        assertTrue(response instanceof NotModifiedResponse);
+        assertTrue(getHeaderStream(response).anyMatch(h -> h.equals(expected)));
     }
     
     @Test
@@ -88,17 +110,38 @@ public class DevicesControllerTest {
     
     @Test
     public void getOne_ok() throws Exception {
-        Mockito.when(dp.getDevice(0)).thenReturn(devices.get(0));
-        Mockito.when(dp.isVisible(devices.get(0))).thenReturn(true);
+        HttpHeader expected = lastModifiedHeader(new Date(1000));
+        
         HttpResponse response = dc.get(0);
+        
         assertTrue(response instanceof OkCachedResponse);
         assertTrue(response.getContent() instanceof DeviceDto);
+        Stream<HttpHeader> headers= getHeaderStream(response);
+        assertTrue(headers.anyMatch(h-> h.equals(expected)));
+    }
+    
+    @Test
+    public void getOne_cached() throws Exception {
+        HttpHeader expected = lastModifiedHeader(new Date(1000));
+        Mockito.when(rc.getModificationDate()).thenReturn(new Date(1000));
+        
+        HttpResponse response = dc.get(0);
+        
+        assertTrue(response instanceof NotModifiedResponse);   
+        assertTrue(getHeaderStream(response).anyMatch(h -> h.equals(expected)));
+    }
+
+    private static HttpHeader lastModifiedHeader(Date date) {
+        return new HttpHeader(HttpHeaders.LAST_MODIFIED, 
+                DateUtil.formatDate(date));
+    }
+
+    private static Stream getHeaderStream(HttpResponse response) {
+        return StreamSupport.stream(response.getHeaders().spliterator(), false);
     }
     
     @Test
     public void getOne_forbidden() throws Exception {
-        Mockito.when(dp.getDevice(2)).thenReturn(devices.get(2));
-        Mockito.when(dp.isVisible(devices.get(2))).thenReturn(false);
         HttpResponse response = dc.get(2);
         assertTrue(response instanceof ErrorResponse);
         assertEquals(403, response.getHttpStatus());
@@ -125,7 +168,7 @@ public class DevicesControllerTest {
         
         HttpHeader expectedHdr = new HttpHeader("Location", "devices/"+id);
         assertTrue(response instanceof CreatedResponse);
-        Stream<HttpHeader> headers = StreamSupport.stream(response.getHeaders().spliterator(), false);
+        Stream<HttpHeader> headers = getHeaderStream(response);
         assertTrue(headers.anyMatch(h -> h.equals(expectedHdr)));
         assertEquals(expectedContent, response.getContent());
     }
