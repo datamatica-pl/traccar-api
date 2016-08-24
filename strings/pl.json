@@ -1,4 +1,6 @@
 {
 	err_imei_not_provided: "Nie podano numeru IMEI",
-	err_invalid_imei: "Nieprawidłowy numer IMEI"
+	err_invalid_imei: "Nieprawidłowy numer IMEI",
+	err_access_denied: "Brak dostępu do zasobu",
+	err_not_found: "Nie znaleziono zasobu"
 }

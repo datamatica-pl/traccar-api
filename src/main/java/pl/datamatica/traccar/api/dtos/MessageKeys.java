@@ -19,4 +19,6 @@ package pl.datamatica.traccar.api.dtos;
 public class MessageKeys {
     public static final String ERR_IMEI_NOT_PROVIDED = "err_imei_not_provided";
     public static final String ERR_INVALID_IMEI = "err_invalid_imei";
+    public static final String ERR_ACCESS_DENIED = "err_access_denied";
+    public static final String ERR_NOT_FOUND = "err_not_found";
 }

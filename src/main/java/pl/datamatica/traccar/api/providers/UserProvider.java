@@ -44,8 +44,13 @@ public class UserProvider {
         return tq.getResultList().stream();
     }
     
-    public User getUser(long id) {
-        return em.find(User.class, id);
+    public User getUser(long id) throws ProviderException {
+        User user = em.find(User.class, id);
+        if(user == null)
+            throw new ProviderException(ProviderException.Type.NOT_FOUND);
+        if(requestUser != null && !isVisible(user))
+            throw new ProviderException(ProviderException.Type.ACCESS_DENIED);
+        return user;
     }
     
     public User getUserByMail(String email) {
@@ -54,7 +59,19 @@ public class UserProvider {
         return tq.getSingleResult();
     }
     
-    public boolean isVisible(User other) {
-        return true;
+    public Stream<User> managedAndMe(User user) {
+        if(!user.getManager())
+            return Stream.of(user);
+        return Stream.concat(Stream.of(user), 
+                user.getManagedUsers().stream().flatMap(u -> managedAndMe(u)));
+    }
+    
+    private boolean isVisible(User other) {
+        if(requestUser.getAdmin())
+            return true;
+        if(requestUser.getManagedBy().equals(other))
+            return true;
+        
+        return managedAndMe(requestUser).anyMatch(u -> u.equals(other));
     }
 }

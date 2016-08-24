@@ -44,18 +44,42 @@ public class DeviceProviderTest {
     @Before
     public void testInit() {
         em.getTransaction().begin();
+        em.getTransaction().setRollbackOnly();
         this.provider = new DeviceProvider(em);
     }
     
     @Test
-    public void getDevice() {
-        Device expected = new Device();
-        em.persist(expected);
-        em.flush();
+    public void getDevice_ok() throws ProviderException {        
+        Device expected = database.managed2Device;
         
+        provider.setRequestUser(database.manager);
         Device actual = provider.getDevice(expected.getId());
         
         assertEquals(expected, actual);
+    }
+    
+    @Test
+    public void getDevice_notFound() {
+        try {
+            provider.setRequestUser(database.admin);
+            provider.getDevice(999);
+        } catch(ProviderException e) {
+            assertEquals(ProviderException.Type.NOT_FOUND, e.getType());
+            return;
+        }
+        fail();
+    }
+    
+    @Test
+    public void getDevice_accesDenied() {
+        try {
+            provider.setRequestUser(database.managed2);
+            provider.getDevice(database.adminDevice.getId());
+        } catch(ProviderException e) {
+            assertEquals(ProviderException.Type.ACCESS_DENIED, e.getType());
+            return;
+        }
+        fail();
     }
     
     @Test 
@@ -86,25 +110,7 @@ public class DeviceProviderTest {
     }
     
     @Test
-    public void isVisible_admin() {
-        provider.setRequestUser(database.admin);
-        
-        assertTrue(provider.isVisible(database.managerDevice));
-        assertTrue(provider.isVisible(database.adminDevice));
-    }
-    
-    @Test
-    public void isVisible_manager() {
-        provider.setRequestUser(database.manager);
-        
-        assertTrue(provider.isVisible(database.managerDevice));
-        assertTrue(provider.isVisible(database.managedDevice));
-        assertTrue(provider.isVisible(database.managed2Device));
-        assertFalse(provider.isVisible(database.adminDevice));
-    }
-    
-    @Test
-    public void createDevice() {
+    public void createDevice_ok() throws ProviderException {
         String uniqueId = "584930";
         User user = database.admin;
         
@@ -121,6 +127,69 @@ public class DeviceProviderTest {
         assertNotNull(device.getIconType());
         assertTrue(device.getUsers().contains(user));
     }
+    
+    @Test
+    public void createDevice_imeiExists() {
+        try{
+            String uniqueId = database.managerDevice.getUniqueId();
+
+            provider.setRequestUser(database.manager);
+            Device device = provider.createDevice(uniqueId);
+        } catch(ProviderException e) {
+            assertEquals(ProviderException.Type.IMEI_ALREADY_EXISTS, e.getType());
+            return;
+        }
+        fail();
+    }
+    
+    @Test
+    public void createDevice_deletedImei() throws ProviderException {
+        String uniqueId = database.managedDevice.getUniqueId();
+        User user = database.managed2;
+        
+        provider.setRequestUser(user);
+        Device device = provider.createDevice(uniqueId);
+        
+        assertTrue(device.getId() > 0);
+        assertEquals(uniqueId, device.getUniqueId());
+        assertNull(device.getLatestPosition());
+        assertFalse(device.isDeleted());
+        assertTrue(device.getUsers().contains(user));
+    }
+    
+    @Test
+    public void delete_ok() throws ProviderException {
+        provider.setRequestUser(database.managed2);
+        provider.delete(database.managed2Device.getId());
+        em.flush();
+        
+        Device updated = em.find(Device.class, database.managed2Device.getId());
+        assertTrue(updated.isDeleted());
+    }
+    
+    @Test
+    public void delete_accessDenied() {
+        try {
+            provider.setRequestUser(database.managed2);
+            provider.delete(database.adminDevice.getId());
+        } catch(ProviderException e) {
+            assertEquals(ProviderException.Type.ACCESS_DENIED, e.getType());
+            return;
+        }
+        fail();
+    }
+    
+    @Test
+    public void delete_alreadyDeleted() {
+       try {
+           provider.setRequestUser(database.managedUser);
+           provider.delete(database.managedDevice.getId());
+       } catch(ProviderException e) {
+           assertEquals(ProviderException.Type.ALREADY_DELETED, e.getType());
+           return;
+       }
+       fail();
+   }
     
     @After
     public void testCleanup() {

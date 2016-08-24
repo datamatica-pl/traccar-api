@@ -16,10 +16,7 @@
  */
 package pl.datamatica.traccar.api.controllers;
 
-import java.io.File;
 import java.io.IOException;
-import java.nio.charset.Charset;
-import java.nio.charset.StandardCharsets;
 import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -29,6 +26,7 @@ import static pl.datamatica.traccar.api.controllers.ControllerBase.render;
 import pl.datamatica.traccar.api.dtos.out.FileDto;
 import pl.datamatica.traccar.api.providers.FileProvider;
 import pl.datamatica.traccar.api.responses.HttpResponse;
+import spark.Request;
 import spark.Spark;
 
 public class StringsController extends ControllerBase {
@@ -38,16 +36,20 @@ public class StringsController extends ControllerBase {
         @Override
         public void bind() {
             Spark.get(rootUrl(), (req, res) -> {
-                RequestContext rc = req.attribute(Application.REQUEST_CONTEXT_KEY);
-                StringsController sc = new StringsController(rc);
+                StringsController sc = createController(req);
                 return render(sc.get(), res);
             }, gson::toJson);
 
             Spark.get(rootUrl()+"/:lang", (req, res) -> {
-                RequestContext rc = req.attribute(Application.REQUEST_CONTEXT_KEY);
-                StringsController sc = new StringsController(rc);
+                StringsController sc = createController(req);
                 return render(sc.get(req.params(":lang")), res);
             });
+        }
+
+        private StringsController createController(Request req) throws Exception {
+            RequestContext rc = req.attribute(Application.REQUEST_CONTEXT_KEY);
+            StringsController sc = new StringsController(rc);
+            return sc;
         }
         
         @Override

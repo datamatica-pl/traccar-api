@@ -23,6 +23,8 @@ import org.junit.*;
 import static org.junit.Assert.*;
 import org.mockito.Mockito;
 import pl.datamatica.traccar.api.dtos.out.UserDto;
+import pl.datamatica.traccar.api.providers.ProviderException;
+import pl.datamatica.traccar.api.providers.ProviderException.Type;
 import pl.datamatica.traccar.api.providers.UserProvider;
 import pl.datamatica.traccar.api.responses.ErrorResponse;
 import pl.datamatica.traccar.api.responses.HttpResponse;
@@ -74,7 +76,6 @@ public class UsersControllerTest {
     @Test
     public void getOne_ok() throws Exception {
         Mockito.when(provider.getUser(1)).thenReturn(users.get(0));
-        Mockito.when(provider.isVisible(users.get(0))).thenReturn(true);
         
         HttpResponse response = controller.get(1);
         
@@ -84,22 +85,20 @@ public class UsersControllerTest {
     
     @Test
     public void getOne_forbidden() throws Exception {
-        Mockito.when(provider.getUser(1)).thenReturn(users.get(0));
-        Mockito.when(provider.isVisible(users.get(0))).thenReturn(false);
+        Mockito.when(provider.getUser(1)).thenThrow(new ProviderException(Type.ACCESS_DENIED));
         
         HttpResponse response = controller.get(1);
         
         assertTrue(response instanceof ErrorResponse);
         assertEquals(403, response.getHttpStatus());
-        assertTrue(((List)response.getContent()).isEmpty());
     }
     
     @Test
     public void getOne_notFound() throws Exception {
+        Mockito.when(provider.getUser(1)).thenThrow(new ProviderException(Type.NOT_FOUND));
         HttpResponse response = controller.get(1);
         
         assertTrue(response instanceof ErrorResponse);
         assertEquals(404, response.getHttpStatus());
-        assertTrue(((List)response.getContent()).isEmpty());
     }
 }

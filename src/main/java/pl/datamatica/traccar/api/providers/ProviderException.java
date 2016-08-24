@@ -16,20 +16,19 @@
  */
 package pl.datamatica.traccar.api.providers;
 
-import javax.persistence.EntityManager;
-import javax.persistence.TypedQuery;
-import pl.datamatica.traccar.model.ApplicationSettings;
-
-public class ApplicationSettingsProvider{
-    private final EntityManager em;
-    
-    public ApplicationSettingsProvider(EntityManager em) {
-        this.em = em;
+public class ProviderException extends Exception {
+    public enum Type {
+        NOT_FOUND, ACCESS_DENIED, ALREADY_DELETED,
+        IMEI_ALREADY_EXISTS, INVALID_IMEI
     }
     
-    public ApplicationSettings get() {
-        TypedQuery<ApplicationSettings> tq = em.createQuery("Select x from ApplicationSettings x", ApplicationSettings.class);
-        tq.setMaxResults(1);
-        return tq.getSingleResult();
+    private final Type type;
+    
+    public ProviderException(Type type) {
+        this.type = type;
+    }
+    
+    public Type getType() {
+        return type;
     }
 }
