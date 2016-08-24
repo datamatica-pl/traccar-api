@@ -53,10 +53,14 @@ public class DeviceProvider {
     }
     
     private Stream<User> managedAndMe() {
-        Stream<User> meStream = Stream.of(requestUser);
-        if(!requestUser.getManager())
-            return meStream;
-        return Stream.concat(meStream, requestUser.getManagedUsers().stream());
+        return managedAndMe(requestUser);
+    }
+    
+    private Stream<User> managedAndMe(User user) {
+        if(!user.getManager())
+            return Stream.of(user);
+        return Stream.concat(Stream.of(user), 
+                user.getManagedUsers().stream().flatMap(u -> managedAndMe(u)));
     }
     
     private Stream<Device> getAllDevices() {
@@ -73,13 +77,16 @@ public class DeviceProvider {
         if(!isImeiValid(imei))
             return null;
         
-        em.getTransaction().begin();
+        boolean shouldManageTransaction = !em.getTransaction().isActive();
+        if(shouldManageTransaction)
+            em.getTransaction().begin();
         Device device = new Device();
         device.setUniqueId(imei);
         device.setUsers(Collections.singleton(requestUser));
         device.setOwner(requestUser);
         em.persist(device);
-        em.getTransaction().commit();
+        if(shouldManageTransaction)
+            em.getTransaction().commit();
         
         return device;
     }
