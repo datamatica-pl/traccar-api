@@ -40,6 +40,7 @@ public class DeviceProvider {
     
     public void setRequestUser(User requestUser) {
         this.requestUser = requestUser;
+        up.setRequestUser(requestUser);
     }
     
     public Device getDevice(long id) throws ProviderException {

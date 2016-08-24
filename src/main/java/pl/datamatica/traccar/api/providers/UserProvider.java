@@ -48,7 +48,7 @@ public class UserProvider {
         User user = em.find(User.class, id);
         if(user == null)
             throw new ProviderException(ProviderException.Type.NOT_FOUND);
-        if(!isVisible(user))
+        if(requestUser != null && !isVisible(user))
             throw new ProviderException(ProviderException.Type.ACCESS_DENIED);
         return user;
     }
