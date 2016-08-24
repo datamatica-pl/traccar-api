@@ -22,6 +22,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import pl.datamatica.traccar.api.Application;
+import pl.datamatica.traccar.api.dtos.MessageKeys;
 import pl.datamatica.traccar.api.dtos.out.ICachedDto;
 import pl.datamatica.traccar.api.dtos.out.ErrorDto;
 import pl.datamatica.traccar.api.responses.*;
@@ -63,11 +64,13 @@ public abstract class ControllerBase {
     }
     
     protected HttpResponse notFound() {
-        return new ErrorResponse(HttpStatuses.NOT_FOUND, Collections.emptyList());
+        ErrorDto error = new ErrorDto(MessageKeys.ERR_NOT_FOUND);
+        return new ErrorResponse(HttpStatuses.NOT_FOUND, Collections.singletonList(error));
     }
     
     protected HttpResponse forbidden() {
-        return new ErrorResponse(HttpStatuses.FORBIDDEN, Collections.emptyList());
+        ErrorDto error = new ErrorDto(MessageKeys.ERR_ACCESS_DENIED);
+        return new ErrorResponse(HttpStatuses.FORBIDDEN, Collections.singletonList(error));
     }
     
     protected HttpResponse badRequest(String... errorKeys) {

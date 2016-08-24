@@ -110,6 +110,7 @@ public class TestDatabase {
         managedDevice = new Device();
         managedDevice.setUniqueId("10");
         managedDevice.setOwner(managedUser);
+        managedDevice.setDeleted(true);
         managedUser.setDevices(Collections.singleton(managedDevice));
         em.persist(managedDevice);
         

@@ -16,7 +16,6 @@
  */
 package pl.datamatica.traccar.api.controllers;
 
-import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
 import pl.datamatica.traccar.api.Application;
@@ -25,8 +24,10 @@ import pl.datamatica.traccar.api.dtos.MessageKeys;
 import pl.datamatica.traccar.api.dtos.in.AddDeviceDto;
 import pl.datamatica.traccar.api.dtos.out.DeviceDto;
 import pl.datamatica.traccar.api.providers.DeviceProvider;
+import pl.datamatica.traccar.api.providers.ProviderException;
 import pl.datamatica.traccar.api.responses.HttpResponse;
 import pl.datamatica.traccar.model.Device;
+import spark.Request;
 import spark.Spark;
 
 public class DevicesController extends ControllerBase {
@@ -36,23 +37,31 @@ public class DevicesController extends ControllerBase {
         @Override
         public void bind() {
             Spark.get(rootUrl(), (req, res) -> { 
-                RequestContext context = req.attribute(Application.REQUEST_CONTEXT_KEY);
-                DevicesController dc = new DevicesController(context);
+                DevicesController dc = createController(req);
                 return render(dc.get(), res);
             }, gson::toJson);
 
             Spark.post(rootUrl(), (req, res) -> {
-                RequestContext context = req.attribute(Application.REQUEST_CONTEXT_KEY);
-                DevicesController dc = new DevicesController(context);
+                DevicesController dc = createController(req);
                 AddDeviceDto deviceDto = gson.fromJson(req.body(), AddDeviceDto.class);
                 return render(dc.post(deviceDto), res);
             }, gson::toJson);
 
             Spark.get(rootUrl()+"/:id", (req, res) -> {            
-                RequestContext context = req.attribute(Application.REQUEST_CONTEXT_KEY);
-                DevicesController dc = new DevicesController(context);
+                DevicesController dc = createController(req);
                 return render(dc.get(Long.parseLong(req.params(":id"))), res);
             }, gson::toJson);
+            
+            Spark.delete(rootUrl() + "/:id", (req, res)-> {
+                DevicesController dc = createController(req);
+                return render(dc.delete(Long.parseLong(req.params(":id"))), res);
+            });
+        }
+
+        private DevicesController createController(Request req) {
+            RequestContext context = req.attribute(Application.REQUEST_CONTEXT_KEY);
+            DevicesController dc = new DevicesController(context);
+            return dc;
         }
         
         @Override
@@ -79,22 +88,48 @@ public class DevicesController extends ControllerBase {
     }
     
     public HttpResponse get(long id) throws Exception {
-        Device device = dp.getDevice(id);
-
-        if(device == null)
-            return notFound();
-        if(dp.isVisible(device)) 
-            return okCached(new DeviceDto(device));
-        else
-            return forbidden();
+        try{
+            return okCached(new DeviceDto(dp.getDevice(id)));
+        } catch(ProviderException e) {
+            switch(e.getType()) {
+                case NOT_FOUND:
+                    return notFound();
+                case ACCESS_DENIED:
+                    return forbidden();
+            }
+            throw e;
+        }
     }
     
     public HttpResponse post(AddDeviceDto deviceDto) throws Exception {
         if(deviceDto == null || deviceDto.getImei() == null)
             return badRequest(MessageKeys.ERR_IMEI_NOT_PROVIDED);
-        Device device = dp.createDevice(deviceDto.getImei());   
-        if(device == null)
-            return badRequest(MessageKeys.ERR_INVALID_IMEI);
-        return created("devices/"+device.getId(), device);
+        try {
+            Device device = dp.createDevice(deviceDto.getImei());   
+            return created("devices/"+device.getId(), device);
+        } catch(ProviderException e) {
+            switch(e.getType()) {
+                case INVALID_IMEI:
+                    return badRequest(MessageKeys.ERR_INVALID_IMEI);
+                case IMEI_ALREADY_EXISTS:
+                    return badRequest(MessageKeys.ERR_INVALID_IMEI);
+            }
+            throw e;
+        }
+    }
+    
+    public HttpResponse delete(long id) throws Exception {
+        try {
+            dp.delete(id);
+            return ok("");
+        } catch(ProviderException e) {
+            switch(e.getType()) {
+                case NOT_FOUND:
+                    return notFound();
+                case ACCESS_DENIED:
+                    return forbidden();
+            }
+            throw e;
+        } 
     }
 }

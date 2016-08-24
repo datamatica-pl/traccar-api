@@ -31,6 +31,8 @@ import pl.datamatica.traccar.api.dtos.in.AddDeviceDto;
 import pl.datamatica.traccar.api.dtos.out.DeviceDto;
 import pl.datamatica.traccar.api.dtos.out.ErrorDto;
 import pl.datamatica.traccar.api.providers.DeviceProvider;
+import pl.datamatica.traccar.api.providers.ProviderException;
+import pl.datamatica.traccar.api.providers.ProviderException.Type;
 import pl.datamatica.traccar.api.responses.*;
 import pl.datamatica.traccar.model.Device;
 import pl.datamatica.traccar.model.User;
@@ -45,7 +47,7 @@ public class DevicesControllerTest {
     
     
     @Before
-    public void testInit() {
+    public void testInit() throws ProviderException {
         user = new User();
         rc = Mockito.mock(RequestContext.class);
         dp = Mockito.mock(DeviceProvider.class);
@@ -65,9 +67,6 @@ public class DevicesControllerTest {
         user.getDevices().add(devices.get(0));
         
         Mockito.when(dp.getDevice(0)).thenReturn(devices.get(0));
-        Mockito.when(dp.isVisible(devices.get(0))).thenReturn(true);
-        Mockito.when(dp.getDevice(2)).thenReturn(devices.get(2));
-        Mockito.when(dp.isVisible(devices.get(2))).thenReturn(false);
         Mockito.when(dp.getAllAvailableDevices()).thenReturn(devices.stream());
     }
     
@@ -146,6 +145,7 @@ public class DevicesControllerTest {
     
     @Test
     public void getOne_forbidden() throws Exception {
+        Mockito.when(dp.getDevice(2)).thenThrow(new ProviderException(Type.ACCESS_DENIED));
         HttpResponse response = dc.get(2);
         assertTrue(response instanceof ErrorResponse);
         assertEquals(403, response.getHttpStatus());
@@ -153,6 +153,7 @@ public class DevicesControllerTest {
     
     @Test
     public void getOne_notFound() throws Exception {
+        Mockito.when(dp.getDevice(4)).thenThrow(new ProviderException(Type.NOT_FOUND));
         HttpResponse response = dc.get(4);
         assertTrue(response instanceof ErrorResponse);
         assertEquals(404, response.getHttpStatus());
@@ -196,6 +197,7 @@ public class DevicesControllerTest {
         String imei = "8";
         AddDeviceDto deviceDto = new AddDeviceDto(imei);
         ErrorDto expectedError = new ErrorDto(MessageKeys.ERR_INVALID_IMEI);
+        Mockito.when(dp.createDevice("8")).thenThrow(new ProviderException(Type.INVALID_IMEI));
         
         HttpResponse response = dc.post(deviceDto);
         
@@ -204,5 +206,33 @@ public class DevicesControllerTest {
         List<ErrorDto> errors = (List<ErrorDto>)response.getContent();
         assertEquals(1, errors.size());
         assertEquals(expectedError, errors.get(0));
+    }
+    
+    @Test
+    public void delete_ok() throws Exception {
+        HttpResponse response = dc.delete(3);
+        
+        assertTrue(response instanceof OkResponse);
+        assertEquals("", response.getContent());
+    }
+    
+    @Test
+    public void delete_notFound() throws Exception {
+        Mockito.doThrow(new ProviderException(Type.NOT_FOUND)).when(dp).delete(7);
+        
+        HttpResponse response = dc.delete(7);
+        
+        assertTrue(response instanceof ErrorResponse);
+        assertEquals(404, response.getHttpStatus());
+    }
+    
+    @Test
+    public void delete_accessDenied() throws Exception {
+        Mockito.doThrow(new ProviderException(Type.ACCESS_DENIED)).when(dp).delete(7);
+        
+        HttpResponse response = dc.delete(7);
+        
+        assertTrue(response instanceof ErrorResponse);
+        assertEquals(403, response.getHttpStatus());
     }
 }

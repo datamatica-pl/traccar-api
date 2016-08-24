@@ -21,9 +21,11 @@ import java.util.stream.Collectors;
 import pl.datamatica.traccar.api.Application;
 import static pl.datamatica.traccar.api.controllers.ControllerBase.render;
 import pl.datamatica.traccar.api.dtos.out.UserDto;
+import pl.datamatica.traccar.api.providers.ProviderException;
 import pl.datamatica.traccar.api.providers.UserProvider;
 import pl.datamatica.traccar.api.responses.HttpResponse;
 import pl.datamatica.traccar.model.User;
+import spark.Request;
 import spark.Spark;
 
 public class UsersController extends ControllerBase {
@@ -33,16 +35,20 @@ public class UsersController extends ControllerBase {
         @Override
         public void bind() {      
             Spark.get(rootUrl(), (req, res) -> {
-                RequestContext context = req.attribute(Application.REQUEST_CONTEXT_KEY);
-                UsersController uc = new UsersController(context);
+                UsersController uc = createController(req);
                 return render(uc.get(), res);
             }, gson::toJson);
 
             Spark.get(rootUrl() + "/:id", (req, res) -> {
-                RequestContext context = req.attribute(Application.REQUEST_CONTEXT_KEY);
-                UsersController uc = new UsersController(context);
+                UsersController uc = createController(req);
                 return render(uc.get(Long.parseLong(req.params(":id"))), res);
             }, gson::toJson);
+        }
+
+        private UsersController createController(Request req) {
+            RequestContext context = req.attribute(Application.REQUEST_CONTEXT_KEY);
+            UsersController uc = new UsersController(context);
+            return uc;
         }
 
         @Override
@@ -67,12 +73,17 @@ public class UsersController extends ControllerBase {
     }
     
     public HttpResponse get(long id) throws Exception {
-        User other = up.getUser(id);
-        if(other == null)
-            return notFound();
-        if(up.isVisible(other))
+        try {
+            User other = up.getUser(id);
             return ok(new UserDto(other));
-        else
-            return forbidden();
+        } catch(ProviderException e) {
+            switch(e.getType()) {
+                case NOT_FOUND:
+                    return notFound();
+                case ACCESS_DENIED:
+                    return forbidden();
+            }
+            throw e;
+        }
     }
 }
