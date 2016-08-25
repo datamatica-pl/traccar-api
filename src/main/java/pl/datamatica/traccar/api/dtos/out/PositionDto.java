@@ -21,7 +21,7 @@ import java.util.Date;
 import java.util.Map;
 import pl.datamatica.traccar.model.Position;
 
-public class PositionDto {
+public class PositionDto implements ICachedDto {
     private static final String IGNITION_KEY="ignition";
     private static final String BATTERY_KEY = "battery";
     
@@ -50,9 +50,11 @@ public class PositionDto {
         this.deviceTime = position.getTime();
         this.isValid = position.getValid();
         this.deviceId = position.getDevice().getId();
-        this.ignition = (Boolean)other.get(IGNITION_KEY);
-        if(other.containsKey(BATTERY_KEY))
-            this.battery = Double.parseDouble(other.get(BATTERY_KEY).toString());
+        if(other != null) {
+            this.ignition = (Boolean)other.get(IGNITION_KEY);
+            if(other.containsKey(BATTERY_KEY))
+                this.battery = Double.parseDouble(other.get(BATTERY_KEY).toString());
+        }
     }
 
     public double getLatitude() {
@@ -97,5 +99,10 @@ public class PositionDto {
 
     public long getDeviceId() {
         return deviceId;
+    }
+
+    @Override
+    public Date getModificationTime() {
+        return getDeviceTime();
     }
 }

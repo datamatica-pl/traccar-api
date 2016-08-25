@@ -37,7 +37,8 @@ public class Application implements spark.servlet.SparkApplication {
     private final ControllerBinder[] BINDERS = new ControllerBinder[] {
             new DevicesController.Binder(),
             new UsersController.Binder(),
-            new StringsController.Binder()
+            new StringsController.Binder(),
+            new PositionsController.Binder()
         };
        
     @Override

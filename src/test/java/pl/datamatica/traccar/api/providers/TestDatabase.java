@@ -21,6 +21,7 @@ import javax.persistence.EntityManager;
 import pl.datamatica.traccar.model.ApplicationSettings;
 import pl.datamatica.traccar.model.Device;
 import pl.datamatica.traccar.model.PasswordHashMethod;
+import pl.datamatica.traccar.model.Position;
 import pl.datamatica.traccar.model.User;
 
 public class TestDatabase {
@@ -28,6 +29,7 @@ public class TestDatabase {
     private String salt;
     User admin;
     Device adminDevice;
+    Position adminPosition;
     User manager;
     Device managerDevice;
     User managedUser;
@@ -48,6 +50,7 @@ public class TestDatabase {
         createManagedUser();
         createManaged2();
         createDevices();
+        createPositions();
         em.getTransaction().commit();
     }
     
@@ -89,7 +92,7 @@ public class TestDatabase {
         em.persist(managedUser);
     }
     
-    public void createManaged2() {
+    private void createManaged2() {
         managed2 = new User();
         managed2.setLogin("user #1#1");
         managed2.setLogin("user #1#1");
@@ -125,5 +128,13 @@ public class TestDatabase {
         managed2Device.setOwner(managed2);
         managed2.setDevices(Collections.singleton(managed2Device));
         em.persist(managed2Device);
+    }
+
+    private void createPositions() {
+        adminPosition = new Position();
+        adminPosition.setLatitude(52.);
+        adminPosition.setLongitude(19.);
+        adminPosition.setDevice(adminDevice);
+        em.persist(adminPosition);
     }
 }

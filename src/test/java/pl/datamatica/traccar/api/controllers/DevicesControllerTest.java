@@ -160,6 +160,34 @@ public class DevicesControllerTest {
     }
     
     @Test
+    public void getPositions_ok() throws Exception {        
+        HttpResponse response = dc.getPositions(0);
+        
+        assertTrue(response instanceof OkResponse);
+        assertTrue(response.getContent() instanceof List);
+    }
+    
+    @Test
+    public void getPositions_forbidden() throws Exception {
+        Mockito.when(dp.getDevice(3)).thenThrow(new ProviderException(Type.ACCESS_DENIED));
+        
+        HttpResponse response = dc.getPositions(3);
+        
+        assertTrue(response instanceof ErrorResponse);
+        assertEquals(403, response.getHttpStatus());
+    }
+    
+    @Test
+    public void getPositions_notFound() throws Exception {
+        Mockito.when(dp.getDevice(5)).thenThrow(new ProviderException(Type.NOT_FOUND));
+        
+        HttpResponse response = dc.getPositions(5);
+        
+        assertTrue(response instanceof ErrorResponse);
+        assertEquals(404, response.getHttpStatus());
+    }
+    
+    @Test
     public void post_validImei()  throws Exception {
         final String uniqueId = "5";
         final long id = 0;
