@@ -14,13 +14,10 @@
  *  You should have received a copy of the GNU Affero General Public License
  *  along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-package pl.datamatica.traccar.api.dtos;
+package pl.datamatica.traccar.api.validators;
 
-public class MessageKeys {
-    public static final String ERR_IMEI_NOT_PROVIDED = "err_imei_not_provided";
-    public static final String ERR_INVALID_IMEI = "err_invalid_imei";
-    public static final String ERR_ACCESS_DENIED = "err_access_denied";
-    public static final String ERR_NOT_FOUND = "err_not_found";
-    public static final String ERR_TOKEN_REJECTED = "err_token_rejected";
-    public static final String ERR_TOKEN_NOT_PROVIDED = "err_token_not_provided";
+import pl.datamatica.traccar.api.dtos.in.NotificationTokenDto;
+
+public interface INotificationTokenValidator {
+    public boolean isValid(String token);
 }

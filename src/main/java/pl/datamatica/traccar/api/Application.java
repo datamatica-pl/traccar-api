@@ -30,6 +30,7 @@ import pl.datamatica.traccar.api.auth.PasswordValidator;
 public class Application implements spark.servlet.SparkApplication {
     
     public static final String REQUEST_CONTEXT_KEY = "pl.datamatica.traccar.api.RequestContext";
+    public static String NOTIFICATION_TOKEN_SESSION_KEY = "notificationToken";
     public static final String DATE_FORMAT = "yyyy-MM-dd'T'HH:mm:ssX";
     public static final Date EMPTY_RESPONSE_MODIFICATION_DATE = new Date(1000);
     
@@ -39,7 +40,8 @@ public class Application implements spark.servlet.SparkApplication {
             new UsersController.Binder(),
             new StringsController.Binder(),
             new PositionsController.Binder(),
-            new GeofencesController.Binder()
+            new GeofencesController.Binder(),
+            new SessionController.Binder()
         };
        
     @Override
