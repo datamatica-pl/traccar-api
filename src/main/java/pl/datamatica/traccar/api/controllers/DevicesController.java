@@ -23,6 +23,7 @@ import static pl.datamatica.traccar.api.controllers.ControllerBase.render;
 import pl.datamatica.traccar.api.dtos.MessageKeys;
 import pl.datamatica.traccar.api.dtos.in.AddDeviceDto;
 import pl.datamatica.traccar.api.dtos.out.DeviceDto;
+import pl.datamatica.traccar.api.dtos.out.PositionDto;
 import pl.datamatica.traccar.api.providers.DeviceProvider;
 import pl.datamatica.traccar.api.providers.ProviderException;
 import pl.datamatica.traccar.api.responses.HttpResponse;
@@ -56,6 +57,11 @@ public class DevicesController extends ControllerBase {
                 DevicesController dc = createController(req);
                 return render(dc.delete(Long.parseLong(req.params(":id"))), res);
             });
+            
+            Spark.get(rootUrl() + "/:id/positions", (req, res) -> {
+                DevicesController dc = createController(req);
+                return render(dc.getPositions(Long.parseLong(req.params(":id"))), res);
+            }, gson::toJson);
         }
 
         private DevicesController createController(Request req) {
@@ -131,5 +137,22 @@ public class DevicesController extends ControllerBase {
             }
             throw e;
         } 
+    }
+    
+    public HttpResponse getPositions(long id) throws Exception {
+        try {
+            Device device = dp.getDevice(id);
+            return okCached(device.getPositions().stream()
+                    .map(p -> new PositionDto(p))
+                    .collect(Collectors.toList()));
+        } catch (ProviderException ex) {
+            switch(ex.getType()) {
+                case NOT_FOUND:
+                    return notFound();
+                case ACCESS_DENIED:
+                    return forbidden();
+            }
+            throw ex;
+        }
     }
 }
