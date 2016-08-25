@@ -20,6 +20,8 @@ import java.util.Collections;
 import javax.persistence.EntityManager;
 import pl.datamatica.traccar.model.ApplicationSettings;
 import pl.datamatica.traccar.model.Device;
+import pl.datamatica.traccar.model.GeoFence;
+import pl.datamatica.traccar.model.GeoFenceType;
 import pl.datamatica.traccar.model.PasswordHashMethod;
 import pl.datamatica.traccar.model.Position;
 import pl.datamatica.traccar.model.User;
@@ -36,6 +38,7 @@ public class TestDatabase {
     Device managedDevice;
     User managed2;
     Device managed2Device;
+    GeoFence adminGeofence;
     
     public TestDatabase(EntityManager em) {
         this.em = em;
@@ -51,6 +54,7 @@ public class TestDatabase {
         createManaged2();
         createDevices();
         createPositions();
+        createGeofences();
         em.getTransaction().commit();
     }
     
@@ -136,5 +140,26 @@ public class TestDatabase {
         adminPosition.setLongitude(19.);
         adminPosition.setDevice(adminDevice);
         em.persist(adminPosition);
+    }
+    
+    private void createGeofences() {
+        adminGeofence = new GeoFence();
+        adminGeofence.setType(GeoFenceType.CIRCLE);
+        adminGeofence.setName("Zażółć gęślą jaźń");
+        adminGeofence.setUsers(Collections.singleton(admin));
+        em.persist(adminGeofence);
+    }
+
+    public void prepareEm(EntityManager newEm) {
+        admin = newEm.find(User.class, admin.getId());
+        manager = newEm.find(User.class, manager.getId());
+        managedUser = newEm.find(User.class, managedUser.getId());
+        managed2 = newEm.find(User.class, managed2.getId());
+        adminDevice = newEm.find(Device.class, adminDevice.getId());
+        managerDevice = newEm.find(Device.class, managerDevice.getId());
+        managedDevice = newEm.find(Device.class, managedDevice.getId());
+        managed2Device = newEm.find(Device.class, managed2Device.getId());
+        adminGeofence = newEm.find(GeoFence.class, adminGeofence.getId());
+        adminPosition = newEm.find(Position.class, adminPosition.getId());
     }
 }
