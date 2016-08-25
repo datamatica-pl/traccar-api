@@ -14,16 +14,28 @@
  *  You should have received a copy of the GNU Affero General Public License
  *  along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-package pl.datamatica.traccar.api.responses;
+package pl.datamatica.traccar.api.dtos.in;
 
-public class HttpStatuses {
-    public static int OK = 200;
-    public static int CREATED = 201;
+public class RegisterUserDto {
+    private String email;
+    private String password;
+    private String checkMarketing;
     
-    public static int NOT_MODIFIED = 304;
-    
-    public static int BAD_REQUEST = 400;
-    public static int FORBIDDEN = 403;
-    public static int NOT_FOUND = 404;
-    public static int CONFLICT = 409;
+    public RegisterUserDto(String email, String password, String checkMarketing) {
+        this.email = email;
+        this.password = password;
+        this.checkMarketing = checkMarketing;
+    }
+
+    public String getEmail() {
+        return email;
+    }
+
+    public String getPassword() {
+        return password;
+    }
+
+    public String getCheckMarketing() {
+        return checkMarketing;
+    }    
 }

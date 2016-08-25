@@ -134,9 +134,9 @@ public class DeviceProviderTest {
             String uniqueId = database.managerDevice.getUniqueId();
 
             provider.setRequestUser(database.manager);
-            Device device = provider.createDevice(uniqueId);
+            provider.createDevice(uniqueId);
         } catch(ProviderException e) {
-            assertEquals(ProviderException.Type.IMEI_ALREADY_EXISTS, e.getType());
+            assertEquals(ProviderException.Type.ALREADY_EXISTS, e.getType());
             return;
         }
         fail();

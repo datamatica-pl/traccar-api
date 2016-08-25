@@ -19,10 +19,14 @@ package pl.datamatica.traccar.api.providers;
 import java.util.stream.Stream;
 import javax.persistence.EntityManager;
 import javax.persistence.TypedQuery;
+import pl.datamatica.traccar.api.providers.ProviderException.Type;
+import pl.datamatica.traccar.model.PasswordHashMethod;
 import pl.datamatica.traccar.model.User;
 
 public class UserProvider extends ProviderBase {
     private User requestUser;
+    private PasswordHashMethod hashMethod;
+    private String salt;
     
     public UserProvider(EntityManager entityManager) {
         super(entityManager);
@@ -30,6 +34,14 @@ public class UserProvider extends ProviderBase {
     
     public void setRequestUser(User requestUser) {
         this.requestUser = requestUser;
+    }
+    
+    public void setPasswordHashMethod(PasswordHashMethod hashMethod) {
+        this.hashMethod = hashMethod;
+    }
+    
+    public void setPasswordHashSalt(String salt) {
+        this.salt = salt;
     }
     
     public Stream<User> getAllAvailableUsers() {
@@ -67,5 +79,21 @@ public class UserProvider extends ProviderBase {
             return true;
         
         return managedAndMe(requestUser).anyMatch(u -> u.equals(other));
+    }
+
+    public User createUser(String email, String password, String checkMarketing) throws ProviderException {
+        User existing = getUserByMail(email);
+        if(existing != null)
+            throw new ProviderException(Type.ALREADY_EXISTS);
+        
+        em.getTransaction().begin();
+        User user = new User(email, hashMethod.doHash(password, salt));
+        user.setEmail(email);
+        user.setManager(true);
+        user.setMarketingCheck(true);
+        em.persist(user);
+        em.getTransaction().commit();
+        
+        return user;
     }
 }

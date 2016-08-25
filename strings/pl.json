@@ -4,5 +4,6 @@
 	err_access_denied: "Brak dostępu do zasobu",
 	err_not_found: "Nie znaleziono zasobu",
 	err_token_not_provided: "Nie podano tokena powiadomień"
-	err_token_rejected: "Token powiadomień odrzucony"
+	err_token_rejected: "Token powiadomień odrzucony",
+	err_user_already_exists: "Istnieje już użytkownik z tym adresem e-mail"
 }

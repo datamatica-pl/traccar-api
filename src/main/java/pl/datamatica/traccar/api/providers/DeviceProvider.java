@@ -72,7 +72,7 @@ public class DeviceProvider extends ProviderBase {
         Device existing = getDeviceByImei(imei);
         if(existing != null) {
             if(!existing.isDeleted())
-                throw new ProviderException(Type.IMEI_ALREADY_EXISTS);
+                throw new ProviderException(Type.ALREADY_EXISTS);
             hardDelete(existing);
         }
         

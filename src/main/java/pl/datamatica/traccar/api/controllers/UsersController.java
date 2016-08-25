@@ -17,9 +17,13 @@
 package pl.datamatica.traccar.api.controllers;
 
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import pl.datamatica.traccar.api.Application;
 import static pl.datamatica.traccar.api.controllers.ControllerBase.render;
+import pl.datamatica.traccar.api.dtos.MessageKeys;
+import pl.datamatica.traccar.api.dtos.in.RegisterUserDto;
 import pl.datamatica.traccar.api.dtos.out.UserDto;
 import pl.datamatica.traccar.api.providers.ProviderException;
 import pl.datamatica.traccar.api.providers.UserProvider;
@@ -42,6 +46,12 @@ public class UsersController extends ControllerBase {
             Spark.get(rootUrl() + "/:id", (req, res) -> {
                 UsersController uc = createController(req);
                 return render(uc.get(Long.parseLong(req.params(":id"))), res);
+            }, gson::toJson);
+            
+            Spark.post(rootUrl(), (req, res) ->{
+                UsersController uc = createController(req);
+                RegisterUserDto userDto = gson.fromJson(req.body(), RegisterUserDto.class);
+                return render(uc.post(userDto), res);
             }, gson::toJson);
         }
 
@@ -78,6 +88,19 @@ public class UsersController extends ControllerBase {
             return ok(new UserDto(other));
         } catch(ProviderException e) {
             return handle(e);
+        }
+    }
+    
+    public HttpResponse post(RegisterUserDto userDto) throws ProviderException {
+        try {
+            User user = up.createUser(userDto.getEmail(), userDto.getPassword(), userDto.getCheckMarketing());
+            return created("/user/"+user.getId(), "");
+        } catch (ProviderException ex) {
+            switch(ex.getType()) {
+                case ALREADY_EXISTS:
+                    return conflict(MessageKeys.ERR_USER_ALREADY_EXISTS);
+            }
+            throw ex;
         }
     }
 }

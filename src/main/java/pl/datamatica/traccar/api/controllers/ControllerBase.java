@@ -91,8 +91,9 @@ public abstract class ControllerBase {
         return new ErrorResponse(HttpStatuses.BAD_REQUEST, errors);
     }
     
-    protected HttpResponse badRequest() {
-        return new ErrorResponse(HttpStatuses.BAD_REQUEST, Collections.emptyList());
+    protected HttpResponse conflict(String errorKey) {
+        return new ErrorResponse(HttpStatuses.CONFLICT, 
+                Collections.singletonList(new ErrorDto(errorKey)));
     }
     
     protected HttpResponse created(String route, Object resource) {
