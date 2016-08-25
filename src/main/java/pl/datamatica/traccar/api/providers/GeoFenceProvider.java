@@ -16,26 +16,28 @@
  */
 package pl.datamatica.traccar.api.providers;
 
+import java.util.stream.Stream;
 import javax.persistence.EntityManager;
-import pl.datamatica.traccar.model.Position;
+import pl.datamatica.traccar.model.GeoFence;
 import pl.datamatica.traccar.model.User;
 
-public class PositionProvider extends ProviderBase {
+public class GeoFenceProvider extends ProviderBase{
+    private User requestUser;
     
-    private DeviceProvider dp;
-    
-    public PositionProvider(EntityManager em) {
+    public GeoFenceProvider(EntityManager em) {
         super(em);
-        dp = new DeviceProvider(em);
     }
     
     public void setRequestUser(User user) {
-        dp.setRequestUser(user);
+        this.requestUser = user;
     }
     
-    public Position get(long id) throws ProviderException {
-        return get(Position.class, id, 
-                p -> dp.getAllAvailableDevices()
-                        .anyMatch(d -> d.equals(p.getDevice())));
+    public Stream<GeoFence> getAllAvailableGeoFences() {
+        return requestUser.getAllAvailableGeoFences().stream();
+    }
+    
+    public GeoFence getGeoFence(long id) throws ProviderException {
+        return get(GeoFence.class, id, 
+                gf -> requestUser.getAllAvailableGeoFences().contains(gf));
     }
 }

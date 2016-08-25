@@ -38,7 +38,8 @@ public class Application implements spark.servlet.SparkApplication {
             new DevicesController.Binder(),
             new UsersController.Binder(),
             new StringsController.Binder(),
-            new PositionsController.Binder()
+            new PositionsController.Binder(),
+            new GeofencesController.Binder()
         };
        
     @Override

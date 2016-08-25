@@ -25,6 +25,7 @@ import pl.datamatica.traccar.api.Application;
 import pl.datamatica.traccar.api.dtos.MessageKeys;
 import pl.datamatica.traccar.api.dtos.out.ICachedDto;
 import pl.datamatica.traccar.api.dtos.out.ErrorDto;
+import pl.datamatica.traccar.api.providers.ProviderException;
 import pl.datamatica.traccar.api.responses.*;
 import spark.Response;
 
@@ -34,6 +35,16 @@ public abstract class ControllerBase {
     
     public ControllerBase(RequestContext requestContext) {
         this.requestContext = requestContext;
+    }
+    
+    protected HttpResponse handle(ProviderException e) throws ProviderException {
+        switch(e.getType()) {
+            case NOT_FOUND:
+                return notFound();
+            case ACCESS_DENIED:
+                return forbidden();
+        }
+        throw e;
     }
     
     protected HttpResponse ok(Object result) {

@@ -21,12 +21,11 @@ import javax.persistence.EntityManager;
 import javax.persistence.TypedQuery;
 import pl.datamatica.traccar.model.User;
 
-public class UserProvider {
-    private final EntityManager em;
+public class UserProvider extends ProviderBase {
     private User requestUser;
     
     public UserProvider(EntityManager entityManager) {
-        this.em = entityManager;
+        super(entityManager);
     }
     
     public void setRequestUser(User requestUser) {
@@ -45,12 +44,7 @@ public class UserProvider {
     }
     
     public User getUser(long id) throws ProviderException {
-        User user = em.find(User.class, id);
-        if(user == null)
-            throw new ProviderException(ProviderException.Type.NOT_FOUND);
-        if(requestUser != null && !isVisible(user))
-            throw new ProviderException(ProviderException.Type.ACCESS_DENIED);
-        return user;
+        return get(User.class, id, this::isVisible);
     }
     
     public User getUserByMail(String email) {
@@ -67,7 +61,7 @@ public class UserProvider {
     }
     
     private boolean isVisible(User other) {
-        if(requestUser.getAdmin())
+        if(requestUser == null || requestUser.getAdmin())
             return true;
         if(requestUser.getManagedBy().equals(other))
             return true;

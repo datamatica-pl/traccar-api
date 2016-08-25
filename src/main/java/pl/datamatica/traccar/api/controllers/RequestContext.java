@@ -24,6 +24,7 @@ import pl.datamatica.traccar.api.Context;
 import pl.datamatica.traccar.api.providers.ApplicationSettingsProvider;
 import pl.datamatica.traccar.api.providers.DeviceProvider;
 import pl.datamatica.traccar.api.providers.FileProvider;
+import pl.datamatica.traccar.api.providers.GeoFenceProvider;
 import pl.datamatica.traccar.api.providers.PositionProvider;
 import pl.datamatica.traccar.api.providers.UserProvider;
 import pl.datamatica.traccar.api.utils.DateUtil;
@@ -81,6 +82,12 @@ public class RequestContext implements AutoCloseable{
     
     public PositionProvider getPositionProvider() {
         PositionProvider provider = new PositionProvider(em);
+        provider.setRequestUser(user);
+        return provider;
+    }
+    
+    public GeoFenceProvider getGeoFencesProvider() {
+        GeoFenceProvider provider = new GeoFenceProvider(em);
         provider.setRequestUser(user);
         return provider;
     }

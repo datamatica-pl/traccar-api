@@ -16,26 +16,23 @@
  */
 package pl.datamatica.traccar.api.providers;
 
+import java.util.function.Predicate;
 import javax.persistence.EntityManager;
-import pl.datamatica.traccar.model.Position;
-import pl.datamatica.traccar.model.User;
 
-public class PositionProvider extends ProviderBase {
+public class ProviderBase {    
+    protected EntityManager em;
     
-    private DeviceProvider dp;
-    
-    public PositionProvider(EntityManager em) {
-        super(em);
-        dp = new DeviceProvider(em);
+    public ProviderBase(EntityManager em) {
+        this.em = em;
     }
     
-    public void setRequestUser(User user) {
-        dp.setRequestUser(user);
-    }
-    
-    public Position get(long id) throws ProviderException {
-        return get(Position.class, id, 
-                p -> dp.getAllAvailableDevices()
-                        .anyMatch(d -> d.equals(p.getDevice())));
+    protected<T> T get(Class<T> clazz, long id, Predicate<T> canShow) 
+            throws ProviderException {
+        T entity = em.find(clazz, id);
+        if(entity == null)
+            throw new ProviderException(ProviderException.Type.NOT_FOUND);
+        if(!canShow.test(entity))
+            throw new ProviderException(ProviderException.Type.ACCESS_DENIED);
+        return entity;
     }
 }
