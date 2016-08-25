@@ -2,5 +2,7 @@
 	err_imei_not_provided: "Imei was not provided",
 	err_invalid_imei: "Invalid IMEI number",
 	err_access_denied: "Access to this resource was denied",
-	err_not_found: "Resource not found"
+	err_not_found: "Resource not found",
+	err_token_not_provided: "Notification token not provided",
+	err_token_rejected: "Notification token was rejected"
 }
