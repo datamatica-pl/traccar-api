@@ -28,7 +28,8 @@ public class ApplicationSettingsProvider{
     }
     
     public ApplicationSettings get() {
-        TypedQuery<ApplicationSettings> tq = em.createQuery("Select x from ApplicationSettings x", ApplicationSettings.class);
+        TypedQuery<ApplicationSettings> tq = em.createQuery("Select x from ApplicationSettings x", 
+                ApplicationSettings.class);
         tq.setMaxResults(1);
         return tq.getSingleResult();
     }

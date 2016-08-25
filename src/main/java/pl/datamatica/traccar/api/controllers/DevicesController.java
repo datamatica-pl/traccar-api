@@ -97,13 +97,7 @@ public class DevicesController extends ControllerBase {
         try{
             return okCached(new DeviceDto(dp.getDevice(id)));
         } catch(ProviderException e) {
-            switch(e.getType()) {
-                case NOT_FOUND:
-                    return notFound();
-                case ACCESS_DENIED:
-                    return forbidden();
-            }
-            throw e;
+            return handle(e);
         }
     }
     
@@ -129,13 +123,7 @@ public class DevicesController extends ControllerBase {
             dp.delete(id);
             return ok("");
         } catch(ProviderException e) {
-            switch(e.getType()) {
-                case NOT_FOUND:
-                    return notFound();
-                case ACCESS_DENIED:
-                    return forbidden();
-            }
-            throw e;
+            return handle(e);
         } 
     }
     
@@ -146,13 +134,7 @@ public class DevicesController extends ControllerBase {
                     .map(p -> new PositionDto(p))
                     .collect(Collectors.toList()));
         } catch (ProviderException ex) {
-            switch(ex.getType()) {
-                case NOT_FOUND:
-                    return notFound();
-                case ACCESS_DENIED:
-                    return forbidden();
-            }
-            throw ex;
+            return handle(ex);
         }
     }
 }

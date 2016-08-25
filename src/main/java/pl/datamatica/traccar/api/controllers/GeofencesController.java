@@ -16,48 +16,61 @@
  */
 package pl.datamatica.traccar.api.controllers;
 
+import java.util.List;
+import java.util.stream.Collectors;
 import pl.datamatica.traccar.api.Application;
-import pl.datamatica.traccar.api.dtos.out.PositionDto;
-import pl.datamatica.traccar.api.providers.PositionProvider;
+import pl.datamatica.traccar.api.dtos.out.GeoFenceDto;
+import pl.datamatica.traccar.api.providers.GeoFenceProvider;
 import pl.datamatica.traccar.api.providers.ProviderException;
 import pl.datamatica.traccar.api.responses.HttpResponse;
 import spark.Request;
 import spark.Spark;
 
-public class PositionsController extends ControllerBase {
+public class GeofencesController extends ControllerBase{
     public static class Binder extends ControllerBinder {
 
         @Override
         public void bind() {
+            Spark.get(rootUrl(), (req, res) -> {
+                GeofencesController controller = createController(req);
+                return render(controller.get(), res);
+            }, gson::toJson);
+            
             Spark.get(rootUrl() + "/:id", (req, res) -> {
-                PositionsController controller = createController(req);
+                GeofencesController controller = createController(req);
                 return render(controller.get(Long.parseLong(req.params(":id"))), res);
-            });
+            }, gson::toJson);
         }
         
-        private PositionsController createController(Request req) {
-            RequestContext rc = req.attribute(Application.REQUEST_CONTEXT_KEY);
-            return new PositionsController(rc);
-        }
-
         @Override
         public String rootUrl() {
-            return super.rootUrl() + "/positions";
+            return super.rootUrl() + "/geofences";
         }
-
         
+        private GeofencesController createController(Request req) {
+            RequestContext rc = req.attribute(Application.REQUEST_CONTEXT_KEY);
+            return new GeofencesController(rc);
+        }
     }
     
-    private PositionProvider pp;
+    GeoFenceProvider provider;
     
-    public PositionsController(RequestContext rc) {
+    public GeofencesController(RequestContext rc) {
         super(rc);
-        pp = rc.getPositionProvider();
+        provider = rc.getGeoFencesProvider();
+    }
+    
+    public HttpResponse get() {
+        List<GeoFenceDto> gfs = provider.getAllAvailableGeoFences()
+                .map(gf -> new GeoFenceDto(gf))
+                .collect(Collectors.toList());
+        return okCached(gfs);
     }
     
     public HttpResponse get(long id) throws ProviderException {
         try {
-            return ok(new PositionDto(pp.get(id)));
+            GeoFenceDto gf = new GeoFenceDto(provider.getGeoFence(id));
+            return okCached(gf);
         } catch(ProviderException e) {
             return handle(e);
         }

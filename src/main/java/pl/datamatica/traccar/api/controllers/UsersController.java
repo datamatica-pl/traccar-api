@@ -77,13 +77,7 @@ public class UsersController extends ControllerBase {
             User other = up.getUser(id);
             return ok(new UserDto(other));
         } catch(ProviderException e) {
-            switch(e.getType()) {
-                case NOT_FOUND:
-                    return notFound();
-                case ACCESS_DENIED:
-                    return forbidden();
-            }
-            throw e;
+            return handle(e);
         }
     }
 }

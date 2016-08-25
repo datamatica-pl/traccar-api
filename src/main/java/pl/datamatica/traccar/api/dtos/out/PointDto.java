@@ -14,28 +14,27 @@
  *  You should have received a copy of the GNU Affero General Public License
  *  along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-package pl.datamatica.traccar.api.providers;
+package pl.datamatica.traccar.api.dtos.out;
 
-import javax.persistence.EntityManager;
-import pl.datamatica.traccar.model.Position;
-import pl.datamatica.traccar.model.User;
+public class PointDto {
+    private double longitude;
+    private double latitude;
+    
+    public PointDto(double longitude, double latitude) {
+        this.latitude = latitude;
+        this.longitude = longitude;
+    }
 
-public class PositionProvider extends ProviderBase {
-    
-    private DeviceProvider dp;
-    
-    public PositionProvider(EntityManager em) {
-        super(em);
-        dp = new DeviceProvider(em);
+    public double getLongitude() {
+        return longitude;
     }
     
-    public void setRequestUser(User user) {
-        dp.setRequestUser(user);
+    public double getLatitude() {
+        return latitude;
     }
     
-    public Position get(long id) throws ProviderException {
-        return get(Position.class, id, 
-                p -> dp.getAllAvailableDevices()
-                        .anyMatch(d -> d.equals(p.getDevice())));
+    public static PointDto parsePoint(String data) {
+        String[] coords = data.split(" ");
+        return new PointDto(Double.parseDouble(coords[0]), Double.parseDouble(coords[1]));
     }
 }

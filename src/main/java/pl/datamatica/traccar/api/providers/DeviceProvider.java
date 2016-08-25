@@ -28,13 +28,12 @@ import pl.datamatica.traccar.model.GeoFence;
 import pl.datamatica.traccar.model.Report;
 import pl.datamatica.traccar.model.User;
 
-public class DeviceProvider {
-    private final EntityManager em;
+public class DeviceProvider extends ProviderBase {
     private UserProvider up;
     private User requestUser;
     
     public DeviceProvider(EntityManager em) {
-        this.em = em;
+        super(em);
         this.up = new UserProvider(em);
     }
     
@@ -44,12 +43,7 @@ public class DeviceProvider {
     }
     
     public Device getDevice(long id) throws ProviderException {
-        Device device = em.find(Device.class, id);
-        if(device == null)
-            throw new ProviderException(Type.NOT_FOUND);
-        if(!isVisible(device))
-            throw new ProviderException(Type.ACCESS_DENIED);
-        return device;
+        return get(Device.class, id, this::isVisible);
     }
     
     public Device getDeviceByImei(String imei) {
