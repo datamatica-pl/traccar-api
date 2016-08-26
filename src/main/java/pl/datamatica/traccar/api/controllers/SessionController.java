@@ -43,6 +43,11 @@ public class SessionController extends ControllerBase {
                 NotificationTokenDto tokenDto = gson.fromJson(req.body(), NotificationTokenDto.class);
                 return render(controller.putNotificationToken(tokenDto), res);
             }, gson::toJson);
+            
+            Spark.delete(rootUrl(), (req, res) -> {
+                SessionController controller = createController(req);
+                return render(controller.delete(), res);
+            }, gson::toJson);
         }
 
         @Override
@@ -79,4 +84,8 @@ public class SessionController extends ControllerBase {
         return badRequest(MessageKeys.ERR_TOKEN_REJECTED);
     }
     
+    public HttpResponse delete() {
+        requestContext.session().invalidate();
+        return ok("");
+    }  
 }

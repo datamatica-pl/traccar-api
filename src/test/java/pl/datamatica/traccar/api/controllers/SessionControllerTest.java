@@ -94,4 +94,13 @@ public class SessionControllerTest {
         assertEquals(1, errors.size());
         assertEquals(expectedError, errors.get(0));
     }
+    
+    @Test
+    public void delete() {
+        HttpResponse response = controller.delete();
+        
+        Mockito.verify(session, Mockito.timeout(1)).invalidate();
+        assertTrue(response instanceof OkResponse);
+        assertEquals("", response.getContent());
+    }
 }
