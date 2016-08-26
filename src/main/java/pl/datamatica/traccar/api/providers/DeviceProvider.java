@@ -58,9 +58,6 @@ public class DeviceProvider extends ProviderBase {
     }
 
     public Device createDevice(String imei) throws ProviderException {
-        boolean shouldManageTransaction = !em.getTransaction().isActive();
-        if(shouldManageTransaction)
-            em.getTransaction().begin();
         if(!isImeiValid(imei))
             throw new ProviderException(Type.INVALID_IMEI);
         
@@ -76,8 +73,6 @@ public class DeviceProvider extends ProviderBase {
         device.setUsers(Collections.singleton(requestUser));
         device.setOwner(requestUser);
         em.persist(device);
-        if(shouldManageTransaction)
-            em.getTransaction().commit();
         
         return device;
     }

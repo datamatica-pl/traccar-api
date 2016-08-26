@@ -40,16 +40,15 @@ public class UserProvider extends ProviderBase {
             throw new AuthenticationException(ErrorType.NO_SUCH_USER);
         if(password == null || password.isEmpty())
             throw new AuthenticationException(ErrorType.NO_PASSWORD);
-        try {
-            User user = getUserByMail(email);
-            if(user.getPasswordHashMethod().doHash(password, appSettings.getSalt()).equals(user.getPassword())) {
-                requestUser = user;
-                return user;
-            }
+        
+        User user = getUserByMail(email);
+        if(user == null)
             throw new AuthenticationException(ErrorType.NO_SUCH_USER);
-        } catch(NoResultException e) {
-            throw new AuthenticationException(ErrorType.NO_SUCH_USER);
+        if(user.getPasswordHashMethod().doHash(password, appSettings.getSalt()).equals(user.getPassword())) {
+            requestUser = user;
+            return user;
         }
+        throw new AuthenticationException(ErrorType.NO_SUCH_USER);
     }
     
     public User authenticateUser(long id) throws ProviderException {
@@ -71,12 +70,12 @@ public class UserProvider extends ProviderBase {
         return get(User.class, id, this::isVisible);
     }
 
-    public User createUser(String email, String password, boolean checkMarketing) throws ProviderException {
+    public User createUser(String email, String password, boolean checkMarketing) 
+            throws ProviderException {
         User existing = getUserByMail(email);
         if(existing != null)
             throw new ProviderException(Type.ALREADY_EXISTS);
         
-        em.getTransaction().begin();
         String hashedPassword = appSettings.getDefaultHashImplementation().doHash(password, appSettings.getSalt());
         User user = new User(email, hashedPassword);
         user.setEmail(email);
@@ -84,15 +83,18 @@ public class UserProvider extends ProviderBase {
         user.setMarketingCheck(checkMarketing);
         user.setPasswordHashMethod(appSettings.getDefaultHashImplementation());
         em.persist(user);
-        em.getTransaction().commit();
         
         return user;
     }
     
     private User getUserByMail(String email) {
-        TypedQuery<User> tq = em.createQuery("Select x from User x where x.email = :email", User.class);
-        tq.setParameter("email", email);
-        return tq.getSingleResult();
+        try {
+            TypedQuery<User> tq = em.createQuery("Select x from User x where x.email = :email", User.class);
+            tq.setParameter("email", email);
+            return tq.getSingleResult();
+        } catch (NoResultException e) {
+            return null;
+        }
     }
     
     private Stream<User> getAllUsers() {

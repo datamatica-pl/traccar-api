@@ -105,7 +105,9 @@ public class DevicesController extends ControllerBase {
         if(deviceDto == null || deviceDto.getImei() == null)
             return badRequest(MessageKeys.ERR_IMEI_NOT_PROVIDED);
         try {
-            Device device = dp.createDevice(deviceDto.getImei());   
+            requestContext.beginTransaction();
+            Device device = dp.createDevice(deviceDto.getImei()); 
+            requestContext.commitTransaction();
             return created("devices/"+device.getId(), device);
         } catch(ProviderException e) {
             switch(e.getType()) {

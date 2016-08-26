@@ -114,4 +114,12 @@ public class RequestContext implements AutoCloseable{
     public Session session() {
         return request.session();
     }
+
+    public void beginTransaction() {
+        em.getTransaction().begin();
+    }
+
+    public void commitTransaction() {
+        em.getTransaction().commit();
+    }
 }

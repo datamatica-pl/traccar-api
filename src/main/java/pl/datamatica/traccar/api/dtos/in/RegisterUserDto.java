@@ -20,11 +20,13 @@ public class RegisterUserDto {
     private String email;
     private String password;
     private boolean checkMarketing;
+    private String imei;
     
-    public RegisterUserDto(String email, String password, boolean checkMarketing) {
+    public RegisterUserDto(String email, String password, boolean checkMarketing, String imei) {
         this.email = email;
         this.password = password;
         this.checkMarketing = checkMarketing;
+        this.imei = imei;
     }
 
     public String getEmail() {
@@ -35,7 +37,11 @@ public class RegisterUserDto {
         return password;
     }
 
-    public boolean getCheckMarketing() {
+    public boolean isCheckMarketing() {
         return checkMarketing;
-    }    
+    }
+    
+    public String getImei() {
+        return imei;
+    }
 }

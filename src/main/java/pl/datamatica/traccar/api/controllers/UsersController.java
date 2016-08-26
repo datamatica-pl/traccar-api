@@ -17,8 +17,6 @@
 package pl.datamatica.traccar.api.controllers;
 
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import pl.datamatica.traccar.api.Application;
 import static pl.datamatica.traccar.api.controllers.ControllerBase.render;
@@ -93,12 +91,19 @@ public class UsersController extends ControllerBase {
     
     public HttpResponse post(RegisterUserDto userDto) throws ProviderException {
         try {
-            User user = up.createUser(userDto.getEmail(), userDto.getPassword(), userDto.getCheckMarketing());
+            requestContext.beginTransaction();
+            User user = up.createUser(userDto.getEmail(), userDto.getPassword(), 
+                    userDto.isCheckMarketing());
+            requestContext.setUser(user);
+            requestContext.getDeviceProvider().createDevice(userDto.getImei());
+            requestContext.commitTransaction();
             return created("/user/"+user.getId(), "");
         } catch (ProviderException ex) {
             switch(ex.getType()) {
                 case ALREADY_EXISTS:
                     return conflict(MessageKeys.ERR_USER_ALREADY_EXISTS);
+                case INVALID_IMEI:
+                    return badRequest(MessageKeys.ERR_INVALID_IMEI);                    
             }
             throw ex;
         }
