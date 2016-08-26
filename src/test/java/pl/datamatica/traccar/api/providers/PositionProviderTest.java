@@ -39,14 +39,13 @@ public class PositionProviderTest {
     @Before
     public void testInit() {
         em.getTransaction().begin();
-        provider = new PositionProvider(em);
     }
     
     @Test
     public void get_ok() throws ProviderException {
+        provider = new PositionProvider(em, database.admin);
         Position expected = database.adminPosition;
-        
-        provider.setRequestUser(database.admin);
+       
         Position position = provider.get(expected.getId());
         
         assertEquals(expected, position);
@@ -54,7 +53,7 @@ public class PositionProviderTest {
     
     @Test
     public void get_notFound() {
-        provider.setRequestUser(database.admin);
+        provider = new PositionProvider(em, database.admin);
         try {
             provider.get(859);
         } catch (ProviderException ex) {
@@ -66,8 +65,8 @@ public class PositionProviderTest {
     
     @Test
     public void get_accessDenied() {
+        provider = new PositionProvider(em, database.managed2);
         try {
-            provider.setRequestUser(database.managed2);
             provider.get(database.adminPosition.getId());
         } catch(ProviderException e) {
             assertEquals(Type.ACCESS_DENIED, e.getType());

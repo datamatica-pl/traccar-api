@@ -19,9 +19,9 @@ package pl.datamatica.traccar.api.dtos.in;
 public class RegisterUserDto {
     private String email;
     private String password;
-    private String checkMarketing;
+    private boolean checkMarketing;
     
-    public RegisterUserDto(String email, String password, String checkMarketing) {
+    public RegisterUserDto(String email, String password, boolean checkMarketing) {
         this.email = email;
         this.password = password;
         this.checkMarketing = checkMarketing;
@@ -35,7 +35,7 @@ public class RegisterUserDto {
         return password;
     }
 
-    public String getCheckMarketing() {
+    public boolean getCheckMarketing() {
         return checkMarketing;
     }    
 }

@@ -24,7 +24,6 @@ import spark.Spark;
 
 import pl.datamatica.traccar.api.controllers.*;
 import pl.datamatica.traccar.api.auth.BasicAuthFilter;
-import pl.datamatica.traccar.api.auth.PasswordValidator;
 
 
 public class Application implements spark.servlet.SparkApplication {
@@ -49,8 +48,7 @@ public class Application implements spark.servlet.SparkApplication {
         Spark.get("test", (req, res) -> {
                 return "Hello world";
         });
-        PasswordValidator passValidator = new PasswordValidator();
-        BasicAuthFilter baf = new BasicAuthFilter(passValidator);
+        BasicAuthFilter baf = new BasicAuthFilter();
         
         Spark.before((req, res) -> {
             RequestContext rc = new RequestContext(req, res);

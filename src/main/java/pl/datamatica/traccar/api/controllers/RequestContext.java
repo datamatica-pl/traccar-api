@@ -43,6 +43,12 @@ public class RequestContext implements AutoCloseable{
     private final EntityManager em;
     private final Request request;
     
+    private DeviceProvider devices;
+    private UserProvider users;
+    private ApplicationSettingsProvider appSettings;
+    private FileProvider files;
+    private PositionProvider positions;
+    
     public RequestContext(Request request, Response response) throws ParseException {
         this.ifModifiedSince = new Date(0);
         if(request.headers(IF_MODIFIED_SINCE_HEADER) != null)
@@ -64,29 +70,34 @@ public class RequestContext implements AutoCloseable{
     }
     
     public DeviceProvider getDeviceProvider() {
-        DeviceProvider dp = new DeviceProvider(em);
-        dp.setRequestUser(user);
-        return dp;
+        if(devices == null)
+            devices = new DeviceProvider(em, user);
+        return devices;
     }
     
     public UserProvider getUserProvider() {
-        UserProvider up = new UserProvider(em);
-        up.setRequestUser(user);
-        return up;
+        ApplicationSettingsProvider appSettingsProvider = getApplicationSettingsProvider();
+        if(users == null)
+            users = new UserProvider(em, appSettingsProvider.get());
+        return users;
     }
     
     public ApplicationSettingsProvider getApplicationSettingsProvider() {
-        return new ApplicationSettingsProvider(em);
+        if(appSettings == null)
+            appSettings = new ApplicationSettingsProvider(em);
+        return appSettings;
     }
     
     public FileProvider getFileProvider() throws Exception {
-        return new FileProvider(Application.getStringsDir());
+        if(files == null) 
+            files = new FileProvider(Application.getStringsDir());
+        return files;
     }
     
     public PositionProvider getPositionProvider() {
-        PositionProvider provider = new PositionProvider(em);
-        provider.setRequestUser(user);
-        return provider;
+        if(positions == null)
+            positions = new PositionProvider(em, user);
+        return positions;
     }
     
     public GeoFenceProvider getGeoFencesProvider() {

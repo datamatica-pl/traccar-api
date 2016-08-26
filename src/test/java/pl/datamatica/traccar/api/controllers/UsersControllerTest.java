@@ -22,10 +22,12 @@ import java.util.stream.IntStream;
 import org.junit.*;
 import static org.junit.Assert.*;
 import org.mockito.Mockito;
+import pl.datamatica.traccar.api.dtos.in.RegisterUserDto;
 import pl.datamatica.traccar.api.dtos.out.UserDto;
 import pl.datamatica.traccar.api.providers.ProviderException;
 import pl.datamatica.traccar.api.providers.ProviderException.Type;
 import pl.datamatica.traccar.api.providers.UserProvider;
+import pl.datamatica.traccar.api.responses.CreatedResponse;
 import pl.datamatica.traccar.api.responses.ErrorResponse;
 import pl.datamatica.traccar.api.responses.HttpResponse;
 import pl.datamatica.traccar.api.responses.OkResponse;
@@ -100,5 +102,19 @@ public class UsersControllerTest {
         
         assertTrue(response instanceof ErrorResponse);
         assertEquals(404, response.getHttpStatus());
+    }
+    
+    @Test
+    public void post_ok() throws ProviderException {
+        String email="test@test.pl";
+        String password = "test2015";
+        boolean marketing = true;
+        RegisterUserDto userDto = new RegisterUserDto(email, password, marketing);
+        Mockito.when(provider.createUser(email, password, marketing)).thenReturn(new User());
+        
+        HttpResponse response = controller.post(userDto);
+        
+        assertTrue(response instanceof CreatedResponse);
+        assertEquals("", response.getContent());
     }
 }

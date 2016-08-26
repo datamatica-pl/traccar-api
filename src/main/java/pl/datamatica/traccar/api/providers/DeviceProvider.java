@@ -29,17 +29,11 @@ import pl.datamatica.traccar.model.Report;
 import pl.datamatica.traccar.model.User;
 
 public class DeviceProvider extends ProviderBase {
-    private UserProvider up;
     private User requestUser;
     
-    public DeviceProvider(EntityManager em) {
+    public DeviceProvider(EntityManager em, User requestUser) {
         super(em);
-        this.up = new UserProvider(em);
-    }
-    
-    public void setRequestUser(User requestUser) {
         this.requestUser = requestUser;
-        up.setRequestUser(requestUser);
     }
     
     public Device getDevice(long id) throws ProviderException {
@@ -47,7 +41,7 @@ public class DeviceProvider extends ProviderBase {
     }
     
     public Device getDeviceByImei(String imei) {
-        TypedQuery<Device> tq = em.createQuery("Select x from Device x where uniqueId = :imei", Device.class);
+        TypedQuery<Device> tq = em.createQuery("Select x from Device x where x.uniqueId = :imei", Device.class);
         tq.setParameter("imei", imei);
         List<Device> devices = tq.getResultList();
         if(devices.isEmpty())
@@ -58,8 +52,9 @@ public class DeviceProvider extends ProviderBase {
     public Stream<Device> getAllAvailableDevices() {
         if(requestUser.getAdmin())
             return getAllDevices();
-        else
-            return managedAndMe().flatMap(u -> u.getDevices().stream()).distinct();
+        else {
+            return requestUser.getAllAvailableDevices().stream();
+        }
     }
 
     public Device createDevice(String imei) throws ProviderException {
@@ -109,11 +104,7 @@ public class DeviceProvider extends ProviderBase {
     private boolean isVisible(Device device) {
         if(requestUser.getAdmin())
             return true;
-        return managedAndMe().anyMatch((managed) -> (managed.getDevices().contains(device)));
-    }
-    
-    private Stream<User> managedAndMe() {
-        return up.managedAndMe(requestUser);
+        return getAllAvailableDevices().anyMatch(d -> d.equals(device));
     }
     
     private Stream<Device> getAllDevices() {
