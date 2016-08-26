@@ -42,7 +42,7 @@ public class BasicAuthFilter {
     private static final Logger logger = LoggerFactory.getLogger(BasicAuthFilter.class);
         
     public void handle(Request request, Response response) throws Exception {
-        if(request.contextPath().equals("/v1/users") 
+        if(request.pathInfo().equals("/v1/users") 
                 && request.requestMethod().equalsIgnoreCase("post"))
             return;
         try {

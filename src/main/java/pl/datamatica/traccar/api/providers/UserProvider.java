@@ -25,6 +25,7 @@ import pl.datamatica.traccar.api.auth.AuthenticationException.ErrorType;
 import pl.datamatica.traccar.api.providers.ProviderException.Type;
 import pl.datamatica.traccar.model.ApplicationSettings;
 import pl.datamatica.traccar.model.User;
+import pl.datamatica.traccar.model.UserSettings;
 
 public class UserProvider extends ProviderBase {
     private User requestUser;
@@ -81,7 +82,10 @@ public class UserProvider extends ProviderBase {
         user.setEmail(email);
         user.setManager(true);
         user.setMarketingCheck(checkMarketing);
+        user.setEmailValid(false);
+        user.setBlocked(true);
         user.setPasswordHashMethod(appSettings.getDefaultHashImplementation());
+        user.setUserSettings(new UserSettings());
         em.persist(user);
         
         return user;
