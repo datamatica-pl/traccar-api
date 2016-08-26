@@ -80,7 +80,7 @@ public class BasicAuthFilter {
     
     private User continueSession(Request request, UserProvider up) throws Exception {
         long userId = request.session().attribute(USER_ID_SESSION_KEY);
-        User user = up.getUser(userId);
+        User user = up.authenticateUser(userId);
         if(user == null)
             throw new AuthenticationException(ErrorType.NO_SUCH_USER);
         return user;
