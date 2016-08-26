@@ -16,10 +16,13 @@
  */
 package pl.datamatica.traccar.api.dtos.in;
 
+import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
+import pl.datamatica.traccar.api.dtos.out.ErrorDto;
 import pl.datamatica.traccar.api.dtos.out.PointDto;
 
-public class AddGeoFenceDto {
+public class AddGeoFenceDto implements IGeoFenceInfo {
     private final String geofenceName;
     private final String description;
     private final boolean allDevices;
@@ -94,18 +97,22 @@ public class AddGeoFenceDto {
         this.type = type;
     }
 
+    @Override
     public String getGeofenceName() {
         return geofenceName;
     }
 
+    @Override
     public String getDescription() {
         return description;
     }
 
+    @Override
     public boolean isAllDevices() {
         return allDevices;
     }
 
+    @Override
     public String getColor() {
         return color;
     }
@@ -113,13 +120,26 @@ public class AddGeoFenceDto {
     public List<PointDto> getPoints() {
         return points;
     }
+    
+    @Override
+    public String getPointsString() {
+        return points.stream()
+                .map(Object::toString)
+                .collect(Collectors.joining(","));
+    }
 
+    @Override
     public float getRadius() {
         return radius;
     }
 
+    @Override
     public String getType() {
         return type;
     }    
     
+    public static List<ErrorDto> validate(IGeoFenceInfo geoFenceDto) {
+        //todo 2016-08-26
+        return Collections.EMPTY_LIST;
+    }
 }

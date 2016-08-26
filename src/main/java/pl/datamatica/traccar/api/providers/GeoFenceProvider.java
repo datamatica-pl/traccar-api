@@ -16,9 +16,13 @@
  */
 package pl.datamatica.traccar.api.providers;
 
+import java.util.Collections;
 import java.util.stream.Stream;
 import javax.persistence.EntityManager;
+import pl.datamatica.traccar.api.dtos.in.AddGeoFenceDto;
+import pl.datamatica.traccar.api.dtos.in.IGeoFenceInfo;
 import pl.datamatica.traccar.model.GeoFence;
+import pl.datamatica.traccar.model.GeoFenceType;
 import pl.datamatica.traccar.model.User;
 
 public class GeoFenceProvider extends ProviderBase{
@@ -39,5 +43,20 @@ public class GeoFenceProvider extends ProviderBase{
     public GeoFence getGeoFence(long id) throws ProviderException {
         return get(GeoFence.class, id, 
                 gf -> requestUser.getAllAvailableGeoFences().contains(gf));
+    }
+
+    public GeoFence createGeoFence(IGeoFenceInfo geoFenceDto) {
+        GeoFence gf = new GeoFence();
+        gf.setName(geoFenceDto.getGeofenceName());
+        gf.setDescription(geoFenceDto.getDescription());
+        gf.setAllDevices(geoFenceDto.isAllDevices());
+        gf.setColor(geoFenceDto.getColor());
+        gf.setPoints(geoFenceDto.getPointsString());
+        gf.setRadius(geoFenceDto.getRadius());
+        gf.setType(GeoFenceType.valueOf(geoFenceDto.getType()));
+        gf.setUsers(Collections.singleton(requestUser));
+        em.persist(gf);
+        
+        return gf;
     }
 }
