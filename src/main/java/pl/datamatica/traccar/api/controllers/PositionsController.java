@@ -57,7 +57,7 @@ public class PositionsController extends ControllerBase {
     
     public HttpResponse get(long id) throws ProviderException {
         try {
-            return ok(new PositionDto(pp.get(id)));
+            return ok(new PositionDto.Builder().position(pp.get(id)).build());
         } catch(ProviderException e) {
             return handle(e);
         }

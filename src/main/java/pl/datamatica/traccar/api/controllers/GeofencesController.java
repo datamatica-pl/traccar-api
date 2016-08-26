@@ -62,17 +62,19 @@ public class GeofencesController extends ControllerBase{
     
     public HttpResponse get() {
         List<GeoFenceDto> gfs = provider.getAllAvailableGeoFences()
-                .map(gf -> new GeoFenceDto(gf))
+                .map(gf -> new GeoFenceDto.Builder().geoFence(gf).build())
                 .collect(Collectors.toList());
         return okCached(gfs);
     }
     
     public HttpResponse get(long id) throws ProviderException {
         try {
-            GeoFenceDto gf = new GeoFenceDto(provider.getGeoFence(id));
+            GeoFenceDto gf = new GeoFenceDto.Builder().geoFence(provider.getGeoFence(id)).build();
             return okCached(gf);
         } catch(ProviderException e) {
             return handle(e);
         }
     }
+    
+    
 }

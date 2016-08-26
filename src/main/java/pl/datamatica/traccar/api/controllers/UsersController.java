@@ -76,7 +76,7 @@ public class UsersController extends ControllerBase {
     
     public HttpResponse get() throws Exception {
         List<UserDto> users = up.getAllAvailableUsers()
-                .map(user -> new UserDto(user))
+                .map(user -> new UserDto.Builder().user(user).build())
                 .collect(Collectors.toList());
         return ok(users);
     }
@@ -84,7 +84,7 @@ public class UsersController extends ControllerBase {
     public HttpResponse get(long id) throws Exception {
         try {
             User other = up.getUser(id);
-            return ok(new UserDto(other));
+            return ok(new UserDto.Builder().user(other).build());
         } catch(ProviderException e) {
             return handle(e);
         }
@@ -102,7 +102,7 @@ public class UsersController extends ControllerBase {
             requestContext.setUser(user);
             requestContext.getDeviceProvider().createDevice(userDto.getImei());
             requestContext.commitTransaction();
-            return created("/user/"+user.getId(), "");
+            return created("user/"+user.getId(), "");
         } catch (ProviderException ex) {
             switch(ex.getType()) {
                 case ALREADY_EXISTS:

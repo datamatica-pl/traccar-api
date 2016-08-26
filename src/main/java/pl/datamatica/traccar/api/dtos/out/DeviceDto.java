@@ -39,29 +39,160 @@ public class DeviceDto implements ICachedDto{
     
     @JsonIgnore
     private Date modificationTime;
-    
-    public DeviceDto(Device device) {
-        this.id = device.getId();
-        this.deviceName = device.getName();
-        this.deviceModelId = device.getDeviceModelId();
-        this.iconId = device.getIconType().getId();
-        this.color = device.getColor();
-        this.phoneNumber = device.getPhoneNumber();
-        this.plateNumber = device.getPlateNumber();
-        this.description = device.getDescription();
-        this.status = device.getStatus();
-        this.uniqueId = device.getUniqueId();
-        Position latestPosition = device.getLatestPosition();
-        if(latestPosition != null)
-            this.lastPosition = new PositionDto(latestPosition);
-        this.isDeleted = device.isDeleted();
-        this.accountId = device.getOwner().getId();
-        if(device.getPositions() != null) 
-            this.oldestPositionTime = device.getPositions().stream()
-                    .map(p -> p.getTime())
-                    .min((d1, d2) -> d1.compareTo(d2))
-                    .orElse(null);
-        this.modificationTime = device.getLastUpdate();
+
+    public static class Builder {
+
+        private long id;
+        private String deviceName;
+        private long deviceModelId;
+        private int iconId;
+        private String color;
+        private String phoneNumber;
+        private String plateNumber;
+        private String description;
+        private String status;
+        private String uniqueId;
+        private PositionDto lastPosition;
+        private Date oldestPositionTime;
+        private boolean isDeleted;
+        private long accountId;
+        private Date modificationTime;
+
+        public Builder id(final long value) {
+            this.id = value;
+            return this;
+        }
+
+        public Builder deviceName(final String value) {
+            this.deviceName = value;
+            return this;
+        }
+
+        public Builder deviceModelId(final long value) {
+            this.deviceModelId = value;
+            return this;
+        }
+
+        public Builder iconId(final int value) {
+            this.iconId = value;
+            return this;
+        }
+
+        public Builder color(final String value) {
+            this.color = value;
+            return this;
+        }
+
+        public Builder phoneNumber(final String value) {
+            this.phoneNumber = value;
+            return this;
+        }
+
+        public Builder plateNumber(final String value) {
+            this.plateNumber = value;
+            return this;
+        }
+
+        public Builder description(final String value) {
+            this.description = value;
+            return this;
+        }
+
+        public Builder status(final String value) {
+            this.status = value;
+            return this;
+        }
+
+        public Builder uniqueId(final String value) {
+            this.uniqueId = value;
+            return this;
+        }
+
+        public Builder lastPosition(final PositionDto value) {
+            this.lastPosition = value;
+            return this;
+        }
+
+        public Builder oldestPositionTime(final Date value) {
+            this.oldestPositionTime = value;
+            return this;
+        }
+
+        public Builder isDeleted(final boolean value) {
+            this.isDeleted = value;
+            return this;
+        }
+
+        public Builder accountId(final long value) {
+            this.accountId = value;
+            return this;
+        }
+
+        public Builder modificationTime(final Date value) {
+            this.modificationTime = value;
+            return this;
+        }
+        
+        public Builder device(final Device device) {
+            this.id = device.getId();
+            this.deviceName = device.getName();
+            this.deviceModelId = device.getDeviceModelId();
+            this.iconId = device.getIconType().getId();
+            this.color = device.getColor();
+            this.phoneNumber = device.getPhoneNumber();
+            this.plateNumber = device.getPlateNumber();
+            this.description = device.getDescription();
+            this.status = device.getStatus();
+            this.uniqueId = device.getUniqueId();
+            Position latestPosition = device.getLatestPosition();
+            if(latestPosition != null)
+                this.lastPosition = new PositionDto.Builder().position(latestPosition).build();
+            this.isDeleted = device.isDeleted();
+            this.accountId = device.getOwner().getId();
+            if(device.getPositions() != null) 
+                this.oldestPositionTime = device.getPositions().stream()
+                        .map(p -> p.getTime())
+                        .min((d1, d2) -> d1.compareTo(d2))
+                        .orElse(null);
+            this.modificationTime = device.getLastUpdate();
+            return this;
+        }
+
+        public DeviceDto build() {
+            return new DeviceDto(id, deviceName, deviceModelId, iconId, color, phoneNumber, plateNumber, description, status, uniqueId, lastPosition, oldestPositionTime, isDeleted, accountId, modificationTime);
+        }
+    }
+
+    private DeviceDto(final long id, 
+            final String deviceName, 
+            final long deviceModelId, 
+            final int iconId, 
+            final String color, 
+            final String phoneNumber, 
+            final String plateNumber, 
+            final String description, 
+            final String status, 
+            final String uniqueId,
+            final PositionDto lastPosition, 
+            final Date oldestPositionTime,
+            final boolean isDeleted, 
+            final long accountId, 
+            final Date modificationTime) {
+        this.id = id;
+        this.deviceName = deviceName;
+        this.deviceModelId = deviceModelId;
+        this.iconId = iconId;
+        this.color = color;
+        this.phoneNumber = phoneNumber;
+        this.plateNumber = plateNumber;
+        this.description = description;
+        this.status = status;
+        this.uniqueId = uniqueId;
+        this.lastPosition = lastPosition;
+        this.oldestPositionTime = oldestPositionTime;
+        this.isDeleted = isDeleted;
+        this.accountId = accountId;
+        this.modificationTime = modificationTime;
     }
     
     public long getId() {

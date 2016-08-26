@@ -17,8 +17,8 @@
 package pl.datamatica.traccar.api.dtos.out;
 
 public class PointDto {
-    private double longitude;
-    private double latitude;
+    private final double longitude;
+    private final double latitude;
     
     public PointDto(double longitude, double latitude) {
         this.latitude = latitude;
