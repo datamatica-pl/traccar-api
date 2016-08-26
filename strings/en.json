@@ -9,5 +9,8 @@
 	"err_registration_data_not_provided": "Registration data not provided",
 	"err_email_not_provided": "E-mail not provided",
 	"err_password_not_provided": "Password not provided",
-	"err_check_marketing_not_provided": "Check marketing not provided"
+	"err_check_marketing_not_provided": "Check marketing not provided",
+	
+	"err_account_blocked": "Your account is blocked",
+	"err_account_expired": "Your account has expired"
 }

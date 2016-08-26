@@ -28,4 +28,7 @@ public class MessageKeys {
     public static final String ERR_EMAIL_NOT_PROVIDED = "err_email_not_provided";
     public static final String ERR_PASSWORD_NOT_PROVIDED = "err_password_not_provided";
     public static final String ERR_CHECK_MARKETING_NOT_PROVIDED = "err_check_marketing_not_provided";
+    
+    public static final String ERR_ACCOUNT_BLOCKED = "err_account_blocked";
+    public static final String ERR_ACCOUNT_EXPIRED = "err_account_expired";
 }

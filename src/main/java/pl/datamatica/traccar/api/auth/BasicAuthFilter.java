@@ -16,15 +16,19 @@
  */
 package pl.datamatica.traccar.api.auth;
 
+import com.google.gson.Gson;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.concurrent.TimeUnit;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pl.datamatica.traccar.api.Application;
+import pl.datamatica.traccar.api.Context;
 import spark.*;
 import static pl.datamatica.traccar.api.auth.AuthenticationException.*;
 import pl.datamatica.traccar.api.controllers.RequestContext;
+import pl.datamatica.traccar.api.dtos.MessageKeys;
+import pl.datamatica.traccar.api.dtos.out.ErrorDto;
 import pl.datamatica.traccar.api.providers.ApplicationSettingsProvider;
 import pl.datamatica.traccar.api.providers.UserProvider;
 import pl.datamatica.traccar.model.User;
@@ -54,6 +58,10 @@ public class BasicAuthFilter {
                 user = continueSession(request, up);
             else
                 user = beginSession(request, up);
+            if(user.isBlocked()) {
+                unauthorized(response, new ErrorDto(MessageKeys.ERR_ACCOUNT_BLOCKED));
+            } else if(user.isExpired()) 
+                unauthorized(response, new ErrorDto(MessageKeys.ERR_ACCOUNT_EXPIRED));
             rc.setUser(user);
         } catch(AuthenticationException e) {
             unauthorized(response, e.getMessage());
@@ -118,6 +126,12 @@ public class BasicAuthFilter {
         return Credentials.fromBasic(credentials, CHARSET);
     }
 
+    private void unauthorized(Response response, ErrorDto error) {
+        Gson gson = Context.getInstance().getGson();
+        String message = gson.toJson(error);
+        unauthorized(response, message);
+    }
+    
     private void unauthorized(Response response, String errorMessage) {
         response.header("WWW-Authenticate", SCHEME + " " + "realm=\"" + REALM + "\"");
         Spark.halt(401, errorMessage);

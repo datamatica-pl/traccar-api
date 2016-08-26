@@ -9,5 +9,8 @@
 	"err_registration_data_not_provided": "Nie podano danych do rejestracji",
 	"err_email_not_provided": "Nie podano adresu e-mail",
 	"err_password_not_provided": "Nie podano hasła",
-	"err_check_marketing_not_provided": "Nie podano informacji o zgodzie na marketing"
+	"err_check_marketing_not_provided": "Nie podano informacji o zgodzie na marketing",
+	
+	"err_account_blocked": "Konto jest zablokowane",
+	"err_account_expired": "Konto wygasło"
 }
