@@ -16,10 +16,16 @@
  */
 package pl.datamatica.traccar.api.dtos.in;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import pl.datamatica.traccar.api.dtos.MessageKeys;
+import pl.datamatica.traccar.api.dtos.out.ErrorDto;
+
 public class RegisterUserDto {
     private String email;
     private String password;
-    private boolean checkMarketing;
+    private Boolean checkMarketing;
     private String imei;
     
     public RegisterUserDto(String email, String password, boolean checkMarketing, String imei) {
@@ -43,5 +49,22 @@ public class RegisterUserDto {
     
     public String getImei() {
         return imei;
+    }
+    
+    public static List<ErrorDto> validate(RegisterUserDto userDto) {
+        if(userDto == null)
+            return Collections.singletonList(new ErrorDto(MessageKeys.ERR_REGISTRATION_DATA_NOT_PROVIDED));
+        
+        List<ErrorDto> errors = new ArrayList<>();
+        if(userDto.email == null || userDto.email.isEmpty())
+            errors.add(new ErrorDto(MessageKeys.ERR_EMAIL_NOT_PROVIDED));
+        if(userDto.password == null || userDto.password.isEmpty())
+            errors.add(new ErrorDto(MessageKeys.ERR_PASSWORD_NOT_PROVIDED));
+        if(userDto.checkMarketing == null)
+            errors.add(new ErrorDto(MessageKeys.ERR_CHECK_MARKETING_NOT_PROVIDED));
+        if(userDto.imei == null || userDto.imei.isEmpty())
+            errors.add(new ErrorDto(MessageKeys.ERR_IMEI_NOT_PROVIDED));
+        
+        return errors;
     }
 }

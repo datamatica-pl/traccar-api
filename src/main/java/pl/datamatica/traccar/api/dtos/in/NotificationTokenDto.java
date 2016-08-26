@@ -16,6 +16,11 @@
  */
 package pl.datamatica.traccar.api.dtos.in;
 
+import java.util.Collections;
+import java.util.List;
+import pl.datamatica.traccar.api.dtos.MessageKeys;
+import pl.datamatica.traccar.api.dtos.out.ErrorDto;
+
 public class NotificationTokenDto {
     private String token;
     
@@ -28,5 +33,11 @@ public class NotificationTokenDto {
 
     public String getToken() {
         return token;
+    }
+    
+    public static List<ErrorDto> validate(NotificationTokenDto tokenDto) {
+        if(tokenDto == null || tokenDto.getToken() == null)
+            return Collections.singletonList(new ErrorDto(MessageKeys.ERR_TOKEN_NOT_PROVIDED));
+        return Collections.EMPTY_LIST;
     }
 }

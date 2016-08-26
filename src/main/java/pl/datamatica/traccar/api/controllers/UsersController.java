@@ -22,6 +22,7 @@ import pl.datamatica.traccar.api.Application;
 import static pl.datamatica.traccar.api.controllers.ControllerBase.render;
 import pl.datamatica.traccar.api.dtos.MessageKeys;
 import pl.datamatica.traccar.api.dtos.in.RegisterUserDto;
+import pl.datamatica.traccar.api.dtos.out.ErrorDto;
 import pl.datamatica.traccar.api.dtos.out.UserDto;
 import pl.datamatica.traccar.api.providers.ProviderException;
 import pl.datamatica.traccar.api.providers.UserProvider;
@@ -90,6 +91,10 @@ public class UsersController extends ControllerBase {
     }
     
     public HttpResponse post(RegisterUserDto userDto) throws ProviderException {
+        List<ErrorDto> errors = RegisterUserDto.validate(userDto);
+        if(!errors.isEmpty())
+            return badRequest(errors);
+        
         try {
             requestContext.beginTransaction();
             User user = up.createUser(userDto.getEmail(), userDto.getPassword(), 

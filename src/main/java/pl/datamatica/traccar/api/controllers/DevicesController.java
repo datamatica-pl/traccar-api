@@ -23,6 +23,7 @@ import static pl.datamatica.traccar.api.controllers.ControllerBase.render;
 import pl.datamatica.traccar.api.dtos.MessageKeys;
 import pl.datamatica.traccar.api.dtos.in.AddDeviceDto;
 import pl.datamatica.traccar.api.dtos.out.DeviceDto;
+import pl.datamatica.traccar.api.dtos.out.ErrorDto;
 import pl.datamatica.traccar.api.dtos.out.PositionDto;
 import pl.datamatica.traccar.api.providers.DeviceProvider;
 import pl.datamatica.traccar.api.providers.ProviderException;
@@ -102,8 +103,9 @@ public class DevicesController extends ControllerBase {
     }
     
     public HttpResponse post(AddDeviceDto deviceDto) throws Exception {
-        if(deviceDto == null || deviceDto.getImei() == null)
-            return badRequest(MessageKeys.ERR_IMEI_NOT_PROVIDED);
+        List<ErrorDto> validationErrors = AddDeviceDto.validate(deviceDto);
+        if(!validationErrors.isEmpty())
+            return badRequest(validationErrors);
         try {
             requestContext.beginTransaction();
             Device device = dp.createDevice(deviceDto.getImei()); 

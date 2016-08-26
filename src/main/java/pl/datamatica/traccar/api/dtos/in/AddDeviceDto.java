@@ -16,6 +16,11 @@
  */
 package pl.datamatica.traccar.api.dtos.in;
 
+import java.util.Collections;
+import java.util.List;
+import pl.datamatica.traccar.api.dtos.MessageKeys;
+import pl.datamatica.traccar.api.dtos.out.ErrorDto;
+
 public class AddDeviceDto {
     private String imei;
     
@@ -28,5 +33,11 @@ public class AddDeviceDto {
     
     public String getImei() {
         return imei;
+    }
+    
+    public static List<ErrorDto> validate(AddDeviceDto deviceDto) {
+        if(deviceDto == null || deviceDto.getImei() == null)
+            return Collections.singletonList(new ErrorDto(MessageKeys.ERR_IMEI_NOT_PROVIDED));
+        return Collections.EMPTY_LIST;
     }
 }
