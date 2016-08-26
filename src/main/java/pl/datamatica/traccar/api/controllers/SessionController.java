@@ -16,9 +16,11 @@
  */
 package pl.datamatica.traccar.api.controllers;
 
+import java.util.List;
 import pl.datamatica.traccar.api.Application;
 import pl.datamatica.traccar.api.dtos.MessageKeys;
 import pl.datamatica.traccar.api.dtos.in.NotificationTokenDto;
+import pl.datamatica.traccar.api.dtos.out.ErrorDto;
 import pl.datamatica.traccar.api.dtos.out.UserDto;
 import pl.datamatica.traccar.api.responses.HttpResponse;
 import spark.Spark;
@@ -66,8 +68,9 @@ public class SessionController extends ControllerBase {
     }
     
     public HttpResponse putNotificationToken(NotificationTokenDto tokenDto) {
-        if(tokenDto == null || tokenDto.getToken() == null)
-            return badRequest(MessageKeys.ERR_TOKEN_NOT_PROVIDED);
+        List<ErrorDto> validationErrors = NotificationTokenDto.validate(tokenDto);
+        if(!validationErrors.isEmpty())
+            return badRequest(validationErrors);
         String token = tokenDto.getToken();
         if(validator.isValid(token)) {
             requestContext.session().attribute(Application.NOTIFICATION_TOKEN_SESSION_KEY, token);

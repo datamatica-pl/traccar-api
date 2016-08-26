@@ -20,6 +20,9 @@ import java.util.List;
 import java.util.stream.Collectors;
 import pl.datamatica.traccar.api.Application;
 import static pl.datamatica.traccar.api.controllers.ControllerBase.render;
+import pl.datamatica.traccar.api.dtos.MessageKeys;
+import pl.datamatica.traccar.api.dtos.in.RegisterUserDto;
+import pl.datamatica.traccar.api.dtos.out.ErrorDto;
 import pl.datamatica.traccar.api.dtos.out.UserDto;
 import pl.datamatica.traccar.api.providers.ProviderException;
 import pl.datamatica.traccar.api.providers.UserProvider;
@@ -42,6 +45,12 @@ public class UsersController extends ControllerBase {
             Spark.get(rootUrl() + "/:id", (req, res) -> {
                 UsersController uc = createController(req);
                 return render(uc.get(Long.parseLong(req.params(":id"))), res);
+            }, gson::toJson);
+            
+            Spark.post(rootUrl(), (req, res) ->{
+                UsersController uc = createController(req);
+                RegisterUserDto userDto = gson.fromJson(req.body(), RegisterUserDto.class);
+                return render(uc.post(userDto), res);
             }, gson::toJson);
         }
 
@@ -78,6 +87,30 @@ public class UsersController extends ControllerBase {
             return ok(new UserDto(other));
         } catch(ProviderException e) {
             return handle(e);
+        }
+    }
+    
+    public HttpResponse post(RegisterUserDto userDto) throws ProviderException {
+        List<ErrorDto> errors = RegisterUserDto.validate(userDto);
+        if(!errors.isEmpty())
+            return badRequest(errors);
+        
+        try {
+            requestContext.beginTransaction();
+            User user = up.createUser(userDto.getEmail(), userDto.getPassword(), 
+                    userDto.isCheckMarketing());
+            requestContext.setUser(user);
+            requestContext.getDeviceProvider().createDevice(userDto.getImei());
+            requestContext.commitTransaction();
+            return created("/user/"+user.getId(), "");
+        } catch (ProviderException ex) {
+            switch(ex.getType()) {
+                case ALREADY_EXISTS:
+                    return conflict(MessageKeys.ERR_USER_ALREADY_EXISTS);
+                case INVALID_IMEI:
+                    return badRequest(MessageKeys.ERR_INVALID_IMEI);                    
+            }
+            throw ex;
         }
     }
 }

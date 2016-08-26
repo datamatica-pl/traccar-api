@@ -1,8 +1,13 @@
 {
-	err_imei_not_provided: "Imei was not provided",
-	err_invalid_imei: "Invalid IMEI number",
-	err_access_denied: "Access to this resource was denied",
-	err_not_found: "Resource not found",
-	err_token_not_provided: "Notification token not provided",
-	err_token_rejected: "Notification token was rejected"
+	"err_imei_not_provided": "Imei was not provided",
+	"err_invalid_imei": "Invalid IMEI number",
+	"err_access_denied": "Access to this resource was denied",
+	"err_not_found": "Resource not found",
+	"err_token_not_provided": "Notification token not provided",
+	"err_token_rejected": "Notification token was rejected",
+	"err_user_already_exists": "User with this e-mail already exists",
+	"err_registration_data_not_provided": "Registration data not provided",
+	"err_email_not_provided": "E-mail not provided",
+	"err_password_not_provided": "Password not provided",
+	"err_check_marketing_not_provided": "Check marketing not provided"
 }

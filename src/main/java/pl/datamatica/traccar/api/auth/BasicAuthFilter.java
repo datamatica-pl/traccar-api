@@ -19,7 +19,6 @@ package pl.datamatica.traccar.api.auth;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.concurrent.TimeUnit;
-import javax.persistence.EntityManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pl.datamatica.traccar.api.Application;
@@ -41,14 +40,11 @@ public class BasicAuthFilter {
     private static final int SESSION_MAX_INACTIVE_INTERVAL = (int)TimeUnit.SECONDS.convert(14, TimeUnit.DAYS);
     
     private static final Logger logger = LoggerFactory.getLogger(BasicAuthFilter.class);
-    
-    private final IPasswordValidator passwordValidator;
-    
-    public BasicAuthFilter(IPasswordValidator passwordValidator) {        
-        this.passwordValidator = passwordValidator;
-    }
         
     public void handle(Request request, Response response) throws Exception {
+        if(request.pathInfo().equals("/v1/users") 
+                && request.requestMethod().equalsIgnoreCase("post"))
+            return;
         try {
             RequestContext rc = request.attribute(Application.REQUEST_CONTEXT_KEY);
             UserProvider up = rc.getUserProvider();
@@ -57,7 +53,7 @@ public class BasicAuthFilter {
             if(request.session().attributes().contains(USER_ID_SESSION_KEY))
                 user = continueSession(request, up);
             else
-                user = beginSession(request, up, asp);
+                user = beginSession(request, up);
             rc.setUser(user);
         } catch(AuthenticationException e) {
             unauthorized(response, e.getMessage());
@@ -66,9 +62,9 @@ public class BasicAuthFilter {
         }
     }
 
-    private User beginSession(Request request, UserProvider up, ApplicationSettingsProvider asp) throws IllegalArgumentException, AuthenticationException {
+    private User beginSession(Request request, UserProvider up) throws IllegalArgumentException, AuthenticationException {
         Credentials credentials = readCredentials(request.headers(AUTH_HEADER_NAME));
-        User user = verifyCredentials(credentials, up, asp);
+        User user = verifyCredentials(credentials, up);
         request.session().maxInactiveInterval(SESSION_MAX_INACTIVE_INTERVAL);
         request.session().attribute(USER_ID_SESSION_KEY, user.getId());
         return user;
@@ -82,14 +78,14 @@ public class BasicAuthFilter {
         return user;
     }
     
-    public User verifyCredentials(Credentials credentials, UserProvider up, ApplicationSettingsProvider asp) 
+    public User verifyCredentials(Credentials credentials, UserProvider up) 
             throws AuthenticationException {
         User user;
         if(credentials == null)
             throw new IllegalArgumentException("Credentials can't be null");
         if(credentials.getPassword().isEmpty())
             throw new AuthenticationException(ErrorType.NO_PASSWORD);
-        user = passwordValidator.getUser(credentials, up, asp);
+        user = up.authenticateUser(credentials.getLogin(), credentials.getPassword());
         if(user == null)
             throw new AuthenticationException(ErrorType.NO_SUCH_USER);
         return user;

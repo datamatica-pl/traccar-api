@@ -18,24 +18,87 @@ package pl.datamatica.traccar.api.providers;
 
 import java.util.stream.Stream;
 import javax.persistence.EntityManager;
+import javax.persistence.NoResultException;
 import javax.persistence.TypedQuery;
+import pl.datamatica.traccar.api.auth.AuthenticationException;
+import pl.datamatica.traccar.api.auth.AuthenticationException.ErrorType;
+import pl.datamatica.traccar.api.providers.ProviderException.Type;
+import pl.datamatica.traccar.model.ApplicationSettings;
 import pl.datamatica.traccar.model.User;
+import pl.datamatica.traccar.model.UserSettings;
 
 public class UserProvider extends ProviderBase {
     private User requestUser;
+    private ApplicationSettings appSettings;
     
-    public UserProvider(EntityManager entityManager) {
+    public UserProvider(EntityManager entityManager, ApplicationSettings appSettings) {
         super(entityManager);
+        this.appSettings = appSettings;
     }
     
-    public void setRequestUser(User requestUser) {
-        this.requestUser = requestUser;
+    public User authenticateUser(String email, String password) throws AuthenticationException {
+        if(email == null || email.isEmpty())
+            throw new AuthenticationException(ErrorType.NO_SUCH_USER);
+        if(password == null || password.isEmpty())
+            throw new AuthenticationException(ErrorType.NO_PASSWORD);
+        
+        User user = getUserByMail(email);
+        if(user == null)
+            throw new AuthenticationException(ErrorType.NO_SUCH_USER);
+        if(user.getPasswordHashMethod().doHash(password, appSettings.getSalt()).equals(user.getPassword())) {
+            requestUser = user;
+            return user;
+        }
+        throw new AuthenticationException(ErrorType.NO_SUCH_USER);
+    }
+    
+    public User authenticateUser(long id) throws ProviderException {
+        return get(User.class, id, u -> true);
+    }
+    
+    public User getRequestUser() {
+        return requestUser;
     }
     
     public Stream<User> getAllAvailableUsers() {
         if(requestUser.getAdmin()) 
             return getAllUsers();
-        return getAllUsers().filter(u -> isVisible(u));
+        return Stream.concat(requestUser.getManagedUsers().stream(), 
+                Stream.of(requestUser.getManagedBy(), requestUser));
+    }
+    
+    public User getUser(long id) throws ProviderException {
+        return get(User.class, id, this::isVisible);
+    }
+
+    public User createUser(String email, String password, boolean checkMarketing) 
+            throws ProviderException {
+        User existing = getUserByMail(email);
+        if(existing != null)
+            throw new ProviderException(Type.ALREADY_EXISTS);
+        
+        String hashedPassword = appSettings.getDefaultHashImplementation().doHash(password, appSettings.getSalt());
+        User user = new User(email, hashedPassword);
+        user.setEmail(email);
+        user.setManager(true);
+        user.setMarketingCheck(checkMarketing);
+        user.setEmailValid(false);
+        user.setBlocked(true);
+        user.setPasswordHashMethod(appSettings.getDefaultHashImplementation());
+        user.setUserSettings(new UserSettings());
+        em.persist(user);
+        
+        return user;
+    }
+    
+    private User getUserByMail(String email) {
+        try {
+            TypedQuery<User> tq = em.createQuery("Select x from User x where x.email = :email", User.class);
+            tq.setParameter("email", email);
+            return tq.getSingleResult();
+        } catch (NoResultException e) {
+            return null;
+        }
     }
     
     private Stream<User> getAllUsers() {
@@ -43,29 +106,12 @@ public class UserProvider extends ProviderBase {
         return tq.getResultList().stream();
     }
     
-    public User getUser(long id) throws ProviderException {
-        return get(User.class, id, this::isVisible);
-    }
-    
-    public User getUserByMail(String email) {
-        TypedQuery<User> tq = em.createQuery("Select x from User x where x.email = :email", User.class);
-        tq.setParameter("email", email);
-        return tq.getSingleResult();
-    }
-    
-    public Stream<User> managedAndMe(User user) {
-        if(!user.getManager())
-            return Stream.of(user);
-        return Stream.concat(Stream.of(user), 
-                user.getManagedUsers().stream().flatMap(u -> managedAndMe(u)));
-    }
-    
     private boolean isVisible(User other) {
-        if(requestUser == null || requestUser.getAdmin())
-            return true;
-        if(requestUser.getManagedBy().equals(other))
+        if(requestUser == null)
+            return false;
+        if(requestUser.getAdmin())
             return true;
         
-        return managedAndMe(requestUser).anyMatch(u -> u.equals(other));
+        return getAllAvailableUsers().anyMatch(u -> u.equals(other));
     }
 }

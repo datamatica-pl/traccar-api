@@ -22,20 +22,16 @@ import pl.datamatica.traccar.model.User;
 
 public class PositionProvider extends ProviderBase {
     
-    private DeviceProvider dp;
+    private User user;
     
-    public PositionProvider(EntityManager em) {
+    public PositionProvider(EntityManager em, User user) {
         super(em);
-        dp = new DeviceProvider(em);
-    }
-    
-    public void setRequestUser(User user) {
-        dp.setRequestUser(user);
+        this.user = user;
     }
     
     public Position get(long id) throws ProviderException {
         return get(Position.class, id, 
-                p -> dp.getAllAvailableDevices()
+                p -> user.getAllAvailableDevices().stream()
                         .anyMatch(d -> d.equals(p.getDevice())));
     }
 }

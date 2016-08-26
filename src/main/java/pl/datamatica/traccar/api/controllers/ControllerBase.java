@@ -84,15 +84,20 @@ public abstract class ControllerBase {
         return new ErrorResponse(HttpStatuses.FORBIDDEN, Collections.singletonList(error));
     }
     
+    protected HttpResponse badRequest(List<ErrorDto> errors) {
+        return new ErrorResponse(HttpStatuses.BAD_REQUEST, errors);
+    }
+    
     protected HttpResponse badRequest(String... errorKeys) {
         List<ErrorDto> errors = Stream.of(errorKeys)
                 .map(key -> new ErrorDto(key))
                 .collect(Collectors.toList());
-        return new ErrorResponse(HttpStatuses.BAD_REQUEST, errors);
+        return badRequest(errors);
     }
     
-    protected HttpResponse badRequest() {
-        return new ErrorResponse(HttpStatuses.BAD_REQUEST, Collections.emptyList());
+    protected HttpResponse conflict(String errorKey) {
+        return new ErrorResponse(HttpStatuses.CONFLICT, 
+                Collections.singletonList(new ErrorDto(errorKey)));
     }
     
     protected HttpResponse created(String route, Object resource) {

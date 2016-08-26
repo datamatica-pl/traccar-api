@@ -22,10 +22,13 @@ import java.util.stream.IntStream;
 import org.junit.*;
 import static org.junit.Assert.*;
 import org.mockito.Mockito;
+import pl.datamatica.traccar.api.dtos.in.RegisterUserDto;
 import pl.datamatica.traccar.api.dtos.out.UserDto;
+import pl.datamatica.traccar.api.providers.DeviceProvider;
 import pl.datamatica.traccar.api.providers.ProviderException;
 import pl.datamatica.traccar.api.providers.ProviderException.Type;
 import pl.datamatica.traccar.api.providers.UserProvider;
+import pl.datamatica.traccar.api.responses.CreatedResponse;
 import pl.datamatica.traccar.api.responses.ErrorResponse;
 import pl.datamatica.traccar.api.responses.HttpResponse;
 import pl.datamatica.traccar.api.responses.OkResponse;
@@ -34,10 +37,12 @@ import pl.datamatica.traccar.model.User;
 public class UsersControllerTest {
     
     private UsersController controller;
+    private DeviceProvider devices;
     private UserProvider provider;
     private RequestContext rc;
     private User user;
     private List<User> users;
+    private RegisterUserDto userDto;
     
     @Before
     public void testInit() {
@@ -45,8 +50,10 @@ public class UsersControllerTest {
         user.setLogin("0");
         rc = Mockito.mock(RequestContext.class);
         provider = Mockito.mock(UserProvider.class);
+        devices = Mockito.mock(DeviceProvider.class);
         Mockito.when(rc.getUser()).thenReturn(user);
         Mockito.when(rc.getUserProvider()).thenReturn(provider);
+        Mockito.when(rc.getDeviceProvider()).thenReturn(devices);
         controller = new UsersController(rc);
         users = IntStream.range(1, 8)
                 .mapToObj(i -> {
@@ -56,6 +63,7 @@ public class UsersControllerTest {
                 })
                 .collect(Collectors.toList());
         users.add(user);
+        userDto = new RegisterUserDto("test@test.pl", "test", true, "123456");
     }
     
     
@@ -100,5 +108,47 @@ public class UsersControllerTest {
         
         assertTrue(response instanceof ErrorResponse);
         assertEquals(404, response.getHttpStatus());
+    }
+    
+    @Test
+    public void post_ok() throws ProviderException {
+        Mockito.when(provider.createUser(userDto.getEmail(), userDto.getPassword(), userDto.isCheckMarketing()))
+                .thenReturn(new User());
+        
+        HttpResponse response = controller.post(userDto);
+        
+        Mockito.verify(devices, Mockito.times(1)).createDevice(userDto.getImei());
+        assertTrue(response instanceof CreatedResponse);
+        assertEquals("", response.getContent());
+    }
+    
+    @Test
+    public void post_noData() throws ProviderException {
+        HttpResponse response = controller.post(null);
+        
+        assertTrue(response instanceof ErrorResponse);
+        assertEquals(400, response.getHttpStatus());
+    }
+    
+    @Test
+    public void post_conflict() throws ProviderException {
+        Mockito.when(provider.createUser(userDto.getEmail(), userDto.getPassword(), userDto.isCheckMarketing()))
+                .thenThrow(new ProviderException(Type.ALREADY_EXISTS));
+
+        HttpResponse response = controller.post(userDto);
+
+        assertTrue(response instanceof ErrorResponse);
+        assertEquals(409, response.getHttpStatus());
+    }
+    
+    @Test
+    public void post_invalidImei() throws ProviderException {
+        Mockito.when(devices.createDevice(userDto.getImei()))
+                .thenThrow(new ProviderException(Type.INVALID_IMEI));
+        
+        HttpResponse response = controller.post(userDto);
+        
+        assertTrue(response instanceof ErrorResponse);
+        assertEquals(400, response.getHttpStatus());
     }
 }

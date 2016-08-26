@@ -23,4 +23,9 @@ public class MessageKeys {
     public static final String ERR_NOT_FOUND = "err_not_found";
     public static final String ERR_TOKEN_REJECTED = "err_token_rejected";
     public static final String ERR_TOKEN_NOT_PROVIDED = "err_token_not_provided";
+    public static final String ERR_USER_ALREADY_EXISTS = "err_user_already_exists";
+    public static final String ERR_REGISTRATION_DATA_NOT_PROVIDED = "err_registration_data_not_provided";
+    public static final String ERR_EMAIL_NOT_PROVIDED = "err_email_not_provided";
+    public static final String ERR_PASSWORD_NOT_PROVIDED = "err_password_not_provided";
+    public static final String ERR_CHECK_MARKETING_NOT_PROVIDED = "err_check_marketing_not_provided";
 }

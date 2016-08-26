@@ -45,14 +45,13 @@ public class DeviceProviderTest {
     public void testInit() {
         em.getTransaction().begin();
         em.getTransaction().setRollbackOnly();
-        this.provider = new DeviceProvider(em);
     }
     
     @Test
-    public void getDevice_ok() throws ProviderException {        
+    public void getDevice_ok() throws ProviderException {  
+        provider = new DeviceProvider(em, database.manager);
         Device expected = database.managed2Device;
         
-        provider.setRequestUser(database.manager);
         Device actual = provider.getDevice(expected.getId());
         
         assertEquals(expected, actual);
@@ -60,8 +59,8 @@ public class DeviceProviderTest {
     
     @Test
     public void getDevice_notFound() {
+        provider = new DeviceProvider(em, database.admin);
         try {
-            provider.setRequestUser(database.admin);
             provider.getDevice(999);
         } catch(ProviderException e) {
             assertEquals(ProviderException.Type.NOT_FOUND, e.getType());
@@ -72,8 +71,8 @@ public class DeviceProviderTest {
     
     @Test
     public void getDevice_accesDenied() {
+        provider = new DeviceProvider(em, database.managed2);
         try {
-            provider.setRequestUser(database.managed2);
             provider.getDevice(database.adminDevice.getId());
         } catch(ProviderException e) {
             assertEquals(ProviderException.Type.ACCESS_DENIED, e.getType());
@@ -84,13 +83,13 @@ public class DeviceProviderTest {
     
     @Test 
     public void getAllAvailableDevices_admin() {
+        provider = new DeviceProvider(em, database.admin);
         Set<Device> expected = Stream.of(database.managedDevice, 
                 database.managed2Device,
                 database.adminDevice,
                 database.managerDevice)
                 .collect(Collectors.toSet());
         
-        provider.setRequestUser(database.admin);
         Set<Device> actual = provider.getAllAvailableDevices()
                 .collect(Collectors.toSet());
         assertEquals(expected, actual);
@@ -98,12 +97,12 @@ public class DeviceProviderTest {
     
     @Test
     public void getAllAvailableDevices_manager() {
+        provider = new DeviceProvider(em, database.manager);
         Set<Device> expected = Stream.of(database.managerDevice, 
                 database.managedDevice,
                 database.managed2Device)
                 .collect(Collectors.toSet());
                
-        provider.setRequestUser(database.manager);
         Set<Device> actual = provider.getAllAvailableDevices()
                 .collect(Collectors.toSet());
         assertEquals(expected, actual);
@@ -113,8 +112,8 @@ public class DeviceProviderTest {
     public void createDevice_ok() throws ProviderException {
         String uniqueId = "584930";
         User user = database.admin;
-        
-        provider.setRequestUser(user);
+        provider = new DeviceProvider(em, user);
+
         Device device = provider.createDevice(uniqueId);
         em.flush();
         
@@ -130,13 +129,13 @@ public class DeviceProviderTest {
     
     @Test
     public void createDevice_imeiExists() {
+        provider = new DeviceProvider(em, database.manager);
         try{
             String uniqueId = database.managerDevice.getUniqueId();
 
-            provider.setRequestUser(database.manager);
-            Device device = provider.createDevice(uniqueId);
+            provider.createDevice(uniqueId);
         } catch(ProviderException e) {
-            assertEquals(ProviderException.Type.IMEI_ALREADY_EXISTS, e.getType());
+            assertEquals(ProviderException.Type.ALREADY_EXISTS, e.getType());
             return;
         }
         fail();
@@ -146,8 +145,8 @@ public class DeviceProviderTest {
     public void createDevice_deletedImei() throws ProviderException {
         String uniqueId = database.managedDevice.getUniqueId();
         User user = database.managed2;
+        provider = new DeviceProvider(em, user);
         
-        provider.setRequestUser(user);
         Device device = provider.createDevice(uniqueId);
         
         assertTrue(device.getId() > 0);
@@ -159,7 +158,7 @@ public class DeviceProviderTest {
     
     @Test
     public void delete_ok() throws ProviderException {
-        provider.setRequestUser(database.managed2);
+        provider = new DeviceProvider(em, database.managed2);
         provider.delete(database.managed2Device.getId());
         em.flush();
         
@@ -169,8 +168,8 @@ public class DeviceProviderTest {
     
     @Test
     public void delete_accessDenied() {
+        provider = new DeviceProvider(em, database.managed2);
         try {
-            provider.setRequestUser(database.managed2);
             provider.delete(database.adminDevice.getId());
         } catch(ProviderException e) {
             assertEquals(ProviderException.Type.ACCESS_DENIED, e.getType());
@@ -181,14 +180,14 @@ public class DeviceProviderTest {
     
     @Test
     public void delete_alreadyDeleted() {
-       try {
-           provider.setRequestUser(database.managedUser);
-           provider.delete(database.managedDevice.getId());
-       } catch(ProviderException e) {
-           assertEquals(ProviderException.Type.ALREADY_DELETED, e.getType());
-           return;
-       }
-       fail();
+        provider = new DeviceProvider(em, database.managedUser);
+        try {
+            provider.delete(database.managedDevice.getId());
+        } catch (ProviderException e) {
+            assertEquals(ProviderException.Type.ALREADY_DELETED, e.getType());
+            return;
+        }
+        fail();
    }
     
     @After

@@ -21,8 +21,8 @@ import org.junit.Before;
 import org.junit.Test;
 import pl.datamatica.traccar.model.User;
 import static org.junit.Assert.*;
+import org.mockito.Mockito;
 import static pl.datamatica.traccar.api.auth.AuthenticationException.*;
-import pl.datamatica.traccar.api.providers.ApplicationSettingsProvider;
 import pl.datamatica.traccar.api.providers.UserProvider;
 
 public class BasicAuthFilterTest {
@@ -31,35 +31,37 @@ public class BasicAuthFilterTest {
     private final Credentials invalidCredentials;
     private final User validUser;
     private BasicAuthFilter filter;
+    private UserProvider users;
     
-    public BasicAuthFilterTest() {
+    public BasicAuthFilterTest() {       
         validCredentials = new Credentials("asdf@op.pl", "asdf123");
         invalidCredentials = new Credentials("qwe@test.pl","test");
         
         validUser = new User();
         validUser.setLogin("top-secret-login");
+        
+        users = Mockito.mock(UserProvider.class);
+        Mockito.when(users.authenticateUser(validCredentials.getLogin(), validCredentials.getPassword()))
+                .thenReturn(validUser);
+        Mockito.when(users.authenticateUser(invalidCredentials.getLogin(), invalidCredentials.getPassword()))
+                .thenThrow(new AuthenticationException(ErrorType.NO_SUCH_USER));
     }
     
     @Before
     public void testInit() {
-        filter = new BasicAuthFilter(new IPasswordValidator() {
-            @Override
-            public User getUser(Credentials credentials, UserProvider up, ApplicationSettingsProvider asp) {
-                return validCredentials.equals(credentials) ? validUser : null;
-            }
-        });
+        filter = new BasicAuthFilter();
     }
     
     @Test
     public void verifyCredentials_validCredentials() {
-        User actual = filter.verifyCredentials(validCredentials, null, null);
+        User actual = filter.verifyCredentials(validCredentials, users);
         assertEquals(validUser, actual);
     }
     
     @Test
     public void verifyCredentials_noSuchUser() {
         try {
-            filter.verifyCredentials(invalidCredentials, null, null);
+            filter.verifyCredentials(invalidCredentials, users);
         } catch(AuthenticationException e) {
             assertEquals(e.type, ErrorType.NO_SUCH_USER);
             return;
@@ -69,7 +71,7 @@ public class BasicAuthFilterTest {
     
     @Test(expected=IllegalArgumentException.class)
     public void verifyCredentials_noCredentials() {
-        filter.verifyCredentials(null, null, null);
+        filter.verifyCredentials(null, users);
     }
     
     @Test

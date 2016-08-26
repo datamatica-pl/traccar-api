@@ -1,8 +1,13 @@
 {
-	err_imei_not_provided: "Nie podano numeru IMEI",
-	err_invalid_imei: "Nieprawidłowy numer IMEI",
-	err_access_denied: "Brak dostępu do zasobu",
-	err_not_found: "Nie znaleziono zasobu",
-	err_token_not_provided: "Nie podano tokena powiadomień"
-	err_token_rejected: "Token powiadomień odrzucony"
+	"err_imei_not_provided": "Nie podano numeru IMEI",
+	"err_invalid_imei": "Nieprawidłowy numer IMEI",
+	"err_access_denied": "Brak dostępu do zasobu",
+	"err_not_found": "Nie znaleziono zasobu",
+	"err_token_not_provided": "Nie podano tokena powiadomień"
+	"err_token_rejected": "Token powiadomień odrzucony",
+	"err_user_already_exists": "Istnieje już użytkownik z tym adresem e-mail",
+	"err_registration_data_not_provided": "Nie podano danych do rejestracji",
+	"err_email_not_provided": "Nie podano adresu e-mail",
+	"err_password_not_provided": "Nie podano hasła",
+	"err_check_marketing_not_provided": "Nie podano informacji o zgodzie na marketing"
 }

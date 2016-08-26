@@ -19,12 +19,14 @@ package pl.datamatica.traccar.api.providers;
 import javax.persistence.*;
 import org.junit.*;
 import static org.junit.Assert.*;
-import pl.datamatica.traccar.api.providers.ProviderException.*;
-import pl.datamatica.traccar.model.Position;
+import pl.datamatica.traccar.api.providers.ProviderException.Type;
+import pl.datamatica.traccar.model.ApplicationSettings;
+import pl.datamatica.traccar.model.PasswordHashMethod;
+import pl.datamatica.traccar.model.User;
 
-public class PositionProviderTest {
-    
-    private PositionProvider provider;
+public class UserProviderTest {
+    private UserProvider provider;
+    private ApplicationSettings appSettings;
     private static TestDatabase database;
     private static EntityManager em;
     
@@ -39,37 +41,41 @@ public class PositionProviderTest {
     @Before
     public void testInit() {
         em.getTransaction().begin();
+        appSettings = new ApplicationSettings();
+        provider = new UserProvider(em, appSettings);
     }
     
     @Test
-    public void get_ok() throws ProviderException {
-        provider = new PositionProvider(em, database.admin);
-        Position expected = database.adminPosition;
-       
-        Position position = provider.get(expected.getId());
+    public void createUser_ok() throws ProviderException {
+        String salt = "asdf";
+        String password = "datamatica2016";
+        String email = "newUser@test.pl";
+        PasswordHashMethod passHash = PasswordHashMethod.MD5;
+        String expectedPassword = passHash.doHash(password, salt);
+        boolean marketing = false;
         
-        assertEquals(expected, position);
+        appSettings.setSalt(salt);
+        appSettings.setDefaultHashImplementation(PasswordHashMethod.MD5);
+        User user = provider.createUser(email, password, marketing);
+        em.flush();
+        em.refresh(user);
+        
+        assertEquals(email, user.getEmail());
+        assertEquals(email, user.getLogin());
+        assertEquals(expectedPassword, user.getPassword());
+        assertEquals(marketing, user.getMarketingCheck());
+        assertEquals(passHash, user.getPasswordHashMethod());
+        assertTrue(user.getManager());
     }
     
     @Test
-    public void get_notFound() {
-        provider = new PositionProvider(em, database.admin);
+    public void createUser_alreadyExists() {
+        appSettings.setSalt("asdf");
+        appSettings.setDefaultHashImplementation(PasswordHashMethod.MD5);
         try {
-            provider.get(859);
-        } catch (ProviderException ex) {
-            assertEquals(Type.NOT_FOUND, ex.getType());
-            return;
-        }
-        fail();
-    }
-    
-    @Test
-    public void get_accessDenied() {
-        provider = new PositionProvider(em, database.managed2);
-        try {
-            provider.get(database.adminPosition.getId());
+            provider.createUser("admin@admin.pl", "qwe85", true);
         } catch(ProviderException e) {
-            assertEquals(Type.ACCESS_DENIED, e.getType());
+            assertEquals(Type.ALREADY_EXISTS, e.getType());
             return;
         }
         fail();
