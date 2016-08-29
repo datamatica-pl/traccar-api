@@ -14,32 +14,22 @@
  *  You should have received a copy of the GNU Affero General Public License
  *  along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-package pl.datamatica.traccar.api.dtos.out;
+package pl.datamatica.traccar.api.dtos;
 
-public class PointDto {
-    private final double longitude;
-    private final double latitude;
-    
-    public PointDto(double longitude, double latitude) {
-        this.latitude = latitude;
-        this.longitude = longitude;
-    }
+public interface IGeoFenceInfo {
 
-    public double getLongitude() {
-        return longitude;
-    }
-    
-    public double getLatitude() {
-        return latitude;
-    }
+    String getColor();
 
-    @Override
-    public String toString() {
-        return longitude + " " + latitude;
-    }
+    String getDescription();
+
+    String getGeofenceName();
+
+    String getPointsString();
+
+    float getRadius();
+
+    String getType();
+
+    boolean isAllDevices();
     
-    public static PointDto parsePoint(String data) {
-        String[] coords = data.split(" ");
-        return new PointDto(Double.parseDouble(coords[0]), Double.parseDouble(coords[1]));
-    }
 }

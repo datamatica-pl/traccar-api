@@ -87,7 +87,7 @@ public class DevicesController extends ControllerBase {
     
     public HttpResponse get() throws Exception {
         List<DeviceDto> devices = dp.getAllAvailableDevices()
-                .map(d -> new DeviceDto(d))
+                .map(d -> new DeviceDto.Builder().device(d).build())
                 .filter(d -> isModified(d.getModificationTime()))
                 .collect(Collectors.toList());
         
@@ -96,7 +96,7 @@ public class DevicesController extends ControllerBase {
     
     public HttpResponse get(long id) throws Exception {
         try{
-            return okCached(new DeviceDto(dp.getDevice(id)));
+            return okCached(new DeviceDto.Builder().device(dp.getDevice(id)).build());
         } catch(ProviderException e) {
             return handle(e);
         }
@@ -110,7 +110,7 @@ public class DevicesController extends ControllerBase {
             requestContext.beginTransaction();
             Device device = dp.createDevice(deviceDto.getImei()); 
             requestContext.commitTransaction();
-            return created("devices/"+device.getId(), device);
+            return created("devices/"+device.getId(), new DeviceDto.Builder().device(device).build());
         } catch(ProviderException e) {
             switch(e.getType()) {
                 case INVALID_IMEI:
@@ -135,7 +135,7 @@ public class DevicesController extends ControllerBase {
         try {
             Device device = dp.getDevice(id);
             return okCached(device.getPositions().stream()
-                    .map(p -> new PositionDto(p))
+                    .map(p -> new PositionDto.Builder().position(p).build())
                     .collect(Collectors.toList()));
         } catch (ProviderException ex) {
             return handle(ex);

@@ -19,10 +19,13 @@ package pl.datamatica.traccar.api.controllers;
 import java.util.List;
 import java.util.stream.Collectors;
 import pl.datamatica.traccar.api.Application;
+import pl.datamatica.traccar.api.dtos.in.AddGeoFenceDto;
+import pl.datamatica.traccar.api.dtos.out.ErrorDto;
 import pl.datamatica.traccar.api.dtos.out.GeoFenceDto;
 import pl.datamatica.traccar.api.providers.GeoFenceProvider;
 import pl.datamatica.traccar.api.providers.ProviderException;
 import pl.datamatica.traccar.api.responses.HttpResponse;
+import pl.datamatica.traccar.model.GeoFence;
 import spark.Request;
 import spark.Spark;
 
@@ -40,6 +43,12 @@ public class GeofencesController extends ControllerBase{
                 GeofencesController controller = createController(req);
                 return render(controller.get(Long.parseLong(req.params(":id"))), res);
             }, gson::toJson);
+            
+            Spark.post(rootUrl(), (req, res) -> {
+                GeofencesController controller = createController(req);
+                AddGeoFenceDto geoFenceDto = gson.fromJson(req.body(), AddGeoFenceDto.class);
+                return render(controller.post(geoFenceDto), res);
+            },gson::toJson);
         }
         
         @Override
@@ -62,17 +71,29 @@ public class GeofencesController extends ControllerBase{
     
     public HttpResponse get() {
         List<GeoFenceDto> gfs = provider.getAllAvailableGeoFences()
-                .map(gf -> new GeoFenceDto(gf))
+                .map(gf -> new GeoFenceDto.Builder().geoFence(gf).build())
                 .collect(Collectors.toList());
         return okCached(gfs);
     }
     
     public HttpResponse get(long id) throws ProviderException {
         try {
-            GeoFenceDto gf = new GeoFenceDto(provider.getGeoFence(id));
+            GeoFenceDto gf = new GeoFenceDto.Builder().geoFence(provider.getGeoFence(id)).build();
             return okCached(gf);
         } catch(ProviderException e) {
             return handle(e);
         }
+    }
+    
+    public HttpResponse post(AddGeoFenceDto geoFenceDto) {
+        List<ErrorDto> errors = AddGeoFenceDto.validate(geoFenceDto);
+        if(!errors.isEmpty())
+            return badRequest(errors);
+        
+        requestContext.beginTransaction();
+        GeoFence gf = provider.createGeoFence(geoFenceDto);
+        requestContext.commitTransaction();
+        
+        return created("geofences/"+gf.getId(), new GeoFenceDto.Builder().geoFence(gf).build());
     }
 }

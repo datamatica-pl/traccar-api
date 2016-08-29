@@ -22,10 +22,7 @@ import pl.datamatica.traccar.api.dtos.MessageKeys;
 import pl.datamatica.traccar.api.dtos.out.ErrorDto;
 
 public class NotificationTokenDto {
-    private String token;
-    
-    public NotificationTokenDto() {
-    }
+    private final String token;
     
     public NotificationTokenDto(String token) {
         this.token = token;

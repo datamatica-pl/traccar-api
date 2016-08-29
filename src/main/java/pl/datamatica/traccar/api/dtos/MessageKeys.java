@@ -31,4 +31,16 @@ public class MessageKeys {
     
     public static final String ERR_ACCOUNT_BLOCKED = "err_account_blocked";
     public static final String ERR_ACCOUNT_EXPIRED = "err_account_expired";
+    
+    
+    public static final String ERR_GEOFENCE_DATA_NOT_PROVIDED = "err_geofence_data_not_provided";
+    public static final String ERR_GEOFENCE_ALL_DEVICES_NOT_PROVIDED = "err_all_devices_not_provided";
+    public static final String ERR_GEOFENCE_COLOR_NOT_PROVIDED = "err_geofence_color_not_provided";
+    public static final String ERR_GEOFENCE_NAME_NOT_PROVIDED = "err_geofence_name_not_provided";
+    public static final String ERR_INVALID_COLOR_FORMAT = "err_invalid_color_format";
+    public static final String ERR_GEOFENCE_TYPE_NOT_PROVIDED = "err_geofence_type_not_provided";
+    public static final String ERR_INVALID_GEOFENCE_TYPE_FORMAT = "err_invalid_geofence_type_format";
+    public static final String ERR_GEOFENCE_POINTS_NOT_PROVIDED = "err_geofence_points_not_provided";
+    public static final String ERR_GEOFENCE_RADIUS_NOT_PROVIDED = "err_circle_radius_not_provided";
+    public static final String ERR_TOO_FEW_GEOFENCE_POINTS = "err_too_few_geofence_points";
 }

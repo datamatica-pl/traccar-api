@@ -22,13 +22,10 @@ import pl.datamatica.traccar.api.dtos.MessageKeys;
 import pl.datamatica.traccar.api.dtos.out.ErrorDto;
 
 public class AddDeviceDto {
-    private String imei;
+    private final String imei;
     
     public AddDeviceDto(String imei) {
         this.imei = imei;
-    }
-
-    public AddDeviceDto() {
     }
     
     public String getImei() {

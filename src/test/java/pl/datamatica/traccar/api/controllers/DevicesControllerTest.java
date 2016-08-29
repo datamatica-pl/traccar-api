@@ -193,6 +193,7 @@ public class DevicesControllerTest {
         final long id = 0;
         
         Device expectedContent = new Device();
+        expectedContent.setOwner(new User());
         expectedContent.setUniqueId(uniqueId);
         Mockito.when(dp.createDevice(uniqueId)).thenReturn(expectedContent);
         AddDeviceDto deviceDto = new AddDeviceDto(uniqueId);
@@ -203,12 +204,12 @@ public class DevicesControllerTest {
         assertTrue(response instanceof CreatedResponse);
         Stream<HttpHeader> headers = getHeaderStream(response);
         assertTrue(headers.anyMatch(h -> h.equals(expectedHdr)));
-        assertEquals(expectedContent, response.getContent());
+        assertTrue(response.getContent() instanceof DeviceDto);
     }
     
     @Test
     public void post_noImei() throws Exception {
-        AddDeviceDto deviceDto = new AddDeviceDto();
+        AddDeviceDto deviceDto = new AddDeviceDto(null);
         ErrorDto expectedError = new ErrorDto(MessageKeys.ERR_IMEI_NOT_PROVIDED);
         
         HttpResponse response = dc.post(deviceDto);

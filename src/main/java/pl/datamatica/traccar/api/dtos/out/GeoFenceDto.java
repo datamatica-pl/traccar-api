@@ -16,41 +16,70 @@
  */
 package pl.datamatica.traccar.api.dtos.out;
 
+import pl.datamatica.traccar.api.dtos.in.AddGeoFenceDto;
 import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import pl.datamatica.traccar.model.GeoFence;
 
-public class GeoFenceDto implements ICachedDto {
-    private long id;
-    private String geofenceName;
-    private String description;
-    private boolean allDevices;
-    private String color;
-    private List<PointDto> points;
-    private float radius;
-    private String type;
-    private Date lastUpdate;
-    
-    public GeoFenceDto(GeoFence gf) {
-        this.id = gf.getId();
-        this.geofenceName = gf.getName();
-        this.description = gf.getDescription();
-        this.allDevices = gf.isAllDevices();
-        this.color = gf.getColor();
-        this.radius = gf.getRadius();
-        if(gf.getPoints() != null) {
-            points = Stream.of(gf.getPoints().split(","))
+public class GeoFenceDto extends AddGeoFenceDto implements ICachedDto {
+    private final long id;
+    private final Date lastUpdate;
+
+    public static class Builder {
+
+        private long id;
+        private String geofenceName;
+        private String description;
+        private boolean allDevices;
+        private String color;
+        private List<PointDto> points;
+        private float radius;
+        private String type;
+        private Date lastUpdate;
+
+        public Builder geoFence(GeoFence geofence) {
+            this.id = geofence.getId();
+            this.geofenceName = geofence.getName();
+            this.description = geofence.getDescription();
+            this.allDevices = geofence.isAllDevices();
+            this.color = geofence.getColor();
+            if(geofence.getPoints() != null) {
+                points = Stream.of(geofence.getPoints().split(","))
                     .map(PointDto::parsePoint)
                     .collect(Collectors.toList());
+            }
+            this.radius = geofence.getRadius();
+            if(geofence.getType() != null)
+                this.type = geofence.getType().name();
+            this.lastUpdate = geofence.getLastUpdate();
+            return this;
         }
-        if(gf.getType() != null)
-            this.type = gf.getType().name();
-        this.lastUpdate = gf.getLastUpdate();
-        
+
+        public GeoFenceDto build() {
+            return new GeoFenceDto(id, geofenceName, description, allDevices, color, points, radius, type, lastUpdate);
+        }
     }
 
+    public GeoFenceDto(final long id, 
+            final String geofenceName, 
+            final String description, 
+            final boolean allDevices, 
+            final String color, 
+            final List<PointDto> points, 
+            final float radius, 
+            final String type, 
+            final Date lastUpdate) {
+        super(geofenceName, description, allDevices, color, points, radius, type);
+        this.id = id;
+        this.lastUpdate = lastUpdate;
+    }
+
+    public long getId() {
+        return id;
+    }
+    
     @Override
     public Date getModificationTime() {
         return lastUpdate;

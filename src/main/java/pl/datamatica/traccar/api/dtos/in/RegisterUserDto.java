@@ -23,10 +23,10 @@ import pl.datamatica.traccar.api.dtos.MessageKeys;
 import pl.datamatica.traccar.api.dtos.out.ErrorDto;
 
 public class RegisterUserDto {
-    private String email;
-    private String password;
-    private Boolean checkMarketing;
-    private String imei;
+    private final String email;
+    private final String password;
+    private final Boolean checkMarketing;
+    private final String imei;
     
     public RegisterUserDto(String email, String password, boolean checkMarketing, String imei) {
         this.email = email;
