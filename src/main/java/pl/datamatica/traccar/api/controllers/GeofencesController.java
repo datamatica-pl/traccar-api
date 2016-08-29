@@ -49,6 +49,12 @@ public class GeofencesController extends ControllerBase{
                 AddGeoFenceDto geoFenceDto = gson.fromJson(req.body(), AddGeoFenceDto.class);
                 return render(controller.post(geoFenceDto), res);
             },gson::toJson);
+            
+            Spark.put(rootUrl()+"/:id", (req, res) -> {
+                GeofencesController controller = createController(req);
+                AddGeoFenceDto geoFenceDto = gson.fromJson(req.body(), AddGeoFenceDto.class);
+                return render(controller.put(Long.parseLong(req.params(":id")), geoFenceDto), res);
+            }, gson::toJson);
         }
         
         @Override
@@ -95,5 +101,19 @@ public class GeofencesController extends ControllerBase{
         requestContext.commitTransaction();
         
         return created("geofences/"+gf.getId(), new GeoFenceDto.Builder().geoFence(gf).build());
+    }
+    
+    public HttpResponse put(long id, AddGeoFenceDto geoFenceDto) throws ProviderException {
+        List<ErrorDto> errors = AddGeoFenceDto.validate(geoFenceDto);
+        if(!errors.isEmpty())
+            return badRequest(errors);
+        try {
+            requestContext.beginTransaction();
+            provider.updateGeoFence(id, geoFenceDto);
+            requestContext.commitTransaction();
+            return ok("");
+        } catch(ProviderException e) {
+            return handle(e);
+        }
     }
 }
