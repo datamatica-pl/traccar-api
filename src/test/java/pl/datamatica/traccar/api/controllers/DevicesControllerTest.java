@@ -243,6 +243,7 @@ public class DevicesControllerTest {
         EditDeviceDto deviceDto = new EditDeviceDto.Builder()
                 .color("00FF00")
                 .deviceModelId(-1)
+                .iconId(1)
                 .deviceName("test")
                 .build();
         
@@ -266,7 +267,7 @@ public class DevicesControllerTest {
         assertTrue(response instanceof ErrorResponse);
         assertEquals(400, response.getHttpStatus());
         List<ErrorDto> errors = (List<ErrorDto>)response.getContent();
-        assertEquals(1, errors.size());
+        assertEquals(2, errors.size());
     }
     
     @Test

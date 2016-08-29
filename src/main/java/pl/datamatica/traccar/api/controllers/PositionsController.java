@@ -32,7 +32,7 @@ public class PositionsController extends ControllerBase {
             Spark.get(rootUrl() + "/:id", (req, res) -> {
                 PositionsController controller = createController(req);
                 return render(controller.get(Long.parseLong(req.params(":id"))), res);
-            });
+            }, gson::toJson);
         }
         
         private PositionsController createController(Request req) {
