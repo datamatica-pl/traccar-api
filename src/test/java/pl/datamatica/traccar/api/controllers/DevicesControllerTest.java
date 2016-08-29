@@ -254,6 +254,22 @@ public class DevicesControllerTest {
     }
     
     @Test
+    public void put_invalidData() throws ProviderException {
+        EditDeviceDto deviceDto = new EditDeviceDto.Builder()
+                .color("")
+                .deviceModelId(5)
+                .deviceName("test")
+                .build();
+        
+        HttpResponse response = dc.put(5, deviceDto);
+        
+        assertTrue(response instanceof ErrorResponse);
+        assertEquals(400, response.getHttpStatus());
+        List<ErrorDto> errors = (List<ErrorDto>)response.getContent();
+        assertEquals(1, errors.size());
+    }
+    
+    @Test
     public void delete_ok() throws Exception {
         HttpResponse response = dc.delete(3);
         

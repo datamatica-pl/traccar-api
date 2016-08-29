@@ -130,6 +130,10 @@ public class DevicesController extends ControllerBase {
     }
     
     public HttpResponse put(long id, EditDeviceDto deviceDto) throws ProviderException {
+        List<ErrorDto> errors = EditDeviceDto.validate(deviceDto);
+        if(!errors.isEmpty())
+            return badRequest(errors);
+            
         try {
             requestContext.beginTransaction();
             dp.updateDevice(id, deviceDto);

@@ -16,13 +16,22 @@
  */
 package pl.datamatica.traccar.api.dtos;
 
-public class MessageKeys {
-    public static final String ERR_IMEI_NOT_PROVIDED = "err_imei_not_provided";
-    public static final String ERR_INVALID_IMEI = "err_invalid_imei";
+public class MessageKeys {    
     public static final String ERR_ACCESS_DENIED = "err_access_denied";
     public static final String ERR_NOT_FOUND = "err_not_found";
+    
     public static final String ERR_TOKEN_REJECTED = "err_token_rejected";
     public static final String ERR_TOKEN_NOT_PROVIDED = "err_token_not_provided";
+    
+    public static final String ERR_IMEI_NOT_PROVIDED = "err_imei_not_provided";
+    public static final String ERR_INVALID_IMEI = "err_invalid_imei";
+    public static final String ERR_DEVICE_DATA_NOT_PROVIDED = "err_device_data_not_provided";
+    public static final String ERR_DEVICE_COLOR_NOT_PROVIDED = "err_device_color_not_provided";
+    public static final String ERR_INVALID_DEVICE_COLOR_FORMAT = "err_invalid_device_color_format";
+    public static final String ERR_DEVICE_MODEL_ID_NOT_PROVIDED = "err_device_model_id_not_provided";
+    public static final String ERR_DEVICE_NAME_NOT_PROVIDED = "err_device_name_not_provided";
+    public static final String ERR_DEVICE_ICON_ID_NOT_PROVIDED = "err_device_icon_id_not_provided";
+    
     public static final String ERR_USER_ALREADY_EXISTS = "err_user_already_exists";
     public static final String ERR_REGISTRATION_DATA_NOT_PROVIDED = "err_registration_data_not_provided";
     public static final String ERR_EMAIL_NOT_PROVIDED = "err_email_not_provided";

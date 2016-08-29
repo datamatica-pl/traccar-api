@@ -19,6 +19,7 @@ package pl.datamatica.traccar.api;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.Date;
+import java.util.regex.Pattern;
 import javax.naming.InitialContext;
 import spark.Spark;
 
@@ -32,6 +33,7 @@ public class Application implements spark.servlet.SparkApplication {
     public static String NOTIFICATION_TOKEN_SESSION_KEY = "notificationToken";
     public static final String DATE_FORMAT = "yyyy-MM-dd'T'HH:mm:ssX";
     public static final Date EMPTY_RESPONSE_MODIFICATION_DATE = new Date(1000);
+    public static final Pattern COLOR_PATTERN = Pattern.compile("[0-9A-F]{6}");
     
     private static final String STRINGS_DIR_NAME = "java:/StringsDir";
     private final ControllerBinder[] BINDERS = new ControllerBinder[] {

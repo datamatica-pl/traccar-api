@@ -16,8 +16,11 @@
  */
 package pl.datamatica.traccar.api.dtos.in;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import pl.datamatica.traccar.api.Application;
+import pl.datamatica.traccar.api.dtos.MessageKeys;
 import pl.datamatica.traccar.api.dtos.out.ErrorDto;
 
 public class EditDeviceDto {
@@ -124,7 +127,20 @@ public class EditDeviceDto {
     }    
     
     public static List<ErrorDto> validate(EditDeviceDto deviceDto) {
-        //todo 2016-08-29
-        return Collections.EMPTY_LIST;
+        if(deviceDto == null)
+            return Collections.singletonList(new ErrorDto(MessageKeys.ERR_DEVICE_DATA_NOT_PROVIDED));
+        
+        List<ErrorDto> errors = new ArrayList<>();
+        if(deviceDto.color == null || deviceDto.color.isEmpty())
+            errors.add(new ErrorDto(MessageKeys.ERR_DEVICE_COLOR_NOT_PROVIDED));
+        else if(!Application.COLOR_PATTERN.matcher(deviceDto.color).matches())
+            errors.add(new ErrorDto(MessageKeys.ERR_INVALID_DEVICE_COLOR_FORMAT));
+        if(deviceDto.deviceModelId == null)
+            errors.add(new ErrorDto(MessageKeys.ERR_DEVICE_MODEL_ID_NOT_PROVIDED));
+        if(deviceDto.deviceName == null || deviceDto.deviceName.isEmpty())
+            errors.add(new ErrorDto(MessageKeys.ERR_DEVICE_NAME_NOT_PROVIDED));
+        if(deviceDto.iconId == null)
+            errors.add(new ErrorDto(MessageKeys.ERR_DEVICE_ICON_ID_NOT_PROVIDED));
+        return errors;
     }
 }
