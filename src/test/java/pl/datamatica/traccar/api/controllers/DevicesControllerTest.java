@@ -28,6 +28,7 @@ import org.mockito.Mockito;
 import static pl.datamatica.traccar.api.controllers.ControllerTest.*;
 import pl.datamatica.traccar.api.dtos.MessageKeys;
 import pl.datamatica.traccar.api.dtos.in.AddDeviceDto;
+import pl.datamatica.traccar.api.dtos.in.EditDeviceDto;
 import pl.datamatica.traccar.api.dtos.out.DeviceDto;
 import pl.datamatica.traccar.api.dtos.out.ErrorDto;
 import pl.datamatica.traccar.api.providers.DeviceProvider;
@@ -235,6 +236,21 @@ public class DevicesControllerTest {
         List<ErrorDto> errors = (List<ErrorDto>)response.getContent();
         assertEquals(1, errors.size());
         assertEquals(expectedError, errors.get(0));
+    }
+    
+    @Test
+    public void put_ok() throws Exception {
+        EditDeviceDto deviceDto = new EditDeviceDto.Builder()
+                .color("00FF00")
+                .deviceModelId(-1)
+                .deviceName("test")
+                .build();
+        
+        dc.put(5, deviceDto);
+        
+        Mockito.verify(rc, Mockito.times(1)).beginTransaction();
+        Mockito.verify(dp, Mockito.times(1)).updateDevice(5, deviceDto);
+        Mockito.verify(rc, Mockito.times(1)).commitTransaction();
     }
     
     @Test
