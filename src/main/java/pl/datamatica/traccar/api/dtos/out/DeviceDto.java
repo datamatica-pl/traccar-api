@@ -18,18 +18,12 @@ package pl.datamatica.traccar.api.dtos.out;
 
 import java.util.Date;
 import pl.datamatica.traccar.api.dtos.JsonIgnore;
+import pl.datamatica.traccar.api.dtos.in.EditDeviceDto;
 import pl.datamatica.traccar.model.Device;
 import pl.datamatica.traccar.model.Position;
 
-public class DeviceDto implements ICachedDto{
+public class DeviceDto extends EditDeviceDto implements ICachedDto {
     private final long id;
-    private String deviceName;
-    private long deviceModelId;
-    private int iconId;
-    private String color;
-    private String phoneNumber;
-    private String plateNumber;
-    private String description;
     private String status;
     private String uniqueId;
     private PositionDto lastPosition;
@@ -45,7 +39,7 @@ public class DeviceDto implements ICachedDto{
         private long id;
         private String deviceName;
         private long deviceModelId;
-        private int iconId;
+        private long iconId;
         private String color;
         private String phoneNumber;
         private String plateNumber;
@@ -137,7 +131,7 @@ public class DeviceDto implements ICachedDto{
             this.id = device.getId();
             this.deviceName = device.getName();
             this.deviceModelId = device.getDeviceModelId();
-            this.iconId = device.getIconType().getId();
+            this.iconId = device.getIconId();
             this.color = device.getColor();
             this.phoneNumber = device.getPhoneNumber();
             this.plateNumber = device.getPlateNumber();
@@ -166,7 +160,7 @@ public class DeviceDto implements ICachedDto{
     private DeviceDto(final long id, 
             final String deviceName, 
             final long deviceModelId, 
-            final int iconId, 
+            final long iconId, 
             final String color, 
             final String phoneNumber, 
             final String plateNumber, 
@@ -178,14 +172,8 @@ public class DeviceDto implements ICachedDto{
             final boolean isDeleted, 
             final long accountId, 
             final Date modificationTime) {
+        super(deviceName, deviceModelId, iconId, color, phoneNumber, plateNumber, description);
         this.id = id;
-        this.deviceName = deviceName;
-        this.deviceModelId = deviceModelId;
-        this.iconId = iconId;
-        this.color = color;
-        this.phoneNumber = phoneNumber;
-        this.plateNumber = plateNumber;
-        this.description = description;
         this.status = status;
         this.uniqueId = uniqueId;
         this.lastPosition = lastPosition;
@@ -199,32 +187,8 @@ public class DeviceDto implements ICachedDto{
         return id;
     }
 
-    public int getIconId() {
-        return iconId;
-    }
-
-    public String getName() {
-        return deviceName;
-    }
-
     public PositionDto getLatestPosition() {
         return lastPosition;
-    }
-
-    public String getDeviceName() {
-        return deviceName;
-    }
-
-    public String getPhoneNumber() {
-        return phoneNumber;
-    }
-
-    public String getPlateNumber() {
-        return plateNumber;
-    }
-
-    public String getDescription() {
-        return description;
     }
 
     public String getStatus() {
@@ -241,14 +205,6 @@ public class DeviceDto implements ICachedDto{
 
     public long getAccountId() {
         return accountId;
-    }
-
-    public long getDeviceModelId() {
-        return deviceModelId;
-    }
-
-    public String getColor() {
-        return color;
     }
 
     public PositionDto getLastPosition() {

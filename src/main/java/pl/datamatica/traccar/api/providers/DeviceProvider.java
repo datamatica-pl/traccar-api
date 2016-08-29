@@ -22,6 +22,7 @@ import java.util.stream.Stream;
 import javax.persistence.EntityManager;
 import javax.persistence.Query;
 import javax.persistence.TypedQuery;
+import pl.datamatica.traccar.api.dtos.in.EditDeviceDto;
 import pl.datamatica.traccar.api.providers.ProviderException.Type;
 import pl.datamatica.traccar.model.Device;
 import pl.datamatica.traccar.model.GeoFence;
@@ -149,5 +150,19 @@ public class DeviceProvider extends ProviderBase {
         query = em.createNativeQuery("Delete from devices d where d.id = ?");
         query.setParameter(1, device.getId());
         query.executeUpdate();
+    }
+
+    public void updateDevice(long id, EditDeviceDto deviceDto) throws ProviderException {
+        Device device = getDevice(id);
+        
+        device.setName(deviceDto.getDeviceName());
+        device.setDeviceModelId(deviceDto.getDeviceModelId());
+        device.setIconId(deviceDto.getIconId());
+        device.setColor(deviceDto.getColor());
+        device.setPhoneNumber(deviceDto.getPhoneNumber());
+        device.setPlateNumber(deviceDto.getPlateNumber());
+        device.setDescription(deviceDto.getDescription());
+        
+        em.persist(device);
     }
 }

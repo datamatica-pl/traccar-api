@@ -22,6 +22,7 @@ import pl.datamatica.traccar.api.Application;
 import static pl.datamatica.traccar.api.controllers.ControllerBase.render;
 import pl.datamatica.traccar.api.dtos.MessageKeys;
 import pl.datamatica.traccar.api.dtos.in.AddDeviceDto;
+import pl.datamatica.traccar.api.dtos.in.EditDeviceDto;
 import pl.datamatica.traccar.api.dtos.out.DeviceDto;
 import pl.datamatica.traccar.api.dtos.out.ErrorDto;
 import pl.datamatica.traccar.api.dtos.out.PositionDto;
@@ -47,6 +48,12 @@ public class DevicesController extends ControllerBase {
                 DevicesController dc = createController(req);
                 AddDeviceDto deviceDto = gson.fromJson(req.body(), AddDeviceDto.class);
                 return render(dc.post(deviceDto), res);
+            }, gson::toJson);
+            
+            Spark.put(rootUrl()+"/:id", (req, res) -> {
+                DevicesController dc = createController(req);
+                EditDeviceDto deviceDto = gson.fromJson(req.body(), EditDeviceDto.class);
+                return render(dc.put(Long.parseLong(req.params(":id")), deviceDto), res);
             }, gson::toJson);
 
             Spark.get(rootUrl()+"/:id", (req, res) -> {            
@@ -119,6 +126,21 @@ public class DevicesController extends ControllerBase {
                     return badRequest(MessageKeys.ERR_INVALID_IMEI);
             }
             throw e;
+        }
+    }
+    
+    public HttpResponse put(long id, EditDeviceDto deviceDto) throws ProviderException {
+        List<ErrorDto> errors = EditDeviceDto.validate(deviceDto);
+        if(!errors.isEmpty())
+            return badRequest(errors);
+            
+        try {
+            requestContext.beginTransaction();
+            dp.updateDevice(id, deviceDto);
+            requestContext.commitTransaction();
+            return ok("");
+        } catch(ProviderException e) {
+            return handle(e);
         }
     }
     

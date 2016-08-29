@@ -24,6 +24,7 @@ import javax.persistence.EntityManagerFactory;
 import javax.persistence.Persistence;
 import org.junit.*;
 import static org.junit.Assert.*;
+import pl.datamatica.traccar.api.dtos.in.EditDeviceDto;
 import pl.datamatica.traccar.model.Device;
 import pl.datamatica.traccar.model.User;
 
@@ -154,6 +155,40 @@ public class DeviceProviderTest {
         assertNull(device.getLatestPosition());
         assertFalse(device.isDeleted());
         assertTrue(device.getUsers().contains(user));
+    }
+    
+    @Test
+    public void updateDevice_ok() throws ProviderException {
+        String color = "FF00FF";
+        String description = "Lorem ipsum";
+        long modelId = 5;
+        String name = "test";
+        long iconId = 3;
+        String phoneNumber = "123456789";
+        String plateNumber = "EL 75843";
+        
+        EditDeviceDto deviceDto = new EditDeviceDto.Builder()
+                .color(color)
+                .description(description)
+                .deviceModelId(modelId)
+                .deviceName(name)
+                .iconId(iconId)
+                .phoneNumber(phoneNumber)
+                .plateNumber(plateNumber)
+                .build();
+        provider = new DeviceProvider(em, database.managedUser);
+        
+        provider.updateDevice(database.managedDevice.getId(), deviceDto);
+        em.flush();
+        Device actual = em.find(Device.class, database.managedDevice.getId());
+        
+        assertEquals(color, actual.getColor());
+        assertEquals(description, actual.getDescription());
+        assertEquals(modelId, actual.getDeviceModelId());
+        assertEquals(name, actual.getName());
+        assertEquals(iconId, actual.getIconId());
+        assertEquals(phoneNumber, actual.getPhoneNumber());
+        assertEquals(plateNumber, actual.getPlateNumber());
     }
     
     @Test

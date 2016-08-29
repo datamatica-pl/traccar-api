@@ -23,6 +23,7 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+import pl.datamatica.traccar.api.Application;
 import pl.datamatica.traccar.api.dtos.MessageKeys;
 import pl.datamatica.traccar.api.dtos.out.ErrorDto;
 import pl.datamatica.traccar.api.dtos.out.PointDto;
@@ -142,9 +143,7 @@ public class AddGeoFenceDto implements IGeoFenceInfo {
     @Override
     public String getType() {
         return type;
-    }    
-    
-    public static final Pattern COLOR_PATTERN = Pattern.compile("[0-9A-F]{6}");
+    }
     
     public static List<ErrorDto> validate(AddGeoFenceDto geoFenceDto) {
         if(geoFenceDto == null)
@@ -156,7 +155,7 @@ public class AddGeoFenceDto implements IGeoFenceInfo {
         if(geoFenceDto.color == null || geoFenceDto.color.isEmpty())
             errors.add(new ErrorDto(MessageKeys.ERR_GEOFENCE_COLOR_NOT_PROVIDED));
         else {
-            Matcher matcher = COLOR_PATTERN.matcher(geoFenceDto.color);
+            Matcher matcher = Application.COLOR_PATTERN.matcher(geoFenceDto.color);
             if(!matcher.matches())
                 errors.add(new ErrorDto(MessageKeys.ERR_INVALID_COLOR_FORMAT));
         }
