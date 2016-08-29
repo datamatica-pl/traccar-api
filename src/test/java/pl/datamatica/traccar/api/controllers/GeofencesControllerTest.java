@@ -16,16 +16,21 @@
  */
 package pl.datamatica.traccar.api.controllers;
 
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.stream.Stream;
 import org.junit.*;
 import static org.junit.Assert.*;
 import org.mockito.Mockito;
+import pl.datamatica.traccar.api.dtos.in.AddGeoFenceDto;
+import pl.datamatica.traccar.api.dtos.out.ErrorDto;
 import pl.datamatica.traccar.api.dtos.out.GeoFenceDto;
+import pl.datamatica.traccar.api.dtos.out.PointDto;
 import pl.datamatica.traccar.api.providers.GeoFenceProvider;
 import pl.datamatica.traccar.api.providers.ProviderException;
 import pl.datamatica.traccar.api.providers.ProviderException.Type;
+import pl.datamatica.traccar.api.responses.CreatedResponse;
 import pl.datamatica.traccar.api.responses.ErrorResponse;
 import pl.datamatica.traccar.api.responses.HttpResponse;
 import pl.datamatica.traccar.api.responses.OkResponse;
@@ -85,5 +90,43 @@ public class GeofencesControllerTest {
         
         assertTrue(response instanceof ErrorResponse);
         assertEquals(403, response.getHttpStatus());
+    }
+    
+    @Test
+    public void post_ok() throws Exception {
+        AddGeoFenceDto geofenceDto = new AddGeoFenceDto.Builder()
+                .allDevices(true)
+                .color("EEAA88")
+                .geofenceName("mój geopłot")
+                .description("Najważniejszy z moich geopłotów")
+                .points(Collections.singletonList(new PointDto(51, 18)))
+                .radius(100)
+                .type("CIRCLE")
+                .build();
+        Mockito.when(provider.createGeoFence(geofenceDto)).thenReturn(new GeoFence());
+        
+        HttpResponse response = controller.post(geofenceDto);
+        
+        assertTrue(response instanceof CreatedResponse);
+        assertTrue(response.getContent() instanceof GeoFenceDto);
+    }
+    
+    @Test
+    public void post_invalidData() throws Exception {
+        //invalid color format, all devices not provided
+        AddGeoFenceDto invalidGeofence = new AddGeoFenceDto.Builder()
+                .color("03AbCf")
+                .geofenceName("test")
+                .points(Collections.singletonList(new PointDto(21, 52)))
+                .radius(50)
+                .type("CIRCLE")
+                .build();
+        Mockito.when(provider.createGeoFence(invalidGeofence)).thenReturn(new GeoFence());
+        
+        HttpResponse response = controller.post(invalidGeofence);
+        
+        assertTrue(response instanceof ErrorResponse);
+        List<ErrorDto> errors = (List<ErrorDto>) response.getContent();
+        assertEquals(2, errors.size());
     }
 }

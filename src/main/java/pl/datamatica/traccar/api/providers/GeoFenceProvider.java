@@ -20,7 +20,7 @@ import java.util.Collections;
 import java.util.stream.Stream;
 import javax.persistence.EntityManager;
 import pl.datamatica.traccar.api.dtos.in.AddGeoFenceDto;
-import pl.datamatica.traccar.api.dtos.in.IGeoFenceInfo;
+import pl.datamatica.traccar.api.dtos.IGeoFenceInfo;
 import pl.datamatica.traccar.model.GeoFence;
 import pl.datamatica.traccar.model.GeoFenceType;
 import pl.datamatica.traccar.model.User;

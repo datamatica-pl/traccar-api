@@ -16,29 +16,35 @@
  */
 package pl.datamatica.traccar.api.dtos.in;
 
+import java.util.ArrayList;
+import pl.datamatica.traccar.api.dtos.IGeoFenceInfo;
 import java.util.Collections;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+import pl.datamatica.traccar.api.dtos.MessageKeys;
 import pl.datamatica.traccar.api.dtos.out.ErrorDto;
 import pl.datamatica.traccar.api.dtos.out.PointDto;
+import pl.datamatica.traccar.model.GeoFenceType;
 
 public class AddGeoFenceDto implements IGeoFenceInfo {
     private final String geofenceName;
     private final String description;
-    private final boolean allDevices;
+    private final Boolean allDevices;
     private final String color;
     private final List<PointDto> points;
-    private final float radius;
+    private final Float radius;
     private final String type;
 
     public static class Builder {
 
         private String geofenceName;
         private String description;
-        private boolean allDevices;
+        private Boolean allDevices;
         private String color;
         private List<PointDto> points;
-        private float radius;
+        private Float radius;
         private String type;
 
         public Builder geofenceName(final String value) {
@@ -83,10 +89,10 @@ public class AddGeoFenceDto implements IGeoFenceInfo {
 
     protected AddGeoFenceDto(final String geofenceName, 
             final String description, 
-            final boolean allDevices, 
+            final Boolean allDevices, 
             final String color, 
             final List<PointDto> points, 
-            final float radius, 
+            final Float radius, 
             final String type) {
         this.geofenceName = geofenceName;
         this.description = description;
@@ -138,8 +144,52 @@ public class AddGeoFenceDto implements IGeoFenceInfo {
         return type;
     }    
     
-    public static List<ErrorDto> validate(IGeoFenceInfo geoFenceDto) {
-        //todo 2016-08-26
-        return Collections.EMPTY_LIST;
+    public static final Pattern COLOR_PATTERN = Pattern.compile("[0-9A-F]{6}");
+    
+    public static List<ErrorDto> validate(AddGeoFenceDto geoFenceDto) {
+        if(geoFenceDto == null)
+            return Collections.singletonList(new ErrorDto(MessageKeys.ERR_GEOFENCE_DATA_NOT_PROVIDED));
+        
+        List<ErrorDto> errors = new ArrayList<>();
+        if(geoFenceDto.allDevices == null)
+            errors.add(new ErrorDto(MessageKeys.ERR_GEOFENCE_ALL_DEVICES_NOT_PROVIDED));
+        if(geoFenceDto.color == null || geoFenceDto.color.isEmpty())
+            errors.add(new ErrorDto(MessageKeys.ERR_GEOFENCE_COLOR_NOT_PROVIDED));
+        else {
+            Matcher matcher = COLOR_PATTERN.matcher(geoFenceDto.color);
+            if(!matcher.matches())
+                errors.add(new ErrorDto(MessageKeys.ERR_INVALID_COLOR_FORMAT));
+        }
+        if(geoFenceDto.geofenceName == null || geoFenceDto.geofenceName.isEmpty())
+            errors.add(new ErrorDto(MessageKeys.ERR_GEOFENCE_NAME_NOT_PROVIDED));
+        if(geoFenceDto.points == null || geoFenceDto.points.isEmpty())
+            errors.add(new ErrorDto(MessageKeys.ERR_GEOFENCE_POINTS_NOT_PROVIDED));
+        if(geoFenceDto.getType() == null || geoFenceDto.getType().isEmpty())
+            errors.add(new ErrorDto(MessageKeys.ERR_GEOFENCE_TYPE_NOT_PROVIDED));
+        else {
+            GeoFenceType type;
+            try {
+                type = GeoFenceType.valueOf(geoFenceDto.getType());
+            } catch(IllegalArgumentException e) {
+                errors.add(new ErrorDto(MessageKeys.ERR_INVALID_GEOFENCE_TYPE_FORMAT));
+                return errors;
+            }
+            switch(type) {
+                case CIRCLE:
+                    if(geoFenceDto.radius == null)
+                        errors.add(new ErrorDto(MessageKeys.ERR_GEOFENCE_RADIUS_NOT_PROVIDED));
+                    break;
+                case LINE:
+                    if(geoFenceDto.radius == null)
+                        errors.add(new ErrorDto(MessageKeys.ERR_GEOFENCE_RADIUS_NOT_PROVIDED));
+                    if(geoFenceDto.points.size() < 2)
+                        errors.add(new ErrorDto(MessageKeys.ERR_TOO_FEW_GEOFENCE_POINTS));
+                    break;
+                case POLYGON:
+                    if(geoFenceDto.points.size() < 3)
+                        errors.add(new ErrorDto(MessageKeys.ERR_TOO_FEW_GEOFENCE_POINTS));
+            }
+        }
+        return errors;
     }
 }
