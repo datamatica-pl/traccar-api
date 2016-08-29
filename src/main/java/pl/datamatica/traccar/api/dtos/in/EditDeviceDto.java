@@ -35,8 +35,8 @@ public class EditDeviceDto {
     public static class Builder {
 
         private String deviceName;
-        private long deviceModelId;
-        private long iconId;
+        private Long deviceModelId;
+        private Long iconId;
         private String color;
         private String phoneNumber;
         private String plateNumber;
@@ -83,8 +83,8 @@ public class EditDeviceDto {
     }
 
     protected EditDeviceDto(final String deviceName, 
-            final long deviceModelId, 
-            final long iconId, 
+            final Long deviceModelId, 
+            final Long iconId, 
             final String color, 
             final String phoneNumber, 
             final String plateNumber, 
