@@ -18,11 +18,15 @@ package pl.datamatica.traccar.api.providers;
 
 import java.util.List;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import javax.persistence.*;
 import org.junit.*;
 import static org.junit.Assert.*;
+import pl.datamatica.traccar.api.dtos.in.AddGeoFenceDto;
+import pl.datamatica.traccar.api.dtos.out.PointDto;
 import pl.datamatica.traccar.api.providers.ProviderException.Type;
 import pl.datamatica.traccar.model.GeoFence;
+import pl.datamatica.traccar.model.GeoFenceType;
 
 public class GeofenceProviderTest {
     
@@ -89,5 +93,56 @@ public class GeofenceProviderTest {
         
         assertEquals(1, geofences.size());
         assertEquals(database.adminGeofence, geofences.get(0));
+    }
+    
+    @Test
+    public void createGeoFence_ok() {
+        List<PointDto> points = Stream.of(new PointDto(20, 52), new PointDto(21, 52), new PointDto(20, 51))
+                .collect(Collectors.toList());
+        
+        AddGeoFenceDto geoFence = new AddGeoFenceDto.Builder()
+                .allDevices(false)
+                .color("00FE00")
+                .description("Testowy opis")
+                .geofenceName("testowa nazwa")
+                .points(points)
+                .type("POLYGON")
+                .build();
+        provider.setRequestUser(database.admin);
+        GeoFence gf = provider.createGeoFence(geoFence);
+        
+        assertNotNull(gf);
+        assertEquals(geoFence.isAllDevices(), gf.isAllDevices());
+        assertEquals(geoFence.getColor(), gf.getColor());
+        assertEquals(geoFence.getDescription(), gf.getDescription());
+        assertEquals(geoFence.getGeofenceName(), gf.getName());
+        assertEquals(geoFence.getPointsString(), gf.getPoints());
+        assertEquals(GeoFenceType.valueOf(geoFence.getType()), gf.getType());
+    }
+    
+    @Test
+    public void updateGeoFence_ok() throws ProviderException {
+        List<PointDto> points = Stream.of(new PointDto(20, 52), new PointDto(21, 52), new PointDto(20, 51))
+                .collect(Collectors.toList());
+        
+        AddGeoFenceDto geoFence = new AddGeoFenceDto.Builder()
+                .allDevices(false)
+                .color("00FE00")
+                .description("Testowy opis")
+                .geofenceName("testowa nazwa")
+                .points(points)
+                .type("POLYGON")
+                .build();
+        provider.setRequestUser(database.admin);
+        provider.updateGeoFence(database.adminGeofence.getId(), geoFence);
+        em.flush();
+        
+        GeoFence actual = em.find(GeoFence.class, database.adminGeofence.getId());
+        assertEquals(geoFence.isAllDevices(), actual.isAllDevices());
+        assertEquals(geoFence.getColor(), actual.getColor());
+        assertEquals(geoFence.getDescription(), actual.getDescription());
+        assertEquals(geoFence.getGeofenceName(), actual.getName());
+        assertEquals(geoFence.getPointsString(), actual.getPoints());
+        assertEquals(GeoFenceType.valueOf(geoFence.getType()), actual.getType());
     }
 }

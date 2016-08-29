@@ -52,11 +52,29 @@ public class GeoFenceProvider extends ProviderBase{
         gf.setAllDevices(geoFenceDto.isAllDevices());
         gf.setColor(geoFenceDto.getColor());
         gf.setPoints(geoFenceDto.getPointsString());
-        gf.setRadius(geoFenceDto.getRadius());
         gf.setType(GeoFenceType.valueOf(geoFenceDto.getType()));
+        if(gf.getType() != GeoFenceType.POLYGON)
+            gf.setRadius(geoFenceDto.getRadius());
         gf.setUsers(Collections.singleton(requestUser));
         em.persist(gf);
         
         return gf;
+    }
+
+    public void updateGeoFence(long id, AddGeoFenceDto geoFenceDto) throws ProviderException {
+        GeoFence geoFence = getGeoFence(id);
+        
+        geoFence.setAllDevices(geoFenceDto.isAllDevices());
+        geoFence.setColor(geoFenceDto.getColor());
+        geoFence.setDescription(geoFenceDto.getDescription());
+        //todo 2016-08-29 set devices
+        geoFence.setName(geoFenceDto.getGeofenceName());
+        geoFence.setPoints(geoFenceDto.getPointsString());
+        geoFence.setType(GeoFenceType.valueOf(geoFenceDto.getType()));
+        if(geoFence.getType() != GeoFenceType.POLYGON)
+            geoFence.setRadius(geoFenceDto.getRadius());
+        //todo 2016-08-29 update visibility (users)
+        
+        em.persist(geoFence);
     }
 }

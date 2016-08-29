@@ -129,4 +129,41 @@ public class GeofencesControllerTest {
         List<ErrorDto> errors = (List<ErrorDto>) response.getContent();
         assertEquals(2, errors.size());
     }
+    
+    @Test
+    public void put_ok() throws ProviderException {
+        AddGeoFenceDto geofenceDto = new AddGeoFenceDto.Builder()
+                .allDevices(false)
+                .color("FF5599")
+                .geofenceName("mój geopłot")
+                .description("Najważniejszy z moich geopłotów")
+                .points(Collections.singletonList(new PointDto(51, 18)))
+                .radius(100)
+                .type("CIRCLE")
+                .build();
+        
+        HttpResponse response = controller.put(5, geofenceDto);
+        
+        assertTrue(response instanceof OkResponse);
+        assertEquals("", response.getContent());
+    }
+    
+    @Test
+    public void put_invalidData() throws ProviderException {
+        //invalid color format, all devices not provided
+        AddGeoFenceDto invalidGeofence = new AddGeoFenceDto.Builder()
+                .color("03AbCf")
+                .geofenceName("test")
+                .points(Collections.singletonList(new PointDto(21, 52)))
+                .radius(50)
+                .type("CIRCLE")
+                .build();
+        
+        HttpResponse response = controller.put(5, invalidGeofence);
+        
+        assertTrue(response instanceof ErrorResponse);
+        assertEquals(400, response.getHttpStatus());
+        List<ErrorDto> errors = (List<ErrorDto>)response.getContent();
+        assertEquals(2, errors.size());
+    }
 }
