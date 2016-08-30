@@ -24,6 +24,7 @@ import pl.datamatica.traccar.api.dtos.MessageKeys;
 import pl.datamatica.traccar.api.dtos.in.AddDeviceDto;
 import pl.datamatica.traccar.api.dtos.in.EditDeviceDto;
 import pl.datamatica.traccar.api.dtos.out.DeviceDto;
+import pl.datamatica.traccar.api.dtos.out.DeviceListDto;
 import pl.datamatica.traccar.api.dtos.out.ErrorDto;
 import pl.datamatica.traccar.api.dtos.out.PositionDto;
 import pl.datamatica.traccar.api.providers.DeviceProvider;
@@ -93,12 +94,17 @@ public class DevicesController extends ControllerBase {
     }
     
     public HttpResponse get() throws Exception {
-        List<DeviceDto> devices = dp.getAllAvailableDevices()
+        List<Device> devices = dp.getAllAvailableDevices()
+                .collect(Collectors.toList());
+        List<DeviceDto> changedDevices = devices.stream()
                 .map(d -> new DeviceDto.Builder().device(d).build())
                 .filter(d -> isModified(d.getModificationTime()))
                 .collect(Collectors.toList());
+        List<Long> deviceIds = devices.stream()
+                .map(d -> d.getId())
+                .collect(Collectors.toList());
         
-        return okCached(devices);
+        return okCached(new DeviceListDto(changedDevices, deviceIds));
     }
     
     public HttpResponse get(long id) throws Exception {

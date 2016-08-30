@@ -30,6 +30,7 @@ import pl.datamatica.traccar.api.dtos.MessageKeys;
 import pl.datamatica.traccar.api.dtos.in.AddDeviceDto;
 import pl.datamatica.traccar.api.dtos.in.EditDeviceDto;
 import pl.datamatica.traccar.api.dtos.out.DeviceDto;
+import pl.datamatica.traccar.api.dtos.out.DeviceListDto;
 import pl.datamatica.traccar.api.dtos.out.ErrorDto;
 import pl.datamatica.traccar.api.providers.DeviceProvider;
 import pl.datamatica.traccar.api.providers.ProviderException;
@@ -79,8 +80,9 @@ public class DevicesControllerTest {
         HttpResponse response = dc.get();
         
         assertTrue(response instanceof OkCachedResponse);
-        List<DeviceDto> actual = (List<DeviceDto>)response.getContent();
-        assertTrue(actual.isEmpty());
+        DeviceListDto actual = (DeviceListDto)response.getContent();
+        assertTrue(actual.getChangedDevices().isEmpty());
+        assertTrue(actual.getDeviceIds().isEmpty());
         assertTrue(getHeaderStream(response).anyMatch(h -> h.equals(expected)));
     }
     
@@ -105,8 +107,9 @@ public class DevicesControllerTest {
         
         assertTrue(response instanceof OkResponse);
         assertTrue(getHeaderStream(response).anyMatch(h -> h.equals(expected)));
-        List<DeviceDto> actual = (List<DeviceDto>)response.getContent();
-        assertEquals(1, actual.size());
+        DeviceListDto actual = (DeviceListDto)response.getContent();
+        assertEquals(3, actual.getDeviceIds().size());
+        assertEquals(1, actual.getChangedDevices().size());
     }
     
     @Test
@@ -114,10 +117,10 @@ public class DevicesControllerTest {
         HttpResponse response = dc.get();
         
         assertTrue(response instanceof OkCachedResponse);
-        assertTrue(response.getContent() instanceof List);
-        List<DeviceDto> actual = (List<DeviceDto>)response.getContent();
-        assertEquals(3, actual.size());
-        for(Object item : actual)
+        assertTrue(response.getContent() instanceof DeviceListDto);
+        DeviceListDto actual = (DeviceListDto)response.getContent();
+        assertEquals(3, actual.getChangedDevices().size());
+        for(Object item : actual.getChangedDevices())
             assertTrue(item instanceof DeviceDto);
     }
     

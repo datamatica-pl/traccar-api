@@ -16,6 +16,7 @@
  */
 package pl.datamatica.traccar.api.controllers;
 
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
@@ -56,7 +57,7 @@ public abstract class ControllerBase {
         return okCached(content, serverModification);
     }
     
-    protected<T extends ICachedDto> HttpResponse okCached(List<T> content) {
+    protected<T extends ICachedDto> HttpResponse okCached(Collection<T> content) {
         Date serverModification = content.stream()
                 .map(i -> i.getModificationTime())
                 .max((d1, d2) -> d1.compareTo(d2))
