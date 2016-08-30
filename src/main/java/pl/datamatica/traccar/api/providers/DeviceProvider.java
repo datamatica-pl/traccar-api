@@ -18,6 +18,7 @@ package pl.datamatica.traccar.api.providers;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Random;
 import java.util.stream.Stream;
 import javax.persistence.EntityManager;
 import javax.persistence.Query;
@@ -70,6 +71,7 @@ public class DeviceProvider extends ProviderBase {
         }
         
         Device device = new Device();
+        device.setName(createGpsName());
         device.setUniqueId(imei);
         device.setUsers(Collections.singleton(requestUser));
         device.setOwner(requestUser);
@@ -77,6 +79,12 @@ public class DeviceProvider extends ProviderBase {
         
         return device;
     }
+
+    private static String createGpsName() {
+        Random random = new Random();
+        return GPS_NAME_PREFIX+(random.nextInt(99)+1);
+    }
+    private static final String GPS_NAME_PREFIX = "gps-";
     
     public void delete(long id) throws ProviderException {
         boolean shouldManageTransaction = !em.getTransaction().isActive();
