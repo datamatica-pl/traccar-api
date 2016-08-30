@@ -43,7 +43,7 @@ public class CommandParameter extends TimestampedEntity implements Serializable 
     private String description;
 
     @ManyToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name="commandTypeId")
+    @JoinColumn(name="commandTypeId", nullable = false)
     private CommandType commandType;
     
     @OneToMany(fetch = FetchType.EAGER, mappedBy="commandParameter")
