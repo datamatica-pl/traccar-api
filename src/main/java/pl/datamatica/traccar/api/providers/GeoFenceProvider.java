@@ -19,7 +19,6 @@ package pl.datamatica.traccar.api.providers;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Set;
-import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import javax.persistence.EntityManager;
@@ -43,11 +42,13 @@ public class GeoFenceProvider extends ProviderBase{
     }
     
     public Stream<GeoFence> getAllAvailableGeoFences() {
+        Stream<GeoFence> visible;
         if(requestUser.getAdmin())
-            return getAllGeoFences();
+            visible = getAllGeoFences();
         else
-            return requestUser.getAllAvailableGeoFences().stream()
+            visible = requestUser.getAllAvailableGeoFences().stream()
                     .peek(gf -> gf.getDevices().retainAll(requestUser.getAllAvailableDevices()));
+        return visible.filter(gf -> !gf.isDeleted());
     }
     
     public GeoFence getGeoFence(long id) throws ProviderException {
