@@ -62,7 +62,7 @@ public abstract class ControllerBase {
         Date serverModification = content.getChanged().stream()
                 .map(i -> i.getModificationTime())
                 .max((d1, d2) -> d1.compareTo(d2))
-                .orElse(Application.EMPTY_RESPONSE_MODIFICATION_DATE);
+                .orElse(requestContext.getModificationDate());
         return okCached(content, serverModification);
     }
     
@@ -108,6 +108,8 @@ public abstract class ControllerBase {
     
     protected boolean isModified(Date serverModification) {
         Date userModification = requestContext.getModificationDate();
+        if(userModification == null || serverModification == null)
+            return true;
         return userModification.getTime()/1000 < serverModification.getTime()/1000;
     }
     

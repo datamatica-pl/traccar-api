@@ -55,7 +55,6 @@ public class DevicesControllerTest {
         dp = Mockito.mock(DeviceProvider.class);
         Mockito.when(rc.getDeviceProvider()).thenReturn(dp);
         Mockito.when(rc.getUser()).thenReturn(user);
-        Mockito.when(rc.getModificationDate()).thenReturn(new Date(0));
         dc = new DevicesController(rc);
         devices = IntStream.range(0, 3)
                 .mapToObj(i -> {
@@ -74,7 +73,6 @@ public class DevicesControllerTest {
     
     @Test
     public void getAll_emptyList() throws Exception {
-        HttpHeader expected = lastModifiedHeader(new Date(1000));
         Mockito.when(dp.getAllAvailableDevices()).thenReturn(Stream.empty());
         
         HttpResponse response = dc.get();
@@ -83,19 +81,16 @@ public class DevicesControllerTest {
         ListDto<DeviceDto> actual = (ListDto<DeviceDto>)response.getContent();
         assertTrue(actual.getChanged().isEmpty());
         assertTrue(actual.getIds().length == 0);
-        assertTrue(getHeaderStream(response).anyMatch(h -> h.equals(expected)));
     }
     
     @Test
     public void getAll_emptyListCached() throws Exception {
-        HttpHeader expected = lastModifiedHeader(new Date(1000));
         Mockito.when(rc.getModificationDate()).thenReturn(new Date(5000));
         Mockito.when(dp.getAllAvailableDevices()).thenReturn(Stream.empty());
         
         HttpResponse response = dc.get();
         
-        assertTrue(response instanceof NotModifiedResponse);
-        assertTrue(getHeaderStream(response).anyMatch(h -> h.equals(expected)));
+        assertTrue(response instanceof OkCachedResponse);
     }
     
     @Test
@@ -167,7 +162,7 @@ public class DevicesControllerTest {
     public void getPositions_ok() throws Exception {        
         HttpResponse response = dc.getPositions(0);
         
-        assertTrue(response instanceof OkResponse);
+        assertTrue(response instanceof OkCachedResponse);
         assertTrue(response.getContent() instanceof ListDto);
     }
     

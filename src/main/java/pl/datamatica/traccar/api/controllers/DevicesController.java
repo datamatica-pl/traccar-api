@@ -30,6 +30,7 @@ import pl.datamatica.traccar.api.dtos.out.PositionDto;
 import pl.datamatica.traccar.api.providers.DeviceProvider;
 import pl.datamatica.traccar.api.providers.ProviderException;
 import pl.datamatica.traccar.api.responses.HttpResponse;
+import pl.datamatica.traccar.api.responses.OkCachedResponse;
 import pl.datamatica.traccar.model.Device;
 import spark.Request;
 import spark.Spark;
@@ -104,7 +105,11 @@ public class DevicesController extends ControllerBase {
                 .mapToLong(d -> d.getId())
                 .toArray();
         
-        return okCached(new ListDto<DeviceDto>(changedDevices, deviceIds));
+        return new OkCachedResponse(new ListDto<>(changedDevices, deviceIds),
+                devices.stream()
+                        .map(d -> d.getLastUpdate())
+                        .max((d1, d2) -> d1.compareTo(d2))
+                        .orElse(Application.EMPTY_RESPONSE_MODIFICATION_DATE));
     }
     
     public HttpResponse get(long id) throws Exception {
