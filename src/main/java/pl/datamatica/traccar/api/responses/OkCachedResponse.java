@@ -30,7 +30,9 @@ public class OkCachedResponse extends OkResponse {
 
     @Override
     public Iterable getHeaders() {
-        return Collections.singleton(new HttpHeader(HttpHeaders.LAST_MODIFIED, 
-                DateUtil.formatDate(serverModification)));
+        if(serverModification != null)
+            return Collections.singleton(new HttpHeader(HttpHeaders.LAST_MODIFIED, 
+                    DateUtil.formatDate(serverModification)));
+        return Collections.EMPTY_LIST;
     }
 }

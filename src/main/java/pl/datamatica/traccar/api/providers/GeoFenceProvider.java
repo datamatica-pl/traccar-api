@@ -16,11 +16,17 @@
  */
 package pl.datamatica.traccar.api.providers;
 
+import java.util.Arrays;
 import java.util.Collections;
+import java.util.Set;
+import java.util.function.Predicate;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import javax.persistence.EntityManager;
+import javax.persistence.TypedQuery;
 import pl.datamatica.traccar.api.dtos.in.AddGeoFenceDto;
 import pl.datamatica.traccar.api.dtos.IGeoFenceInfo;
+import pl.datamatica.traccar.model.Device;
 import pl.datamatica.traccar.model.GeoFence;
 import pl.datamatica.traccar.model.GeoFenceType;
 import pl.datamatica.traccar.model.User;
@@ -37,12 +43,23 @@ public class GeoFenceProvider extends ProviderBase{
     }
     
     public Stream<GeoFence> getAllAvailableGeoFences() {
-        return requestUser.getAllAvailableGeoFences().stream();
+        if(requestUser.getAdmin())
+            return getAllGeoFences();
+        else
+            return requestUser.getAllAvailableGeoFences().stream()
+                    .peek(gf -> gf.getDevices().retainAll(requestUser.getAllAvailableDevices()));
     }
     
     public GeoFence getGeoFence(long id) throws ProviderException {
-        return get(GeoFence.class, id, 
-                gf -> requestUser.getAllAvailableGeoFences().contains(gf));
+        GeoFence geoFence = get(GeoFence.class, id, this::isVisible);
+        geoFence.getDevices().retainAll(requestUser.getAllAvailableDevices());
+        return geoFence;
+    }
+
+    private boolean isVisible(GeoFence gf) {
+        if(requestUser.getAdmin())
+            return true;
+        return getAllAvailableGeoFences().anyMatch(geo -> geo.equals(gf));
     }
 
     public GeoFence createGeoFence(IGeoFenceInfo geoFenceDto) {
@@ -56,6 +73,12 @@ public class GeoFenceProvider extends ProviderBase{
         if(gf.getType() != GeoFenceType.POLYGON)
             gf.setRadius(geoFenceDto.getRadius());
         gf.setUsers(Collections.singleton(requestUser));
+        Set<Device> devices = Arrays.stream(geoFenceDto.getDeviceIds())
+                .mapToObj(id -> em.find(Device.class, id))
+                .collect(Collectors.toSet());
+        if(!requestUser.getAdmin())
+            devices.retainAll(requestUser.getDevices());
+        gf.setDevices(devices);
         em.persist(gf);
         
         return gf;
@@ -67,14 +90,27 @@ public class GeoFenceProvider extends ProviderBase{
         geoFence.setAllDevices(geoFenceDto.isAllDevices());
         geoFence.setColor(geoFenceDto.getColor());
         geoFence.setDescription(geoFenceDto.getDescription());
-        //todo 2016-08-29 set devices
+
+        Set<Device> devices = Arrays.stream(geoFenceDto.getDeviceIds())
+                .mapToObj(i -> em.find(Device.class, i))
+                .collect(Collectors.toSet());
+        if(requestUser.getAdmin())
+            geoFence.getDevices().clear();
+        else
+            geoFence.getDevices().removeAll(requestUser.getAllAvailableDevices());
+        geoFence.getDevices().addAll(devices);
+        
         geoFence.setName(geoFenceDto.getGeofenceName());
         geoFence.setPoints(geoFenceDto.getPointsString());
         geoFence.setType(GeoFenceType.valueOf(geoFenceDto.getType()));
         if(geoFence.getType() != GeoFenceType.POLYGON)
             geoFence.setRadius(geoFenceDto.getRadius());
-        //todo 2016-08-29 update visibility (users)
         
         em.persist(geoFence);
+    }
+
+    private Stream<GeoFence> getAllGeoFences() {
+        TypedQuery<GeoFence> tq = em.createQuery("Select x from GeoFence x", GeoFence.class);
+        return tq.getResultList().stream();
     }
 }

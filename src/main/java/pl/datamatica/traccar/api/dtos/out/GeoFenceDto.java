@@ -37,6 +37,7 @@ public class GeoFenceDto extends AddGeoFenceDto implements ICachedDto {
         private List<PointDto> points;
         private float radius;
         private String type;
+        private long[] deviceIds;
         private Date lastUpdate;
 
         public Builder geoFence(GeoFence geofence) {
@@ -53,12 +54,17 @@ public class GeoFenceDto extends AddGeoFenceDto implements ICachedDto {
             this.radius = geofence.getRadius();
             if(geofence.getType() != null)
                 this.type = geofence.getType().name();
+            if(geofence.getDevices() == null)
+                this.deviceIds = new long[0];
+            else
+                this.deviceIds = geofence.getDevices().stream()
+                        .mapToLong(d -> d.getId()).toArray();
             this.lastUpdate = geofence.getLastUpdate();
             return this;
         }
 
         public GeoFenceDto build() {
-            return new GeoFenceDto(id, geofenceName, description, allDevices, color, points, radius, type, lastUpdate);
+            return new GeoFenceDto(id, geofenceName, description, allDevices, color, points, radius, type, deviceIds, lastUpdate);
         }
     }
 
@@ -70,8 +76,9 @@ public class GeoFenceDto extends AddGeoFenceDto implements ICachedDto {
             final List<PointDto> points, 
             final float radius, 
             final String type, 
+            final long[] deviceIds,
             final Date lastUpdate) {
-        super(geofenceName, description, allDevices, color, points, radius, type);
+        super(geofenceName, description, allDevices, color, points, radius, type, deviceIds);
         this.id = id;
         this.lastUpdate = lastUpdate;
     }

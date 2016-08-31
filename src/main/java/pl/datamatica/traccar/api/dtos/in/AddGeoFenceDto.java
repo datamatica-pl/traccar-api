@@ -37,6 +37,7 @@ public class AddGeoFenceDto implements IGeoFenceInfo {
     private final List<PointDto> points;
     private final Float radius;
     private final String type;
+    private final long[] deviceIds;
 
     public static class Builder {
 
@@ -47,6 +48,7 @@ public class AddGeoFenceDto implements IGeoFenceInfo {
         private List<PointDto> points;
         private Float radius;
         private String type;
+        private long[] deviceIds;
 
         public Builder geofenceName(final String value) {
             this.geofenceName = value;
@@ -82,9 +84,14 @@ public class AddGeoFenceDto implements IGeoFenceInfo {
             this.type = value;
             return this;
         }
+        
+        public Builder deviceIds(final long[] value) {
+            this.deviceIds = value;
+            return this;
+        }
 
         public AddGeoFenceDto build() {
-            return new AddGeoFenceDto(geofenceName, description, allDevices, color, points, radius, type);
+            return new AddGeoFenceDto(geofenceName, description, allDevices, color, points, radius, type, deviceIds);
         }
     }
 
@@ -94,7 +101,8 @@ public class AddGeoFenceDto implements IGeoFenceInfo {
             final String color, 
             final List<PointDto> points, 
             final Float radius, 
-            final String type) {
+            final String type,
+            final long[] deviceIds) {
         this.geofenceName = geofenceName;
         this.description = description;
         this.allDevices = allDevices;
@@ -102,6 +110,7 @@ public class AddGeoFenceDto implements IGeoFenceInfo {
         this.points = points;
         this.radius = radius;
         this.type = type;
+        this.deviceIds = deviceIds;
     }
 
     @Override
@@ -144,6 +153,10 @@ public class AddGeoFenceDto implements IGeoFenceInfo {
     public String getType() {
         return type;
     }
+
+    public long[] getDeviceIds() {
+        return deviceIds;
+    }
     
     public static List<ErrorDto> validate(AddGeoFenceDto geoFenceDto) {
         if(geoFenceDto == null)
@@ -163,6 +176,8 @@ public class AddGeoFenceDto implements IGeoFenceInfo {
             errors.add(new ErrorDto(MessageKeys.ERR_GEOFENCE_NAME_NOT_PROVIDED));
         if(geoFenceDto.points == null || geoFenceDto.points.isEmpty())
             errors.add(new ErrorDto(MessageKeys.ERR_GEOFENCE_POINTS_NOT_PROVIDED));
+        if(geoFenceDto.deviceIds == null)
+            errors.add(new ErrorDto(MessageKeys.ERR_GEOFENCE_DEVICES_NOT_PROVIDED));
         if(geoFenceDto.getType() == null || geoFenceDto.getType().isEmpty())
             errors.add(new ErrorDto(MessageKeys.ERR_GEOFENCE_TYPE_NOT_PROVIDED));
         else {

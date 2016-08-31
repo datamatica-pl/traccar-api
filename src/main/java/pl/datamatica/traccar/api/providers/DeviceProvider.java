@@ -54,9 +54,8 @@ public class DeviceProvider extends ProviderBase {
     public Stream<Device> getAllAvailableDevices() {
         if(requestUser.getAdmin())
             return getAllDevices();
-        else {
+        else
             return requestUser.getAllAvailableDevices().stream();
-        }
     }
 
     public Device createDevice(String imei) throws ProviderException {
