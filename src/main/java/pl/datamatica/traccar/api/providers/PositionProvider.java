@@ -22,7 +22,7 @@ import pl.datamatica.traccar.model.User;
 
 public class PositionProvider extends ProviderBase {
     
-    private User user;
+    private final User user;
     
     public PositionProvider(EntityManager em, User user) {
         super(em);
@@ -30,8 +30,13 @@ public class PositionProvider extends ProviderBase {
     }
     
     public Position get(long id) throws ProviderException {
-        return get(Position.class, id, 
-                p -> user.getAllAvailableDevices().stream()
-                        .anyMatch(d -> d.equals(p.getDevice())));
+        return get(Position.class, id, this::isVisible);
+    }
+    
+    private boolean isVisible(Position p) {
+        if(user.getAdmin())
+            return true;
+        return user.getAllAvailableDevices().stream()
+                .anyMatch(d -> d.equals(p.getDevice()));
     }
 }

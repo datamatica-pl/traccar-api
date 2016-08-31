@@ -52,4 +52,5 @@ public class MessageKeys {
     public static final String ERR_GEOFENCE_POINTS_NOT_PROVIDED = "err_geofence_points_not_provided";
     public static final String ERR_GEOFENCE_RADIUS_NOT_PROVIDED = "err_circle_radius_not_provided";
     public static final String ERR_TOO_FEW_GEOFENCE_POINTS = "err_too_few_geofence_points";
+    public static final String ERR_GEOFENCE_DEVICES_NOT_PROVIDED = "err_geofence_devices_not_provided";
 }

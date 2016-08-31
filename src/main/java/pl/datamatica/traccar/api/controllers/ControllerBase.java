@@ -26,6 +26,7 @@ import pl.datamatica.traccar.api.Application;
 import pl.datamatica.traccar.api.dtos.MessageKeys;
 import pl.datamatica.traccar.api.dtos.out.ICachedDto;
 import pl.datamatica.traccar.api.dtos.out.ErrorDto;
+import pl.datamatica.traccar.api.dtos.out.ListDto;
 import pl.datamatica.traccar.api.providers.ProviderException;
 import pl.datamatica.traccar.api.responses.*;
 import spark.Response;
@@ -57,8 +58,8 @@ public abstract class ControllerBase {
         return okCached(content, serverModification);
     }
     
-    protected<T extends ICachedDto> HttpResponse okCached(Collection<T> content) {
-        Date serverModification = content.stream()
+    protected<T extends ICachedDto> HttpResponse okCached(ListDto<T> content) {
+        Date serverModification = content.getChanged().stream()
                 .map(i -> i.getModificationTime())
                 .max((d1, d2) -> d1.compareTo(d2))
                 .orElse(Application.EMPTY_RESPONSE_MODIFICATION_DATE);

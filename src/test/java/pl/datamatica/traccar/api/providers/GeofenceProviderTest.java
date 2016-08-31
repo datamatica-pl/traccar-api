@@ -107,6 +107,7 @@ public class GeofenceProviderTest {
                 .geofenceName("testowa nazwa")
                 .points(points)
                 .type("POLYGON")
+                .deviceIds(new long[]{database.adminDevice.getId()})
                 .build();
         provider.setRequestUser(database.admin);
         GeoFence gf = provider.createGeoFence(geoFence);
@@ -118,6 +119,7 @@ public class GeofenceProviderTest {
         assertEquals(geoFence.getGeofenceName(), gf.getName());
         assertEquals(geoFence.getPointsString(), gf.getPoints());
         assertEquals(GeoFenceType.valueOf(geoFence.getType()), gf.getType());
+        assertTrue(gf.getDevices().contains(database.adminDevice));
     }
     
     @Test
@@ -132,6 +134,7 @@ public class GeofenceProviderTest {
                 .geofenceName("testowa nazwa")
                 .points(points)
                 .type("POLYGON")
+                .deviceIds(new long[]{database.adminDevice.getId()})
                 .build();
         provider.setRequestUser(database.admin);
         provider.updateGeoFence(database.adminGeofence.getId(), geoFence);
@@ -144,5 +147,6 @@ public class GeofenceProviderTest {
         assertEquals(geoFence.getGeofenceName(), actual.getName());
         assertEquals(geoFence.getPointsString(), actual.getPoints());
         assertEquals(GeoFenceType.valueOf(geoFence.getType()), actual.getType());
+        assertTrue(actual.getDevices().contains(database.adminDevice));
     }
 }
