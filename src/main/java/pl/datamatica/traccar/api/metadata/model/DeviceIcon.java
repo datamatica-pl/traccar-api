@@ -30,7 +30,7 @@ import org.hibernate.annotations.SQLDelete;
 @Entity
 @Table( name = "device_icons" )
 @PersistenceContext(unitName = "traccar_api_metadata_persistence")
-@SQLDelete(sql="UPDATE deviceIcons d SET d.isDeleted = 1 WHERE d.id = ?")
+@SQLDelete(sql="UPDATE device_icons d SET d.isDeleted = 1 WHERE d.id = ?")
 @FilterDef(name="softDelete", defaultCondition="isDeleted = 0")
 @Filter(name="softDelete")
 public class DeviceIcon extends TimestampedEntity implements Serializable {
@@ -43,7 +43,7 @@ public class DeviceIcon extends TimestampedEntity implements Serializable {
     private String iconUrl;
     
     @Column(nullable = false, columnDefinition = "boolean default false")
-    private Boolean isDeleted;
+    private boolean isDeleted;
 
     public long getId() {
         return id;
