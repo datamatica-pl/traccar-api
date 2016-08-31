@@ -1,5 +1,7 @@
 -- Fixtures for commands metadata, run this SQL file with any MySQL client
 
+-- Commands fixures
+
 INSERT INTO traccar_api_metadata.device_models(id, imageUrl, name, createTime, updateTime)
 VALUES (1, 'datamatica.pl/images/test1.png', 'LK_210', '2016-01-01 00:00:00', '2016-01-01 00:00:00');
 
@@ -29,3 +31,8 @@ VALUES (1, 'GTE', '10', 1, '2016-01-01 00:00:00', '2016-01-01 00:00:00');
 
 INSERT INTO traccar_api_metadata.command_constraints(id, constraintType, constraintValue, commandParameterId, createTime, updateTime)
 VALUES (2, 'LTE', '1200', 1, '2016-01-01 00:00:00', '2016-01-01 00:00:00');
+
+-- Report fixtures
+
+INSERT INTO traccar_api_metadata.report_types(reportName, imageUrl)
+VALUES ('Jazda i postoje', 'www.datamatica.pl/images/jazda_postoje.png');
