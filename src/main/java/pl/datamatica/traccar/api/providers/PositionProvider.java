@@ -16,7 +16,15 @@
  */
 package pl.datamatica.traccar.api.providers;
 
+import java.time.LocalDate;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
+import java.time.temporal.ChronoUnit;
+import java.util.Date;
+import java.util.concurrent.TimeUnit;
+import java.util.stream.Stream;
 import javax.persistence.EntityManager;
+import pl.datamatica.traccar.model.Device;
 import pl.datamatica.traccar.model.Position;
 import pl.datamatica.traccar.model.User;
 
@@ -33,10 +41,25 @@ public class PositionProvider extends ProviderBase {
         return get(Position.class, id, this::isVisible);
     }
     
+    public Stream<Position> getAllAvailablePositions(Device device) {
+        if(user.getAdmin())
+            return device.getPositions().stream();
+        else
+            return device.getPositions().stream()
+                    .filter(this::isVisible);
+    }
+    
     private boolean isVisible(Position p) {
         if(user.getAdmin())
             return true;
-        return user.getAllAvailableDevices().stream()
-                .anyMatch(d -> d.equals(p.getDevice()));
+        if(!user.getAllAvailableDevices().stream()
+                .anyMatch(d -> d.equals(p.getDevice())))
+            return false;
+        if(!p.getDevice().isValid())
+            return false;
+        int historyLength = p.getDevice().getHistoryLength();
+        ZonedDateTime positionDate = p.getTime().toInstant().atZone(ZoneId.systemDefault());
+        long daysDiff = ChronoUnit.DAYS.between(positionDate, ZonedDateTime.now());
+        return daysDiff <= historyLength;
     }
 }

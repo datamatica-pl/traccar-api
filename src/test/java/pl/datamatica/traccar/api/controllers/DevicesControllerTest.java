@@ -32,17 +32,21 @@ import pl.datamatica.traccar.api.dtos.in.EditDeviceDto;
 import pl.datamatica.traccar.api.dtos.out.DeviceDto;
 import pl.datamatica.traccar.api.dtos.out.ErrorDto;
 import pl.datamatica.traccar.api.dtos.out.ListDto;
+import pl.datamatica.traccar.api.dtos.out.PositionDto;
 import pl.datamatica.traccar.api.providers.DeviceProvider;
+import pl.datamatica.traccar.api.providers.PositionProvider;
 import pl.datamatica.traccar.api.providers.ProviderException;
 import pl.datamatica.traccar.api.providers.ProviderException.Type;
 import pl.datamatica.traccar.api.responses.*;
 import pl.datamatica.traccar.model.Device;
+import pl.datamatica.traccar.model.Position;
 import pl.datamatica.traccar.model.User;
 
 public class DevicesControllerTest {
     
     private User user;
     private DeviceProvider dp;
+    private PositionProvider pp;
     private DevicesController dc;
     private RequestContext rc;
     private List<Device> devices;
@@ -53,7 +57,9 @@ public class DevicesControllerTest {
         user = new User();
         rc = Mockito.mock(RequestContext.class);
         dp = Mockito.mock(DeviceProvider.class);
+        pp = Mockito.mock(PositionProvider.class);
         Mockito.when(rc.getDeviceProvider()).thenReturn(dp);
+        Mockito.when(rc.getPositionProvider()).thenReturn(pp);
         Mockito.when(rc.getUser()).thenReturn(user);
         dc = new DevicesController(rc);
         devices = IntStream.range(0, 3)
@@ -159,11 +165,23 @@ public class DevicesControllerTest {
     }
     
     @Test
-    public void getPositions_ok() throws Exception {        
+    public void getPositions_ok() throws Exception { 
+        Position position = new Position();
+        position.setLatitude(1.);
+        position.setLongitude(1.);
+        position.setTime(new Date());
+        position.setValid(true);
+        position.setDevice(devices.get(0));
+        Mockito.when(pp.getAllAvailablePositions(devices.get(0)))
+                .thenReturn(Stream.of(position));
+        
         HttpResponse response = dc.getPositions(0);
         
         assertTrue(response instanceof OkCachedResponse);
         assertTrue(response.getContent() instanceof ListDto);
+        ListDto<PositionDto> result = (ListDto<PositionDto>)response.getContent();
+        assertEquals(1, result.getChanged().size());
+        assertNull(result.getIds());
     }
     
     @Test
