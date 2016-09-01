@@ -28,6 +28,7 @@ import pl.datamatica.traccar.api.dtos.out.ErrorDto;
 import pl.datamatica.traccar.api.dtos.out.ListDto;
 import pl.datamatica.traccar.api.dtos.out.PositionDto;
 import pl.datamatica.traccar.api.providers.DeviceProvider;
+import pl.datamatica.traccar.api.providers.PositionProvider;
 import pl.datamatica.traccar.api.providers.ProviderException;
 import pl.datamatica.traccar.api.responses.HttpResponse;
 import pl.datamatica.traccar.api.responses.OkCachedResponse;
@@ -88,10 +89,12 @@ public class DevicesController extends ControllerBase {
 
     
     private final DeviceProvider dp;
+    private final PositionProvider positions;
     
     public DevicesController(RequestContext requestContext) {
         super(requestContext);
         this.dp = requestContext.getDeviceProvider();
+        this.positions = requestContext.getPositionProvider();
     }
     
     public HttpResponse get() throws Exception {
@@ -167,7 +170,7 @@ public class DevicesController extends ControllerBase {
     public HttpResponse getPositions(long id) throws Exception {
         try {
             Device device = dp.getDevice(id);
-            return okCached(new ListDto<>(device.getPositions().stream()
+            return okCached(new ListDto<>(positions.getAllAvailablePositions(device)
                     .filter(p -> isModified(p.getTime()))
                     .map(p -> new PositionDto.Builder().position(p).build())
                     .collect(Collectors.toList())));

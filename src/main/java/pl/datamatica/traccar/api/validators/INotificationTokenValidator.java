@@ -16,8 +16,6 @@
  */
 package pl.datamatica.traccar.api.validators;
 
-import pl.datamatica.traccar.api.dtos.in.NotificationTokenDto;
-
 public interface INotificationTokenValidator {
     public boolean isValid(String token);
 }
