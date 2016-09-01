@@ -51,7 +51,8 @@ public class ReportType extends UpdateTimestampedEntity implements Serializable 
     @Column(length=500)
     private String descriptionLong;
 
-    @OneToMany(fetch = FetchType.EAGER, mappedBy="reportType")
+    @OneToMany(fetch=FetchType.EAGER)
+    @JoinColumn(name="ReportTypeId", nullable = false)
     private List<ReportParameter> parameters;
 
     @Column(nullable = false, columnDefinition = "boolean default false")

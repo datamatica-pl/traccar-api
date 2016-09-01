@@ -43,10 +43,6 @@ public class ReportParameter extends UpdateTimestampedEntity implements Serializ
 
     @Column(length=100)
     private String description;
-
-    @ManyToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name="reportTypeId", nullable = false)
-    private ReportType reportType;
     
     @OneToMany(fetch=FetchType.EAGER)
     @JoinColumn(name="ReportParameterId", nullable = false)
@@ -70,10 +66,6 @@ public class ReportParameter extends UpdateTimestampedEntity implements Serializ
 
     public String getDescription() {
         return description;
-    }
-
-    public ReportType getReportType() {
-        return reportType;
     }
 
     public List<ReportConstraint> getConstraints() {
