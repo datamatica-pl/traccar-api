@@ -34,5 +34,8 @@ VALUES (2, 'LTE', '1200', 1, '2016-01-01 00:00:00', '2016-01-01 00:00:00');
 
 -- Report fixtures
 
-INSERT INTO traccar_api_metadata.report_types(reportName, imageUrl)
-VALUES ('Jazda i postoje', 'www.datamatica.pl/images/jazda_postoje.png');
+INSERT INTO traccar_api_metadata.report_types(id, reportName, imageUrl)
+VALUES (1, 'Jazda i postoje', 'www.datamatica.pl/images/jazda_postoje.png');
+
+INSERT INTO traccar_api_metadata.report_parameters(id, parameterKey, parameterName, parameterValue, reportTypeId)
+VALUES (1, 'timePeriod', 'Obejmowany okres', 'doubleTime', 1);

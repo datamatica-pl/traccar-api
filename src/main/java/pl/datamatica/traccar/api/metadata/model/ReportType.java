@@ -17,6 +17,7 @@
 package pl.datamatica.traccar.api.metadata.model;
 
 import java.io.Serializable;
+import java.util.List;
 import javax.persistence.*;
 import org.hibernate.annotations.Filter;
 import org.hibernate.annotations.FilterDef;
@@ -50,6 +51,9 @@ public class ReportType extends UpdateTimestampedEntity implements Serializable 
     @Column(length=500)
     private String descriptionLong;
 
+    @OneToMany(fetch = FetchType.EAGER, mappedBy="reportType")
+    private List<ReportParameter> parameters;
+
     @Column(nullable = false, columnDefinition = "boolean default false")
     private boolean isDeleted;
 
@@ -73,8 +77,12 @@ public class ReportType extends UpdateTimestampedEntity implements Serializable 
         return descriptionLong;
     }
 
+    public List<ReportParameter> getParameters() {
+        return parameters;
+    }
+
     public boolean isIsDeleted() {
         return isDeleted;
     }
-    
+
 }
