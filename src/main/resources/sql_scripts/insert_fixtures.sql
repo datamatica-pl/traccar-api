@@ -38,10 +38,19 @@ INSERT INTO traccar_api_metadata.report_types(id, reportName, imageUrl)
 VALUES (1, 'Jazda i postoje', 'www.datamatica.pl/images/jazda_postoje.png');
 
 INSERT INTO traccar_api_metadata.report_parameters(id, parameterKey, parameterName, parameterValue, reportTypeId)
-VALUES (1, 'timePeriod', 'Obejmowany okres', 'doubleTime', 1);
+VALUES (1, 'timePeriod', 'Obejmowany okres', 'doubleDate', 1);
 
 INSERT INTO traccar_api_metadata.report_constraints(constraintKey, constraintValue, ReportParameterId)
-VALUES ('minLength', '3', 1);
+VALUES ('minDate', '2016-01-01', 1);
 
 INSERT INTO traccar_api_metadata.report_constraints(constraintKey, constraintValue, ReportParameterId)
-VALUES ('maxLength', '20', 1);
+VALUES ('maxDate', '2016-09-01', 1);
+
+INSERT INTO traccar_api_metadata.report_parameters(id, parameterKey, parameterName, parameterValue, reportTypeId)
+VALUES (2, 'selectedDevices', 'Wybrane urządzenia', 'list', 1);
+
+INSERT INTO traccar_api_metadata.report_constraints(constraintKey, constraintValue, ReportParameterId)
+VALUES ('maxNumber', '3', 2);
+
+INSERT INTO traccar_api_metadata.report_constraints(constraintKey, constraintValue, ReportParameterId)
+VALUES ('allowedModels', '["LK210", "LK209"]', 2);
