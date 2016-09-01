@@ -39,3 +39,9 @@ VALUES (1, 'Jazda i postoje', 'www.datamatica.pl/images/jazda_postoje.png');
 
 INSERT INTO traccar_api_metadata.report_parameters(id, parameterKey, parameterName, parameterValue, reportTypeId)
 VALUES (1, 'timePeriod', 'Obejmowany okres', 'doubleTime', 1);
+
+INSERT INTO traccar_api_metadata.report_constraints(constraintKey, constraintValue, ReportParameterId)
+VALUES ('minLength', '3', 1);
+
+INSERT INTO traccar_api_metadata.report_constraints(constraintKey, constraintValue, ReportParameterId)
+VALUES ('maxLength', '20', 1);

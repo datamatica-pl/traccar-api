@@ -7,4 +7,6 @@ DELETE FROM traccar_api_metadata.devicemodel_commandtype WHERE deviceModelId BET
 DELETE FROM traccar_api_metadata.device_models WHERE id BETWEEN 1 AND 100000;
 DELETE FROM traccar_api_metadata.command_types WHERE id BETWEEN 1 AND 100000;
 
+DELETE FROM traccar_api_metadata.report_constraints WHERE id BETWEEN 1 AND 100000;
+DELETE FROM traccar_api_metadata.report_parameters WHERE id BETWEEN 1 AND 100000;
 DELETE FROM traccar_api_metadata.report_types WHERE id BETWEEN 1 AND 100000;

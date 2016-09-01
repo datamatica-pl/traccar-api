@@ -7,4 +7,6 @@ DROP TABLE IF EXISTS traccar_api_metadata.devicemodel_commandtype;
 DROP TABLE IF EXISTS traccar_api_metadata.device_models;
 DROP TABLE IF EXISTS traccar_api_metadata.command_types;
 
+DROP TABLE IF EXISTS traccar_api_metadata.report_constraints;
+DROP TABLE IF EXISTS traccar_api_metadata.report_parameters;
 DROP TABLE IF EXISTS traccar_api_metadata.report_types;
