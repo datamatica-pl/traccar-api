@@ -34,7 +34,7 @@ public class CommandParameter extends UpdateTimestampedEntity implements Seriali
     private long id;
 
     @Column(nullable = false, length=100)
-    private String name;
+    private String parameterName;
 
     @Column(nullable = false, length=45)
     private String valueType;
@@ -57,12 +57,12 @@ public class CommandParameter extends UpdateTimestampedEntity implements Seriali
         this.id = id;
     }
 
-    public String getName() {
-        return name;
+    public String getParameterName() {
+        return parameterName;
     }
 
-    public void setName(String name) {
-        this.name = name;
+    public void setParameterName(String parameterName) {
+        this.parameterName = parameterName;
     }
 
     public String getValueType() {

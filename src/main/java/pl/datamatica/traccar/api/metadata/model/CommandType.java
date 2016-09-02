@@ -34,7 +34,7 @@ public class CommandType extends UpdateTimestampedEntity implements Serializable
     private long id;
 
     @Column(nullable=false, length=100)
-    private String name;
+    private String commandName;
 
     @Column(length=100)
     private String description;
@@ -54,12 +54,12 @@ public class CommandType extends UpdateTimestampedEntity implements Serializable
         this.id = id;
     }
 
-    public String getName() {
-        return name;
+    public String getCommandName() {
+        return commandName;
     }
 
-    public void setName(String name) {
-        this.name = name;
+    public void setCommandName(String commandName) {
+        this.commandName = commandName;
     }
 
     public String getDescription() {
