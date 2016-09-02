@@ -102,6 +102,7 @@ public class GeofencesControllerTest {
                 .points(Collections.singletonList(new PointDto(51, 18)))
                 .radius(100)
                 .type("CIRCLE")
+                .deviceIds(new long[0])
                 .build();
         Mockito.when(provider.createGeoFence(geofenceDto)).thenReturn(new GeoFence());
         
@@ -120,6 +121,7 @@ public class GeofencesControllerTest {
                 .points(Collections.singletonList(new PointDto(21, 52)))
                 .radius(50)
                 .type("CIRCLE")
+                .deviceIds(new long[0])
                 .build();
         Mockito.when(provider.createGeoFence(invalidGeofence)).thenReturn(new GeoFence());
         
@@ -140,6 +142,7 @@ public class GeofencesControllerTest {
                 .points(Collections.singletonList(new PointDto(51, 18)))
                 .radius(100)
                 .type("CIRCLE")
+                .deviceIds(new long[0])
                 .build();
         
         HttpResponse response = controller.put(5, geofenceDto);
@@ -150,7 +153,7 @@ public class GeofencesControllerTest {
     
     @Test
     public void put_invalidData() throws ProviderException {
-        //invalid color format, all devices not provided
+        //invalid color format, all devices not provided, not device ids
         AddGeoFenceDto invalidGeofence = new AddGeoFenceDto.Builder()
                 .color("03AbCf")
                 .geofenceName("test")
@@ -164,6 +167,6 @@ public class GeofencesControllerTest {
         assertTrue(response instanceof ErrorResponse);
         assertEquals(400, response.getHttpStatus());
         List<ErrorDto> errors = (List<ErrorDto>)response.getContent();
-        assertEquals(2, errors.size());
+        assertEquals(3, errors.size());
     }
 }

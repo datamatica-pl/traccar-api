@@ -14,24 +14,33 @@
  *  You should have received a copy of the GNU Affero General Public License
  *  along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-package pl.datamatica.traccar.api.dtos;
+package pl.datamatica.traccar.api.dtos.out;
 
-public interface IGeoFenceInfo {
+import java.util.List;
 
-    String getColor();
-
-    String getDescription();
-
-    String getGeofenceName();
-
-    String getPointsString();
-
-    float getRadius();
-
-    String getType();
-
-    boolean isAllDevices();
+/**
+ *
+ * @author Łukasz Ławniczak
+ */
+public class ListDto<T> {
+    private final List<T> changed;
+    private final long[] ids;
     
-    long[] getDeviceIds();
+    public ListDto(List<T> changed) {
+        this.changed = changed;
+        this.ids = null;
+    }
     
+    public ListDto(List<T> changed, long[] ids) {
+        this.changed = changed;
+        this.ids = ids;
+    }
+
+    public List<T> getChanged() {
+        return changed;
+    }
+
+    public long[] getIds() {
+        return ids;
+    }
 }

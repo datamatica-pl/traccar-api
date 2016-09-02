@@ -50,7 +50,6 @@ public class RequestContext implements AutoCloseable{
     private PositionProvider positions;
     
     public RequestContext(Request request, Response response) throws ParseException {
-        this.ifModifiedSince = new Date(0);
         if(request.headers(IF_MODIFIED_SINCE_HEADER) != null)
             this.ifModifiedSince = DateUtil.parseDate(request.headers(IF_MODIFIED_SINCE_HEADER));
         this.em = Context.getInstance().createEntityManager();

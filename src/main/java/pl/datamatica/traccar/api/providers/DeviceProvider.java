@@ -16,9 +16,14 @@
  */
 package pl.datamatica.traccar.api.providers;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.Collections;
+import java.util.Date;
 import java.util.List;
 import java.util.Random;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.stream.Stream;
 import javax.persistence.EntityManager;
 import javax.persistence.Query;
@@ -54,9 +59,8 @@ public class DeviceProvider extends ProviderBase {
     public Stream<Device> getAllAvailableDevices() {
         if(requestUser.getAdmin())
             return getAllDevices();
-        else {
+        else
             return requestUser.getAllAvailableDevices().stream();
-        }
     }
 
     public Device createDevice(String imei) throws ProviderException {

@@ -24,12 +24,13 @@ import pl.datamatica.traccar.model.Position;
 
 public class DeviceDto extends EditDeviceDto implements ICachedDto {
     private final long id;
-    private String status;
-    private String uniqueId;
-    private PositionDto lastPosition;
-    private Date oldestPositionTime;
-    private boolean isDeleted;
-    private long accountId;
+    private final String status;
+    private final String uniqueId;
+    private final PositionDto lastPosition;
+    private final boolean deleted;
+    private final long accountId;
+    private final Date validTo;
+    private final Integer historyLength;
     
     @JsonIgnore
     private Date modificationTime;
@@ -47,9 +48,10 @@ public class DeviceDto extends EditDeviceDto implements ICachedDto {
         private String status;
         private String uniqueId;
         private PositionDto lastPosition;
-        private Date oldestPositionTime;
         private boolean isDeleted;
         private long accountId;
+        private Date validTo;
+        private Integer historyLength;
         private Date modificationTime;
 
         public Builder id(final long value) {
@@ -107,11 +109,6 @@ public class DeviceDto extends EditDeviceDto implements ICachedDto {
             return this;
         }
 
-        public Builder oldestPositionTime(final Date value) {
-            this.oldestPositionTime = value;
-            return this;
-        }
-
         public Builder isDeleted(final boolean value) {
             this.isDeleted = value;
             return this;
@@ -119,6 +116,16 @@ public class DeviceDto extends EditDeviceDto implements ICachedDto {
 
         public Builder accountId(final long value) {
             this.accountId = value;
+            return this;
+        }
+        
+        public Builder validTo(final Date value) {
+            this.validTo = value;
+            return this;
+        }
+        
+        public Builder historyLength(final int value) {
+            this.historyLength = value;
             return this;
         }
 
@@ -143,17 +150,29 @@ public class DeviceDto extends EditDeviceDto implements ICachedDto {
                 this.lastPosition = new PositionDto.Builder().position(latestPosition).build();
             this.isDeleted = device.isDeleted();
             this.accountId = device.getOwner().getId();
-            if(device.getPositions() != null) 
-                this.oldestPositionTime = device.getPositions().stream()
-                        .map(p -> p.getTime())
-                        .min((d1, d2) -> d1.compareTo(d2))
-                        .orElse(null);
+            this.validTo = device.getValidTo();
+            this.historyLength = device.getHistoryLength();
             this.modificationTime = device.getLastUpdate();
             return this;
         }
 
         public DeviceDto build() {
-            return new DeviceDto(id, deviceName, deviceModelId, iconId, color, phoneNumber, plateNumber, description, status, uniqueId, lastPosition, oldestPositionTime, isDeleted, accountId, modificationTime);
+            return new DeviceDto(id, 
+                    deviceName, 
+                    deviceModelId, 
+                    iconId, 
+                    color, 
+                    phoneNumber, 
+                    plateNumber,
+                    description,
+                    status, 
+                    uniqueId, 
+                    lastPosition, 
+                    isDeleted, 
+                    accountId,
+                    validTo, 
+                    historyLength,
+                    modificationTime);
         }
     }
 
@@ -168,18 +187,20 @@ public class DeviceDto extends EditDeviceDto implements ICachedDto {
             final String status, 
             final String uniqueId,
             final PositionDto lastPosition, 
-            final Date oldestPositionTime,
             final boolean isDeleted, 
             final long accountId, 
+            final Date validTo,
+            final Integer historyLength,
             final Date modificationTime) {
         super(deviceName, deviceModelId, iconId, color, phoneNumber, plateNumber, description);
         this.id = id;
         this.status = status;
         this.uniqueId = uniqueId;
         this.lastPosition = lastPosition;
-        this.oldestPositionTime = oldestPositionTime;
-        this.isDeleted = isDeleted;
+        this.deleted = isDeleted;
         this.accountId = accountId;
+        this.validTo = validTo;
+        this.historyLength = historyLength;
         this.modificationTime = modificationTime;
     }
     
@@ -211,14 +232,18 @@ public class DeviceDto extends EditDeviceDto implements ICachedDto {
         return lastPosition;
     }
 
-    public Date getOldestPositionTime() {
-        return oldestPositionTime;
-    }
-    
     public boolean isDeleted() {
-        return isDeleted;
+        return deleted;
     }
 
+    public Date getValidTo() {
+        return validTo;
+    }
+
+    public int getHistoryLength() {
+        return historyLength;
+    }
+    
     @Override
     public Date getModificationTime() {
         return modificationTime;

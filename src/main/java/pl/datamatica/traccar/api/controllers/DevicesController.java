@@ -25,10 +25,13 @@ import pl.datamatica.traccar.api.dtos.in.AddDeviceDto;
 import pl.datamatica.traccar.api.dtos.in.EditDeviceDto;
 import pl.datamatica.traccar.api.dtos.out.DeviceDto;
 import pl.datamatica.traccar.api.dtos.out.ErrorDto;
+import pl.datamatica.traccar.api.dtos.out.ListDto;
 import pl.datamatica.traccar.api.dtos.out.PositionDto;
 import pl.datamatica.traccar.api.providers.DeviceProvider;
+import pl.datamatica.traccar.api.providers.PositionProvider;
 import pl.datamatica.traccar.api.providers.ProviderException;
 import pl.datamatica.traccar.api.responses.HttpResponse;
+import pl.datamatica.traccar.api.responses.OkCachedResponse;
 import pl.datamatica.traccar.model.Device;
 import spark.Request;
 import spark.Spark;
@@ -86,19 +89,30 @@ public class DevicesController extends ControllerBase {
 
     
     private final DeviceProvider dp;
+    private final PositionProvider positions;
     
     public DevicesController(RequestContext requestContext) {
         super(requestContext);
         this.dp = requestContext.getDeviceProvider();
+        this.positions = requestContext.getPositionProvider();
     }
     
     public HttpResponse get() throws Exception {
-        List<DeviceDto> devices = dp.getAllAvailableDevices()
+        List<Device> devices = dp.getAllAvailableDevices()
+                .collect(Collectors.toList());
+        List<DeviceDto> changedDevices = devices.stream()
                 .map(d -> new DeviceDto.Builder().device(d).build())
                 .filter(d -> isModified(d.getModificationTime()))
                 .collect(Collectors.toList());
+        long[] deviceIds = devices.stream()
+                .mapToLong(d -> d.getId())
+                .toArray();
         
-        return okCached(devices);
+        return new OkCachedResponse(new ListDto<>(changedDevices, deviceIds),
+                devices.stream()
+                        .map(d -> d.getLastUpdate())
+                        .max((d1, d2) -> d1.compareTo(d2))
+                        .orElse(Application.EMPTY_RESPONSE_MODIFICATION_DATE));
     }
     
     public HttpResponse get(long id) throws Exception {
@@ -156,9 +170,10 @@ public class DevicesController extends ControllerBase {
     public HttpResponse getPositions(long id) throws Exception {
         try {
             Device device = dp.getDevice(id);
-            return okCached(device.getPositions().stream()
+            return okCached(new ListDto<>(positions.getAllAvailablePositions(device)
+                    .filter(p -> isModified(p.getTime()))
                     .map(p -> new PositionDto.Builder().position(p).build())
-                    .collect(Collectors.toList()));
+                    .collect(Collectors.toList())));
         } catch (ProviderException ex) {
             return handle(ex);
         }

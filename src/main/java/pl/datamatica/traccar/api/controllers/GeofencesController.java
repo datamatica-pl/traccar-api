@@ -79,7 +79,7 @@ public class GeofencesController extends ControllerBase{
         List<GeoFenceDto> gfs = provider.getAllAvailableGeoFences()
                 .map(gf -> new GeoFenceDto.Builder().geoFence(gf).build())
                 .collect(Collectors.toList());
-        return okCached(gfs);
+        return ok(gfs);
     }
     
     public HttpResponse get(long id) throws ProviderException {
