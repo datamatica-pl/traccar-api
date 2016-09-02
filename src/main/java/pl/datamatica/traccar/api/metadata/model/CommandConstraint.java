@@ -40,7 +40,7 @@ public class CommandConstraint extends TimestampedEntity implements Serializable
     private String constraintValue;
     
     @ManyToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name="commandParameterId")
+    @JoinColumn(name="commandParameterId", nullable = false)
     private CommandParameter commandParameter;
 
     public long getId() {
