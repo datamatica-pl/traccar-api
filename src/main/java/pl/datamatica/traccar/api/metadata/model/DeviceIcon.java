@@ -33,7 +33,7 @@ import org.hibernate.annotations.SQLDelete;
 @SQLDelete(sql="UPDATE device_icons d SET d.isDeleted = 1 WHERE d.id = ?")
 @FilterDef(name="softDelete", defaultCondition="isDeleted = 0")
 @Filter(name="softDelete")
-public class DeviceIcon extends TimestampedEntity implements Serializable {
+public class DeviceIcon extends UpdateTimestampedEntity implements Serializable {
 
     @Id
     @GeneratedValue(strategy=GenerationType.AUTO)

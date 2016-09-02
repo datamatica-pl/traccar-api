@@ -27,7 +27,7 @@ import javax.persistence.*;
 @Entity
 @Table( name = "command_constraints" )
 @PersistenceContext(unitName = "traccar_api_metadata_persistence")
-public class CommandConstraint extends TimestampedEntity implements Serializable {
+public class CommandConstraint extends UpdateTimestampedEntity implements Serializable {
     
     @Id
     @GeneratedValue(strategy=GenerationType.AUTO)
