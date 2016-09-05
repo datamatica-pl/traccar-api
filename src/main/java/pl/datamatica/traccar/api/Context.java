@@ -28,10 +28,12 @@ public class Context {
     }
    
     private final EntityManagerFactory emf;
+    private final EntityManagerFactory emfMetadata;
     private final Gson gson;
     
     private Context() {
         emf = Persistence.createEntityManagerFactory("release");
+        emfMetadata = Persistence.createEntityManagerFactory("traccar_api_metadata_persistence");
         GsonBuilder gsonBuilder = new GsonBuilder();
         gsonBuilder.setDateFormat(Application.DATE_FORMAT);
         gsonBuilder.setExclusionStrategies(new AnnotationExclusionStrategy());
@@ -50,5 +52,9 @@ public class Context {
     
     public EntityManager createEntityManager() {
         return emf.createEntityManager();
+    }
+    
+    public EntityManager createMetadataEntityManager() {
+        return emfMetadata.createEntityManager();
     }
 }

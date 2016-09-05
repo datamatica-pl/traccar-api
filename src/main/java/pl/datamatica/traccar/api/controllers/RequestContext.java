@@ -26,6 +26,7 @@ import pl.datamatica.traccar.api.providers.DeviceProvider;
 import pl.datamatica.traccar.api.providers.FileProvider;
 import pl.datamatica.traccar.api.providers.GeoFenceProvider;
 import pl.datamatica.traccar.api.providers.PositionProvider;
+import pl.datamatica.traccar.api.providers.ReportsProvider;
 import pl.datamatica.traccar.api.providers.UserProvider;
 import pl.datamatica.traccar.api.utils.DateUtil;
 import pl.datamatica.traccar.model.User;
@@ -41,6 +42,7 @@ public class RequestContext implements AutoCloseable{
     
     private User user;
     private final EntityManager em;
+    private final EntityManager emMetadata;
     private final Request request;
     
     private DeviceProvider devices;
@@ -53,6 +55,7 @@ public class RequestContext implements AutoCloseable{
         if(request.headers(IF_MODIFIED_SINCE_HEADER) != null)
             this.ifModifiedSince = DateUtil.parseDate(request.headers(IF_MODIFIED_SINCE_HEADER));
         this.em = Context.getInstance().createEntityManager();
+        this.emMetadata = Context.getInstance().createMetadataEntityManager();
         this.request = request;
     }
     
@@ -104,10 +107,16 @@ public class RequestContext implements AutoCloseable{
         provider.setRequestUser(user);
         return provider;
     }
+    
+    public ReportsProvider getReportsProvider() {
+        ReportsProvider provider = new ReportsProvider(em, emMetadata, user);
+        return provider;
+    }
 
     @Override
     public void close() throws Exception {
         em.close();
+        emMetadata.close();
     }
 
     public Session session() {
@@ -117,8 +126,16 @@ public class RequestContext implements AutoCloseable{
     public void beginTransaction() {
         em.getTransaction().begin();
     }
+    
+    public void beginMetadataTransaction() {
+        emMetadata.getTransaction().begin();
+    }
 
     public void commitTransaction() {
         em.getTransaction().commit();
+    }
+    
+    public void commitMetadataTransaction() {
+        emMetadata.getTransaction().commit();
     }
 }
