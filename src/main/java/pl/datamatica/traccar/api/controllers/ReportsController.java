@@ -16,8 +16,10 @@
  */
 package pl.datamatica.traccar.api.controllers;
 
+import java.sql.Timestamp;
 import java.util.Date;
 import java.util.List;
+import static java.util.stream.Collectors.toList;
 import pl.datamatica.traccar.api.Application;
 import static pl.datamatica.traccar.api.controllers.ControllerBase.render;
 import pl.datamatica.traccar.api.metadata.model.ReportType;
@@ -66,6 +68,12 @@ public class ReportsController extends ControllerBase {
 
     public HttpResponse get() throws Exception {
         List<ReportType> reportTypes = provider.getReportsMetadata();
+        if (this.requestContext.getModificationDate() != null) {
+            Timestamp ifModifiedSinceFromUser = new Timestamp(this.requestContext.getModificationDate().getTime());
+            reportTypes = reportTypes.stream()
+                            .filter( item -> item.getUpdateTime().compareTo(ifModifiedSinceFromUser) > 0 )
+                            .collect(toList());
+        }
         return new OkCachedResponse(reportTypes, new Date());
     }
 

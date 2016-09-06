@@ -54,3 +54,15 @@ VALUES ('maxNumber', '3', 2);
 
 INSERT INTO traccar_api_metadata.report_constraints(constraintKey, constraintValue, ReportParameterId)
 VALUES ('allowedModels', '["LK210", "LK209"]', 2);
+
+INSERT INTO traccar_api_metadata.report_types(id, reportName, imageUrl)
+VALUES (2, 'Informacje ogólne', 'www.datamatica.pl/images/informacje_ogolne.png');
+
+INSERT INTO traccar_api_metadata.report_parameters(id, parameterKey, parameterName, parameterValue, reportTypeId)
+VALUES (3, 'timePeriod', 'Obejmowany okres', 'doubleDate', 2);
+
+INSERT INTO traccar_api_metadata.report_constraints(constraintKey, constraintValue, ReportParameterId)
+VALUES ('minDate', '2016-02-01', 3);
+
+INSERT INTO traccar_api_metadata.report_constraints(constraintKey, constraintValue, ReportParameterId)
+VALUES ('maxDate', '2016-08-01', 3);
