@@ -16,6 +16,8 @@
  */
 package pl.datamatica.traccar.api;
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.Date;
@@ -25,6 +27,7 @@ import spark.Spark;
 
 import pl.datamatica.traccar.api.controllers.*;
 import pl.datamatica.traccar.api.auth.BasicAuthFilter;
+import pl.datamatica.traccar.api.dtos.out.AppVersionsInfoDto;
 
 
 public class Application implements spark.servlet.SparkApplication {
@@ -47,15 +50,30 @@ public class Application implements spark.servlet.SparkApplication {
        
     @Override
     public void init() {
-        Spark.get("test", (req, res) -> {
-                return "Hello world";
-        });
         BasicAuthFilter baf = new BasicAuthFilter();
         
         Spark.before((req, res) -> {
             RequestContext rc = new RequestContext(req, res);
             req.attribute(REQUEST_CONTEXT_KEY, rc);
             baf.handle(req, res);
+        });
+        
+        Spark.get("v1/appVerions", (req, res) -> {
+            AppVersionsInfoDto appVer = new AppVersionsInfoDto();
+            appVer.setAndroidVersion("1.3.0");
+            appVer.setAndroidRequired("1.2.0");
+            appVer.setIosVersion("1.2.2");
+            appVer.setIosRequired("1.0.0");
+            appVer.setMessageKey("devices_spring_promo");
+            appVer.setLocalizedMessage("Wiosenna promocja");
+            appVer.setMessageUrl("http://www.shop-angelgts.pl/spring/promo");
+
+            GsonBuilder builder = new GsonBuilder();
+            Gson gson = builder
+                            .setPrettyPrinting()
+                            .create();
+
+            return gson.toJson(appVer);
         });
         
         Spark.after((req, res)-> {
