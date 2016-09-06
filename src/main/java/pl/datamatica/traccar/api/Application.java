@@ -58,7 +58,7 @@ public class Application implements spark.servlet.SparkApplication {
             baf.handle(req, res);
         });
         
-        Spark.get("v1/appVerions", (req, res) -> {
+        Spark.get("v1/appVersions", (req, res) -> {
             AppVersionsInfoDto appVer = new AppVersionsInfoDto();
             appVer.setAndroidVersion("1.3.0");
             appVer.setAndroidRequired("1.2.0");
@@ -73,7 +73,11 @@ public class Application implements spark.servlet.SparkApplication {
                             .setPrettyPrinting()
                             .create();
 
-            return gson.toJson(appVer);
+            res.status(200);
+            res.type("application/json");
+            res.body(gson.toJson(appVer));
+
+            return(res);
         });
         
         Spark.after((req, res)-> {
