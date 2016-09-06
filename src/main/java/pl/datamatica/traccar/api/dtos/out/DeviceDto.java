@@ -27,7 +27,6 @@ public class DeviceDto extends EditDeviceDto implements ICachedDto {
     private final String status;
     private final String uniqueId;
     private final PositionDto lastPosition;
-    private final boolean deleted;
     private final long accountId;
     private final Date validTo;
     private final Integer historyLength;
@@ -48,7 +47,6 @@ public class DeviceDto extends EditDeviceDto implements ICachedDto {
         private String status;
         private String uniqueId;
         private PositionDto lastPosition;
-        private boolean isDeleted;
         private long accountId;
         private Date validTo;
         private Integer historyLength;
@@ -109,11 +107,6 @@ public class DeviceDto extends EditDeviceDto implements ICachedDto {
             return this;
         }
 
-        public Builder isDeleted(final boolean value) {
-            this.isDeleted = value;
-            return this;
-        }
-
         public Builder accountId(final long value) {
             this.accountId = value;
             return this;
@@ -148,7 +141,6 @@ public class DeviceDto extends EditDeviceDto implements ICachedDto {
             Position latestPosition = device.getLatestPosition();
             if(latestPosition != null)
                 this.lastPosition = new PositionDto.Builder().position(latestPosition).build();
-            this.isDeleted = device.isDeleted();
             this.accountId = device.getOwner().getId();
             this.validTo = device.getValidTo();
             this.historyLength = device.getHistoryLength();
@@ -167,8 +159,7 @@ public class DeviceDto extends EditDeviceDto implements ICachedDto {
                     description,
                     status, 
                     uniqueId, 
-                    lastPosition, 
-                    isDeleted, 
+                    lastPosition,
                     accountId,
                     validTo, 
                     historyLength,
@@ -187,7 +178,6 @@ public class DeviceDto extends EditDeviceDto implements ICachedDto {
             final String status, 
             final String uniqueId,
             final PositionDto lastPosition, 
-            final boolean isDeleted, 
             final long accountId, 
             final Date validTo,
             final Integer historyLength,
@@ -197,7 +187,6 @@ public class DeviceDto extends EditDeviceDto implements ICachedDto {
         this.status = status;
         this.uniqueId = uniqueId;
         this.lastPosition = lastPosition;
-        this.deleted = isDeleted;
         this.accountId = accountId;
         this.validTo = validTo;
         this.historyLength = historyLength;
@@ -230,10 +219,6 @@ public class DeviceDto extends EditDeviceDto implements ICachedDto {
 
     public PositionDto getLastPosition() {
         return lastPosition;
-    }
-
-    public boolean isDeleted() {
-        return deleted;
     }
 
     public Date getValidTo() {

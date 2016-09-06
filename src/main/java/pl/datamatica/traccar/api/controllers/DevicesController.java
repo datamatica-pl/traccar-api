@@ -99,6 +99,7 @@ public class DevicesController extends ControllerBase {
     
     public HttpResponse get() throws Exception {
         List<Device> devices = dp.getAllAvailableDevices()
+                .filter(d -> !d.isDeleted())
                 .collect(Collectors.toList());
         List<DeviceDto> changedDevices = devices.stream()
                 .map(d -> new DeviceDto.Builder().device(d).build())
