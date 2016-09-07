@@ -58,12 +58,12 @@ public class Application implements spark.servlet.SparkApplication {
             baf.handle(req, res);
         });
         
-        Spark.get("v1/appVersions", (req, res) -> {
+        Spark.get("v1/appversions", (req, res) -> {
             AppVersionsInfoDto appVer = new AppVersionsInfoDto();
-            appVer.setAndroidVersion("1.3.0");
-            appVer.setAndroidRequired("1.2.0");
-            appVer.setIosVersion("1.2.2");
-            appVer.setIosRequired("1.0.0");
+            appVer.setAndroidVersion("0.1.0");
+            appVer.setAndroidRequired("0.1.0");
+            appVer.setIosVersion("0.3.0");
+            appVer.setIosRequired("0.2.0");
             appVer.setMessageKey("devices_spring_promo");
             appVer.setLocalizedMessage("Wiosenna promocja");
             appVer.setMessageUrl("http://www.shop-angelgts.pl/spring/promo");
