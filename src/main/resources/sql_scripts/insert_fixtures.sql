@@ -3,7 +3,7 @@
 -- Commands fixures
 
 INSERT INTO traccar_api_metadata.device_models(id, imageUrl, deviceName)
-VALUES (1, 'datamatica.pl/images/test1.png', 'LK_210');
+VALUES (1, 'datamatica.pl/images/lk210.png', 'LK210');
 
 INSERT INTO traccar_api_metadata.command_types(id, commandName)
 VALUES (1, 'positionPeriodic');
@@ -31,6 +31,12 @@ VALUES (1, 'GTE', '10', 1);
 
 INSERT INTO traccar_api_metadata.command_constraints(id, constraintType, constraintValue, commandParameterId)
 VALUES (2, 'LTE', '1200', 1);
+
+INSERT INTO traccar_api_metadata.device_models(id, imageUrl, deviceName)
+VALUES (2, 'datamatica.pl/images/gt06.png', 'GT06');
+
+INSERT INTO traccar_api_metadata.devicemodel_commandtype(deviceModelId, commandTypeId)
+VALUES (2, 1);
 
 -- Report fixtures
 

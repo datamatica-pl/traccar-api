@@ -39,7 +39,8 @@ public class CommandType extends UpdateTimestampedEntity implements Serializable
     @Column(length=100)
     private String description;
 
-    @OneToMany(fetch = FetchType.EAGER, mappedBy="commandType")
+    @OneToMany(fetch=FetchType.EAGER)
+    @JoinColumn(name="CommandTypeId", nullable = false)
     private List<CommandParameter> commandParameters;
 
     public List<CommandParameter> getCommandParameters() {
