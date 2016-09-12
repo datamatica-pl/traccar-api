@@ -43,14 +43,12 @@ public class Application implements spark.servlet.SparkApplication {
             new PositionsController.Binder(),
             new GeofencesController.Binder(),
             new SessionController.Binder(),
-            new ReportsController.Binder()
+            new ReportsController.Binder(),
+            new DeviceModelsController.Binder()
         };
        
     @Override
     public void init() {
-        Spark.get("test", (req, res) -> {
-                return "Hello world";
-        });
         BasicAuthFilter baf = new BasicAuthFilter();
         
         Spark.before((req, res) -> {

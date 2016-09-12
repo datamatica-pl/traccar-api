@@ -22,6 +22,7 @@ import javax.persistence.EntityManager;
 import pl.datamatica.traccar.api.Application;
 import pl.datamatica.traccar.api.Context;
 import pl.datamatica.traccar.api.providers.ApplicationSettingsProvider;
+import pl.datamatica.traccar.api.providers.DeviceModelProvider;
 import pl.datamatica.traccar.api.providers.DeviceProvider;
 import pl.datamatica.traccar.api.providers.FileProvider;
 import pl.datamatica.traccar.api.providers.GeoFenceProvider;
@@ -34,7 +35,7 @@ import spark.Request;
 import spark.Response;
 import spark.Session;
 
-public class RequestContext implements AutoCloseable{
+public class RequestContext implements AutoCloseable {
     
     private static final String IF_MODIFIED_SINCE_HEADER = "If-Modified-Since";
     
@@ -110,6 +111,11 @@ public class RequestContext implements AutoCloseable{
     
     public ReportsProvider getReportsProvider() {
         ReportsProvider provider = new ReportsProvider(em, emMetadata, user);
+        return provider;
+    }
+    
+    public DeviceModelProvider getDeviceModelProvider() {
+        DeviceModelProvider provider = new DeviceModelProvider(em, emMetadata, user);
         return provider;
     }
 
