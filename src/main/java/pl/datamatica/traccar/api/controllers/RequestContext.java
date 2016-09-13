@@ -22,6 +22,7 @@ import javax.persistence.EntityManager;
 import pl.datamatica.traccar.api.Application;
 import pl.datamatica.traccar.api.Context;
 import pl.datamatica.traccar.api.providers.ApplicationSettingsProvider;
+import pl.datamatica.traccar.api.providers.DeviceIconProvider;
 import pl.datamatica.traccar.api.providers.DeviceModelProvider;
 import pl.datamatica.traccar.api.providers.DeviceProvider;
 import pl.datamatica.traccar.api.providers.FileProvider;
@@ -118,6 +119,11 @@ public class RequestContext implements AutoCloseable {
         DeviceModelProvider provider = new DeviceModelProvider(em, emMetadata, user);
         return provider;
     }
+    
+    public DeviceIconProvider getDeviceIconProvider() {
+        DeviceIconProvider provider = new DeviceIconProvider(em, emMetadata);
+        return provider;
+    }
 
     @Override
     public void close() throws Exception {
@@ -143,5 +149,9 @@ public class RequestContext implements AutoCloseable {
     
     public void commitMetadataTransaction() {
         emMetadata.getTransaction().commit();
+    }
+    
+    public void rollbackMetadataTransation() {
+        emMetadata.getTransaction().rollback();
     }
 }

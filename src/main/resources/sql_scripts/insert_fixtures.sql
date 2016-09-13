@@ -72,3 +72,10 @@ VALUES ('minDate', '2016-02-01', 3);
 
 INSERT INTO traccar_api_metadata.report_constraints(constraintKey, constraintValue, ReportParameterId)
 VALUES ('maxDate', '2016-08-01', 3);
+
+-- DeviceIcon fixtures
+INSERT INTO traccar_api_metadata.device_icons(iconUrl)
+VALUES ('http://datamatica.pl/images/deviceicon_1.png');
+
+INSERT INTO traccar_api_metadata.device_icons(iconUrl)
+VALUES ('http://datamatica.pl/images/deviceicon_2.png');
