@@ -78,7 +78,7 @@ public class DeviceIconsController extends ControllerBase {
                                 .collect(toList());
             }
             requestContext.commitMetadataTransaction();
-        } catch (Exception e) {
+        } catch (RuntimeException e) {
             requestContext.rollbackMetadataTransation();
             throw e;
         }

@@ -17,6 +17,7 @@
 package pl.datamatica.traccar.api.controllers;
 
 import java.sql.Timestamp;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import static java.util.stream.Collectors.toList;
@@ -66,13 +67,22 @@ public class DeviceModelsController extends ControllerBase {
     }
     
     public HttpResponse get() throws Exception {
-        List<DeviceModel> deviceModels = provider.getDeviceModelsMetadata();
-        if (this.requestContext.getModificationDate() != null) {
-            Timestamp ifModifiedSinceFromUser = new Timestamp(this.requestContext.getModificationDate().getTime());
-            deviceModels = deviceModels.stream()
-                            .filter( item -> item.getUpdateTime().compareTo(ifModifiedSinceFromUser) > 0 )
-                            .collect(toList());
+        List<DeviceModel> deviceModels = new ArrayList<>();
+        try {
+            requestContext.beginMetadataTransaction();
+            deviceModels = provider.getDeviceModelsMetadata();
+            if (this.requestContext.getModificationDate() != null) {
+                Timestamp ifModifiedSinceFromUser = new Timestamp(this.requestContext.getModificationDate().getTime());
+                deviceModels = deviceModels.stream()
+                                .filter( item -> item.getUpdateTime().compareTo(ifModifiedSinceFromUser) > 0 )
+                                .collect(toList());
+            }
+            requestContext.commitMetadataTransaction();
+        } catch (RuntimeException e) {
+            requestContext.rollbackMetadataTransation();
+            throw e;
         }
+    
         return new OkCachedResponse(deviceModels, new Date());
     }
     

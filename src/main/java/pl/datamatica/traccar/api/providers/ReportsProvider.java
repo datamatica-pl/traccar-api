@@ -20,19 +20,16 @@ import java.util.List;
 import javax.persistence.EntityManager;
 import javax.persistence.TypedQuery;
 import pl.datamatica.traccar.api.metadata.model.ReportType;
-import pl.datamatica.traccar.model.User;
 
 /**
  *
  * @author Jan Usarek
  */
 public class ReportsProvider extends ProviderBase {
-    private final User requestUser;
     private final EntityManager emMetadata;
 
-    public ReportsProvider(EntityManager em, EntityManager emm, User requestUser) {
+    public ReportsProvider(EntityManager em, EntityManager emm) {
         super(em);
-        this.requestUser = requestUser;
         this.emMetadata = emm;
     }
 

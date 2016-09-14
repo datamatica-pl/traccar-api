@@ -19,6 +19,7 @@ package pl.datamatica.traccar.api.controllers;
 import java.text.ParseException;
 import java.util.Date;
 import javax.persistence.EntityManager;
+import javax.persistence.EntityTransaction;
 import pl.datamatica.traccar.api.Application;
 import pl.datamatica.traccar.api.Context;
 import pl.datamatica.traccar.api.providers.ApplicationSettingsProvider;
@@ -111,12 +112,12 @@ public class RequestContext implements AutoCloseable {
     }
     
     public ReportsProvider getReportsProvider() {
-        ReportsProvider provider = new ReportsProvider(em, emMetadata, user);
+        ReportsProvider provider = new ReportsProvider(em, emMetadata);
         return provider;
     }
     
     public DeviceModelProvider getDeviceModelProvider() {
-        DeviceModelProvider provider = new DeviceModelProvider(em, emMetadata, user);
+        DeviceModelProvider provider = new DeviceModelProvider(em, emMetadata);
         return provider;
     }
     
@@ -152,6 +153,9 @@ public class RequestContext implements AutoCloseable {
     }
     
     public void rollbackMetadataTransation() {
-        emMetadata.getTransaction().rollback();
+        EntityTransaction et = emMetadata.getTransaction();
+        if (et != null) {
+            et.rollback();
+        }
     }
 }
