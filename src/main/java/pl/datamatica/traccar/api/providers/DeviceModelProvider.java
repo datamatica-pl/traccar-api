@@ -34,7 +34,9 @@ public class DeviceModelProvider extends ProviderBase {
     }
 
     public List<DeviceModel> getDeviceModelsMetadata() {
-        TypedQuery<DeviceModel> query = emMetadata.createQuery("SELECT x FROM DeviceModel x", DeviceModel.class);
+        TypedQuery<DeviceModel> query = emMetadata.createQuery(
+                                            "SELECT d FROM DeviceModel d ORDER BY d.updateTime DESC",
+                                            DeviceModel.class);
         return query.getResultList();
     }
 }
