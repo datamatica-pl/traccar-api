@@ -3,7 +3,7 @@
 -- Commands fixures
 
 INSERT INTO traccar_api_metadata.device_models(id, imageUrl, deviceName)
-VALUES (1, 'datamatica.pl/images/test1.png', 'LK_210');
+VALUES (1, 'datamatica.pl/images/lk210.png', 'LK210');
 
 INSERT INTO traccar_api_metadata.command_types(id, commandName)
 VALUES (1, 'positionPeriodic');
@@ -32,6 +32,12 @@ VALUES (1, 'GTE', '10', 1);
 INSERT INTO traccar_api_metadata.command_constraints(id, constraintType, constraintValue, commandParameterId)
 VALUES (2, 'LTE', '1200', 1);
 
+INSERT INTO traccar_api_metadata.device_models(id, imageUrl, deviceName)
+VALUES (2, 'datamatica.pl/images/gt06.png', 'GT06');
+
+INSERT INTO traccar_api_metadata.devicemodel_commandtype(deviceModelId, commandTypeId)
+VALUES (2, 1);
+
 -- Report fixtures
 
 INSERT INTO traccar_api_metadata.report_types(id, reportName, imageUrl)
@@ -54,3 +60,22 @@ VALUES ('maxNumber', '3', 2);
 
 INSERT INTO traccar_api_metadata.report_constraints(constraintKey, constraintValue, ReportParameterId)
 VALUES ('allowedModels', '["LK210", "LK209"]', 2);
+
+INSERT INTO traccar_api_metadata.report_types(id, reportName, imageUrl)
+VALUES (2, 'Informacje ogólne', 'www.datamatica.pl/images/informacje_ogolne.png');
+
+INSERT INTO traccar_api_metadata.report_parameters(id, parameterKey, parameterName, parameterValue, reportTypeId)
+VALUES (3, 'timePeriod', 'Obejmowany okres', 'doubleDate', 2);
+
+INSERT INTO traccar_api_metadata.report_constraints(constraintKey, constraintValue, ReportParameterId)
+VALUES ('minDate', '2016-02-01', 3);
+
+INSERT INTO traccar_api_metadata.report_constraints(constraintKey, constraintValue, ReportParameterId)
+VALUES ('maxDate', '2016-08-01', 3);
+
+-- DeviceIcon fixtures
+INSERT INTO traccar_api_metadata.device_icons(iconUrl)
+VALUES ('http://datamatica.pl/images/deviceicon_1.png');
+
+INSERT INTO traccar_api_metadata.device_icons(iconUrl)
+VALUES ('http://datamatica.pl/images/deviceicon_2.png');

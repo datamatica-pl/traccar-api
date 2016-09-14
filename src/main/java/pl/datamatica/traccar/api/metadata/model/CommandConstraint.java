@@ -28,20 +28,16 @@ import javax.persistence.*;
 @Table( name = "command_constraints" )
 @PersistenceContext(unitName = "traccar_api_metadata_persistence")
 public class CommandConstraint extends UpdateTimestampedEntity implements Serializable {
-    
+
     @Id
     @GeneratedValue(strategy=GenerationType.AUTO)
     private long id;
-    
+
     @Column(nullable = false, length=50)
     private String constraintType;
-    
+
     @Column(nullable = false, length=100)
     private String constraintValue;
-    
-    @ManyToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name="commandParameterId", nullable = false)
-    private CommandParameter commandParameter;
 
     public long getId() {
         return id;
@@ -65,13 +61,5 @@ public class CommandConstraint extends UpdateTimestampedEntity implements Serial
 
     public void setConstraintValue(String constraintValue) {
         this.constraintValue = constraintValue;
-    }
-
-    public CommandParameter getCommandParameter() {
-        return commandParameter;
-    }
-
-    public void setCommandParameter(CommandParameter commandParameter) {
-        this.commandParameter = commandParameter;
     }
 }

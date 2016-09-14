@@ -19,13 +19,17 @@ package pl.datamatica.traccar.api.controllers;
 import java.text.ParseException;
 import java.util.Date;
 import javax.persistence.EntityManager;
+import javax.persistence.EntityTransaction;
 import pl.datamatica.traccar.api.Application;
 import pl.datamatica.traccar.api.Context;
 import pl.datamatica.traccar.api.providers.ApplicationSettingsProvider;
+import pl.datamatica.traccar.api.providers.DeviceIconProvider;
+import pl.datamatica.traccar.api.providers.DeviceModelProvider;
 import pl.datamatica.traccar.api.providers.DeviceProvider;
 import pl.datamatica.traccar.api.providers.FileProvider;
 import pl.datamatica.traccar.api.providers.GeoFenceProvider;
 import pl.datamatica.traccar.api.providers.PositionProvider;
+import pl.datamatica.traccar.api.providers.ReportsProvider;
 import pl.datamatica.traccar.api.providers.UserProvider;
 import pl.datamatica.traccar.api.utils.DateUtil;
 import pl.datamatica.traccar.model.User;
@@ -33,7 +37,7 @@ import spark.Request;
 import spark.Response;
 import spark.Session;
 
-public class RequestContext implements AutoCloseable{
+public class RequestContext implements AutoCloseable {
     
     private static final String IF_MODIFIED_SINCE_HEADER = "If-Modified-Since";
     
@@ -41,6 +45,7 @@ public class RequestContext implements AutoCloseable{
     
     private User user;
     private final EntityManager em;
+    private final EntityManager emMetadata;
     private final Request request;
     
     private DeviceProvider devices;
@@ -53,6 +58,7 @@ public class RequestContext implements AutoCloseable{
         if(request.headers(IF_MODIFIED_SINCE_HEADER) != null)
             this.ifModifiedSince = DateUtil.parseDate(request.headers(IF_MODIFIED_SINCE_HEADER));
         this.em = Context.getInstance().createEntityManager();
+        this.emMetadata = Context.getInstance().createMetadataEntityManager();
         this.request = request;
     }
     
@@ -104,10 +110,26 @@ public class RequestContext implements AutoCloseable{
         provider.setRequestUser(user);
         return provider;
     }
+    
+    public ReportsProvider getReportsProvider() {
+        ReportsProvider provider = new ReportsProvider(em, emMetadata);
+        return provider;
+    }
+    
+    public DeviceModelProvider getDeviceModelProvider() {
+        DeviceModelProvider provider = new DeviceModelProvider(em, emMetadata);
+        return provider;
+    }
+    
+    public DeviceIconProvider getDeviceIconProvider() {
+        DeviceIconProvider provider = new DeviceIconProvider(em, emMetadata);
+        return provider;
+    }
 
     @Override
     public void close() throws Exception {
         em.close();
+        emMetadata.close();
     }
 
     public Session session() {
@@ -117,8 +139,23 @@ public class RequestContext implements AutoCloseable{
     public void beginTransaction() {
         em.getTransaction().begin();
     }
+    
+    public void beginMetadataTransaction() {
+        emMetadata.getTransaction().begin();
+    }
 
     public void commitTransaction() {
         em.getTransaction().commit();
+    }
+    
+    public void commitMetadataTransaction() {
+        emMetadata.getTransaction().commit();
+    }
+    
+    public void rollbackMetadataTransation() {
+        EntityTransaction et = emMetadata.getTransaction();
+        if (et != null) {
+            et.rollback();
+        }
     }
 }

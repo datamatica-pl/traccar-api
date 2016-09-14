@@ -44,19 +44,19 @@ public class DeviceModel extends UpdateTimestampedEntity implements Serializable
 
     @Column(length=500)
     private String imageUrl;
-    
+
     @Column(length=100)
     private String descriptionShort;
-    
+
     @Column(length=500)
     private String descriptionLong;
-    
+
     @Column(length=500)
     private String shopUrl;
 
     @Column(nullable = false, columnDefinition = "boolean default false")
     private boolean isDeleted;
-    
+
     @ManyToMany
     @JoinTable(
         name="devicemodel_commandtype",

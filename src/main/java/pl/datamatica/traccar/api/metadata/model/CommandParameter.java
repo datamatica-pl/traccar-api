@@ -42,11 +42,8 @@ public class CommandParameter extends UpdateTimestampedEntity implements Seriali
     @Column(length=100)
     private String description;
 
-    @ManyToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name="commandTypeId", nullable = false)
-    private CommandType commandType;
-    
-    @OneToMany(fetch = FetchType.EAGER, mappedBy="commandParameter")
+    @OneToMany(fetch=FetchType.EAGER)
+    @JoinColumn(name="CommandParameterId", nullable = false)
     private List<CommandConstraint> commandConstraints;
 
     public long getId() {
@@ -79,10 +76,6 @@ public class CommandParameter extends UpdateTimestampedEntity implements Seriali
 
     public void setDescription(String description) {
         this.description = description;
-    }
-
-    public CommandType getCommandType() {
-        return commandType;
     }
 
     public List<CommandConstraint> getCommandConstraints() {
