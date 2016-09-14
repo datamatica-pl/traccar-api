@@ -79,3 +79,9 @@ VALUES ('http://datamatica.pl/images/deviceicon_1.png');
 
 INSERT INTO traccar_api_metadata.device_icons(iconUrl)
 VALUES ('http://datamatica.pl/images/deviceicon_2.png');
+
+INSERT INTO traccar_api_metadata.device_icons(iconUrl)
+VALUES ('http://datamatica.pl/images/deviceicon_3.png');
+
+INSERT INTO traccar_api_metadata.device_icons(iconUrl)
+VALUES ('http://datamatica.pl/images/new_deviceicon_1.png');
