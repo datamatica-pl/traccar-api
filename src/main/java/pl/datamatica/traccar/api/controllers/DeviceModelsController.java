@@ -68,9 +68,11 @@ public class DeviceModelsController extends ControllerBase {
     
     public HttpResponse get() throws Exception {
         List<DeviceModel> deviceModels = new ArrayList<>();
+        Date lastModified = new Date();
         try {
             requestContext.beginMetadataTransaction();
             deviceModels = provider.getDeviceModelsMetadata();
+            lastModified = (Date)deviceModels.get(0).getUpdateTime();
             if (this.requestContext.getModificationDate() != null) {
                 Timestamp ifModifiedSinceFromUser = new Timestamp(this.requestContext.getModificationDate().getTime());
                 deviceModels = deviceModels.stream()
@@ -83,7 +85,7 @@ public class DeviceModelsController extends ControllerBase {
             throw e;
         }
     
-        return new OkCachedResponse(deviceModels, new Date());
+        return new OkCachedResponse(deviceModels, lastModified);
     }
     
 }

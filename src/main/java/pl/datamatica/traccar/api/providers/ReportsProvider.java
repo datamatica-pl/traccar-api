@@ -34,7 +34,9 @@ public class ReportsProvider extends ProviderBase {
     }
 
     public List<ReportType> getReportsMetadata() {
-        TypedQuery<ReportType> query = emMetadata.createQuery("SELECT x FROM ReportType x", ReportType.class);
+        TypedQuery<ReportType> query = emMetadata.createQuery(
+                                        "SELECT r FROM ReportType r ORDER BY r.updateTime DESC",
+                                        ReportType.class);
         return query.getResultList();
     }
 

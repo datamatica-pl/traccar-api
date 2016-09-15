@@ -34,7 +34,9 @@ public class DeviceIconProvider extends ProviderBase {
     }
 
     public List<DeviceIcon> getDeviceIconsMetadata() {
-        TypedQuery<DeviceIcon> query = emMetadata.createQuery("SELECT x FROM DeviceIcon x", DeviceIcon.class);
+        TypedQuery<DeviceIcon> query = emMetadata.createQuery(
+                                            "SELECT d FROM DeviceIcon d ORDER BY d.updateTime DESC",
+                                            DeviceIcon.class);
         return query.getResultList();
     }
 }
