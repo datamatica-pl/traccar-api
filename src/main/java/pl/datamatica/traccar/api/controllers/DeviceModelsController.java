@@ -40,7 +40,7 @@ public class DeviceModelsController extends ControllerBase {
         @Override
         public void bind() {
 
-            Spark.get(rootUrl(), (req, res) -> {
+            Spark.get(baseUrl(), (req, res) -> {
                 DeviceModelsController dmc = createController(req);
                 return render(dmc.get(), res);
             }, gson::toJson);
@@ -52,10 +52,9 @@ public class DeviceModelsController extends ControllerBase {
             DeviceModelsController rc = new DeviceModelsController(context);
             return rc;
         }
-
-        @Override
-        public String rootUrl() {
-            return super.rootUrl() + "/devicemodels";
+        
+        public String baseUrl() {
+            return resourcesUrl() + "/devicemodels";
         }
     }
     

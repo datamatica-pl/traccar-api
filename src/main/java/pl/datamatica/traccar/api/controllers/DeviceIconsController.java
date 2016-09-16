@@ -40,7 +40,7 @@ public class DeviceIconsController extends ControllerBase {
         @Override
         public void bind() {
 
-            Spark.get(rootUrl(), (req, res) -> {
+            Spark.get(baseUrl(), (req, res) -> {
                 DeviceIconsController dic = createController(req);
                 return render(dic.get(), res);
             }, gson::toJson);
@@ -52,10 +52,9 @@ public class DeviceIconsController extends ControllerBase {
             DeviceIconsController dic = new DeviceIconsController(context);
             return dic;
         }
-
-        @Override
-        public String rootUrl() {
-            return super.rootUrl() + "/deviceicons";
+        
+        public String baseUrl() {
+            return resourcesUrl() + "/deviceicons";
         }
     }
     

@@ -41,7 +41,7 @@ public class ReportsController extends ControllerBase {
         @Override
         public void bind() {
 
-            Spark.get(rootUrl(), (req, res) -> {
+            Spark.get(baseUrl(), (req, res) -> {
                 ReportsController rc = createController(req);
                 return render(rc.get(), res);
             }, gson::toJson);
@@ -53,10 +53,9 @@ public class ReportsController extends ControllerBase {
             ReportsController rc = new ReportsController(context);
             return rc;
         }
-
-        @Override
-        public String rootUrl() {
-            return super.rootUrl() + "/reports";
+        
+        public String baseUrl() {
+            return resourcesUrl() + "/reports";
         }
     }
 

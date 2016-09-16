@@ -29,6 +29,10 @@ public abstract class ControllerBinder {
     public String rootUrl() {
         return "v1";
     }
+    
+    public String resourcesUrl() {
+        return rootUrl() + "/resources";
+    }
 
     public abstract void bind();
 }
