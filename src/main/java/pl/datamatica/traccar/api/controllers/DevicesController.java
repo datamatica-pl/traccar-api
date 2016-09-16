@@ -129,9 +129,7 @@ public class DevicesController extends ControllerBase {
         if(!validationErrors.isEmpty())
             return badRequest(validationErrors);
         try {
-            requestContext.beginTransaction();
             Device device = dp.createDevice(deviceDto.getImei()); 
-            requestContext.commitTransaction();
             return created("devices/"+device.getId(), new DeviceDto.Builder().device(device).build());
         } catch(ProviderException e) {
             switch(e.getType()) {
@@ -150,9 +148,7 @@ public class DevicesController extends ControllerBase {
             return badRequest(errors);
             
         try {
-            requestContext.beginTransaction();
             dp.updateDevice(id, deviceDto);
-            requestContext.commitTransaction();
             return ok("");
         } catch(ProviderException e) {
             return handle(e);

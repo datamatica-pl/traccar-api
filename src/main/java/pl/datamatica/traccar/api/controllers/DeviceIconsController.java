@@ -66,24 +66,16 @@ public class DeviceIconsController extends ControllerBase {
     }
     
     public HttpResponse get() throws Exception {
-        List<DeviceIcon> deviceIcons = new ArrayList<>();
+        List<DeviceIcon> deviceIcons = provider.getDeviceIconsMetadata();
         Date lastModified = new Date();
-        try {
-            requestContext.beginMetadataTransaction();
-            deviceIcons = provider.getDeviceIconsMetadata();
-            if (deviceIcons.size() > 0) {
-                lastModified = (Date)deviceIcons.get(0).getUpdateTime();
-            }
-            if (this.requestContext.getModificationDate() != null) {
-                Timestamp ifModifiedSinceFromUser = new Timestamp(this.requestContext.getModificationDate().getTime());
-                deviceIcons = deviceIcons.stream()
-                                .filter( item -> item.getUpdateTime().compareTo(ifModifiedSinceFromUser) > 0 )
-                                .collect(toList());
-            }
-            requestContext.commitMetadataTransaction();
-        } catch (RuntimeException e) {
-            requestContext.rollbackMetadataTransation();
-            throw e;
+        if (deviceIcons.size() > 0) {
+            lastModified = (Date)deviceIcons.get(0).getUpdateTime();
+        }
+        if (this.requestContext.getModificationDate() != null) {
+            Timestamp ifModifiedSinceFromUser = new Timestamp(this.requestContext.getModificationDate().getTime());
+            deviceIcons = deviceIcons.stream()
+                            .filter( item -> item.getUpdateTime().compareTo(ifModifiedSinceFromUser) > 0 )
+                            .collect(toList());
         }
         
         return new OkCachedResponse(deviceIcons, lastModified);

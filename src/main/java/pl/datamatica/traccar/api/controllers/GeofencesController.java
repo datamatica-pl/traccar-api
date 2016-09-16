@@ -96,9 +96,7 @@ public class GeofencesController extends ControllerBase{
         if(!errors.isEmpty())
             return badRequest(errors);
         
-        requestContext.beginTransaction();
         GeoFence gf = provider.createGeoFence(geoFenceDto);
-        requestContext.commitTransaction();
         
         return created("geofences/"+gf.getId(), new GeoFenceDto.Builder().geoFence(gf).build());
     }
@@ -108,9 +106,7 @@ public class GeofencesController extends ControllerBase{
         if(!errors.isEmpty())
             return badRequest(errors);
         try {
-            requestContext.beginTransaction();
             provider.updateGeoFence(id, geoFenceDto);
-            requestContext.commitTransaction();
             return ok("");
         } catch(ProviderException e) {
             return handle(e);

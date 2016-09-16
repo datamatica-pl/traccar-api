@@ -30,6 +30,7 @@ import spark.Spark;
 import pl.datamatica.traccar.api.controllers.*;
 import pl.datamatica.traccar.api.auth.BasicAuthFilter;
 import pl.datamatica.traccar.api.dtos.out.AppVersionsInfoDto;
+import pl.datamatica.traccar.api.controllers.RequestContext;
 
 
 public class Application implements spark.servlet.SparkApplication {
@@ -59,6 +60,10 @@ public class Application implements spark.servlet.SparkApplication {
 
         Spark.before((req, res) -> {
             RequestContext rc = new RequestContext(req, res);
+            // TODO: Try to run only on needed Entity manager, so based on controller
+            // run beginTransaction, beginMetadataTransaction or both
+            rc.beginTransaction();
+            rc.beginMetadataTransaction();
             req.attribute(REQUEST_CONTEXT_KEY, rc);
             baf.handle(req, res);
         });
@@ -85,7 +90,10 @@ public class Application implements spark.servlet.SparkApplication {
         });
 
         Spark.after((req, res)-> {
-            ((RequestContext)req.attribute(REQUEST_CONTEXT_KEY)).close();
+            RequestContext rc = (RequestContext)req.attribute(REQUEST_CONTEXT_KEY);
+            rc.commitTransaction();
+            rc.commitMetadataTransaction();
+            rc.close();
         });
 
         for(ControllerBinder binder : BINDERS)
