@@ -2,8 +2,8 @@
 
 -- Commands fixures
 
-INSERT INTO traccar_api_metadata.device_models(id, imageUrl, deviceName, descriptionShort, descriptionLong)
-VALUES (1, 'datamatica.pl/images/lk210.png', 'LK210', 'GPS motocyklowy', 'GPS motocyklowy, niewielki, łatwy do ukrycia, wodoszczelny');
+INSERT INTO traccar_api_metadata.device_models(id, imageUrl, deviceName, descriptionShort, descriptionLong, shopUrl)
+VALUES (1, 'datamatica.pl/images/lk210.png', 'LK210', 'GPS motocyklowy', 'GPS motocyklowy, niewielki, łatwy do ukrycia, wodoszczelny', 'https://datamatica.pl/shop/lk210');
 
 INSERT INTO traccar_api_metadata.command_types(id, commandName, description)
 VALUES (1, 'positionPeriodic', 'Jednokrotne zwrócenie aktualnej pozycji.');
