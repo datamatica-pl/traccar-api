@@ -73,7 +73,9 @@ public class ReportsController extends ControllerBase {
         try {
             requestContext.beginMetadataTransaction();
             reportTypes = provider.getReportsMetadata();
-            lastModified = (Date)reportTypes.get(0).getUpdateTime();
+            if (reportTypes.size() > 0) {
+                lastModified = (Date)reportTypes.get(0).getUpdateTime();
+            }
             if (this.requestContext.getModificationDate() != null) {
                 Timestamp ifModifiedSinceFromUser = new Timestamp(this.requestContext.getModificationDate().getTime());
                 reportTypes = reportTypes.stream()

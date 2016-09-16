@@ -72,7 +72,9 @@ public class DeviceModelsController extends ControllerBase {
         try {
             requestContext.beginMetadataTransaction();
             deviceModels = provider.getDeviceModelsMetadata();
-            lastModified = (Date)deviceModels.get(0).getUpdateTime();
+            if (deviceModels.size() > 0) {
+                lastModified = (Date)deviceModels.get(0).getUpdateTime();
+            }
             if (this.requestContext.getModificationDate() != null) {
                 Timestamp ifModifiedSinceFromUser = new Timestamp(this.requestContext.getModificationDate().getTime());
                 deviceModels = deviceModels.stream()

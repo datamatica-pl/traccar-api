@@ -72,7 +72,9 @@ public class DeviceIconsController extends ControllerBase {
         try {
             requestContext.beginMetadataTransaction();
             deviceIcons = provider.getDeviceIconsMetadata();
-            lastModified = (Date)deviceIcons.get(0).getUpdateTime();
+            if (deviceIcons.size() > 0) {
+                lastModified = (Date)deviceIcons.get(0).getUpdateTime();
+            }
             if (this.requestContext.getModificationDate() != null) {
                 Timestamp ifModifiedSinceFromUser = new Timestamp(this.requestContext.getModificationDate().getTime());
                 deviceIcons = deviceIcons.stream()
