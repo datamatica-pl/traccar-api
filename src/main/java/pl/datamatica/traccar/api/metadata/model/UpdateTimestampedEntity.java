@@ -18,6 +18,7 @@ package pl.datamatica.traccar.api.metadata.model;
 
 import java.sql.Timestamp;
 import javax.persistence.*;
+import pl.datamatica.traccar.api.dtos.JsonIgnore;
 
 /**
  *
@@ -27,6 +28,7 @@ import javax.persistence.*;
 @Inheritance(strategy = InheritanceType.TABLE_PER_CLASS)
 public class UpdateTimestampedEntity {
     @Column(nullable = false, columnDefinition="TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP")
+    @JsonIgnore
     private Timestamp updateTime;
 
     public Timestamp getUpdateTime() {
