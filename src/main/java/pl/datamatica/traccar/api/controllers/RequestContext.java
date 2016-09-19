@@ -180,7 +180,7 @@ public class RequestContext implements AutoCloseable {
         }
     }
     
-    public void rollbackMetadataTransation() {
+    public void rollbackMetadataTransaction() {
         if (emMetadata != null) {
             EntityTransaction et = emMetadata.getTransaction();
             if (et.isActive()) {

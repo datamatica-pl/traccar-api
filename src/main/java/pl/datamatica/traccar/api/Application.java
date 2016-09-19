@@ -108,7 +108,7 @@ public class Application implements spark.servlet.SparkApplication {
                     RequestContext rc = (RequestContext)request.attribute(REQUEST_CONTEXT_KEY);
                     rc.rollbackTransaction();
                     if (rc.isRequestForMetadata(request)) {
-                        rc.rollbackMetadataTransation();
+                        rc.rollbackMetadataTransaction();
                     }
                     rc.close();
                 } catch (Exception e) {
