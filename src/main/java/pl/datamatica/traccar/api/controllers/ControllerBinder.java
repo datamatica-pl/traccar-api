@@ -19,8 +19,9 @@ package pl.datamatica.traccar.api.controllers;
 import com.google.gson.Gson;
 import pl.datamatica.traccar.api.Context;
 
-public abstract class ControllerBinder { 
+public abstract class ControllerBinder {
     protected Gson gson;
+    public static final String RESOURCES_URL_PREFIX = "resources";
 
     public ControllerBinder() {
         gson = Context.getInstance().getGson();
@@ -31,7 +32,7 @@ public abstract class ControllerBinder {
     }
     
     public String resourcesUrl() {
-        return rootUrl() + "/resources";
+        return rootUrl() + "/" + RESOURCES_URL_PREFIX;
     }
 
     public abstract void bind();

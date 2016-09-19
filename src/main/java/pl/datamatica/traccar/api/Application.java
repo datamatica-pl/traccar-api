@@ -60,10 +60,10 @@ public class Application implements spark.servlet.SparkApplication {
 
         Spark.before((req, res) -> {
             RequestContext rc = new RequestContext(req, res);
-            // TODO: Try to run only on needed Entity manager, so based on controller
-            // run beginTransaction, beginMetadataTransaction or both
             rc.beginTransaction();
-            rc.beginMetadataTransaction();
+            if (rc.isRequestForMetadata(req)) {
+                rc.beginMetadataTransaction();
+            }
             req.attribute(REQUEST_CONTEXT_KEY, rc);
             baf.handle(req, res);
         });
@@ -92,7 +92,9 @@ public class Application implements spark.servlet.SparkApplication {
         Spark.after((req, res)-> {
             RequestContext rc = (RequestContext)req.attribute(REQUEST_CONTEXT_KEY);
             rc.commitTransaction();
-            rc.commitMetadataTransaction();
+            if (rc.isRequestForMetadata(req)) {
+                rc.commitMetadataTransaction();
+            }
             rc.close();
         });
 
@@ -103,7 +105,12 @@ public class Application implements spark.servlet.SparkApplication {
             Spark.exception(Exception.class, (exception, request, response) -> {
                 Logger logger = LoggerFactory.getLogger(Application.class);
                 try {
-                    ((RequestContext)request.attribute(REQUEST_CONTEXT_KEY)).close();
+                    RequestContext rc = (RequestContext)request.attribute(REQUEST_CONTEXT_KEY);
+                    rc.rollbackTransaction();
+                    if (rc.isRequestForMetadata(request)) {
+                        rc.rollbackMetadataTransation();
+                    }
+                    rc.close();
                 } catch (Exception e) {
                     logger.error("Unable to close resources (EntityManager): " + e.getMessage());
                 }

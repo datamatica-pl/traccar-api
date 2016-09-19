@@ -265,9 +265,7 @@ public class DevicesControllerTest {
         
         dc.put(5, deviceDto);
         
-        Mockito.verify(rc, Mockito.times(1)).beginTransaction();
         Mockito.verify(dp, Mockito.times(1)).updateDevice(5, deviceDto);
-        Mockito.verify(rc, Mockito.times(1)).commitTransaction();
     }
     
     @Test
