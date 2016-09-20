@@ -30,6 +30,7 @@ import spark.Spark;
 import pl.datamatica.traccar.api.controllers.*;
 import pl.datamatica.traccar.api.auth.BasicAuthFilter;
 import pl.datamatica.traccar.api.dtos.out.AppVersionsInfoDto;
+import pl.datamatica.traccar.api.controllers.RequestContext;
 
 
 public class Application implements spark.servlet.SparkApplication {
@@ -59,6 +60,10 @@ public class Application implements spark.servlet.SparkApplication {
 
         Spark.before((req, res) -> {
             RequestContext rc = new RequestContext(req, res);
+            rc.beginTransaction();
+            if (rc.isRequestForMetadata(req)) {
+                rc.beginMetadataTransaction();
+            }
             req.attribute(REQUEST_CONTEXT_KEY, rc);
             baf.handle(req, res);
         });
@@ -85,7 +90,12 @@ public class Application implements spark.servlet.SparkApplication {
         });
 
         Spark.after((req, res)-> {
-            ((RequestContext)req.attribute(REQUEST_CONTEXT_KEY)).close();
+            RequestContext rc = (RequestContext)req.attribute(REQUEST_CONTEXT_KEY);
+            rc.commitTransaction();
+            if (rc.isRequestForMetadata(req)) {
+                rc.commitMetadataTransaction();
+            }
+            rc.close();
         });
 
         for(ControllerBinder binder : BINDERS)
@@ -95,7 +105,12 @@ public class Application implements spark.servlet.SparkApplication {
             Spark.exception(Exception.class, (exception, request, response) -> {
                 Logger logger = LoggerFactory.getLogger(Application.class);
                 try {
-                    ((RequestContext)request.attribute(REQUEST_CONTEXT_KEY)).close();
+                    RequestContext rc = (RequestContext)request.attribute(REQUEST_CONTEXT_KEY);
+                    rc.rollbackTransaction();
+                    if (rc.isRequestForMetadata(request)) {
+                        rc.rollbackMetadataTransaction();
+                    }
+                    rc.close();
                 } catch (Exception e) {
                     logger.error("Unable to close resources (EntityManager): " + e.getMessage());
                 }

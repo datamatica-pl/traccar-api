@@ -66,26 +66,18 @@ public class DeviceModelsController extends ControllerBase {
     }
     
     public HttpResponse get() throws Exception {
-        List<DeviceModel> deviceModels = new ArrayList<>();
+        List<DeviceModel> deviceModels = provider.getDeviceModelsMetadata();
         Date lastModified = new Date();
-        try {
-            requestContext.beginMetadataTransaction();
-            deviceModels = provider.getDeviceModelsMetadata();
-            if (deviceModels.size() > 0) {
-                lastModified = (Date)deviceModels.get(0).getUpdateTime();
-            }
-            if (this.requestContext.getModificationDate() != null) {
-                Timestamp ifModifiedSinceFromUser = new Timestamp(this.requestContext.getModificationDate().getTime());
-                deviceModels = deviceModels.stream()
-                                .filter( item -> item.getUpdateTime().compareTo(ifModifiedSinceFromUser) > 0 )
-                                .collect(toList());
-            }
-            requestContext.commitMetadataTransaction();
-        } catch (RuntimeException e) {
-            requestContext.rollbackMetadataTransation();
-            throw e;
+        if (deviceModels.size() > 0) {
+            lastModified = (Date)deviceModels.get(0).getUpdateTime();
         }
-    
+        if (this.requestContext.getModificationDate() != null) {
+            Timestamp ifModifiedSinceFromUser = new Timestamp(this.requestContext.getModificationDate().getTime());
+            deviceModels = deviceModels.stream()
+                            .filter( item -> item.getUpdateTime().compareTo(ifModifiedSinceFromUser) > 0 )
+                            .collect(toList());
+        }
+
         return new OkCachedResponse(deviceModels, lastModified);
     }
     

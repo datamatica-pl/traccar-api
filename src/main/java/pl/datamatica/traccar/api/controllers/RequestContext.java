@@ -58,7 +58,11 @@ public class RequestContext implements AutoCloseable {
         if(request.headers(IF_MODIFIED_SINCE_HEADER) != null)
             this.ifModifiedSince = DateUtil.parseDate(request.headers(IF_MODIFIED_SINCE_HEADER));
         this.em = Context.getInstance().createEntityManager();
-        this.emMetadata = Context.getInstance().createMetadataEntityManager();
+        if (this.isRequestForMetadata(request)) {
+            this.emMetadata = Context.getInstance().createMetadataEntityManager();
+        } else {
+            this.emMetadata = null;
+        }
         this.request = request;
     }
     
@@ -125,11 +129,18 @@ public class RequestContext implements AutoCloseable {
         DeviceIconProvider provider = new DeviceIconProvider(em, emMetadata);
         return provider;
     }
+    
+    public final boolean isRequestForMetadata(Request request) {
+        String pattern = "^/v[0-9]+/" + ControllerBinder.RESOURCES_URL_PREFIX + "/.*";
+        return request.servletPath().matches(pattern);
+    }
 
     @Override
     public void close() throws Exception {
         em.close();
-        emMetadata.close();
+        if (emMetadata != null) {
+            emMetadata.close();
+        }
     }
 
     public Session session() {
@@ -139,23 +150,42 @@ public class RequestContext implements AutoCloseable {
     public void beginTransaction() {
         em.getTransaction().begin();
     }
-    
-    public void beginMetadataTransaction() {
-        emMetadata.getTransaction().begin();
-    }
 
     public void commitTransaction() {
-        em.getTransaction().commit();
+        EntityTransaction et = em.getTransaction();
+        if (et.isActive()) {
+            et.commit();
+        }
+    }
+    
+    public void rollbackTransaction() {
+        EntityTransaction et = em.getTransaction();
+        if (et.isActive()) {
+            et.rollback();
+        }
+    }
+    
+    public void beginMetadataTransaction() {
+        if (emMetadata != null) {
+            emMetadata.getTransaction().begin();
+        }
     }
     
     public void commitMetadataTransaction() {
-        emMetadata.getTransaction().commit();
+        if (emMetadata != null) {
+            EntityTransaction et = emMetadata.getTransaction();
+            if (et.isActive()) {
+                et.commit();
+            }
+        }
     }
     
-    public void rollbackMetadataTransation() {
-        EntityTransaction et = emMetadata.getTransaction();
-        if (et != null) {
-            et.rollback();
+    public void rollbackMetadataTransaction() {
+        if (emMetadata != null) {
+            EntityTransaction et = emMetadata.getTransaction();
+            if (et.isActive()) {
+                et.rollback();
+            }
         }
     }
 }

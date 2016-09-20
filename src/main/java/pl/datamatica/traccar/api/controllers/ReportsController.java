@@ -67,24 +67,16 @@ public class ReportsController extends ControllerBase {
     }
 
     public HttpResponse get() throws Exception {
-        List<ReportType> reportTypes = new ArrayList<>();
+        List<ReportType> reportTypes = provider.getReportsMetadata();
         Date lastModified = new Date();
-        try {
-            requestContext.beginMetadataTransaction();
-            reportTypes = provider.getReportsMetadata();
-            if (reportTypes.size() > 0) {
-                lastModified = (Date)reportTypes.get(0).getUpdateTime();
-            }
-            if (this.requestContext.getModificationDate() != null) {
-                Timestamp ifModifiedSinceFromUser = new Timestamp(this.requestContext.getModificationDate().getTime());
-                reportTypes = reportTypes.stream()
-                                .filter( item -> item.getUpdateTime().compareTo(ifModifiedSinceFromUser) > 0 )
-                                .collect(toList());
-            }
-            requestContext.commitMetadataTransaction();
-        } catch (RuntimeException e) {
-            requestContext.rollbackMetadataTransation();
-            throw e;
+        if (reportTypes.size() > 0) {
+            lastModified = (Date)reportTypes.get(0).getUpdateTime();
+        }
+        if (this.requestContext.getModificationDate() != null) {
+            Timestamp ifModifiedSinceFromUser = new Timestamp(this.requestContext.getModificationDate().getTime());
+            reportTypes = reportTypes.stream()
+                            .filter( item -> item.getUpdateTime().compareTo(ifModifiedSinceFromUser) > 0 )
+                            .collect(toList());
         }
         return new OkCachedResponse(reportTypes, lastModified);
     }
