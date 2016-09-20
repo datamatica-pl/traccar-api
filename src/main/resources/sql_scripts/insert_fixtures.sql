@@ -1,5 +1,7 @@
 -- Fixtures for commands metadata, run this SQL file with any MySQL client
 
+SET NAMES 'utf8';
+
 -- Commands fixures
 
 INSERT INTO traccar_api_metadata.device_models(id, imageUrl, deviceName, descriptionShort, descriptionLong, shopUrl)
