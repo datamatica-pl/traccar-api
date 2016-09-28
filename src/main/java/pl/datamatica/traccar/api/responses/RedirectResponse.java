@@ -16,7 +16,28 @@
  */
 package pl.datamatica.traccar.api.responses;
 
-public class HttpHeaders {
-    public static final String LAST_MODIFIED = "Last-Modified";
-    public static final String LOCATION = "Location";
+import java.util.Collections;
+
+public class RedirectResponse extends HttpResponse {
+    private final String url;
+    
+    public RedirectResponse(String url) {
+        this.url = url;
+    }
+    
+    @Override
+    public int getHttpStatus() {
+        return 302;
+    }
+
+    @Override
+    public Iterable getHeaders() {
+        return Collections.singleton(new HttpHeader(HttpHeaders.LOCATION, url));
+    }
+    
+    @Override
+    public Object getContent() {
+        return "";
+    }
+    
 }

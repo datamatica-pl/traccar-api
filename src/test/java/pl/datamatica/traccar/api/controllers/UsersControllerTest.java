@@ -54,6 +54,7 @@ public class UsersControllerTest {
         Mockito.when(rc.getUser()).thenReturn(user);
         Mockito.when(rc.getUserProvider()).thenReturn(provider);
         Mockito.when(rc.getDeviceProvider()).thenReturn(devices);
+        Mockito.when(rc.getApiRoot()).thenReturn("");
         controller = new UsersController(rc);
         users = IntStream.range(1, 8)
                 .mapToObj(i -> {

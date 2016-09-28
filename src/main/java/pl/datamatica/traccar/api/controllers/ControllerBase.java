@@ -106,6 +106,10 @@ public abstract class ControllerBase {
         return new CreatedResponse(route, resource);
     }
     
+    protected HttpResponse redirect(String url) {
+        return new RedirectResponse(url);
+    }
+    
     protected boolean isModified(Date serverModification) {
         Date userModification = requestContext.getModificationDate();
         if(userModification == null || serverModification == null)

@@ -46,8 +46,7 @@ public class BasicAuthFilter {
     private static final Logger logger = LoggerFactory.getLogger(BasicAuthFilter.class);
         
     public void handle(Request request, Response response) throws Exception {
-        if(request.pathInfo().equals("/v1/users") 
-                && request.requestMethod().equalsIgnoreCase("post"))
+        if(shouldAllowUnauthorized(request))
             return;
         try {
             RequestContext rc = request.attribute(Application.REQUEST_CONTEXT_KEY);
@@ -68,6 +67,13 @@ public class BasicAuthFilter {
         } catch(IllegalArgumentException e) {
             serverError(response, e.getMessage());
         }
+    }
+
+    private static boolean shouldAllowUnauthorized(Request request) {
+        return (request.pathInfo().matches("/v[0-9]+/users") 
+                && request.requestMethod().equalsIgnoreCase("post"))
+                || (request.pathInfo().matches("/v[0-9]+/users/activate/.*")
+                && request.requestMethod().equalsIgnoreCase("get"));
     }
 
     private User beginSession(Request request, UserProvider up) throws IllegalArgumentException, AuthenticationException {
