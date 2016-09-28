@@ -18,6 +18,7 @@ package pl.datamatica.traccar.api.controllers;
 
 import java.text.ParseException;
 import java.util.Date;
+import java.util.Scanner;
 import javax.persistence.EntityManager;
 import javax.persistence.EntityTransaction;
 import pl.datamatica.traccar.api.Application;
@@ -28,6 +29,7 @@ import pl.datamatica.traccar.api.providers.DeviceModelProvider;
 import pl.datamatica.traccar.api.providers.DeviceProvider;
 import pl.datamatica.traccar.api.providers.FileProvider;
 import pl.datamatica.traccar.api.providers.GeoFenceProvider;
+import pl.datamatica.traccar.api.providers.MailSender;
 import pl.datamatica.traccar.api.providers.PositionProvider;
 import pl.datamatica.traccar.api.providers.ReportsProvider;
 import pl.datamatica.traccar.api.providers.UserProvider;
@@ -115,6 +117,10 @@ public class RequestContext implements AutoCloseable {
         return provider;
     }
     
+    public MailSender getMailSender() {
+        return new MailSender(em);
+    }
+    
     public ReportsProvider getReportsProvider() {
         ReportsProvider provider = new ReportsProvider(em, emMetadata);
         return provider;
@@ -128,6 +134,22 @@ public class RequestContext implements AutoCloseable {
     public DeviceIconProvider getDeviceIconProvider() {
         DeviceIconProvider provider = new DeviceIconProvider(em, emMetadata);
         return provider;
+    }
+    
+    public String getApiRoot() {
+        if(request == null)
+            return "";
+        String pattern = "^.*/v[0-9]+";
+        Scanner scanner = new Scanner(request.url());
+        return scanner.findInLine(pattern);
+    }
+    
+    public String getServerRoot() {
+        if(request == null)
+            return "";
+        String pattern = ".*?/";
+        Scanner scanner = new Scanner(request.url());
+        return scanner.findInLine(pattern);
     }
     
     public final boolean isRequestForMetadata(Request request) {

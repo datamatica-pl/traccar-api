@@ -17,6 +17,9 @@
 package pl.datamatica.traccar.api.controllers;
 
 import java.util.List;
+import java.util.UUID;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import pl.datamatica.traccar.api.Application;
 import static pl.datamatica.traccar.api.controllers.ControllerBase.render;
@@ -24,6 +27,7 @@ import pl.datamatica.traccar.api.dtos.MessageKeys;
 import pl.datamatica.traccar.api.dtos.in.RegisterUserDto;
 import pl.datamatica.traccar.api.dtos.out.ErrorDto;
 import pl.datamatica.traccar.api.dtos.out.UserDto;
+import pl.datamatica.traccar.api.providers.MailSender;
 import pl.datamatica.traccar.api.providers.ProviderException;
 import pl.datamatica.traccar.api.providers.UserProvider;
 import pl.datamatica.traccar.api.responses.HttpResponse;
@@ -52,6 +56,11 @@ public class UsersController extends ControllerBase {
                 RegisterUserDto userDto = gson.fromJson(req.body(), RegisterUserDto.class);
                 return render(uc.post(userDto), res);
             }, gson::toJson);
+            
+            Spark.get(rootUrl()+"/activate/:token", (req, res) -> {
+                UsersController uc = createController(req);
+                return render(uc.activateUser(req.params(":token")), res);
+            });
         }
 
         private UsersController createController(Request req) {
@@ -68,10 +77,12 @@ public class UsersController extends ControllerBase {
     }
     
     private UserProvider up;
+    private MailSender sender;
     
     public UsersController(RequestContext requestContext) {
         super(requestContext);
         up = requestContext.getUserProvider();
+        sender = requestContext.getMailSender();
     }
     
     public HttpResponse get() throws Exception {
@@ -100,6 +111,11 @@ public class UsersController extends ControllerBase {
                     userDto.isCheckMarketing());
             requestContext.setUser(user);
             requestContext.getDeviceProvider().createDevice(userDto.getImei());
+            String token = user.getEmailValidationToken();
+            if(token != null) {
+                String url = requestContext.getApiRoot()+"/users/activate/"+token;
+                sender.sendMessage(user.getEmail(), url);
+            }
             return created("user/"+user.getId(), "");
         } catch (ProviderException ex) {
             switch(ex.getType()) {
@@ -109,6 +125,15 @@ public class UsersController extends ControllerBase {
                     return badRequest(MessageKeys.ERR_INVALID_IMEI);                    
             }
             throw ex;
+        }
+    }
+    
+    public HttpResponse activateUser(String token) {
+        try {
+            up.activateUser(token);
+            return redirect(requestContext.getServerRoot());
+        } catch (ProviderException ex) {
+            return ok("");
         }
     }
 }

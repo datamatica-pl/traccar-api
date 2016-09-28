@@ -23,7 +23,7 @@ public class CreatedResponse<T> extends HttpResponse {
     private final T resource;
     
     public CreatedResponse(String route, T resource) {
-        this.locationHeader = new HttpHeader("Location", route);
+        this.locationHeader = new HttpHeader(HttpHeaders.LOCATION, route);
         this.resource = resource;
     }
 

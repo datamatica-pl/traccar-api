@@ -87,6 +87,18 @@
             <artifactId>traccar-orm</artifactId>
             <version>${project.version}</version>
         </dependency>
+        
+        <!-- Mail dependencies -->
+        <dependency>
+          <groupId>com.sun.mail</groupId>
+          <artifactId>mailapi</artifactId>
+          <version>1.5.6</version>
+        </dependency>
+        <dependency>
+          <groupId>com.sun.mail</groupId>
+          <artifactId>smtp</artifactId>
+          <version>1.5.6</version>
+        </dependency>
             
         <!-- Test dependencies -->
         <dependency>

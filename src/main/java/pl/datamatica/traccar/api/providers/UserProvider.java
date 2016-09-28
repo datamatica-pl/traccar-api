@@ -16,6 +16,7 @@
  */
 package pl.datamatica.traccar.api.providers;
 
+import java.util.UUID;
 import java.util.stream.Stream;
 import javax.persistence.EntityManager;
 import javax.persistence.NoResultException;
@@ -86,9 +87,31 @@ public class UserProvider extends ProviderBase {
         user.setBlocked(true);
         user.setPasswordHashMethod(appSettings.getDefaultHashImplementation());
         user.setUserSettings(new UserSettings());
+        user.setEmailValidationToken(generateEmailValidationToken());
         em.persist(user);
         
         return user;
+    }
+
+    private String generateEmailValidationToken() {
+        TypedQuery<Long> tq = em.createQuery("select x.id from User x where x.emailValidationToken = :token", Long.class);
+        tq.setMaxResults(1);
+        while(true) {
+            UUID token = UUID.randomUUID();
+            tq.setParameter("token", token.toString());
+            if(tq.getResultList().isEmpty())
+                return token.toString();
+        }
+    }
+    
+    public void activateUser(String token) throws ProviderException {
+        User user = getUserByToken(token);
+        if(user == null) 
+            throw new ProviderException(Type.NOT_FOUND);
+        user.setBlocked(false);
+        user.setEmailValid(true);
+        user.setEmailValidationToken(null);
+        em.persist(user);
     }
     
     private User getUserByMail(String email) {
@@ -97,6 +120,16 @@ public class UserProvider extends ProviderBase {
             tq.setParameter("email", email);
             return tq.getSingleResult();
         } catch (NoResultException e) {
+            return null;
+        }
+    }
+    
+    private User getUserByToken(String token) {
+        try {
+            TypedQuery<User> tq = em.createQuery("Select x from User x where x.emailValidationToken = :token", User.class);
+            tq.setParameter("token", token);
+            return tq.getSingleResult();
+        } catch(NoResultException e) {
             return null;
         }
     }
