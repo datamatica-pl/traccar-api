@@ -55,7 +55,7 @@ public class PositionProvider extends ProviderBase {
         if(!user.getAllAvailableDevices().stream()
                 .anyMatch(d -> d.equals(p.getDevice())))
             return false;
-        if(!p.getDevice().isValid())
+        if(!p.getDevice().isValid(new Date()))
             return false;
         int historyLength = p.getDevice().getHistoryLength();
         ZonedDateTime positionDate = p.getTime().toInstant().atZone(ZoneId.systemDefault());
