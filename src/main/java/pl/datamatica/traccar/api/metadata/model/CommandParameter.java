@@ -44,7 +44,7 @@ public class CommandParameter extends UpdateTimestampedEntity implements Seriali
 
     @OneToMany(fetch=FetchType.EAGER)
     @JoinColumn(name="CommandParameterId", nullable = false)
-    private List<CommandConstraint> commandConstraints;
+    private List<CommandConstraint> constraints;
 
     public long getId() {
         return id;
@@ -78,11 +78,11 @@ public class CommandParameter extends UpdateTimestampedEntity implements Seriali
         this.description = description;
     }
 
-    public List<CommandConstraint> getCommandConstraints() {
-        return commandConstraints;
+    public List<CommandConstraint> getConstraints() {
+        return constraints;
     }
 
-    public void setCommandConstraints(List<CommandConstraint> commandConstraints) {
-        this.commandConstraints = commandConstraints;
+    public void setConstraints(List<CommandConstraint> constraints) {
+        this.constraints = constraints;
     }
 }

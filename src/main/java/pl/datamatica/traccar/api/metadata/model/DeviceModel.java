@@ -40,7 +40,7 @@ public class DeviceModel extends UpdateTimestampedEntity implements Serializable
     private long id;
 
     @Column(nullable = false, length=100)
-    private String deviceName;
+    private String modelName;
 
     @Column(length=500)
     private String imageUrl;
@@ -80,12 +80,12 @@ public class DeviceModel extends UpdateTimestampedEntity implements Serializable
         this.id = id;
     }
 
-    public String getDeviceName() {
-        return deviceName;
+    public String getModelName() {
+        return modelName;
     }
 
-    public void setDeviceName(String deviceName) {
-        this.deviceName = deviceName;
+    public void setModelName(String modelName) {
+        this.modelName = modelName;
     }
 
     public String getImageUrl() {

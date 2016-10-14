@@ -4,7 +4,7 @@ SET NAMES 'utf8';
 
 -- Commands fixures
 
-INSERT INTO traccar_api_metadata.device_models(id, imageUrl, deviceName, descriptionShort, descriptionLong, shopUrl)
+INSERT INTO traccar_api_metadata.device_models(id, imageUrl, modelName, descriptionShort, descriptionLong, shopUrl)
 VALUES (1, 'datamatica.pl/images/lk210.png', 'LK210', 'GPS motocyklowy', 'GPS motocyklowy, niewielki, łatwy do ukrycia, wodoszczelny', 'https://datamatica.pl/shop/lk210');
 
 INSERT INTO traccar_api_metadata.command_types(id, commandName, description)
@@ -34,7 +34,7 @@ VALUES (1, 'GTE', '10', 1);
 INSERT INTO traccar_api_metadata.command_constraints(id, constraintType, constraintValue, commandParameterId)
 VALUES (2, 'LTE', '1200', 1);
 
-INSERT INTO traccar_api_metadata.device_models(id, imageUrl, deviceName)
+INSERT INTO traccar_api_metadata.device_models(id, imageUrl, modelName)
 VALUES (2, 'datamatica.pl/images/gt06.png', 'GT06');
 
 INSERT INTO traccar_api_metadata.devicemodel_commandtype(deviceModelId, commandTypeId)
