@@ -22,9 +22,11 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import javax.persistence.EntityManager;
+import javax.persistence.Query;
 import javax.persistence.TypedQuery;
 import pl.datamatica.traccar.api.dtos.in.AddGeoFenceDto;
 import pl.datamatica.traccar.api.dtos.IGeoFenceInfo;
+import pl.datamatica.traccar.api.providers.ProviderException.Type;
 import pl.datamatica.traccar.model.Device;
 import pl.datamatica.traccar.model.GeoFence;
 import pl.datamatica.traccar.model.GeoFenceType;
@@ -113,5 +115,23 @@ public class GeoFenceProvider extends ProviderBase{
     private Stream<GeoFence> getAllGeoFences() {
         TypedQuery<GeoFence> tq = em.createQuery("Select x from GeoFence x", GeoFence.class);
         return tq.getResultList().stream();
+    }
+    
+    public void removeGeoFence(long id) throws ProviderException {
+        boolean shouldManageTransaction = !em.getTransaction().isActive();
+        if(shouldManageTransaction)
+            em.getTransaction().begin();
+        GeoFence gf = getGeoFence(id);
+        if(!canDeleteGeofence(gf))
+            throw new ProviderException(Type.ACCESS_DENIED);
+        Query query = em.createQuery("DELETE from GeoFence x WHERE x.id = :id");
+        query.setParameter("id", id);
+        query.executeUpdate();
+        if(shouldManageTransaction)
+            em.getTransaction().commit();
+    }
+
+    private boolean canDeleteGeofence(GeoFence gf) {
+        return gf.getUsers().contains(requestUser);
     }
 }
