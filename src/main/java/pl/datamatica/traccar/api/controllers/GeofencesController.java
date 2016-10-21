@@ -55,6 +55,11 @@ public class GeofencesController extends ControllerBase{
                 AddGeoFenceDto geoFenceDto = gson.fromJson(req.body(), AddGeoFenceDto.class);
                 return render(controller.put(Long.parseLong(req.params(":id")), geoFenceDto), res);
             }, gson::toJson);
+            
+            Spark.delete(rootUrl()+"/:id", (req, res) -> {
+                GeofencesController controller = createController(req);
+                return render(controller.delete(Long.parseLong(req.params(":id"))), res);
+            }, gson::toJson);
         }
         
         @Override
@@ -107,6 +112,15 @@ public class GeofencesController extends ControllerBase{
             return badRequest(errors);
         try {
             provider.updateGeoFence(id, geoFenceDto);
+            return ok("");
+        } catch(ProviderException e) {
+            return handle(e);
+        }
+    }
+    
+    public HttpResponse delete(long id) throws ProviderException {
+        try {
+            provider.removeGeoFence(id);
             return ok("");
         } catch(ProviderException e) {
             return handle(e);
