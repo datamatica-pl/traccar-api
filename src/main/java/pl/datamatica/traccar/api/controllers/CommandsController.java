@@ -42,17 +42,9 @@ public class CommandsController extends ControllerBase {
         @Override
         public void bind() {
             
-            // TODO: Use POST to send command
-//            Spark.post("devices/:deviceId/sendCommand/:commandType", (req, res) -> {
-//                String commandType = req.params(":commandType");
-//                Long deviceId = Long.valueOf(req.params(":deviceId"));
-//                return deviceId + ":" + commandType;
-//            });
-            
-            // TODO: Chagne to POST, this method is only temporary
-            // https://localhost/api/v1/resources/sendCommand
-            Spark.get(baseUrl(), (req, res) -> {
-                long deviceId = 4; // LK210 #2
+            Spark.post(rootUrl() + "/devices/:deviceId/sendCommand/:commandType", (req, res) -> {
+                Long deviceId = Long.valueOf(req.params(":deviceId"));
+                String commandType = req.params(":commandType");
                 
                 CommandDependancyProvider cdp = new CommandDependancyProvider();
                 
@@ -64,9 +56,10 @@ public class CommandsController extends ControllerBase {
                 Map<String, Object> commandParams = new HashMap<>();
                 
                 CommandService cs = new CommandService();
-                String result = cs.sendCommand(deviceId, "getParams", activeDevice, commandParams);
+                String result = cs.sendCommand(deviceId, commandType, activeDevice, commandParams);
 
                 return result;
+                
             }, gson::toJson);
 
         }
