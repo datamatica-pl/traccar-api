@@ -6,9 +6,7 @@
 package pl.datamatica.traccar.api.controllers;
 
 import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import pl.datamatica.traccar.api.Application;
-import static pl.datamatica.traccar.api.controllers.ControllerBase.render;
 import pl.datamatica.traccar.api.providers.ImageProvider;
 import spark.Request;
 import spark.Spark;
@@ -24,7 +22,7 @@ public class ImagesController extends ControllerBase{
 
         @Override
         public void bind() {
-            Spark.get(rootUrl()+"/:lang", (req, res) -> {
+            Spark.get(rootUrl()+"/:name", (req, res) -> {
                 ImagesController ic = createController(req);
 
                 byte[] imageData = ic.getRawImageData(":name");

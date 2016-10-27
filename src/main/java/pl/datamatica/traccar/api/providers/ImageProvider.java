@@ -47,7 +47,7 @@ public class ImageProvider {
     
     public FileInputStream getInputStreamForImage(String name) {
         try {
-            return new FileInputStream(new File(rootDirectory, name));
+            return new FileInputStream(new File(rootDirectory, name + ".png"));
         } catch (FileNotFoundException ex) {
             System.out.println(ex);
             return null;
