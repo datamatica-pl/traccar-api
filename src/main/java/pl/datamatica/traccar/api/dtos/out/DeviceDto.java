@@ -30,6 +30,7 @@ public class DeviceDto extends EditDeviceDto implements ICachedDto {
     private final long accountId;
     private final Date validTo;
     private final Integer historyLength;
+    private final boolean blocked;
     
     @JsonIgnore
     private Date modificationTime;
@@ -51,6 +52,7 @@ public class DeviceDto extends EditDeviceDto implements ICachedDto {
         private Date validTo;
         private Integer historyLength;
         private Date modificationTime;
+        private boolean blocked;
 
         public Builder id(final long value) {
             this.id = value;
@@ -127,6 +129,11 @@ public class DeviceDto extends EditDeviceDto implements ICachedDto {
             return this;
         }
         
+        public Builder blocked(final boolean blocked) {
+            this.blocked = blocked;
+            return this;
+        }
+        
         public Builder device(final Device device) {
             this.id = device.getId();
             this.deviceName = device.getName();
@@ -139,12 +146,13 @@ public class DeviceDto extends EditDeviceDto implements ICachedDto {
             this.status = device.getStatus();
             this.uniqueId = device.getUniqueId();
             Position latestPosition = device.getLatestPosition();
-            if(latestPosition != null)
+            if(!device.isBlocked() && latestPosition != null)
                 this.lastPosition = new PositionDto.Builder().position(latestPosition).build();
             this.accountId = device.getOwner().getId();
             this.validTo = device.getValidTo();
             this.historyLength = device.getHistoryLength();
             this.modificationTime = device.getLastUpdate();
+            this.blocked = device.isBlocked();
             return this;
         }
 
@@ -163,7 +171,8 @@ public class DeviceDto extends EditDeviceDto implements ICachedDto {
                     accountId,
                     validTo, 
                     historyLength,
-                    modificationTime);
+                    modificationTime,
+                    blocked);
         }
     }
 
@@ -181,7 +190,8 @@ public class DeviceDto extends EditDeviceDto implements ICachedDto {
             final long accountId, 
             final Date validTo,
             final Integer historyLength,
-            final Date modificationTime) {
+            final Date modificationTime,
+            final boolean blocked) {
         super(deviceName, deviceModelId, iconId, color, phoneNumber, plateNumber, description);
         this.id = id;
         this.status = status;
@@ -191,6 +201,7 @@ public class DeviceDto extends EditDeviceDto implements ICachedDto {
         this.validTo = validTo;
         this.historyLength = historyLength;
         this.modificationTime = modificationTime;
+        this.blocked = blocked;
     }
     
     public long getId() {
