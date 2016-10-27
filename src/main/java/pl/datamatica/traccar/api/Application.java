@@ -42,6 +42,7 @@ public class Application implements spark.servlet.SparkApplication {
     public static final Pattern COLOR_PATTERN = Pattern.compile("[0-9A-F]{6}");
 
     private static final String STRINGS_DIR_NAME = "java:/StringsDir";
+    private static final String IMAGES_DIR_NAME = "java:/ImagesDir";
     private final ControllerBinder[] BINDERS = new ControllerBinder[] {
             new DevicesController.Binder(),
             new UsersController.Binder(),
@@ -127,5 +128,10 @@ public class Application implements spark.servlet.SparkApplication {
     public static String getStringsDir() throws Exception {
         InitialContext context = new InitialContext();
         return (String)context.lookup(STRINGS_DIR_NAME);
+    }
+
+    public static String getImagesDir() throws Exception {
+        InitialContext context = new InitialContext();
+        return (String)context.lookup(IMAGES_DIR_NAME);
     }
 }
