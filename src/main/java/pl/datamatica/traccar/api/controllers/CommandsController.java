@@ -16,19 +16,12 @@
  */
 package pl.datamatica.traccar.api.controllers;
 
-import java.sql.Timestamp;
-import java.util.Date;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
-import static java.util.stream.Collectors.toList;
 import pl.datamatica.traccar.api.Application;
-import static pl.datamatica.traccar.api.controllers.ControllerBase.render;
-import pl.datamatica.traccar.api.providers.CommandDependancyProvider;
-//import pl.datamatica.traccar.api.metadata.model.ReportType;
-import pl.datamatica.traccar.api.responses.HttpResponse;
-import pl.datamatica.traccar.api.responses.OkCachedResponse;
+import pl.datamatica.traccar.api.providers.CommandDependencyProvider;
 import pl.datamatica.traccar.api.services.CommandService;
+import pl.datamatica.traccar.api.utils.JsonUtils;
 import spark.Request;
 import spark.Spark;
 
@@ -45,15 +38,19 @@ public class CommandsController extends ControllerBase {
             Spark.post(rootUrl() + "/devices/:deviceId/sendCommand/:commandType", (req, res) -> {
                 Long deviceId = Long.valueOf(req.params(":deviceId"));
                 String commandType = req.params(":commandType");
+                String params = req.queryParams("params");
+                Map<String, Object> commandParams = new HashMap<>();
                 
-                CommandDependancyProvider cdp = new CommandDependancyProvider();
+                CommandDependencyProvider cdp = new CommandDependencyProvider();
+                
+                if (params != null) {
+                    commandParams = JsonUtils.getCommandParams(params);
+                }
                 
                 Object activeDevice = cdp.getActiveDevice(deviceId);
                 if (activeDevice == null) {
                     return "Error! Device is not registered on the server.";
                 }
-                
-                Map<String, Object> commandParams = new HashMap<>();
                 
                 CommandService cs = new CommandService();
                 String result = cs.sendCommand(deviceId, commandType, activeDevice, commandParams);

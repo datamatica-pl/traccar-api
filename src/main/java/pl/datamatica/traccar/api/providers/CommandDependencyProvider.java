@@ -24,7 +24,7 @@ import java.lang.reflect.InvocationTargetException;
  * 
  * @author Jan Usarek
  */
-public class CommandDependancyProvider implements ICommandDependencyProvider {
+public class CommandDependencyProvider implements ICommandDependencyProvider {
     
     @Override
     public Object getActiveDevice(long deviceId) {
