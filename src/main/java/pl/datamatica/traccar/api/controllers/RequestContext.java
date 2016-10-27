@@ -29,6 +29,7 @@ import pl.datamatica.traccar.api.providers.DeviceModelProvider;
 import pl.datamatica.traccar.api.providers.DeviceProvider;
 import pl.datamatica.traccar.api.providers.FileProvider;
 import pl.datamatica.traccar.api.providers.GeoFenceProvider;
+import pl.datamatica.traccar.api.providers.ImageProvider;
 import pl.datamatica.traccar.api.providers.MailSender;
 import pl.datamatica.traccar.api.providers.PositionProvider;
 import pl.datamatica.traccar.api.providers.ReportsProvider;
@@ -54,6 +55,7 @@ public class RequestContext implements AutoCloseable {
     private UserProvider users;
     private ApplicationSettingsProvider appSettings;
     private FileProvider files;
+    private ImageProvider images;
     private PositionProvider positions;
     
     public RequestContext(Request request, Response response) throws ParseException {
@@ -103,6 +105,12 @@ public class RequestContext implements AutoCloseable {
         if(files == null) 
             files = new FileProvider(Application.getStringsDir());
         return files;
+    }
+    
+    public ImageProvider getImageProvider() throws Exception {
+        if(images == null) 
+            images = new ImageProvider(Application.getImagesDir());
+        return images;
     }
     
     public PositionProvider getPositionProvider() {
