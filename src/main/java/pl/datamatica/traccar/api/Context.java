@@ -17,6 +17,9 @@
 package pl.datamatica.traccar.api;
 
 import com.google.gson.*;
+import java.lang.reflect.Method;
+import java.util.HashMap;
+import java.util.Map;
 import javax.persistence.*;
 import pl.datamatica.traccar.api.dtos.AnnotationExclusionStrategy;
 
@@ -26,14 +29,23 @@ public class Context {
     public static Context getInstance() {
         return INSTANCE;
     }
-   
+    
     private final EntityManagerFactory emf;
     private final EntityManagerFactory emfMetadata;
     private final Gson gson;
     
     private Context() {
         emf = Persistence.createEntityManagerFactory("release");
-        emfMetadata = Persistence.createEntityManagerFactory("traccar_api_metadata_persistence");
+        Map<String, String> properties = getApiConnectionData();
+
+        if (properties.size() > 0) {
+            // Use properties obtained from 'debug.xml' or '/org/traccar/conf/traccar.xml' if possible
+            emfMetadata = Persistence.createEntityManagerFactory("traccar_api_metadata_persistence", properties);
+        } else {
+            // Otherwise settings from 'persistence.xml' will be used
+            emfMetadata = Persistence.createEntityManagerFactory("traccar_api_metadata_persistence");
+        }
+        
         GsonBuilder gsonBuilder = new GsonBuilder();
         gsonBuilder.setDateFormat(Application.DATE_FORMAT);
         gsonBuilder.setExclusionStrategies(new AnnotationExclusionStrategy());
@@ -46,6 +58,47 @@ public class Context {
         return true;
     }
     
+    private Map<String, String> getApiConnectionData() {
+        Map<String, String> properties = new HashMap<>();
+        String pass = null;
+        try {
+            final Class<?> configClass;
+            configClass = Class.forName("org.traccar.Config");
+            Object configObject = configClass.newInstance();
+
+            Method loadMethod = configClass.getMethod("load", String.class);
+            Method getStringMethod = configClass.getMethod("getString", String.class);
+
+            try {
+                loadMethod.invoke(configObject, "/opt/traccar/conf/traccar.xml");
+            } catch (Exception e1) {
+                loadMethod.invoke(configObject, "debug.xml");
+            }
+            
+            String driver = (String)getStringMethod.invoke(configObject, "api.database.driver");
+            String url = (String)getStringMethod.invoke(configObject, "api.database.url");
+            String password = (String)getStringMethod.invoke(configObject, "api.database.password");
+            String user = (String)getStringMethod.invoke(configObject, "api.database.user");
+
+            if (driver != null) {
+                properties.put("hibernate.connection.driver_class", driver);
+            }
+            if (url != null) {
+                properties.put("hibernate.connection.url", url);
+            }
+            if (user != null) {
+                properties.put("hibernate.connection.username", user);
+            }
+            if (password != null) {
+                properties.put("hibernate.connection.password", password);
+            }
+        } catch (Exception e) {
+            // TODO: Log exception
+        }
+        
+        return properties;
+    }
+
     public Gson getGson() {
         return gson;
     }
