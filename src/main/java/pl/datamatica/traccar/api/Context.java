@@ -21,11 +21,14 @@ import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.Map;
 import javax.persistence.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import pl.datamatica.traccar.api.dtos.AnnotationExclusionStrategy;
 
 public class Context {
     private static final Context INSTANCE = new Context();
     private final String PRODUCTION_TRACCAR_CONFIG_FILE = "/opt/traccar/conf/traccar.xml";
+    private final String DEV_TRACCAR_CONFIG_FILE = "debug.xml";
     
     public static Context getInstance() {
         return INSTANCE;
@@ -72,7 +75,7 @@ public class Context {
             try {
                 loadMethod.invoke(configObject, PRODUCTION_TRACCAR_CONFIG_FILE);
             } catch (Exception e1) {
-                loadMethod.invoke(configObject, "debug.xml");
+                loadMethod.invoke(configObject, DEV_TRACCAR_CONFIG_FILE);
             }
             
             String driver = (String)getStringMethod.invoke(configObject, "api.database.driver");
@@ -93,7 +96,11 @@ public class Context {
                 properties.put("hibernate.connection.password", password);
             }
         } catch (Exception e) {
-            // TODO: Log exception
+            String errMsg = String.format("Unable to get connection to API's metadata DB from config file"
+                    + " (can't load %s nor %s): %s", PRODUCTION_TRACCAR_CONFIG_FILE,
+                    DEV_TRACCAR_CONFIG_FILE, e.getMessage());
+            Logger logger = LoggerFactory.getLogger(Application.class);
+            logger.error(errMsg);
         }
         
         return properties;
