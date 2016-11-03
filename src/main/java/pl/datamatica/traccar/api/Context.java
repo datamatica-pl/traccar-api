@@ -27,8 +27,10 @@ import pl.datamatica.traccar.api.dtos.AnnotationExclusionStrategy;
 
 public class Context {
     private static final Context INSTANCE = new Context();
-    private final String PRODUCTION_TRACCAR_CONFIG_FILE = "/opt/traccar/conf/traccar.xml";
     private final String DEV_TRACCAR_CONFIG_FILE = "debug.xml";
+    // Traccar is started from script in 'bin' folder, so this is relative path to config file,
+    // alternatively absolute path like '/opt/traccar/conf/traccar.xml' can also be used.
+    private final String PRODUCTION_TRACCAR_CONFIG_FILE = "../conf/traccar.xml";
     
     public static Context getInstance() {
         return INSTANCE;
