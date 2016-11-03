@@ -17,23 +17,41 @@
 package pl.datamatica.traccar.api;
 
 import com.google.gson.*;
+import java.lang.reflect.Method;
+import java.util.HashMap;
+import java.util.Map;
 import javax.persistence.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import pl.datamatica.traccar.api.dtos.AnnotationExclusionStrategy;
 
 public class Context {
     private static final Context INSTANCE = new Context();
+    private final String DEV_TRACCAR_CONFIG_FILE = "debug.xml";
+    // Traccar is started from script in 'bin' folder, so this is relative path to config file,
+    // alternatively absolute path like '/opt/traccar/conf/traccar.xml' can also be used.
+    private final String PRODUCTION_TRACCAR_CONFIG_FILE = "../conf/traccar.xml";
     
     public static Context getInstance() {
         return INSTANCE;
     }
-   
+    
     private final EntityManagerFactory emf;
     private final EntityManagerFactory emfMetadata;
     private final Gson gson;
     
     private Context() {
         emf = Persistence.createEntityManagerFactory("release");
-        emfMetadata = Persistence.createEntityManagerFactory("traccar_api_metadata_persistence");
+        Map<String, String> properties = getApiConnectionData();
+
+        if (properties.size() > 0) {
+            // Use properties obtained from 'debug.xml' or PRODUCTION_TRACCAR_CONFIG_FILE if possible
+            emfMetadata = Persistence.createEntityManagerFactory("traccar_api_metadata_persistence", properties);
+        } else {
+            // Otherwise settings from 'persistence.xml' will be used
+            emfMetadata = Persistence.createEntityManagerFactory("traccar_api_metadata_persistence");
+        }
+        
         GsonBuilder gsonBuilder = new GsonBuilder();
         gsonBuilder.setDateFormat(Application.DATE_FORMAT);
         gsonBuilder.setExclusionStrategies(new AnnotationExclusionStrategy());
@@ -42,10 +60,54 @@ public class Context {
         gson = gsonBuilder.create();
     }
     
-    public boolean isInDevMode() {
+    public final boolean isInDevMode() {
         return true;
     }
     
+    private Map<String, String> getApiConnectionData() {
+        Map<String, String> properties = new HashMap<>();
+        try {
+            final Class<?> configClass;
+            configClass = Class.forName("org.traccar.Config");
+            Object configObject = configClass.newInstance();
+
+            Method loadMethod = configClass.getMethod("load", String.class);
+            Method getStringMethod = configClass.getMethod("getString", String.class);
+
+            try {
+                loadMethod.invoke(configObject, PRODUCTION_TRACCAR_CONFIG_FILE);
+            } catch (Exception e1) {
+                loadMethod.invoke(configObject, DEV_TRACCAR_CONFIG_FILE);
+            }
+            
+            String driver = (String)getStringMethod.invoke(configObject, "api.database.driver");
+            String url = (String)getStringMethod.invoke(configObject, "api.database.url");
+            String password = (String)getStringMethod.invoke(configObject, "api.database.password");
+            String user = (String)getStringMethod.invoke(configObject, "api.database.user");
+
+            if (driver != null) {
+                properties.put("hibernate.connection.driver_class", driver);
+            }
+            if (url != null) {
+                properties.put("hibernate.connection.url", url);
+            }
+            if (user != null) {
+                properties.put("hibernate.connection.username", user);
+            }
+            if (password != null) {
+                properties.put("hibernate.connection.password", password);
+            }
+        } catch (Exception e) {
+            String errMsg = String.format("Unable to get connection to API's metadata DB from config file"
+                    + " (can't load %s nor %s): %s", PRODUCTION_TRACCAR_CONFIG_FILE,
+                    DEV_TRACCAR_CONFIG_FILE, e.getMessage());
+            Logger logger = LoggerFactory.getLogger(Application.class);
+            logger.error(errMsg);
+        }
+        
+        return properties;
+    }
+
     public Gson getGson() {
         return gson;
     }
