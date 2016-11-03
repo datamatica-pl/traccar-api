@@ -25,6 +25,7 @@ import pl.datamatica.traccar.api.dtos.AnnotationExclusionStrategy;
 
 public class Context {
     private static final Context INSTANCE = new Context();
+    private final String PRODUCTION_TRACCAR_CONFIG_FILE = "/opt/traccar/conf/traccar.xml";
     
     public static Context getInstance() {
         return INSTANCE;
@@ -39,7 +40,7 @@ public class Context {
         Map<String, String> properties = getApiConnectionData();
 
         if (properties.size() > 0) {
-            // Use properties obtained from 'debug.xml' or '/org/traccar/conf/traccar.xml' if possible
+            // Use properties obtained from 'debug.xml' or PRODUCTION_TRACCAR_CONFIG_FILE if possible
             emfMetadata = Persistence.createEntityManagerFactory("traccar_api_metadata_persistence", properties);
         } else {
             // Otherwise settings from 'persistence.xml' will be used
@@ -54,13 +55,12 @@ public class Context {
         gson = gsonBuilder.create();
     }
     
-    public boolean isInDevMode() {
+    public final boolean isInDevMode() {
         return true;
     }
     
     private Map<String, String> getApiConnectionData() {
         Map<String, String> properties = new HashMap<>();
-        String pass = null;
         try {
             final Class<?> configClass;
             configClass = Class.forName("org.traccar.Config");
@@ -70,7 +70,7 @@ public class Context {
             Method getStringMethod = configClass.getMethod("getString", String.class);
 
             try {
-                loadMethod.invoke(configObject, "/opt/traccar/conf/traccar.xml");
+                loadMethod.invoke(configObject, PRODUCTION_TRACCAR_CONFIG_FILE);
             } catch (Exception e1) {
                 loadMethod.invoke(configObject, "debug.xml");
             }
