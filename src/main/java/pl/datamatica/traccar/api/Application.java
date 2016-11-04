@@ -54,7 +54,8 @@ public class Application implements spark.servlet.SparkApplication {
             new DeviceModelsController.Binder(),
             new DeviceIconsController.Binder(),
             new CommandsController.Binder(),
-            new ImagesController.Binder()
+            new ImagesController.Binder(),
+            new AlertsController.Binder()
         };
 
     @Override
