@@ -23,6 +23,7 @@ import javax.persistence.EntityManager;
 import javax.persistence.EntityTransaction;
 import pl.datamatica.traccar.api.Application;
 import pl.datamatica.traccar.api.Context;
+import pl.datamatica.traccar.api.providers.AlertProvider;
 import pl.datamatica.traccar.api.providers.ApplicationSettingsProvider;
 import pl.datamatica.traccar.api.providers.DeviceIconProvider;
 import pl.datamatica.traccar.api.providers.DeviceModelProvider;
@@ -141,6 +142,11 @@ public class RequestContext implements AutoCloseable {
     
     public DeviceIconProvider getDeviceIconProvider() {
         DeviceIconProvider provider = new DeviceIconProvider(em, emMetadata);
+        return provider;
+    }
+    
+    public AlertProvider getAlertProvider() {
+        AlertProvider provider = new AlertProvider(em, user);
         return provider;
     }
     
