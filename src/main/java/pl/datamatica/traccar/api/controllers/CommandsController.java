@@ -20,7 +20,6 @@ import java.util.HashMap;
 import java.util.Map;
 import pl.datamatica.traccar.api.Application;
 import pl.datamatica.traccar.api.providers.ActiveDeviceProvider;
-import pl.datamatica.traccar.api.providers.CommandDependencyProvider;
 import pl.datamatica.traccar.api.services.CommandService;
 import pl.datamatica.traccar.api.utils.JsonUtils;
 import spark.Request;
