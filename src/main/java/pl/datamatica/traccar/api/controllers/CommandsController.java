@@ -38,7 +38,7 @@ public class CommandsController extends ControllerBase {
             Spark.post(rootUrl() + "/devices/:deviceId/sendCommand/:commandType", (req, res) -> {
                 Long deviceId = Long.valueOf(req.params(":deviceId"));
                 String commandType = req.params(":commandType");
-                String params = req.queryParams("params");
+                String params = req.body();
                 Map<String, Object> commandParams = new HashMap<>();
                 
                 CommandDependencyProvider cdp = new CommandDependencyProvider();
