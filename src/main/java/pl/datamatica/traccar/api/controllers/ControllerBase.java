@@ -66,6 +66,14 @@ public abstract class ControllerBase {
         return okCached(content, serverModification);
     }
     
+    protected<T extends ICachedDto> HttpResponse okCached(List<T> content) {
+        Date serverModification = content.stream()
+                .map(i -> i.getModificationTime())
+                .max((d1, d2) -> d1.compareTo(d2))
+                .orElse(requestContext.getModificationDate());
+        return okCached(content, serverModification);
+    }
+    
     protected HttpResponse okCached(Object content, Date serverModification) {
         if(isModified(serverModification))
             return new OkCachedResponse(content, serverModification);
