@@ -20,7 +20,6 @@ package pl.datamatica.traccar.api.providers;
  *
  * @author Jan Usarek
  */
-public interface ICommandDependencyProvider {
+public interface IActiveDeviceProvider {
     Object getActiveDevice(long deviceId);
-    Object getBackendCommand();
 }

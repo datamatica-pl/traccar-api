@@ -20,11 +20,9 @@ import java.lang.reflect.InvocationTargetException;
 
 /**
  *
- * Provides objects needed to send command
- * 
  * @author Jan Usarek
  */
-public class CommandDependencyProvider implements ICommandDependencyProvider {
+public class ActiveDeviceProvider implements IActiveDeviceProvider {
     
     @Override
     public Object getActiveDevice(long deviceId) {
@@ -43,8 +41,4 @@ public class CommandDependencyProvider implements ICommandDependencyProvider {
         return activeDevice;
     }
     
-    @Override
-    public Object getBackendCommand() {
-        return 1;
-    }
 }

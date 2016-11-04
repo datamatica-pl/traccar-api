@@ -19,6 +19,7 @@ package pl.datamatica.traccar.api.controllers;
 import java.util.HashMap;
 import java.util.Map;
 import pl.datamatica.traccar.api.Application;
+import pl.datamatica.traccar.api.providers.ActiveDeviceProvider;
 import pl.datamatica.traccar.api.providers.CommandDependencyProvider;
 import pl.datamatica.traccar.api.services.CommandService;
 import pl.datamatica.traccar.api.utils.JsonUtils;
@@ -41,13 +42,12 @@ public class CommandsController extends ControllerBase {
                 String params = req.body();
                 Map<String, Object> commandParams = new HashMap<>();
                 
-                CommandDependencyProvider cdp = new CommandDependencyProvider();
-                
                 if (params != null) {
                     commandParams = JsonUtils.getCommandParams(params);
                 }
                 
-                Object activeDevice = cdp.getActiveDevice(deviceId);
+                ActiveDeviceProvider adp = new ActiveDeviceProvider();
+                Object activeDevice = adp.getActiveDevice(deviceId);
                 if (activeDevice == null) {
                     return "Error! Device is not registered on the server.";
                 }
