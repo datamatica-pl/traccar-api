@@ -20,6 +20,7 @@ import java.util.HashMap;
 import java.util.Map;
 import pl.datamatica.traccar.api.Application;
 import pl.datamatica.traccar.api.providers.ActiveDeviceProvider;
+import pl.datamatica.traccar.api.providers.BackendCommandProvider;
 import pl.datamatica.traccar.api.services.CommandService;
 import pl.datamatica.traccar.api.utils.JsonUtils;
 import spark.Request;
@@ -51,8 +52,16 @@ public class CommandsController extends ControllerBase {
                     return "Error! Device is not registered on the server.";
                 }
                 
+                BackendCommandProvider bcp = new BackendCommandProvider();
+                Object backendCommand = null;
+                try {
+                    backendCommand = bcp.getBackendCommand(deviceId, commandType);
+                } catch (Exception e) {
+                    return "Error! Command object cannot be created.";
+                }
+                
                 CommandService cs = new CommandService();
-                String result = cs.sendCommand(deviceId, commandType, activeDevice, commandParams);
+                String result = cs.sendCommand(activeDevice, backendCommand, commandParams);
 
                 return result;
                 

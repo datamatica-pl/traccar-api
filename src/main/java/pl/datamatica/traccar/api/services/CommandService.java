@@ -24,21 +24,8 @@ import pl.datamatica.traccar.api.CommandHandler;
 
 public class CommandService {
     
-    public String sendCommand(Long deviceId, String commandType, Object activeDevice, Map<String, Object> commandParams) throws Exception {
+    public String sendCommand(Object activeDevice, Object backendCommand, Map<String, Object> commandParams) throws Exception {
         final Map<String, Object> result = new HashMap<>();
-        
-        Class<?> backendCommandClass;
-        Object backendCommand;
-        try {
-            backendCommandClass = Class.forName("org.traccar.model.Command");
-            backendCommand = backendCommandClass.newInstance();
-            backendCommand.getClass().getMethod("setType", String.class)
-                    .invoke(backendCommand, commandType);
-            backendCommand.getClass().getMethod("setDeviceId", long.class)
-                    .invoke(backendCommand, deviceId); // TODO: activeDevice.deviceId
-        } catch (Exception e) {
-            return e.getMessage();
-        }
         
         ArrayList<String> paramErrors = new ArrayList();
         commandParams.forEach((key,value) -> {
@@ -53,7 +40,8 @@ public class CommandService {
         if (paramErrors.isEmpty()) {
             try {
                 final Object awaiter = new Object();
-                Method sendCommand = activeDevice.getClass().getDeclaredMethod("sendCommand", backendCommandClass, Object.class);
+                Method sendCommand = activeDevice.getClass().getDeclaredMethod("sendCommand",
+                        backendCommand.getClass(), Object.class);
                 sendCommand.invoke(activeDevice, backendCommand, new CommandHandler(result, awaiter));
                 synchronized(awaiter) {
                     awaiter.wait();
