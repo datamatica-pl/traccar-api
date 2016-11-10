@@ -43,7 +43,11 @@ public class CommandsController extends ControllerBase {
                 Map<String, Object> commandParams = new HashMap<>();
                 
                 if (params != null) {
-                    commandParams = JsonUtils.getCommandParams(params);
+                    try {
+                        commandParams = JsonUtils.getCommandParams(params);
+                    } catch (Exception e) {
+                        return "Error! Command parameters cannot be parsed.";
+                    }
                 }
                 
                 ActiveDeviceProvider adp = new ActiveDeviceProvider();
@@ -59,9 +63,28 @@ public class CommandsController extends ControllerBase {
                 } catch (Exception e) {
                     return "Error! Command object cannot be created.";
                 }
-                
+
                 CommandService cs = new CommandService();
-                String result = cs.sendCommand(activeDevice, backendCommand, commandParams);
+                
+                if (commandParams.size() > 0) {
+                    // Change timezone parameter from hours to seconds
+                    if (commandParams.get("timezone") != null) {
+                        long timezoneHours = Long.valueOf(commandParams.get("timezone").toString());
+                        long timezoneSeconds = timezoneHours * 3600;
+                        commandParams.replace("timezone", timezoneSeconds);
+                    }
+                    
+                    try {
+                        backendCommand
+                            .getClass()
+                            .getMethod("setAttributes", Map.class)
+                            .invoke(backendCommand, commandParams);
+                    } catch (Exception e) {
+                        return "Setting command parameters failed.";
+                    }
+                }
+                
+                String result = cs.sendCommand(activeDevice, backendCommand);
 
                 return result;
                 

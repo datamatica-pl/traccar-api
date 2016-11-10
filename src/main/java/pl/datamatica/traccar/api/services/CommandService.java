@@ -24,41 +24,27 @@ import pl.datamatica.traccar.api.CommandHandler;
 
 public class CommandService {
     
-    public String sendCommand(Object activeDevice, Object backendCommand, Map<String, Object> commandParams) throws Exception {
+    public String sendCommand(Object activeDevice, Object backendCommand) throws Exception {
         final Map<String, Object> result = new HashMap<>();
         
-        ArrayList<String> paramErrors = new ArrayList();
-        commandParams.forEach((key,value) -> {
-            try {
-                backendCommand.getClass().getMethod("set", String.class, String.class)
-                    .invoke(backendCommand, key, value);
-            } catch (Exception e) {
-                paramErrors.add(e.getMessage());
+        try {
+            final Object awaiter = new Object();
+            Method sendCommand = activeDevice.getClass().getDeclaredMethod("sendCommand",
+                    backendCommand.getClass(), Object.class);
+            sendCommand.invoke(activeDevice, backendCommand, new CommandHandler(result, awaiter));
+            synchronized(awaiter) {
+                awaiter.wait();
             }
-        });
+        } catch (Exception e) {
+            return "Error! Command cannot be sent.";
+        }
 
-        if (paramErrors.isEmpty()) {
-            try {
-                final Object awaiter = new Object();
-                Method sendCommand = activeDevice.getClass().getDeclaredMethod("sendCommand",
-                        backendCommand.getClass(), Object.class);
-                sendCommand.invoke(activeDevice, backendCommand, new CommandHandler(result, awaiter));
-                synchronized(awaiter) {
-                    awaiter.wait();
-                }
-            } catch (Exception e) {
-                return "Error! Command cannot be sent.";
-            }
-
-            if (result.get("success") == null) {
-                return "Error! Command cannot be sent.";
-            } else if((boolean)result.get("success")) {
-                return result.get("response").toString();
-            } else {
-                return "timeout";
-            }
+        if (result.get("success") == null) {
+            return "Error! Command cannot be sent.";
+        } else if((boolean)result.get("success")) {
+            return result.get("response").toString();
         } else {
-            return "Incorrect command parameter, check if parameters are string.";
+            return "timeout";
         }
     }
     
