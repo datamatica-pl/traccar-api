@@ -20,27 +20,37 @@ import java.time.LocalDate;
 import java.time.ZoneId;
 import java.time.temporal.ChronoUnit;
 import java.util.Collections;
-import java.util.Date;
+import java.util.EnumSet;
 import java.util.List;
-import static java.util.concurrent.TimeUnit.DAYS;
 import java.util.stream.Collectors;
 import javax.persistence.EntityManager;
 import pl.datamatica.traccar.model.Device;
 import pl.datamatica.traccar.model.DeviceEvent;
+import pl.datamatica.traccar.model.DeviceEventType;
+import pl.datamatica.traccar.model.GeoFence;
 import pl.datamatica.traccar.model.User;
 
 public class AlertProvider {
     private final EntityManager em;
     private final User requestUser;
+    private final DeviceProvider devices;
+    private final GeoFenceProvider geofences;
     
     public AlertProvider(EntityManager em, User requestUser) {
         this.em = em;
         this.requestUser = requestUser;
+        this.devices = new DeviceProvider(em, requestUser);
+        this.geofences = new GeoFenceProvider(em);
+        geofences.setRequestUser(requestUser);
     }
     
     public List<DeviceEvent> getAllAvailableAlerts() {
-        List<Device> validDevices = requestUser.getAllAvailableDevices().stream()
+        List<Device> validDevices = devices.getAllAvailableDevices()
                 .filter(d -> !d.isBlocked() && !d.isDeleted())
+                .collect(Collectors.toList());
+        
+        List<GeoFence> validGeofences = geofences.getAllAvailableGeoFences()
+                .filter(g -> !g.isDeleted())
                 .collect(Collectors.toList());
         
         if(validDevices.isEmpty())
@@ -48,13 +58,24 @@ public class AlertProvider {
         
         List<DeviceEvent> events;
         
-        if(requestUser.getAdmin())
-            events = em.createQuery("Select de from DeviceEvent de inner join fetch de.position")
-                    .getResultList();
-        else
-            events = em.createQuery("Select de from DeviceEvent de inner join fetch de.position\n"
-                + "where de.device in (:devices)", DeviceEvent.class)
+        events = em.createQuery("Select de from DeviceEvent de\n"
+                + "left join fetch de.position\n"
+                + "left join fetch de.geoFence\n"
+                + "left join fetch de.maintenance\n"
+                + "where de.device in (:devices) and\n"
+                + "(de.geoFence in (:geofences) or de.type not in (:geofence_events))\n"
+                + "and de.type in (:valid_types)", 
+                DeviceEvent.class)
                 .setParameter("devices", validDevices)
+                .setParameter("geofences", validGeofences)
+                .setParameter("geofence_events", 
+                        EnumSet.of(DeviceEventType.GEO_FENCE_ENTER,
+                        DeviceEventType.GEO_FENCE_EXIT))
+                .setParameter("valid_types", 
+                        EnumSet.of(DeviceEventType.GEO_FENCE_ENTER,
+                                DeviceEventType.GEO_FENCE_EXIT,
+                                DeviceEventType.OVERSPEED,
+                                DeviceEventType.MAINTENANCE_REQUIRED))
                 .getResultList();
                 
         return events.stream()
