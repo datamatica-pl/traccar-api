@@ -16,11 +16,16 @@
  */
 package pl.datamatica.traccar.api.controllers;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import pl.datamatica.traccar.api.Application;
+import pl.datamatica.traccar.api.dtos.MessageKeys;
+import pl.datamatica.traccar.api.dtos.out.ErrorDto;
 import pl.datamatica.traccar.api.providers.ActiveDeviceProvider;
 import pl.datamatica.traccar.api.providers.BackendCommandProvider;
+import pl.datamatica.traccar.api.responses.ErrorResponse;
+import pl.datamatica.traccar.api.responses.HttpStatuses;
 import pl.datamatica.traccar.api.services.CommandService;
 import pl.datamatica.traccar.api.utils.JsonUtils;
 import spark.Request;
@@ -41,19 +46,22 @@ public class CommandsController extends ControllerBase {
                 String commandType = req.params(":commandType");
                 String params = req.body();
                 Map<String, Object> commandParams = new HashMap<>();
+                res.type("application/json");
                 
                 if (params != null) {
                     try {
                         commandParams = JsonUtils.getCommandParams(params);
                     } catch (Exception e) {
-                        return "Error! Command parameters cannot be parsed.";
+                        res.status(HttpStatuses.BAD_REQUEST);
+                        return getResponseError(HttpStatuses.BAD_REQUEST, MessageKeys.ERR_COMMAND_PARSE_PARAMS_FAILED);
                     }
                 }
                 
                 ActiveDeviceProvider adp = new ActiveDeviceProvider();
                 Object activeDevice = adp.getActiveDevice(deviceId);
                 if (activeDevice == null) {
-                    return "Error! Device is not registered on the server.";
+                    res.status(HttpStatuses.NOT_FOUND);
+                    return getResponseError(HttpStatuses.NOT_FOUND, MessageKeys.ERR_ACTIVE_DEVICE_NOT_FOUND);
                 }
                 
                 BackendCommandProvider bcp = new BackendCommandProvider();
@@ -61,7 +69,8 @@ public class CommandsController extends ControllerBase {
                 try {
                     backendCommand = bcp.getBackendCommand(deviceId, commandType);
                 } catch (Exception e) {
-                    return "Error! Command object cannot be created.";
+                    res.status(HttpStatuses.BAD_REQUEST);
+                    return getResponseError(HttpStatuses.BAD_REQUEST, MessageKeys.ERR_CREATE_COMMAND_OBJECT_FAILED);
                 }
 
                 CommandService cs = new CommandService();
@@ -80,7 +89,8 @@ public class CommandsController extends ControllerBase {
                             .getMethod("setAttributes", Map.class)
                             .invoke(backendCommand, commandParams);
                     } catch (Exception e) {
-                        return "Setting command parameters failed.";
+                        res.status(HttpStatuses.BAD_REQUEST);
+                        return getResponseError(HttpStatuses.BAD_REQUEST, MessageKeys.ERR_SET_COMMAND_ATTRIBUTES_FAILED);
                     }
                 }
                 
@@ -90,6 +100,10 @@ public class CommandsController extends ControllerBase {
                 
             }, gson::toJson);
 
+        }
+        
+        private ErrorResponse getResponseError(int status, String messageKey) {
+            return new ErrorResponse(status, Collections.singletonList(new ErrorDto(messageKey)));
         }
 
         private CommandsController createController(Request req) {
