@@ -64,7 +64,8 @@ public class GeoFenceDto extends AddGeoFenceDto implements ICachedDto {
         }
 
         public GeoFenceDto build() {
-            return new GeoFenceDto(id, geofenceName, description, allDevices, color, points, radius, type, deviceIds, lastUpdate);
+            return new GeoFenceDto(id, geofenceName, description, allDevices, 
+                    color, points, radius, type, deviceIds, lastUpdate);
         }
     }
 

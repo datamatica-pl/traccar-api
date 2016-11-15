@@ -21,7 +21,6 @@ import pl.datamatica.traccar.api.dtos.IGeoFenceInfo;
 import java.util.Collections;
 import java.util.List;
 import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import pl.datamatica.traccar.api.Application;
 import pl.datamatica.traccar.api.dtos.MessageKeys;
@@ -154,6 +153,7 @@ public class AddGeoFenceDto implements IGeoFenceInfo {
         return type;
     }
 
+    @Override
     public long[] getDeviceIds() {
         return deviceIds;
     }

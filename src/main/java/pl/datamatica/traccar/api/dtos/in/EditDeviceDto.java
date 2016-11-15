@@ -31,6 +31,7 @@ public class EditDeviceDto {
     private final String phoneNumber;
     private final String plateNumber;
     private final String description;
+    private final Double speedLimit;
 
     public static class Builder {
 
@@ -41,6 +42,7 @@ public class EditDeviceDto {
         private String phoneNumber;
         private String plateNumber;
         private String description;
+        private Double speedLimit;
 
         public Builder deviceName(final String value) {
             this.deviceName = value;
@@ -76,9 +78,21 @@ public class EditDeviceDto {
             this.description = value;
             return this;
         }
+        
+        public Builder speedLimit(final Double value) {
+            this.speedLimit = value;
+            return this;
+        }
 
         public EditDeviceDto build() {
-            return new EditDeviceDto(deviceName, deviceModelId, iconId, color, phoneNumber, plateNumber, description);
+            return new EditDeviceDto(deviceName, 
+                    deviceModelId, 
+                    iconId, 
+                    color, 
+                    phoneNumber, 
+                    plateNumber, 
+                    description,
+                    speedLimit);
         }
     }
 
@@ -88,7 +102,8 @@ public class EditDeviceDto {
             final String color, 
             final String phoneNumber, 
             final String plateNumber, 
-            final String description) {
+            final String description,
+            final Double speedLimit) {
         this.deviceName = deviceName;
         this.deviceModelId = deviceModelId;
         this.iconId = iconId;
@@ -96,6 +111,7 @@ public class EditDeviceDto {
         this.phoneNumber = phoneNumber;
         this.plateNumber = plateNumber;
         this.description = description;
+        this.speedLimit = speedLimit;
     }
 
     public String getDeviceName() {
@@ -125,6 +141,10 @@ public class EditDeviceDto {
     public String getDescription() {
         return description;
     }    
+    
+    public Double getSpeedLimit() {
+        return speedLimit;
+    }
     
     public static List<ErrorDto> validate(EditDeviceDto deviceDto) {
         if(deviceDto == null)

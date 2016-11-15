@@ -67,7 +67,7 @@ public class DevicesController extends ControllerBase {
             Spark.delete(rootUrl() + "/:id", (req, res)-> {
                 DevicesController dc = createController(req);
                 return render(dc.delete(Long.parseLong(req.params(":id"))), res);
-            });
+            }, gson::toJson);
             
             Spark.get(rootUrl() + "/:id/positions", (req, res) -> {
                 DevicesController dc = createController(req);

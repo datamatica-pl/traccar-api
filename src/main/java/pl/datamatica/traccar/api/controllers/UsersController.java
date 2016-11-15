@@ -114,7 +114,7 @@ public class UsersController extends ControllerBase {
             String token = user.getEmailValidationToken();
             if(token != null) {
                 String url = requestContext.getApiRoot()+"/users/activate/"+token;
-                sender.sendMessage(user.getEmail(), url);
+                sender.sendMessage(user.getEmail(), emailConfirmationContent(url));
             }
             return created("user/"+user.getId(), "");
         } catch (ProviderException ex) {
@@ -126,6 +126,20 @@ public class UsersController extends ControllerBase {
             }
             throw ex;
         }
+    }
+
+    private static String emailConfirmationContent(String url) {
+        return String.format("Witaj,<br/><br/>" +
+                "Dziękujemy za założenie konta w systemie DM TrackMan.<br/>" +
+                "Twoje konto jest nieaktywne. Aby aktywować konto kliknij w poniższy link.<br/><br/><br/>" +
+                "<a href=\"%s\">Link do aktywacji konta</a><br/><br/>" +
+                "bądź skopiuj poniższy link i wklej do przeglądarki w pasku adresu.<br/><br/>" +
+                "%s<br/><br/>" +
+                "Uwaga: link aktywacyjny ważny jest przez 7 dni.<br/><br/><br/>" +
+                "Dziękujemy,<br/><br/>" +
+                "Zespół serwisu DM TrackMan<br/><br/>" +
+                "Ten email został wygenerowany automatycznie - nie odpowiadaj na niego.",
+                url, url);
     }
     
     public HttpResponse activateUser(String token) {

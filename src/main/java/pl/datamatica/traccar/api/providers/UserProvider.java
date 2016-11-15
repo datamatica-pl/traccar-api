@@ -64,7 +64,7 @@ public class UserProvider extends ProviderBase {
     public Stream<User> getAllAvailableUsers() {
         if(requestUser.getAdmin()) 
             return getAllUsers();
-        return Stream.concat(requestUser.getManagedUsers().stream(), 
+        return Stream.concat(requestUser.getAllManagedUsers().stream(), 
                 Stream.of(requestUser.getManagedBy(), requestUser));
     }
     
