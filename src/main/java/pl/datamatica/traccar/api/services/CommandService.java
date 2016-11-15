@@ -22,29 +22,23 @@ import java.util.Map;
 import pl.datamatica.traccar.api.CommandHandler;
 
 public class CommandService {
-    
-    public String sendCommand(Object activeDevice, Object backendCommand) throws Exception {
+
+    public Map<String, Object> sendCommand(Object activeDevice, Object backendCommand) {
         final Map<String, Object> result = new HashMap<>();
+        final Object awaiter = new Object();
         
         try {
-            final Object awaiter = new Object();
             Method sendCommand = activeDevice.getClass().getDeclaredMethod("sendCommand",
                     backendCommand.getClass(), Object.class);
             sendCommand.invoke(activeDevice, backendCommand, new CommandHandler(result, awaiter));
-            synchronized(awaiter) {
+            synchronized (awaiter) {
                 awaiter.wait();
             }
         } catch (Exception e) {
-            return "Error! Command cannot be sent.";
+            return null;
         }
-
-        if (result.get("success") == null) {
-            return "Error! Command cannot be sent.";
-        } else if((boolean)result.get("success")) {
-            return result.get("response").toString();
-        } else {
-            return "timeout";
-        }
+        
+        return result;
     }
-    
+
 }

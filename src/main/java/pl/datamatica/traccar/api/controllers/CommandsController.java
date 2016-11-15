@@ -94,10 +94,24 @@ public class CommandsController extends ControllerBase {
                     }
                 }
                 
-                String result = cs.sendCommand(activeDevice, backendCommand);
-
-                return result;
+                Map<String, Object> result = cs.sendCommand(activeDevice, backendCommand);
                 
+                if (result == null || result.get("success") == null) {
+                    res.status(HttpStatuses.BAD_REQUEST);
+                    return getResponseError(HttpStatuses.BAD_REQUEST, MessageKeys.ERR_SEND_COMMAND_FAILED);
+                }
+                
+                if ((boolean) result.get("success")) {
+                    return result.get("response"); // TODO: Use some kind of commandResponse DTO to send the response
+                } else {
+                    if (result.get("reason") == "timeout") {
+                        res.status(HttpStatuses.TIMED_OUT);
+                        return getResponseError(HttpStatuses.TIMED_OUT, MessageKeys.ERR_COMMAND_RESPONSE_TIMEOUT);
+                    } else {
+                        res.status(HttpStatuses.BAD_REQUEST);
+                        return getResponseError(HttpStatuses.BAD_REQUEST, MessageKeys.ERR_SEND_COMMAND_FAILED);
+                    }
+                }
             }, gson::toJson);
 
         }
