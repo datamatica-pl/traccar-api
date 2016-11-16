@@ -18,6 +18,7 @@ package pl.datamatica.traccar.api.controllers;
 
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import pl.datamatica.traccar.api.Application;
 import pl.datamatica.traccar.api.dtos.MessageKeys;
@@ -25,7 +26,6 @@ import pl.datamatica.traccar.api.dtos.out.CommandResponseDto;
 import pl.datamatica.traccar.api.dtos.out.ErrorDto;
 import pl.datamatica.traccar.api.providers.ActiveDeviceProvider;
 import pl.datamatica.traccar.api.providers.BackendCommandProvider;
-import pl.datamatica.traccar.api.responses.ErrorResponse;
 import pl.datamatica.traccar.api.responses.HttpStatuses;
 import pl.datamatica.traccar.api.services.CommandService;
 import pl.datamatica.traccar.api.utils.JsonUtils;
@@ -41,20 +41,22 @@ public class CommandsController extends ControllerBase {
 
         @Override
         public void bind() {
-            
+
             Spark.post(rootUrl() + "/devices/:deviceId/sendCommand/:commandType", (req, res) -> {
                 Long deviceId = Long.valueOf(req.params(":deviceId"));
                 String commandType = req.params(":commandType");
                 String params = req.body();
+                
                 Map<String, Object> commandParams = new HashMap<>();
+                
+                res.status(HttpStatuses.BAD_REQUEST);
                 res.type("application/json");
                 
                 if (params != null) {
                     try {
                         commandParams = JsonUtils.getCommandParams(params);
                     } catch (Exception e) {
-                        res.status(HttpStatuses.BAD_REQUEST);
-                        return getResponseError(HttpStatuses.BAD_REQUEST, MessageKeys.ERR_COMMAND_PARSE_PARAMS_FAILED);
+                        return getResponseError(MessageKeys.ERR_COMMAND_PARSE_PARAMS_FAILED);
                     }
                 }
                 
@@ -62,7 +64,7 @@ public class CommandsController extends ControllerBase {
                 Object activeDevice = adp.getActiveDevice(deviceId);
                 if (activeDevice == null) {
                     res.status(HttpStatuses.NOT_FOUND);
-                    return getResponseError(HttpStatuses.NOT_FOUND, MessageKeys.ERR_ACTIVE_DEVICE_NOT_FOUND);
+                    return getResponseError(MessageKeys.ERR_ACTIVE_DEVICE_NOT_FOUND);
                 }
                 
                 BackendCommandProvider bcp = new BackendCommandProvider();
@@ -70,8 +72,7 @@ public class CommandsController extends ControllerBase {
                 try {
                     backendCommand = bcp.getBackendCommand(deviceId, commandType);
                 } catch (Exception e) {
-                    res.status(HttpStatuses.BAD_REQUEST);
-                    return getResponseError(HttpStatuses.BAD_REQUEST, MessageKeys.ERR_CREATE_COMMAND_OBJECT_FAILED);
+                    return getResponseError(MessageKeys.ERR_CREATE_COMMAND_OBJECT_FAILED);
                 }
 
                 CommandService cs = new CommandService();
@@ -90,16 +91,14 @@ public class CommandsController extends ControllerBase {
                             .getMethod("setAttributes", Map.class)
                             .invoke(backendCommand, commandParams);
                     } catch (Exception e) {
-                        res.status(HttpStatuses.BAD_REQUEST);
-                        return getResponseError(HttpStatuses.BAD_REQUEST, MessageKeys.ERR_SET_COMMAND_ATTRIBUTES_FAILED);
+                        return getResponseError(MessageKeys.ERR_SET_COMMAND_ATTRIBUTES_FAILED);
                     }
                 }
                 
                 Map<String, Object> result = cs.sendCommand(activeDevice, backendCommand);
                 
                 if (result == null || result.get("success") == null) {
-                    res.status(HttpStatuses.BAD_REQUEST);
-                    return getResponseError(HttpStatuses.BAD_REQUEST, MessageKeys.ERR_SEND_COMMAND_FAILED);
+                    return getResponseError(MessageKeys.ERR_SEND_COMMAND_FAILED);
                 }
                 
                 if ((boolean) result.get("success")) {
@@ -108,20 +107,19 @@ public class CommandsController extends ControllerBase {
                 } else {
                     if (result.get("reason") == "timeout") {
                         res.status(HttpStatuses.TIMED_OUT);
-                        return getResponseError(HttpStatuses.TIMED_OUT, MessageKeys.ERR_COMMAND_RESPONSE_TIMEOUT);
+                        return getResponseError(MessageKeys.ERR_COMMAND_RESPONSE_TIMEOUT);
                     } else {
-                        res.status(HttpStatuses.BAD_REQUEST);
-                        return getResponseError(HttpStatuses.BAD_REQUEST, MessageKeys.ERR_SEND_COMMAND_FAILED);
+                        return getResponseError(MessageKeys.ERR_SEND_COMMAND_FAILED);
                     }
                 }
             }, gson::toJson);
 
         }
         
-        private ErrorResponse getResponseError(int status, String messageKey) {
-            return new ErrorResponse(status, Collections.singletonList(new ErrorDto(messageKey)));
+        private List<ErrorDto> getResponseError(String messageKey) {
+            return Collections.singletonList(new ErrorDto(messageKey));
         }
-
+        
         private CommandsController createController(Request req) {
             RequestContext context = req.attribute(Application.REQUEST_CONTEXT_KEY);
             CommandsController cc = new CommandsController(context);
