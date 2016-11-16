@@ -21,6 +21,7 @@ import java.util.HashMap;
 import java.util.Map;
 import pl.datamatica.traccar.api.Application;
 import pl.datamatica.traccar.api.dtos.MessageKeys;
+import pl.datamatica.traccar.api.dtos.out.CommandResponseDto;
 import pl.datamatica.traccar.api.dtos.out.ErrorDto;
 import pl.datamatica.traccar.api.providers.ActiveDeviceProvider;
 import pl.datamatica.traccar.api.providers.BackendCommandProvider;
@@ -102,7 +103,8 @@ public class CommandsController extends ControllerBase {
                 }
                 
                 if ((boolean) result.get("success")) {
-                    return result.get("response"); // TODO: Use some kind of commandResponse DTO to send the response
+                    CommandResponseDto commandResponse = new CommandResponseDto(result.get("response").toString());
+                    return commandResponse;
                 } else {
                     if (result.get("reason") == "timeout") {
                         res.status(HttpStatuses.TIMED_OUT);
