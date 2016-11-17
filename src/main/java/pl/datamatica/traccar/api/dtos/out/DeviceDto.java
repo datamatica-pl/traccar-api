@@ -140,6 +140,8 @@ public class DeviceDto extends EditDeviceDto implements ICachedDto {
             return this;
         }
         
+        private static final Double KilometersToNauticMilesMultiplier = 1.852;
+
         public Builder device(final Device device) {
             this.id = device.getId();
             this.deviceName = device.getName();
@@ -160,7 +162,7 @@ public class DeviceDto extends EditDeviceDto implements ICachedDto {
             this.modificationTime = device.getLastUpdate();
             this.blocked = device.isBlocked();
             if(device.getSpeedLimit() != null)
-                this.speedLimit = device.getSpeedLimit()*1.609;
+                this.speedLimit = device.getSpeedLimit() * KilometersToNauticMilesMultiplier;
             return this;
         }
 

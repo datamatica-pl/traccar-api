@@ -165,6 +165,8 @@ public class DeviceProvider extends ProviderBase {
         query.executeUpdate();
     }
 
+    private static final Double NauticMilesToKilometersMultiplier = 0.514;
+    
     public void updateDevice(long id, EditDeviceDto deviceDto) throws ProviderException {
         Device device = getDevice(id);
         
@@ -177,7 +179,7 @@ public class DeviceProvider extends ProviderBase {
         device.setDescription(deviceDto.getDescription());
         
         if(deviceDto.getSpeedLimit() != null)
-            device.setSpeedLimit(deviceDto.getSpeedLimit() * 0.6214);
+            device.setSpeedLimit(deviceDto.getSpeedLimit() * NauticMilesToKilometersMultiplier);
         else
             device.setSpeedLimit(null);
         
