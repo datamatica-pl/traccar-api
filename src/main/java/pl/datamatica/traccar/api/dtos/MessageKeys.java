@@ -53,4 +53,13 @@ public class MessageKeys {
     public static final String ERR_GEOFENCE_RADIUS_NOT_PROVIDED = "err_circle_radius_not_provided";
     public static final String ERR_TOO_FEW_GEOFENCE_POINTS = "err_too_few_geofence_points";
     public static final String ERR_GEOFENCE_DEVICES_NOT_PROVIDED = "err_geofence_devices_not_provided";
+    
+    public static final String ERR_GEO_MODE_NOT_PROVIDED = "err_geo_mode_not_provided";
+    public static final String ERR_INVALID_GEO_MODE = "err_invalid_geo_mode";
+    public static final String ERR_OSPD_MODE_NOT_PROVIDED = "err_ospd_mode_not_provided";
+    public static final String ERR_INVALID_OSPD_MODE = "err_invalid_ospd_mode";
+    public static final String ERR_POLICY_MODE_NOT_PROVIDED = "err_policy_mode_not_provided";
+    public static final String ERR_INVALID_POLICY_MODE = "err_invalid_policy_mode";
+    public static final String ERR_MTNCE_MODE_NOT_PROVIDED = "err_mtnce_mode_not_provided";
+    public static final String ERR_INVALID_MTNCE_MODE = "err_invalid_mtnce_mode";
 }
