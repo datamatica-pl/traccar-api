@@ -16,13 +16,11 @@
  */
 package pl.datamatica.traccar.api.controllers;
 
-import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import pl.datamatica.traccar.api.Application;
 import pl.datamatica.traccar.api.dtos.MessageKeys;
 import pl.datamatica.traccar.api.dtos.out.ICachedDto;
 import pl.datamatica.traccar.api.dtos.out.ErrorDto;
