@@ -60,5 +60,5 @@ public class MessageKeys {
     public static final String ERR_SET_COMMAND_ATTRIBUTES_FAILED = "err_set_command_attributes_failed";
     public static final String ERR_COMMAND_RESPONSE_TIMEOUT = "err_command_response_timeout";
     public static final String ERR_SEND_COMMAND_FAILED = "err_send_command_failed";
-    public static final String ERR_DEVICE_NOT_FOUND = "err_device_not_found";
+    public static final String ERR_DEVICE_NOT_FOUND_OR_NO_PRIVILEGES = "err_device_not_found_or_no_privileges";
 }

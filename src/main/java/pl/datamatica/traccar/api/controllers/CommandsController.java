@@ -65,7 +65,7 @@ public class CommandsController extends ControllerBase {
 
                 if (device == null && !requestUser.hasAccessTo(device)) {
                     res.status(HttpStatuses.NOT_FOUND);
-                    return getResponseError(MessageKeys.ERR_DEVICE_NOT_FOUND);
+                    return getResponseError(MessageKeys.ERR_DEVICE_NOT_FOUND_OR_NO_PRIVILEGES);
                 }
 
                 if (params != null) {
