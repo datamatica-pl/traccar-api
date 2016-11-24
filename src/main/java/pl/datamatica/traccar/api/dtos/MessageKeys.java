@@ -54,6 +54,14 @@ public class MessageKeys {
     public static final String ERR_TOO_FEW_GEOFENCE_POINTS = "err_too_few_geofence_points";
     public static final String ERR_GEOFENCE_DEVICES_NOT_PROVIDED = "err_geofence_devices_not_provided";
     
+    public static final String ERR_COMMAND_PARSE_PARAMS_FAILED = "err_command_parse_params_failed";
+    public static final String ERR_ACTIVE_DEVICE_NOT_FOUND = "err_active_device_not_found";
+    public static final String ERR_CREATE_COMMAND_OBJECT_FAILED = "err_create_command_object_failed";
+    public static final String ERR_SET_COMMAND_ATTRIBUTES_FAILED = "err_set_command_attributes_failed";
+    public static final String ERR_COMMAND_RESPONSE_TIMEOUT = "err_command_response_timeout";
+    public static final String ERR_SEND_COMMAND_FAILED = "err_send_command_failed";
+    public static final String ERR_DEVICE_NOT_FOUND_OR_NO_PRIVILEGES = "err_device_not_found_or_no_privileges";
+
     public static final String ERR_GEO_MODE_NOT_PROVIDED = "err_geo_mode_not_provided";
     public static final String ERR_INVALID_GEO_MODE = "err_invalid_geo_mode";
     public static final String ERR_OSPD_MODE_NOT_PROVIDED = "err_ospd_mode_not_provided";
@@ -62,4 +70,5 @@ public class MessageKeys {
     public static final String ERR_INVALID_POLICY_MODE = "err_invalid_policy_mode";
     public static final String ERR_MTNCE_MODE_NOT_PROVIDED = "err_mtnce_mode_not_provided";
     public static final String ERR_INVALID_MTNCE_MODE = "err_invalid_mtnce_mode";
+
 }

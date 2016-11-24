@@ -17,61 +17,28 @@
 package pl.datamatica.traccar.api.services;
 
 import java.lang.reflect.Method;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import pl.datamatica.traccar.api.CommandHandler;
 
 public class CommandService {
-    
-    public String sendCommand(Long deviceId, String commandType, Object activeDevice, Map<String, Object> commandParams) throws Exception {
+
+    public Map<String, Object> sendCommand(Object activeDevice, Object backendCommand) {
         final Map<String, Object> result = new HashMap<>();
+        final Object awaiter = new Object();
         
-        Class<?> backendCommandClass;
-        Object backendCommand;
         try {
-            backendCommandClass = Class.forName("org.traccar.model.Command");
-            backendCommand = backendCommandClass.newInstance();
-            backendCommand.getClass().getMethod("setType", String.class)
-                    .invoke(backendCommand, commandType);
-            backendCommand.getClass().getMethod("setDeviceId", long.class)
-                    .invoke(backendCommand, deviceId); // TODO: activeDevice.deviceId
+            Method sendCommand = activeDevice.getClass().getDeclaredMethod("sendCommand",
+                    backendCommand.getClass(), Object.class);
+            sendCommand.invoke(activeDevice, backendCommand, new CommandHandler(result, awaiter));
+            synchronized (awaiter) {
+                awaiter.wait();
+            }
         } catch (Exception e) {
-            return e.getMessage();
+            return null;
         }
         
-        ArrayList<String> paramErrors = new ArrayList();
-        commandParams.forEach((key,value) -> {
-            try {
-                backendCommand.getClass().getMethod("set", String.class, String.class)
-                    .invoke(backendCommand, key, value);
-            } catch (Exception e) {
-                paramErrors.add(e.getMessage());
-            }
-        });
-
-        if (paramErrors.isEmpty()) {
-            try {
-                final Object awaiter = new Object();
-                Method sendCommand = activeDevice.getClass().getDeclaredMethod("sendCommand", backendCommandClass, Object.class);
-                sendCommand.invoke(activeDevice, backendCommand, new CommandHandler(result, awaiter));
-                synchronized(awaiter) {
-                    awaiter.wait();
-                }
-            } catch (Exception e) {
-                return "Error! Command cannot be sent.";
-            }
-
-            if (result.get("success") == null) {
-                return "Error! Command cannot be sent.";
-            } else if((boolean)result.get("success")) {
-                return result.get("response").toString();
-            } else {
-                return "timeout";
-            }
-        } else {
-            return "Incorrect command parameter, check if parameters are string.";
-        }
+        return result;
     }
-    
+
 }

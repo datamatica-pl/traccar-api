@@ -20,7 +20,21 @@ package pl.datamatica.traccar.api.providers;
  *
  * @author Jan Usarek
  */
-public interface ICommandDependencyProvider {
-    Object getActiveDevice(long deviceId);
-    Object getBackendCommand();
+public class BackendCommandProvider implements IBackendCommandProvider {
+
+    @Override
+    public Object getBackendCommand(long deviceId, String commandType) throws Exception {
+        Class<?> backendCommandClass;
+        Object backendCommand;
+        
+        backendCommandClass = Class.forName("org.traccar.model.Command");
+        backendCommand = backendCommandClass.newInstance();
+        backendCommand.getClass().getMethod("setType", String.class)
+                .invoke(backendCommand, commandType);
+        backendCommand.getClass().getMethod("setDeviceId", long.class)
+                .invoke(backendCommand, deviceId);
+        
+        return backendCommand;
+    }
+    
 }

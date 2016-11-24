@@ -20,7 +20,7 @@ INSERT INTO traccar_api_metadata.devicemodel_commandtype(deviceModelId, commandT
 VALUES (1, 2);
 
 INSERT INTO traccar_api_metadata.command_parameters(id, parameterName, valueType, description, commandTypeId)
-VALUES (1, 'frequency', 'integer', 'Częstotliwość powiadamiana', 1);
+VALUES (1, 'frequency', 'integer', 'Częstotliwość powiadamiana w ruchu', 1);
 
 INSERT INTO traccar_api_metadata.command_parameters(id, parameterName, valueType, commandTypeId)
 VALUES (2, 'SOSNumber1', 'string', 2);
