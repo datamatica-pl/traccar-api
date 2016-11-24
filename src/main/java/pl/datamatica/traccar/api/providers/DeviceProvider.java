@@ -16,14 +16,9 @@
  */
 package pl.datamatica.traccar.api.providers;
 
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.Collections;
-import java.util.Date;
 import java.util.List;
 import java.util.Random;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import java.util.stream.Stream;
 import javax.persistence.EntityManager;
 import javax.persistence.Query;
@@ -95,18 +90,24 @@ public class DeviceProvider extends ProviderBase {
         if(shouldManageTransaction)
             em.getTransaction().begin();
         Device device = getDevice(id);
-        if(!canDeleteDevice(device))
+        if(!isVisible(device))
             throw new ProviderException(Type.ACCESS_DENIED);
         if(device.isDeleted())
             throw new ProviderException(Type.ALREADY_DELETED);
-        device.setDeleted(true);
+        if(representsOwner(device)) {
+            device.setDeleted(true);
+        } else {
+            device.getUsers().remove(requestUser);
+        }
         em.persist(device);
         if(shouldManageTransaction)
             em.getTransaction().commit();
     }
 
-    private boolean canDeleteDevice(Device device) {
-        return requestUser.getAdmin() || device.getOwner().equals(requestUser);
+    private boolean representsOwner(Device device) {
+        return requestUser.getAdmin() 
+               || requestUser.equals(device.getOwner())
+               || requestUser.getAllManagedUsers().contains(device.getOwner());
     }
     
     private boolean isVisible(Device device) {
@@ -164,6 +165,8 @@ public class DeviceProvider extends ProviderBase {
         query.executeUpdate();
     }
 
+    private static final Double NauticMilesToKilometersMultiplier = 0.514;
+    
     public void updateDevice(long id, EditDeviceDto deviceDto) throws ProviderException {
         Device device = getDevice(id);
         
@@ -174,6 +177,11 @@ public class DeviceProvider extends ProviderBase {
         device.setPhoneNumber(deviceDto.getPhoneNumber());
         device.setPlateNumber(deviceDto.getPlateNumber());
         device.setDescription(deviceDto.getDescription());
+        
+        if(deviceDto.getSpeedLimit() != null)
+            device.setSpeedLimit(deviceDto.getSpeedLimit() * NauticMilesToKilometersMultiplier);
+        else
+            device.setSpeedLimit(null);
         
         em.persist(device);
     }

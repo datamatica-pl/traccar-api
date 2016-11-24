@@ -17,8 +17,8 @@
 package pl.datamatica.traccar.api.dtos.out;
 
 import java.util.Date;
-import pl.datamatica.traccar.api.dtos.JsonIgnore;
 import pl.datamatica.traccar.model.DeviceEvent;
+import pl.datamatica.traccar.model.Maintenance;
 
 public class AlertDto implements ICachedDto {
     private long id;
@@ -26,7 +26,7 @@ public class AlertDto implements ICachedDto {
     private String type;
     private long deviceId;
     private Long geofenceId;
-    private Long maintenanceId;
+    private MaintenanceDto maintenance;
     private long positionId;
 
     public static class Builder {
@@ -36,7 +36,7 @@ public class AlertDto implements ICachedDto {
         private String type;
         private long deviceId;
         private Long geofenceId;
-        private Long maintenanceId;
+        private MaintenanceDto maintenance;
         private long positionId;
 
         public Builder() {
@@ -67,8 +67,9 @@ public class AlertDto implements ICachedDto {
             return this;
         }
 
-        public Builder maintenanceId(final Long value) {
-            this.maintenanceId = value;
+        public Builder technicalMaintenance(final Maintenance value) {
+            this.maintenance = new MaintenanceDto.Builder()
+                    .technicalMaintenance(value).build();
             return this;
         }
 
@@ -78,20 +79,17 @@ public class AlertDto implements ICachedDto {
         }
         
         public Builder event(final DeviceEvent event) {
-            this.id = event.getId();
-            this.time = event.getTime();
-            this.type = event.getType().name();
-            this.deviceId = event.getDevice().getId();
+            id(event.getId()).time(event.getTime()).type(event.getType().name())
+                    .deviceId(event.getDevice().getId());
             if(event.getGeoFence() != null)
-                this.geofenceId = event.getGeoFence().getId();
+                geofenceId(event.getGeoFence().getId());
             if(event.getMaintenance() != null)
-                this.maintenanceId = event.getMaintenance().getId();
-            this.positionId = event.getPosition().getId();
-            return this;
+                technicalMaintenance(event.getMaintenance());
+            return positionId(event.getPosition().getId());
         }
 
         public AlertDto build() {
-            return new AlertDto(id, time, type, deviceId, geofenceId, maintenanceId, positionId);
+            return new AlertDto(id, time, type, deviceId, geofenceId, maintenance, positionId);
         }
     }
 
@@ -100,14 +98,14 @@ public class AlertDto implements ICachedDto {
             final String type, 
             final long deviceId,
             final Long geofenceId, 
-            final Long maintenanceId, 
+            final MaintenanceDto maintenance, 
             final long positionId) {
         this.id = id;
         this.time = time;
         this.type = type;
         this.deviceId = deviceId;
         this.geofenceId = geofenceId;
-        this.maintenanceId = maintenanceId;
+        this.maintenance = maintenance;
         this.positionId = positionId;
     }
     

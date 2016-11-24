@@ -16,8 +16,12 @@
  */
 package pl.datamatica.traccar.api.providers;
 
+import java.io.UnsupportedEncodingException;
+import java.nio.charset.Charset;
 import java.util.Date;
 import java.util.Properties;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.mail.*;
 import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
@@ -44,7 +48,7 @@ public class MailSender {
             msg.setRecipients(Message.RecipientType.TO, InternetAddress.parse(address, false));
             msg.setSubject("Email confirmation", "UTF-8");
 
-            msg.setContent(message, "text/plain");
+            msg.setContent(message, "text/html; charset=utf-8");
             msg.setHeader("X-Mailer", "traccar-web.sendmail");
             msg.setSentDate(new Date());
 

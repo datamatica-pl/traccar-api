@@ -53,6 +53,7 @@ public class DeviceDto extends EditDeviceDto implements ICachedDto {
         private Integer historyLength;
         private Date modificationTime;
         private boolean blocked;
+        private Double speedLimit;
 
         public Builder id(final long value) {
             this.id = value;
@@ -134,6 +135,13 @@ public class DeviceDto extends EditDeviceDto implements ICachedDto {
             return this;
         }
         
+        public Builder speedLimit(final Double speedLimit) {
+            this.speedLimit = speedLimit;
+            return this;
+        }
+        
+        private static final Double KilometersToNauticMilesMultiplier = 1.852;
+
         public Builder device(final Device device) {
             this.id = device.getId();
             this.deviceName = device.getName();
@@ -153,6 +161,8 @@ public class DeviceDto extends EditDeviceDto implements ICachedDto {
             this.historyLength = device.getHistoryLength();
             this.modificationTime = device.getLastUpdate();
             this.blocked = device.isBlocked();
+            if(device.getSpeedLimit() != null)
+                this.speedLimit = device.getSpeedLimit() * KilometersToNauticMilesMultiplier;
             return this;
         }
 
@@ -172,7 +182,8 @@ public class DeviceDto extends EditDeviceDto implements ICachedDto {
                     validTo, 
                     historyLength,
                     modificationTime,
-                    blocked);
+                    blocked,
+                    speedLimit);
         }
     }
 
@@ -191,8 +202,9 @@ public class DeviceDto extends EditDeviceDto implements ICachedDto {
             final Date validTo,
             final Integer historyLength,
             final Date modificationTime,
-            final boolean blocked) {
-        super(deviceName, deviceModelId, iconId, color, phoneNumber, plateNumber, description);
+            final boolean blocked,
+            final Double speedLimit) {
+        super(deviceName, deviceModelId, iconId, color, phoneNumber, plateNumber, description, speedLimit);
         this.id = id;
         this.status = status;
         this.uniqueId = uniqueId;

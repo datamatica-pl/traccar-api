@@ -32,6 +32,7 @@ import pl.datamatica.traccar.api.providers.FileProvider;
 import pl.datamatica.traccar.api.providers.GeoFenceProvider;
 import pl.datamatica.traccar.api.providers.ImageProvider;
 import pl.datamatica.traccar.api.providers.MailSender;
+import pl.datamatica.traccar.api.providers.NotificationSettingsProvider;
 import pl.datamatica.traccar.api.providers.PositionProvider;
 import pl.datamatica.traccar.api.providers.ReportsProvider;
 import pl.datamatica.traccar.api.providers.UserProvider;
@@ -58,6 +59,7 @@ public class RequestContext implements AutoCloseable {
     private FileProvider files;
     private ImageProvider images;
     private PositionProvider positions;
+    private NotificationSettingsProvider notificationSettings;
     
     public RequestContext(Request request, Response response) throws ParseException {
         if(request.headers(IF_MODIFIED_SINCE_HEADER) != null)
@@ -148,6 +150,12 @@ public class RequestContext implements AutoCloseable {
     public AlertProvider getAlertProvider() {
         AlertProvider provider = new AlertProvider(em, user);
         return provider;
+    }
+    
+    public NotificationSettingsProvider getNotificationSettingsProvider() {
+        if(notificationSettings == null)
+            notificationSettings = new NotificationSettingsProvider(em, user);
+        return notificationSettings;
     }
     
     public String getApiRoot() {

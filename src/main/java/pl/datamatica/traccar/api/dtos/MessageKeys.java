@@ -61,4 +61,14 @@ public class MessageKeys {
     public static final String ERR_COMMAND_RESPONSE_TIMEOUT = "err_command_response_timeout";
     public static final String ERR_SEND_COMMAND_FAILED = "err_send_command_failed";
     public static final String ERR_DEVICE_NOT_FOUND_OR_NO_PRIVILEGES = "err_device_not_found_or_no_privileges";
+
+    public static final String ERR_GEO_MODE_NOT_PROVIDED = "err_geo_mode_not_provided";
+    public static final String ERR_INVALID_GEO_MODE = "err_invalid_geo_mode";
+    public static final String ERR_OSPD_MODE_NOT_PROVIDED = "err_ospd_mode_not_provided";
+    public static final String ERR_INVALID_OSPD_MODE = "err_invalid_ospd_mode";
+    public static final String ERR_POLICY_MODE_NOT_PROVIDED = "err_policy_mode_not_provided";
+    public static final String ERR_INVALID_POLICY_MODE = "err_invalid_policy_mode";
+    public static final String ERR_MTNCE_MODE_NOT_PROVIDED = "err_mtnce_mode_not_provided";
+    public static final String ERR_INVALID_MTNCE_MODE = "err_invalid_mtnce_mode";
+
 }

@@ -117,16 +117,19 @@ public class GeoFenceProvider extends ProviderBase{
         return tq.getResultList().stream();
     }
     
-    public void removeGeoFence(long id) throws ProviderException {
+    public void delete(long id) throws ProviderException {
         boolean shouldManageTransaction = !em.getTransaction().isActive();
         if(shouldManageTransaction)
             em.getTransaction().begin();
         GeoFence gf = getGeoFence(id);
         if(!canDeleteGeofence(gf))
             throw new ProviderException(Type.ACCESS_DENIED);
-        Query query = em.createQuery("DELETE from GeoFence x WHERE x.id = :id");
-        query.setParameter("id", id);
-        query.executeUpdate();
+        if(gf.getUsers().size() > 1) {
+            gf.getUsers().remove(requestUser);
+        } else {
+            gf.setDeleted(true);
+        }
+        em.persist(gf);
         if(shouldManageTransaction)
             em.getTransaction().commit();
     }

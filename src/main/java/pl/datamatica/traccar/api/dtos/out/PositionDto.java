@@ -121,8 +121,13 @@ public class PositionDto implements ICachedDto {
             this.deviceId = position.getDevice().getId();
             if(other != null) {
                 this.ignition = (Boolean)other.get(IGNITION_KEY);
-                if(other.containsKey(BATTERY_KEY))
-                    this.battery = Double.parseDouble(other.get(BATTERY_KEY).toString());
+                if(other.containsKey(BATTERY_KEY)) {
+                    double original = Double.parseDouble(other.get(BATTERY_KEY).toString());
+                    if(original <= 6.)
+                        this.battery = original * 100 / 6.;
+                    else
+                        this.battery = (double)original;
+                }
             }
             return this;
         }

@@ -120,7 +120,7 @@ public class GeofencesController extends ControllerBase{
     
     public HttpResponse delete(long id) throws ProviderException {
         try {
-            provider.removeGeoFence(id);
+            provider.delete(id);
             return ok("");
         } catch(ProviderException e) {
             return handle(e);
