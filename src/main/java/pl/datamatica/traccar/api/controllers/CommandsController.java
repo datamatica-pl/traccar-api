@@ -119,6 +119,7 @@ public class CommandsController extends ControllerBase {
 
                 if ((boolean) result.get("success")) {
                     CommandResponseDto commandResponse = new CommandResponseDto(result.get("response").toString());
+                    res.status(HttpStatuses.OK);
                     return commandResponse;
                 } else {
                     if (result.get("reason") == "timeout") {
