@@ -12,5 +12,9 @@
 	"err_check_marketing_not_provided": "Check marketing not provided",
 	
 	"err_account_blocked": "Your account is blocked",
-	"err_account_expired": "Your account has expired"
+	"err_account_expired": "Your account has expired",
+        
+        "cmd_param_desc_timezone": "Time zone",
+        "cmd_param_desc_frequency_run": "Frequency of positioning during movement",
+        "cmd_param_desc_frequency_stop": "Frequency of positioning when stopped"
 }

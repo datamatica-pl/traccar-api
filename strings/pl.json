@@ -3,7 +3,7 @@
 	"err_invalid_imei": "Nieprawidłowy numer IMEI",
 	"err_access_denied": "Brak dostępu do zasobu",
 	"err_not_found": "Nie znaleziono zasobu",
-	"err_token_not_provided": "Nie podano tokena powiadomień"
+	"err_token_not_provided": "Nie podano tokena powiadomień",
 	"err_token_rejected": "Token powiadomień odrzucony",
 	"err_user_already_exists": "Istnieje już użytkownik z tym adresem e-mail",
 	"err_registration_data_not_provided": "Nie podano danych do rejestracji",
@@ -12,5 +12,9 @@
 	"err_check_marketing_not_provided": "Nie podano informacji o zgodzie na marketing",
 	
 	"err_account_blocked": "Konto jest zablokowane",
-	"err_account_expired": "Konto wygasło"
+	"err_account_expired": "Konto wygasło",
+	
+	"cmd_param_desc_timezone": "Strefa czasowa",
+    "cmd_param_desc_frequency_run": "Częstotliwość pozycjonowania w ruchu",
+    "cmd_param_desc_frequency_stop": "Częstotliwość pozycjonowania podczas postoju"
 }
