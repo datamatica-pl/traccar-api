@@ -22,6 +22,7 @@ import pl.datamatica.traccar.api.dtos.MessageKeys;
 import pl.datamatica.traccar.api.dtos.in.NotificationTokenDto;
 import pl.datamatica.traccar.api.dtos.out.ErrorDto;
 import pl.datamatica.traccar.api.dtos.out.UserDto;
+import pl.datamatica.traccar.api.providers.SessionProvider;
 import pl.datamatica.traccar.api.responses.HttpResponse;
 import spark.Spark;
 import pl.datamatica.traccar.api.validators.INotificationTokenValidator;
@@ -38,7 +39,7 @@ public class SessionController extends ControllerBase {
                 return render(controller.getUser(), res);
             }, gson::toJson);
             
-            Spark.get(rootUrl()+"/notificationtoken", (req, res) -> {
+            Spark.put(rootUrl()+"/notificationtoken", (req, res) -> {
                 SessionController controller = createController(req);
                 NotificationTokenDto tokenDto = gson.fromJson(req.body(), NotificationTokenDto.class);
                 return render(controller.putNotificationToken(tokenDto), res);
@@ -78,7 +79,8 @@ public class SessionController extends ControllerBase {
             return badRequest(validationErrors);
         String token = tokenDto.getToken();
         if(validator.isValid(token)) {
-            requestContext.session().attribute(Application.NOTIFICATION_TOKEN_SESSION_KEY, token);
+            SessionProvider sp = requestContext.getSessionProvider();
+            sp.createSession(requestContext.session().id(), token);
             return ok("");
         }
         return badRequest(MessageKeys.ERR_TOKEN_REJECTED);

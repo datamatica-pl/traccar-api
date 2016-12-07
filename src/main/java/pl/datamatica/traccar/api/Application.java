@@ -36,7 +36,6 @@ import pl.datamatica.traccar.api.controllers.RequestContext;
 public class Application implements spark.servlet.SparkApplication {
 
     public static final String REQUEST_CONTEXT_KEY = "pl.datamatica.traccar.api.RequestContext";
-    public static String NOTIFICATION_TOKEN_SESSION_KEY = "notificationToken";
     public static final String DATE_FORMAT = "yyyy-MM-dd'T'HH:mm:ssX";
     public static final Date EMPTY_RESPONSE_MODIFICATION_DATE = new Date(1000);
     public static final Pattern COLOR_PATTERN = Pattern.compile("[0-9A-F]{6}");

@@ -55,11 +55,8 @@ public class PositionProvider extends ProviderBase {
         if(!user.getAllAvailableDevices().stream()
                 .anyMatch(d -> d.equals(p.getDevice())))
             return false;
-        if(!p.getDevice().isValid(new Date()))
-            return false;
-        int historyLength = p.getDevice().getHistoryLength();
-        ZonedDateTime positionDate = p.getTime().toInstant().atZone(ZoneId.systemDefault());
-        long daysDiff = ChronoUnit.DAYS.between(positionDate, ZonedDateTime.now());
-        return daysDiff <= historyLength;
+        
+        Date lastAvailPos = p.getDevice().getLastAvailablePositionDate(new Date());
+        return lastAvailPos.before(p.getTime());
     }
 }
