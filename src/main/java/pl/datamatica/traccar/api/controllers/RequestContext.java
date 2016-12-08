@@ -31,6 +31,7 @@ import pl.datamatica.traccar.api.providers.DeviceProvider;
 import pl.datamatica.traccar.api.providers.FileProvider;
 import pl.datamatica.traccar.api.providers.GeoFenceProvider;
 import pl.datamatica.traccar.api.providers.ImageProvider;
+import pl.datamatica.traccar.api.providers.ImeiProvider;
 import pl.datamatica.traccar.api.providers.MailSender;
 import pl.datamatica.traccar.api.providers.NotificationSettingsProvider;
 import pl.datamatica.traccar.api.providers.PositionProvider;
@@ -158,6 +159,10 @@ public class RequestContext implements AutoCloseable {
         return notificationSettings;
     }
     
+    public ImeiProvider getImeiProvider() {
+        return new ImeiProvider(emMetadata);
+    }
+    
     public String getApiRoot() {
         if(request == null)
             return "";
@@ -175,8 +180,12 @@ public class RequestContext implements AutoCloseable {
     }
     
     public final boolean isRequestForMetadata(Request request) {
-        String pattern = "^/v[0-9]+/" + ControllerBinder.RESOURCES_URL_PREFIX + "/.*";
-        return request.servletPath().matches(pattern);
+//        String pattern = "^/v[0-9]+/" + ControllerBinder.RESOURCES_URL_PREFIX + "/.*";
+//        return request.servletPath().matches(pattern);
+        // TODO: We need to talk whether we want to add calls to devices here or just remove it
+        // and always add metadata EntityManager and open transaction on it. Temporary return true
+        // to get IMEI list on devices.
+        return true;
     }
 
     @Override
