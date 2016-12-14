@@ -25,9 +25,14 @@ import java.util.List;
 public class ListDto<T> {
     private final List<T> changed;
     private final long[] ids;
+    private boolean hasMore;
     
-    public ListDto(List<T> changed) {
-        this.changed = changed;
+    public ListDto(List<T> changed, int maxSize) {
+        this.hasMore = changed.size() > maxSize;
+        if(hasMore)
+            this.changed = changed.subList(0, maxSize);
+        else
+            this.changed = changed;
         this.ids = null;
     }
     

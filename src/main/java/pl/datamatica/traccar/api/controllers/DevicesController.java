@@ -16,6 +16,7 @@
  */
 package pl.datamatica.traccar.api.controllers;
 
+import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
 import pl.datamatica.traccar.api.Application;
@@ -87,14 +88,16 @@ public class DevicesController extends ControllerBase {
         }
     }
 
-    
+    private static final int MAX_RESULT_COUNT = 4000;
     private final DeviceProvider dp;
     private final PositionProvider positions;
+    private final Date minDate;
     
     public DevicesController(RequestContext requestContext) {
         super(requestContext);
         this.dp = requestContext.getDeviceProvider();
         this.positions = requestContext.getPositionProvider();
+        this.minDate = requestContext.getModificationDate();
     }
     
     public HttpResponse get() throws Exception {
@@ -167,10 +170,10 @@ public class DevicesController extends ControllerBase {
     public HttpResponse getPositions(long id) throws Exception {
         try {
             Device device = dp.getDevice(id);
-            return okCached(new ListDto<>(positions.getAllAvailablePositions(device)
-                    .filter(p -> isModified(p.getTime()))
+            return okCached(new ListDto<PositionDto>(positions
+                    .getAllAvailablePositions(device, minDate, MAX_RESULT_COUNT+1)
                     .map(p -> new PositionDto.Builder().position(p).build())
-                    .collect(Collectors.toList())));
+                    .collect(Collectors.toList()), MAX_RESULT_COUNT));
         } catch (ProviderException ex) {
             return handle(ex);
         }
