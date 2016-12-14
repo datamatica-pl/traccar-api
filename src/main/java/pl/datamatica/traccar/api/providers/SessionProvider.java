@@ -14,38 +14,23 @@
  *  You should have received a copy of the GNU Affero General Public License
  *  along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-package pl.datamatica.traccar.api.dtos.out;
+package pl.datamatica.traccar.api.providers;
 
-import java.util.List;
+import javax.persistence.EntityManager;
+import pl.datamatica.traccar.model.User;
+import pl.datamatica.traccar.model.UserSession;
 
-/**
- *
- * @author Łukasz Ławniczak
- */
-public class ListDto<T> {
-    private final List<T> changed;
-    private final long[] ids;
-    private boolean hasMore;
+public class SessionProvider {
+    private final EntityManager em;
+    private final User user;
     
-    public ListDto(List<T> changed, int maxSize) {
-        this.hasMore = changed.size() > maxSize;
-        if(hasMore)
-            this.changed = changed.subList(0, maxSize);
-        else
-            this.changed = changed;
-        this.ids = null;
+    public SessionProvider(EntityManager em, User user) {
+        this.em = em;
+        this.user = user;
     }
     
-    public ListDto(List<T> changed, long[] ids) {
-        this.changed = changed;
-        this.ids = ids;
-    }
-
-    public List<T> getChanged() {
-        return changed;
-    }
-
-    public long[] getIds() {
-        return ids;
+    public void createSession(String id, String token) {
+        UserSession us = new UserSession(id, user.getId(), token);
+        em.persist(us);
     }
 }

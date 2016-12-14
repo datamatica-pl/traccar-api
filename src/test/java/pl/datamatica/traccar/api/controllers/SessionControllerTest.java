@@ -26,6 +26,7 @@ import pl.datamatica.traccar.api.dtos.MessageKeys;
 import pl.datamatica.traccar.api.dtos.in.NotificationTokenDto;
 import pl.datamatica.traccar.api.dtos.out.ErrorDto;
 import pl.datamatica.traccar.api.dtos.out.UserDto;
+import pl.datamatica.traccar.api.providers.SessionProvider;
 import pl.datamatica.traccar.api.responses.*;
 import pl.datamatica.traccar.model.User;
 
@@ -35,14 +36,17 @@ public class SessionControllerTest {
     private SessionController controller;
     private boolean isTokenValid;
     private Session session;
+    private SessionProvider sp;
     
     @Before
     public void testInit() {
         session = Mockito.mock(Session.class);
+        sp = Mockito.mock(SessionProvider.class);
         requestUser = new User();
         requestUser.setLogin("test");
         RequestContext rc = Mockito.mock(RequestContext.class);
         Mockito.when(rc.getUser()).thenReturn(requestUser);
+        Mockito.when(rc.getSessionProvider()).thenReturn(sp);
         Mockito.when(rc.session()).thenReturn(session);
         controller = new SessionController(rc, token -> isTokenValid);
     }
@@ -57,13 +61,12 @@ public class SessionControllerTest {
     
     @Test
     public void putNotificationToken_ok() {
-        String key = Application.NOTIFICATION_TOKEN_SESSION_KEY;
-        String value = "3";
+        String token = "3";
         isTokenValid = true;
         
-        HttpResponse response = controller.putNotificationToken(new NotificationTokenDto(value));
+        HttpResponse response = controller.putNotificationToken(new NotificationTokenDto(token));
         
-        Mockito.verify(session, Mockito.times(1)).attribute(key, value);
+        Mockito.verify(sp, Mockito.times(1)).createSession(null, token);
         assertTrue(response instanceof OkResponse);
         assertEquals("", response.getContent());
     }

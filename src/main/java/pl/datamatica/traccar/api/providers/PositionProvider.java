@@ -16,14 +16,10 @@
  */
 package pl.datamatica.traccar.api.providers;
 
-import java.time.LocalDate;
-import java.time.ZoneId;
-import java.time.ZonedDateTime;
-import java.time.temporal.ChronoUnit;
 import java.util.Date;
-import java.util.concurrent.TimeUnit;
 import java.util.stream.Stream;
 import javax.persistence.EntityManager;
+import javax.persistence.TypedQuery;
 import pl.datamatica.traccar.model.Device;
 import pl.datamatica.traccar.model.Position;
 import pl.datamatica.traccar.model.User;
@@ -31,22 +27,36 @@ import pl.datamatica.traccar.model.User;
 public class PositionProvider extends ProviderBase {
     
     private final User user;
+    private final TypedQuery<Position> positionListQuery;
     
     public PositionProvider(EntityManager em, User user) {
         super(em);
         this.user = user;
+        
+        positionListQuery = em.createQuery("from Position p "
+                + "where p.device = :device and p.time >= :minDate "
+                + "order by p.time", Position.class);
     }
     
     public Position get(long id) throws ProviderException {
         return get(Position.class, id, this::isVisible);
     }
     
-    public Stream<Position> getAllAvailablePositions(Device device) {
-        if(user.getAdmin())
-            return device.getPositions().stream();
-        else
-            return device.getPositions().stream()
-                    .filter(this::isVisible);
+    public Stream<Position> getAllAvailablePositions(Device device, Date minDate,
+            int maxCount) {
+        Date lastAvailPos = device.getLastAvailablePositionDate(new Date());
+        if(minDate == null || minDate.before(lastAvailPos))
+            minDate = lastAvailPos;
+        if(!user.getAdmin() 
+           && !user.getAllAvailableDevices().stream()
+                .anyMatch(d -> d.equals(device)))
+            return Stream.empty();
+        
+        positionListQuery.setParameter("device", device);
+        positionListQuery.setParameter("minDate", minDate);
+        positionListQuery.setMaxResults(maxCount);            
+        
+        return positionListQuery.getResultList().stream();
     }
     
     private boolean isVisible(Position p) {
@@ -55,11 +65,8 @@ public class PositionProvider extends ProviderBase {
         if(!user.getAllAvailableDevices().stream()
                 .anyMatch(d -> d.equals(p.getDevice())))
             return false;
-        if(!p.getDevice().isValid(new Date()))
-            return false;
-        int historyLength = p.getDevice().getHistoryLength();
-        ZonedDateTime positionDate = p.getTime().toInstant().atZone(ZoneId.systemDefault());
-        long daysDiff = ChronoUnit.DAYS.between(positionDate, ZonedDateTime.now());
-        return daysDiff <= historyLength;
+        
+        Date lastAvailPos = p.getDevice().getLastAvailablePositionDate(new Date());
+        return lastAvailPos.before(p.getTime());
     }
 }

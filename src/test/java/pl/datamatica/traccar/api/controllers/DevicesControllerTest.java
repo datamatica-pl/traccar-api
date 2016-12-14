@@ -172,7 +172,8 @@ public class DevicesControllerTest {
         position.setTime(new Date());
         position.setValid(true);
         position.setDevice(devices.get(0));
-        Mockito.when(pp.getAllAvailablePositions(devices.get(0)))
+        Mockito.when(pp.getAllAvailablePositions(Mockito.eq(devices.get(0)), 
+                Mockito.any(Date.class), Mockito.anyInt()))
                 .thenReturn(Stream.of(position));
         
         HttpResponse response = dc.getPositions(0);

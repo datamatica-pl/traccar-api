@@ -16,6 +16,7 @@
  */
 package pl.datamatica.traccar.api.controllers;
 
+import pl.datamatica.traccar.api.providers.SessionProvider;
 import java.text.ParseException;
 import java.util.Date;
 import java.util.Scanner;
@@ -61,6 +62,7 @@ public class RequestContext implements AutoCloseable {
     private ImageProvider images;
     private PositionProvider positions;
     private NotificationSettingsProvider notificationSettings;
+    private SessionProvider sessionProvider;
     
     public RequestContext(Request request, Response response) throws ParseException {
         if(request.headers(IF_MODIFIED_SINCE_HEADER) != null)
@@ -158,9 +160,15 @@ public class RequestContext implements AutoCloseable {
             notificationSettings = new NotificationSettingsProvider(em, user);
         return notificationSettings;
     }
-    
+
     public ImeiProvider getImeiProvider() {
         return new ImeiProvider(emMetadata);
+    }
+    
+    public SessionProvider getSessionProvider() {
+        if(sessionProvider == null)
+            sessionProvider = new SessionProvider(em, user);
+        return sessionProvider;
     }
     
     public String getApiRoot() {

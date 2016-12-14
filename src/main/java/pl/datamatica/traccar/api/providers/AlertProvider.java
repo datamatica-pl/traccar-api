@@ -81,7 +81,7 @@ public class AlertProvider {
         return events.stream()
                 .filter(e -> ChronoUnit.DAYS.between(e.getTime().toInstant()
                         .atZone(ZoneId.systemDefault()).toLocalDate(), 
-                        LocalDate.now()) <= e.getDevice().getHistoryLength())
+                        LocalDate.now()) <= e.getDevice().getAlertsHistoryLength())
                 .collect(Collectors.toList());
     }
 }
