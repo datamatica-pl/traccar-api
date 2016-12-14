@@ -35,4 +35,13 @@ public class ImeiProvider {
         TypedQuery<ImeiNumber> tq = emMetadata.createQuery("Select x from ImeiNumber x", ImeiNumber.class);
         return tq.getResultList();
     }
+    
+    public boolean isImeiRegistered(String imei) {
+        List<ImeiNumber> imeis = emMetadata.createQuery("SELECT x FROM ImeiNumber x WHERE x.imei = :imeiNumber", ImeiNumber.class)
+                                        .setParameter("imeiNumber", imei)
+                                        .setMaxResults(1)
+                                        .getResultList();
+        
+        return !imeis.isEmpty();
+    }
 }
