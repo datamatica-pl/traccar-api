@@ -26,6 +26,7 @@ public class AlertDto implements ICachedDto {
     private String type;
     private long deviceId;
     private Long geofenceId;
+    private Double speed;
     private MaintenanceDto maintenance;
     private long positionId;
 
@@ -36,6 +37,7 @@ public class AlertDto implements ICachedDto {
         private String type;
         private long deviceId;
         private Long geofenceId;
+        private Double speed;
         private MaintenanceDto maintenance;
         private long positionId;
 
@@ -66,6 +68,11 @@ public class AlertDto implements ICachedDto {
             this.geofenceId = value;
             return this;
         }
+        
+        public Builder speed(final Double value) {
+            this.speed = value;
+            return this;
+        }
 
         public Builder technicalMaintenance(final Maintenance value) {
             this.maintenance = new MaintenanceDto.Builder()
@@ -85,11 +92,13 @@ public class AlertDto implements ICachedDto {
                 geofenceId(event.getGeoFence().getId());
             if(event.getMaintenance() != null)
                 technicalMaintenance(event.getMaintenance());
+            if (event.getPosition().getSpeed() != null)
+                speed(event.getPosition().getSpeed());
             return positionId(event.getPosition().getId());
         }
 
         public AlertDto build() {
-            return new AlertDto(id, time, type, deviceId, geofenceId, maintenance, positionId);
+            return new AlertDto(id, time, type, deviceId, geofenceId, speed, maintenance, positionId);
         }
     }
 
@@ -97,7 +106,8 @@ public class AlertDto implements ICachedDto {
             final Date time, 
             final String type, 
             final long deviceId,
-            final Long geofenceId, 
+            final Long geofenceId,
+            final Double speed,
             final MaintenanceDto maintenance, 
             final long positionId) {
         this.id = id;
@@ -105,6 +115,7 @@ public class AlertDto implements ICachedDto {
         this.type = type;
         this.deviceId = deviceId;
         this.geofenceId = geofenceId;
+        this.speed = speed;
         this.maintenance = maintenance;
         this.positionId = positionId;
     }
