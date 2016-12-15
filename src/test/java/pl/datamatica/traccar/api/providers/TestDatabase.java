@@ -67,8 +67,8 @@ public class TestDatabase {
     
     private void createAdmin() {
         admin = new User();
+        admin.setLogin("admin@admin.pl");
         admin.setEmail("admin@admin.pl");
-        admin.setLogin("admin");
         admin.setPassword("zażółć gęślą jaźń");
         admin.setPasswordHashMethod(PasswordHashMethod.PLAIN);
         admin.setAdmin(true);
@@ -77,8 +77,8 @@ public class TestDatabase {
     
     private void createManager() {
         manager = new User();
+        manager.setLogin("manager@test.pl");
         manager.setEmail("manager@test.pl");
-        manager.setLogin("manager");
         manager.setPassword(PasswordHashMethod.MD5.doHash("Test11!", salt));
         manager.setManager(true);
         em.persist(manager);
@@ -86,7 +86,7 @@ public class TestDatabase {
 
     private void createManagedUser() {
         managedUser = new User();
-        managedUser.setLogin("user #1");
+        managedUser.setLogin("user1@test.pl");
         managedUser.setEmail("user1@test.pl");
         managedUser.setPassword("user_1");
         managedUser.setPasswordHashMethod(PasswordHashMethod.PLAIN);
@@ -98,8 +98,7 @@ public class TestDatabase {
     
     private void createManaged2() {
         managed2 = new User();
-        managed2.setLogin("user #1#1");
-        managed2.setLogin("user #1#1");
+        managed2.setLogin("managed2@test.pl");
         managed2.setEmail("managed2@test.pl");
         managed2.setPassword(PasswordHashMethod.MD5.doHash("managed_2", salt));
         managed2.setManagedBy(managedUser);

@@ -43,7 +43,7 @@ public class UserProvider extends ProviderBase {
         if(password == null || password.isEmpty())
             throw new AuthenticationException(ErrorType.NO_PASSWORD);
         
-        User user = getUserByMail(email);
+        User user = getUserByLogin(email);
         if(user == null)
             throw new AuthenticationException(ErrorType.NO_SUCH_USER);
         if(user.getPasswordHashMethod().doHash(password, appSettings.getSalt()).equals(user.getPassword())) {
@@ -74,7 +74,7 @@ public class UserProvider extends ProviderBase {
 
     public User createUser(String email, String password, boolean checkMarketing) 
             throws ProviderException {
-        User existing = getUserByMail(email);
+        User existing = getUserByLogin(email);
         if(existing != null)
             throw new ProviderException(Type.USER_ALREADY_EXISTS);
         
@@ -114,10 +114,10 @@ public class UserProvider extends ProviderBase {
         em.persist(user);
     }
     
-    private User getUserByMail(String email) {
+    private User getUserByLogin(String login) {
         try {
-            TypedQuery<User> tq = em.createQuery("Select x from User x where x.email = :email", User.class);
-            tq.setParameter("email", email);
+            TypedQuery<User> tq = em.createQuery("Select x from User x where x.login = :login", User.class);
+            tq.setParameter("login", login);
             return tq.getSingleResult();
         } catch (NoResultException e) {
             return null;
