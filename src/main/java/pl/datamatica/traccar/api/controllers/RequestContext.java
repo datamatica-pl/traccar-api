@@ -90,7 +90,7 @@ public class RequestContext implements AutoCloseable {
     
     public DeviceProvider getDeviceProvider() {
         if(devices == null)
-            devices = new DeviceProvider(em, user);
+            devices = new DeviceProvider(em, user, getImeiProvider());
         return devices;
     }
     

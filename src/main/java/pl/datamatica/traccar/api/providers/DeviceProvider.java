@@ -32,10 +32,12 @@ import pl.datamatica.traccar.model.User;
 
 public class DeviceProvider extends ProviderBase {
     private User requestUser;
+    private ImeiProvider imeis;
     
-    public DeviceProvider(EntityManager em, User requestUser) {
+    public DeviceProvider(EntityManager em, User requestUser, ImeiProvider imeis) {
         super(em);
         this.requestUser = requestUser;
+        this.imeis = imeis;
     }
     
     public Device getDevice(long id) throws ProviderException {
@@ -65,7 +67,7 @@ public class DeviceProvider extends ProviderBase {
         Device existing = getDeviceByImei(imei);
         if(existing != null) {
             if(!existing.isDeleted())
-                throw new ProviderException(Type.ALREADY_EXISTS);
+                throw new ProviderException(Type.DEVICE_ALREADY_EXISTS);
             hardDelete(existing);
         }
         
@@ -121,9 +123,8 @@ public class DeviceProvider extends ProviderBase {
         return tq.getResultList().stream();
     }
     
-    private boolean isImeiValid(String imei) {        
-        //todo
-        return true;
+    private boolean isImeiValid(String imei) {
+        return imeis.isImeiRegistered(imei);
     }
     
     private void hardDelete(Device device) {
@@ -160,7 +161,7 @@ public class DeviceProvider extends ProviderBase {
             report.getDevices().remove(device);
         }
         
-        query = em.createNativeQuery("Delete from devices d where d.id = ?");
+        query = em.createNativeQuery("Delete from devices where id = ?");
         query.setParameter(1, device.getId());
         query.executeUpdate();
     }

@@ -138,7 +138,7 @@ public class DevicesController extends ControllerBase {
             switch(e.getType()) {
                 case INVALID_IMEI:
                     return badRequest(MessageKeys.ERR_INVALID_IMEI);
-                case ALREADY_EXISTS:
+                case DEVICE_ALREADY_EXISTS:
                     return badRequest(MessageKeys.ERR_INVALID_IMEI);
             }
             throw e;

@@ -76,7 +76,7 @@ public class UserProvider extends ProviderBase {
             throws ProviderException {
         User existing = getUserByMail(email);
         if(existing != null)
-            throw new ProviderException(Type.ALREADY_EXISTS);
+            throw new ProviderException(Type.USER_ALREADY_EXISTS);
         
         String hashedPassword = appSettings.getDefaultHashImplementation().doHash(password, appSettings.getSalt());
         User user = new User(email, hashedPassword);

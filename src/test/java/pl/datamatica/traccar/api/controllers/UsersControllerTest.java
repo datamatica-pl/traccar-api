@@ -134,7 +134,7 @@ public class UsersControllerTest {
     @Test
     public void post_conflict() throws ProviderException {
         Mockito.when(provider.createUser(userDto.getEmail(), userDto.getPassword(), userDto.isCheckMarketing()))
-                .thenThrow(new ProviderException(Type.ALREADY_EXISTS));
+                .thenThrow(new ProviderException(Type.USER_ALREADY_EXISTS));
 
         HttpResponse response = controller.post(userDto);
 

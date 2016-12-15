@@ -24,6 +24,7 @@ import javax.persistence.EntityManagerFactory;
 import javax.persistence.Persistence;
 import org.junit.*;
 import static org.junit.Assert.*;
+import org.mockito.Mockito;
 import pl.datamatica.traccar.api.dtos.in.EditDeviceDto;
 import pl.datamatica.traccar.model.Device;
 import pl.datamatica.traccar.model.User;
@@ -33,6 +34,8 @@ public class DeviceProviderTest {
     private DeviceProvider provider;
     private static EntityManager em;
     private static TestDatabase database;
+    private ImeiProvider imeiProvider;
+    private boolean isImeiValid;
     
     @BeforeClass
     public static void classInit() {
@@ -44,13 +47,16 @@ public class DeviceProviderTest {
     
     @Before
     public void testInit() {
+        imeiProvider = Mockito.mock(ImeiProvider.class);
+        Mockito.when(imeiProvider.isImeiRegistered(Mockito.anyString()))
+                .thenReturn(true);
         em.getTransaction().begin();
         em.getTransaction().setRollbackOnly();
     }
     
     @Test
     public void getDevice_ok() throws ProviderException {  
-        provider = new DeviceProvider(em, database.manager);
+        provider = new DeviceProvider(em, database.manager, imeiProvider);
         Device expected = database.managed2Device;
         
         Device actual = provider.getDevice(expected.getId());
@@ -60,7 +66,7 @@ public class DeviceProviderTest {
     
     @Test
     public void getDevice_notFound() {
-        provider = new DeviceProvider(em, database.admin);
+        provider = new DeviceProvider(em, database.admin, imeiProvider);
         try {
             provider.getDevice(999);
         } catch(ProviderException e) {
@@ -72,7 +78,7 @@ public class DeviceProviderTest {
     
     @Test
     public void getDevice_accesDenied() {
-        provider = new DeviceProvider(em, database.managed2);
+        provider = new DeviceProvider(em, database.managed2, imeiProvider);
         try {
             provider.getDevice(database.adminDevice.getId());
         } catch(ProviderException e) {
@@ -84,7 +90,7 @@ public class DeviceProviderTest {
     
     @Test 
     public void getAllAvailableDevices_admin() {
-        provider = new DeviceProvider(em, database.admin);
+        provider = new DeviceProvider(em, database.admin, imeiProvider);
         Set<Device> expected = Stream.of(database.managedDevice, 
                 database.managed2Device,
                 database.adminDevice,
@@ -98,7 +104,7 @@ public class DeviceProviderTest {
     
     @Test
     public void getAllAvailableDevices_manager() {
-        provider = new DeviceProvider(em, database.manager);
+        provider = new DeviceProvider(em, database.manager, imeiProvider);
         Set<Device> expected = Stream.of(database.managerDevice, 
                 database.managedDevice,
                 database.managed2Device)
@@ -113,7 +119,7 @@ public class DeviceProviderTest {
     public void createDevice_ok() throws ProviderException {
         String uniqueId = "584930";
         User user = database.admin;
-        provider = new DeviceProvider(em, user);
+        provider = new DeviceProvider(em, user, imeiProvider);
 
         Device device = provider.createDevice(uniqueId);
         em.flush();
@@ -130,13 +136,13 @@ public class DeviceProviderTest {
     
     @Test
     public void createDevice_imeiExists() {
-        provider = new DeviceProvider(em, database.manager);
+        provider = new DeviceProvider(em, database.manager, imeiProvider);
         try{
             String uniqueId = database.managerDevice.getUniqueId();
 
             provider.createDevice(uniqueId);
         } catch(ProviderException e) {
-            assertEquals(ProviderException.Type.ALREADY_EXISTS, e.getType());
+            assertEquals(ProviderException.Type.DEVICE_ALREADY_EXISTS, e.getType());
             return;
         }
         fail();
@@ -146,7 +152,7 @@ public class DeviceProviderTest {
     public void createDevice_deletedImei() throws ProviderException {
         String uniqueId = database.managedDevice.getUniqueId();
         User user = database.managed2;
-        provider = new DeviceProvider(em, user);
+        provider = new DeviceProvider(em, user, imeiProvider);
         
         Device device = provider.createDevice(uniqueId);
         
@@ -176,7 +182,7 @@ public class DeviceProviderTest {
                 .phoneNumber(phoneNumber)
                 .plateNumber(plateNumber)
                 .build();
-        provider = new DeviceProvider(em, database.managedUser);
+        provider = new DeviceProvider(em, database.managedUser, imeiProvider);
         
         provider.updateDevice(database.managedDevice.getId(), deviceDto);
         em.flush();
@@ -193,7 +199,7 @@ public class DeviceProviderTest {
     
     @Test
     public void delete_ok() throws ProviderException {
-        provider = new DeviceProvider(em, database.managed2);
+        provider = new DeviceProvider(em, database.managed2, imeiProvider);
         provider.delete(database.managed2Device.getId());
         em.flush();
         
@@ -203,7 +209,7 @@ public class DeviceProviderTest {
     
     @Test
     public void delete_accessDenied() {
-        provider = new DeviceProvider(em, database.managed2);
+        provider = new DeviceProvider(em, database.managed2, imeiProvider);
         try {
             provider.delete(database.adminDevice.getId());
         } catch(ProviderException e) {
@@ -215,7 +221,7 @@ public class DeviceProviderTest {
     
     @Test
     public void delete_alreadyDeleted() {
-        provider = new DeviceProvider(em, database.managedUser);
+        provider = new DeviceProvider(em, database.managedUser, imeiProvider);
         try {
             provider.delete(database.managedDevice.getId());
         } catch (ProviderException e) {

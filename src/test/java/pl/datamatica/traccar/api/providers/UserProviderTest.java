@@ -75,7 +75,7 @@ public class UserProviderTest {
         try {
             provider.createUser("admin@admin.pl", "qwe85", true);
         } catch(ProviderException e) {
-            assertEquals(Type.ALREADY_EXISTS, e.getType());
+            assertEquals(Type.USER_ALREADY_EXISTS, e.getType());
             return;
         }
         fail();

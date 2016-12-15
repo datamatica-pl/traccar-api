@@ -115,10 +115,12 @@ public class UsersController extends ControllerBase {
             }
             return created("user/"+user.getId(), "");
         } catch (ProviderException ex) {
+            requestContext.rollbackTransaction();
             switch(ex.getType()) {
-                case ALREADY_EXISTS:
+                case USER_ALREADY_EXISTS:
                     return conflict(MessageKeys.ERR_USER_ALREADY_EXISTS);
                 case INVALID_IMEI:
+                case DEVICE_ALREADY_EXISTS:
                     return badRequest(MessageKeys.ERR_INVALID_IMEI);                    
             }
             throw ex;

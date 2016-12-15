@@ -39,7 +39,7 @@ public class AlertProvider {
     public AlertProvider(EntityManager em, User requestUser) {
         this.em = em;
         this.requestUser = requestUser;
-        this.devices = new DeviceProvider(em, requestUser);
+        this.devices = new DeviceProvider(em, requestUser, null);
         this.geofences = new GeoFenceProvider(em);
         geofences.setRequestUser(requestUser);
     }
