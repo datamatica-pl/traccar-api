@@ -17,6 +17,7 @@
 package pl.datamatica.traccar.api.providers;
 
 import javax.persistence.EntityManager;
+import javax.persistence.Query;
 import pl.datamatica.traccar.model.User;
 import pl.datamatica.traccar.model.UserSession;
 
@@ -32,5 +33,11 @@ public class SessionProvider {
     public void createSession(String id, String token) {
         UserSession us = new UserSession(id, user.getId(), token);
         em.persist(us);
+    }
+    
+    public void deleteSession(String id) {
+        Query q = em.createQuery("delete UserSession where id = :id", UserSession.class);
+        q.setParameter("id", id);
+        q.executeUpdate();
     }
 }

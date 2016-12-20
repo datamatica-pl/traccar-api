@@ -88,6 +88,8 @@ public class SessionController extends ControllerBase {
     
     public HttpResponse delete() {
         requestContext.session().invalidate();
+        SessionProvider sp = requestContext.getSessionProvider();
+        sp.deleteSession(requestContext.session().id());
         return ok("");
     }  
 }

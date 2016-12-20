@@ -21,6 +21,7 @@ import com.google.gson.GsonBuilder;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.Date;
+import java.util.concurrent.ScheduledExecutorService;
 import java.util.regex.Pattern;
 import javax.naming.InitialContext;
 import org.slf4j.Logger;
@@ -31,6 +32,9 @@ import pl.datamatica.traccar.api.controllers.*;
 import pl.datamatica.traccar.api.auth.BasicAuthFilter;
 import pl.datamatica.traccar.api.dtos.out.AppVersionsInfoDto;
 import pl.datamatica.traccar.api.controllers.RequestContext;
+import pl.datamatica.traccar.api.fcm.AlarmDaemon;
+import pl.datamatica.traccar.api.fcm.Daemon;
+import pl.datamatica.traccar.api.fcm.SubscriptionDaemon;
 
 
 public class Application implements spark.servlet.SparkApplication {
@@ -56,6 +60,11 @@ public class Application implements spark.servlet.SparkApplication {
             new ImagesController.Binder(),
             new AlertsController.Binder(),
             new NotificationSettingsController.Binder()
+        };
+    
+    private final Daemon[] DAEMONS = new Daemon[]{
+            new AlarmDaemon(),
+            new SubscriptionDaemon()
         };
 
     @Override
@@ -104,6 +113,10 @@ public class Application implements spark.servlet.SparkApplication {
 
         for(ControllerBinder binder : BINDERS)
             binder.bind();
+        
+        ScheduledExecutorService scheduler = Context.getInstance().getDaemonExecutor();
+        for(Daemon daemon : DAEMONS) 
+            daemon.start(scheduler);
 
         if(Context.getInstance().isInDevMode()) {
             Spark.exception(Exception.class, (exception, request, response) -> {

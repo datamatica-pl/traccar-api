@@ -71,4 +71,6 @@ public class MessageKeys {
     public static final String ERR_MTNCE_MODE_NOT_PROVIDED = "err_mtnce_mode_not_provided";
     public static final String ERR_INVALID_MTNCE_MODE = "err_invalid_mtnce_mode";
 
+    public static final String NOTIFICATION_ENDING_SUBSCRIPTION_SINGLE = "notification_ending_subscription_single";
+    public static final String NOTIFICATION_ENDING_SUBSCRIPTION_MULTIPLE = "notification_ending_subscription_multiple";
 }

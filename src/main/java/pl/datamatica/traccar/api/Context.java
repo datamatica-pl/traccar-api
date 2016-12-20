@@ -20,6 +20,9 @@ import com.google.gson.*;
 import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
 import javax.persistence.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -39,6 +42,7 @@ public class Context {
     private final EntityManagerFactory emf;
     private final EntityManagerFactory emfMetadata;
     private final Gson gson;
+    private final ScheduledExecutorService daemonExecutor;
     
     private Context() {
         emf = Persistence.createEntityManagerFactory("release");
@@ -58,6 +62,8 @@ public class Context {
         if(isInDevMode())
             gsonBuilder.setPrettyPrinting();
         gson = gsonBuilder.create();
+        
+        daemonExecutor = Executors.newScheduledThreadPool(2);
     }
     
     public final boolean isInDevMode() {
@@ -118,5 +124,9 @@ public class Context {
     
     public EntityManager createMetadataEntityManager() {
         return emfMetadata.createEntityManager();
+    }
+    
+    public ScheduledExecutorService getDaemonExecutor() {
+        return daemonExecutor;
     }
 }
