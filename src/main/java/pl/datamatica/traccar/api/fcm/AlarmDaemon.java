@@ -18,11 +18,14 @@ package pl.datamatica.traccar.api.fcm;
 
 import java.util.Calendar;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ScheduledExecutorService;
 import javax.persistence.EntityManager;
 import javax.persistence.TypedQuery;
 import pl.datamatica.traccar.model.DeviceEvent;
+import pl.datamatica.traccar.model.MobNotificationMode;
+import pl.datamatica.traccar.model.MobNotificationType;
 import pl.datamatica.traccar.model.User;
 import pl.datamatica.traccar.model.UserSession;
 
@@ -45,11 +48,15 @@ public class AlarmDaemon extends Daemon{
         
         Set<User> users = new HashSet<>();
         for(DeviceEvent ev : tq.getResultList())
-            users.addAll(ev.getDevice().getUsers());
+            for(User u : ev.getDevice().getUsers()) {
+                if(u.acceptsNotification(ev.getType()))
+                    users.add(u);
+            }
         
-        for(User u : users)
+        for(User u : users) {
             for(UserSession session : u.getSessions())
                 sendNotification(em, session);
+        }
     }
 
     private void sendNotification(EntityManager em, UserSession session) {

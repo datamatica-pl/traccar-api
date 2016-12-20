@@ -24,20 +24,27 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.persistence.EntityManager;
 import javax.persistence.TypedQuery;
 import pl.datamatica.traccar.model.Device;
 import pl.datamatica.traccar.model.User;
 import pl.datamatica.traccar.model.UserSession;
 
-public class SubscriptionDaemon extends Daemon {    
+public class SubscriptionDaemon extends Daemon {
+    private static final int CHECK_HOUR = 10;
+    
     @Override
     public void start(ScheduledExecutorService scheduler) {
         Calendar calendar = Calendar.getInstance();
-        if(calendar.get(Calendar.HOUR_OF_DAY) > 10)
+        if(calendar.get(Calendar.HOUR_OF_DAY) > CHECK_HOUR)
             calendar.add(Calendar.DATE, 1);
-        calendar.set(Calendar.HOUR_OF_DAY, 10);
+        calendar.set(Calendar.HOUR_OF_DAY, CHECK_HOUR);
+        calendar.set(Calendar.MINUTE, 0);
+        calendar.set(Calendar.SECOND, 0);
         long mDiff = (calendar.getTimeInMillis()-System.currentTimeMillis())/(60*1000);
+        Logger.getLogger(SubscriptionDaemon.class.getSimpleName())
+                .log(Level.INFO, "start: first check after "+mDiff+" minutes");
         start(scheduler, mDiff, 60*24);
     }
 
@@ -46,10 +53,12 @@ public class SubscriptionDaemon extends Daemon {
         Calendar calendar = Calendar.getInstance();
         TypedQuery<Device> tq = em.createQuery("from Device d "
                 + "join fetch d.users "
-                + "where d.validTo < :thresholdMax", 
+                + "where d.validTo between :thresholdMin and :thresholdMax", 
                 Device.class);        
         calendar.add(Calendar.DATE, 7);
         tq.setParameter("thresholdMax", calendar.getTime());
+        calendar.add(Calendar.DATE, -1);
+        tq.setParameter("thresholdMin", calendar.getTime());
         
         Map<User, List<Device>> users = new HashMap<>();
         for(Device d : tq.getResultList())
