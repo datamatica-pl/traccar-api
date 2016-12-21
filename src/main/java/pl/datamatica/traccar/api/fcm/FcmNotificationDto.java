@@ -32,10 +32,12 @@ public class FcmNotificationDto {
     public static class NotificationBody {
         private String body_loc_key;
         private String[] body_loc_args;
+        private String icon;
         
         public static NotificationBody subscription(List<Device> devices) {
             NotificationBody body = new NotificationBody();
             
+            body.icon = "notification_icon";
             if(devices.size() == 1) {
                 body.body_loc_key = MessageKeys.NOTIFICATION_ENDING_SUBSCRIPTION_SINGLE;
                 body.body_loc_args = new String[1];
@@ -51,6 +53,7 @@ public class FcmNotificationDto {
     private NotificationData data;
     private Boolean content_available;
     private String priority = "high";
+    private String collapse_key;
     private String to;
     
     public String getTo() {
@@ -73,6 +76,7 @@ public class FcmNotificationDto {
         FcmNotificationDto dto = new FcmNotificationDto();
         dto.data = new NotificationData("alarms");
         dto.content_available=true;
+        dto.collapse_key = "alarms_key";
         dto.to = to;
         return dto;
     }
