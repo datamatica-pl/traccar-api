@@ -24,6 +24,7 @@ import java.util.EnumSet;
 import java.util.List;
 import java.util.stream.Collectors;
 import javax.persistence.EntityManager;
+import javax.persistence.TypedQuery;
 import pl.datamatica.traccar.model.Device;
 import pl.datamatica.traccar.model.DeviceEvent;
 import pl.datamatica.traccar.model.DeviceEventType;
@@ -58,16 +59,19 @@ public class AlertProvider {
         
         List<DeviceEvent> events;
         
-        events = em.createQuery("Select de from DeviceEvent de\n"
+        String query = "Select de from DeviceEvent de\n"
                 + "left join fetch de.position\n"
                 + "left join fetch de.geoFence\n"
                 + "left join fetch de.maintenance\n"
                 + "where de.device in (:devices) and\n"
-                + "(de.geoFence in (:geofences) or de.type not in (:geofence_events))\n"
-                + "and de.type in (:valid_types)", 
-                DeviceEvent.class)
+                + "de.type in (:valid_types)\n";
+        if(validGeofences.isEmpty())
+            query += "and de.type not in (:geofence_events)";
+        else 
+            query += "and (de.geoFence in (:geofences) or de.type not in (:geofence_events))";
+        
+        TypedQuery<DeviceEvent> tq = em.createQuery(query, DeviceEvent.class)
                 .setParameter("devices", validDevices)
-                .setParameter("geofences", validGeofences)
                 .setParameter("geofence_events", 
                         EnumSet.of(DeviceEventType.GEO_FENCE_ENTER,
                         DeviceEventType.GEO_FENCE_EXIT))
@@ -75,8 +79,11 @@ public class AlertProvider {
                         EnumSet.of(DeviceEventType.GEO_FENCE_ENTER,
                                 DeviceEventType.GEO_FENCE_EXIT,
                                 DeviceEventType.OVERSPEED,
-                                DeviceEventType.MAINTENANCE_REQUIRED))
-                .getResultList();
+                                DeviceEventType.MAINTENANCE_REQUIRED));
+        
+        if(!validGeofences.isEmpty())
+            tq.setParameter("geofences", validGeofences);
+        events = tq.getResultList();
                 
         return events.stream()
                 .filter(e -> ChronoUnit.DAYS.between(e.getTime().toInstant()
