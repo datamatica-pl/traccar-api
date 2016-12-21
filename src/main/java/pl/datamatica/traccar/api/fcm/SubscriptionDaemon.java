@@ -70,7 +70,8 @@ public class SubscriptionDaemon extends Daemon {
             }
         
         for(Map.Entry<User, List<Device>> entry:users.entrySet())
-            sendNotification(em, entry.getKey(), entry.getValue());
+            if(!entry.getKey().isBlocked())
+                sendNotification(em, entry.getKey(), entry.getValue());
     }
 
     private void sendNotification(EntityManager em, User user, List<Device> devices) {
