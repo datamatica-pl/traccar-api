@@ -121,6 +121,7 @@ public class Application implements spark.servlet.SparkApplication {
         if(Context.getInstance().isInDevMode()) {
             Spark.exception(Exception.class, (exception, request, response) -> {
                 Logger logger = LoggerFactory.getLogger(Application.class);
+                logger.error("Exception while processing "+request.servletPath(), exception);
                 try {
                     RequestContext rc = (RequestContext)request.attribute(REQUEST_CONTEXT_KEY);
                     rc.rollbackTransaction();
@@ -129,7 +130,7 @@ public class Application implements spark.servlet.SparkApplication {
                     }
                     rc.close();
                 } catch (Exception e) {
-                    logger.error("Unable to close resources (EntityManager): " + e.getMessage());
+                    logger.error("Unable to close resources (EntityManager): ", e);
                 }
                 StringWriter sw = new StringWriter();
                 exception.printStackTrace(new PrintWriter(sw));

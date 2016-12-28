@@ -22,8 +22,8 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import javax.persistence.EntityManager;
-import javax.persistence.Query;
 import javax.persistence.TypedQuery;
+import org.slf4j.Logger;
 import pl.datamatica.traccar.api.dtos.in.AddGeoFenceDto;
 import pl.datamatica.traccar.api.dtos.IGeoFenceInfo;
 import pl.datamatica.traccar.api.providers.ProviderException.Type;
@@ -34,9 +34,11 @@ import pl.datamatica.traccar.model.User;
 
 public class GeoFenceProvider extends ProviderBase{
     private User requestUser;
+    private Logger logger;
     
     public GeoFenceProvider(EntityManager em) {
         super(em);
+        logger = DbLog.getLogger();
     }
     
     public void setRequestUser(User user) {
@@ -84,6 +86,8 @@ public class GeoFenceProvider extends ProviderBase{
         gf.setDevices(devices);
         em.persist(gf);
         
+        logger.info("{} created geofence {} (id={})", 
+                requestUser.getLogin(), gf.getName(), gf.getId());
         return gf;
     }
 
@@ -110,6 +114,8 @@ public class GeoFenceProvider extends ProviderBase{
             geoFence.setRadius(geoFenceDto.getRadius());
         
         em.persist(geoFence);
+        logger.info("{} updated geofence {} (id={})",
+                requestUser.getLogin(), geoFence.getName(), geoFence.getId());
     }
 
     private Stream<GeoFence> getAllGeoFences() {
@@ -126,8 +132,12 @@ public class GeoFenceProvider extends ProviderBase{
             throw new ProviderException(Type.ACCESS_DENIED);
         if(gf.getUsers().size() > 1) {
             gf.getUsers().remove(requestUser);
+            logger.info("{} stopped seeing geofence {} (id={})",
+                requestUser.getLogin(), gf.getName(), gf.getId());
         } else {
             gf.setDeleted(true);
+            logger.info("{} deleted geofence {} (id={})",
+                requestUser.getLogin(), gf.getName(), gf.getId());
         }
         em.persist(gf);
         if(shouldManageTransaction)

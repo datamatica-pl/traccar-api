@@ -18,26 +18,31 @@ package pl.datamatica.traccar.api.providers;
 
 import javax.persistence.EntityManager;
 import javax.persistence.Query;
+import org.slf4j.Logger;
 import pl.datamatica.traccar.model.User;
 import pl.datamatica.traccar.model.UserSession;
 
 public class SessionProvider {
     private final EntityManager em;
     private final User user;
+    private Logger logger;
     
     public SessionProvider(EntityManager em, User user) {
         this.em = em;
         this.user = user;
+        logger = DbLog.getLogger();
     }
     
     public void createSession(String id, String token) {
         UserSession us = new UserSession(id, user.getId(), token);
         em.persist(us);
+        logger.info("{} started session {}", user.getLogin(), id);
     }
     
     public void deleteSession(String id) {
         Query q = em.createQuery("delete UserSession where id = :id", UserSession.class);
         q.setParameter("id", id);
         q.executeUpdate();
+        logger.info("{} ended session {}", user.getLogin(), id);
     }
 }

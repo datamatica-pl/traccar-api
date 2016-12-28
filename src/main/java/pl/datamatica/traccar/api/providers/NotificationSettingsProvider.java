@@ -6,6 +6,7 @@
 package pl.datamatica.traccar.api.providers;
 
 import javax.persistence.EntityManager;
+import org.slf4j.Logger;
 import pl.datamatica.traccar.api.dtos.out.NotificationSettingsDto;
 import pl.datamatica.traccar.model.MobNotificationMode;
 import pl.datamatica.traccar.model.MobNotificationType;
@@ -15,10 +16,12 @@ public class NotificationSettingsProvider {
     
     private final EntityManager em;
     private final User requestUser;
+    private Logger logger;
     
     public NotificationSettingsProvider(EntityManager em, User requestUser) {
         this.em = em;
         this.requestUser = requestUser;
+        logger = DbLog.getLogger();
     }
     
     public void updateNotificationSettings(NotificationSettingsDto dto) {
@@ -27,6 +30,7 @@ public class NotificationSettingsProvider {
         updateNotificationSetting(MobNotificationType.POLICY, dto.getPolicy());
         updateNotificationSetting(MobNotificationType.MAINTENANCE, dto.getMaintenance());
         em.persist(requestUser);
+        logger.info("{} has changed his notification settings", requestUser.getLogin());
     }
     
     private void updateNotificationSetting(MobNotificationType t, String mode) {

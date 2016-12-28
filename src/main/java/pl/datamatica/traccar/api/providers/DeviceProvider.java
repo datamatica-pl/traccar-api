@@ -23,6 +23,7 @@ import java.util.stream.Stream;
 import javax.persistence.EntityManager;
 import javax.persistence.Query;
 import javax.persistence.TypedQuery;
+import org.slf4j.Logger;
 import pl.datamatica.traccar.api.dtos.in.EditDeviceDto;
 import pl.datamatica.traccar.api.providers.ProviderException.Type;
 import pl.datamatica.traccar.model.Device;
@@ -33,11 +34,13 @@ import pl.datamatica.traccar.model.User;
 public class DeviceProvider extends ProviderBase {
     private User requestUser;
     private ImeiProvider imeis;
+    private Logger logger;
     
     public DeviceProvider(EntityManager em, User requestUser, ImeiProvider imeis) {
         super(em);
         this.requestUser = requestUser;
         this.imeis = imeis;
+        logger = DbLog.getLogger();
     }
     
     public Device getDevice(long id) throws ProviderException {
@@ -78,6 +81,9 @@ public class DeviceProvider extends ProviderBase {
         device.setOwner(requestUser);
         em.persist(device);
         
+        logger.info("{} created device {} (id={})", 
+                requestUser.getLogin(), device.getName(), device.getId());
+        
         return device;
     }
 
@@ -97,8 +103,12 @@ public class DeviceProvider extends ProviderBase {
         if(device.isDeleted())
             throw new ProviderException(Type.ALREADY_DELETED);
         if(representsOwner(device)) {
+            logger.info("{} deleted device {} (id={})",
+                    requestUser.getLogin(), device.getName(), device.getId());
             device.setDeleted(true);
         } else {
+            logger.info("{} stopped seeing {} (id={})",
+                    requestUser.getLogin(), device.getName(), device.getId());
             device.getUsers().remove(requestUser);
         }
         em.persist(device);
@@ -185,5 +195,8 @@ public class DeviceProvider extends ProviderBase {
             device.setSpeedLimit(null);
         
         em.persist(device);
+        
+        logger.info("{} updated device {} (id={})", 
+                requestUser.getEmail(), device.getName(), device.getId());
     }
 }

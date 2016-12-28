@@ -21,6 +21,7 @@ import java.util.stream.Stream;
 import javax.persistence.EntityManager;
 import javax.persistence.NoResultException;
 import javax.persistence.TypedQuery;
+import org.slf4j.Logger;
 import pl.datamatica.traccar.api.auth.AuthenticationException;
 import pl.datamatica.traccar.api.auth.AuthenticationException.ErrorType;
 import pl.datamatica.traccar.api.providers.ProviderException.Type;
@@ -31,10 +32,12 @@ import pl.datamatica.traccar.model.UserSettings;
 public class UserProvider extends ProviderBase {
     private User requestUser;
     private ApplicationSettings appSettings;
+    private Logger logger;
     
     public UserProvider(EntityManager entityManager, ApplicationSettings appSettings) {
         super(entityManager);
         this.appSettings = appSettings;
+        logger = DbLog.getLogger();
     }
     
     public User authenticateUser(String email, String password) throws AuthenticationException {
@@ -90,6 +93,7 @@ public class UserProvider extends ProviderBase {
         user.setEmailValidationToken(generateEmailValidationToken());
         em.persist(user);
         
+        logger.info("{} created his account", user.getLogin());
         return user;
     }
 
@@ -112,6 +116,7 @@ public class UserProvider extends ProviderBase {
         user.setEmailValid(true);
         user.setEmailValidationToken(null);
         em.persist(user);
+        logger.info("{} activated his account", user.getLogin());
     }
     
     private User getUserByLogin(String login) {

@@ -22,7 +22,7 @@ import java.util.Date;
 import java.util.Locale;
 import java.util.TimeZone;
 
-public class DateUtil {
+public class DateUtil {    
     private static final SimpleDateFormat rfc1123 = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss 'GMT'", Locale.US);
     private static final SimpleDateFormat rfc850 = new SimpleDateFormat("EEEE,  dd-MMM-yy HH:mm:ss 'GMT'", Locale.US);
     private static final SimpleDateFormat asctime = new SimpleDateFormat("EEE MMM  d HH:mm:ss yyyy", Locale.US);
@@ -33,7 +33,7 @@ public class DateUtil {
         asctime.setTimeZone(TimeZone.getTimeZone("GMT"));
     }
     
-    public static Date parseDate(String in) throws ParseException {
+    public static synchronized Date parseDate(String in) throws ParseException {
         ParseException lastException = null;
         for(SimpleDateFormat format : getSupportedFormats())
             try{
@@ -44,11 +44,11 @@ public class DateUtil {
         throw lastException;
     }
     
-    public static String formatDate(Date in) {
+    public static synchronized String formatDate(Date in) {
         return rfc1123.format(in);
     }
     
-    public static SimpleDateFormat[] getSupportedFormats() {
+    private static SimpleDateFormat[] getSupportedFormats() {
         return new SimpleDateFormat[]{rfc1123, rfc850, asctime};
     }
 }
