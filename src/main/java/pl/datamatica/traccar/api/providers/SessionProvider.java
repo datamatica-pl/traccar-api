@@ -40,7 +40,7 @@ public class SessionProvider {
     }
     
     public void deleteSession(String id) {
-        Query q = em.createQuery("delete UserSession where id = :id", UserSession.class);
+        Query q = em.createQuery("delete UserSession where id = :id");
         q.setParameter("id", id);
         q.executeUpdate();
         logger.info("{} ended session {}", user.getLogin(), id);
