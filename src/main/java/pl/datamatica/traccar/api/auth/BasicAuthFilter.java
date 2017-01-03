@@ -40,16 +40,19 @@ public class BasicAuthFilter {
     private static final Charset CHARSET = StandardCharsets.UTF_8;
     private static final String AUTH_INFO_SEPARATOR = " ";
     public static final String USER_ID_SESSION_KEY = "userId";
+    private Request req;
     
     private static final int SESSION_MAX_INACTIVE_INTERVAL = (int)TimeUnit.SECONDS.convert(14, TimeUnit.DAYS);
     
     private static final Logger logger = LoggerFactory.getLogger(BasicAuthFilter.class);
-        
+    
     public void handle(Request request, Response response) throws Exception {
+        this.req = request;
+        RequestContext rc = request.attribute(Application.REQUEST_CONTEXT_KEY);
+        
         if(shouldAllowUnauthorized(request))
             return;
         try {
-            RequestContext rc = request.attribute(Application.REQUEST_CONTEXT_KEY);
             UserProvider up = rc.getUserProvider();
             ApplicationSettingsProvider asp = rc.getApplicationSettingsProvider();
             User user;
@@ -140,11 +143,30 @@ public class BasicAuthFilter {
     
     private void unauthorized(Response response, String errorMessage) {
         response.header("WWW-Authenticate", SCHEME + " " + "realm=\"" + REALM + "\"");
+        closeConnections();
         Spark.halt(401, errorMessage);
     }
     
     private void serverError(Response response, String errorMessage) {
         logger.error(errorMessage);
+        closeConnections();
         Spark.halt(500);
+    }
+    
+    private void closeConnections() {
+        RequestContext rc = req.attribute(Application.REQUEST_CONTEXT_KEY);
+        if (req != null && rc != null) {
+            try {
+                rc.commitTransaction();
+                if (rc.isRequestForMetadata(req)) {
+                    rc.commitMetadataTransaction();
+                }
+                rc.close();
+            } catch (Exception e) {
+                logger.error("Resources cannot be closed: " + e.getMessage());
+            }
+        } else {
+            logger.error("Request or RequestContext can not be find, so resources can't properly be closed.");
+        }
     }
 }
