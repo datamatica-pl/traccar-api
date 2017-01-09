@@ -21,13 +21,13 @@ package pl.datamatica.traccar.api.dtos.out;
  * @author Jan Usarek
  */
 public class AppVersionsInfoDto {
-    private String androidVersion = "";
-    private String androidRequired = "";
-    private String iosVersion = "";
-    private String iosRequired = "";
-    private String messageKey = "";
-    private String localizedMessage = "";
-    private String messageUrl = "";
+    private String androidVersion;
+    private String androidRequired;
+    private String iosVersion;
+    private String iosRequired;
+    private String messageKey;
+    private String localizedMessage;
+    private String messageUrl;
 
     public String getAndroidVersion() {
         return androidVersion;
