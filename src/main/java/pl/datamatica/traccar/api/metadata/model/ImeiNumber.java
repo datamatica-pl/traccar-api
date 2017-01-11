@@ -31,7 +31,7 @@ public class ImeiNumber {
     @GeneratedValue(strategy=GenerationType.AUTO)
     private long id;
     
-    @Column(nullable=false, length=16)
+    @Column(nullable=false, length=16, unique=true)
     private String imei;
 
     public long getId() {
