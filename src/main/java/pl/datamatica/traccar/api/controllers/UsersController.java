@@ -144,7 +144,7 @@ public class UsersController extends ControllerBase {
     public HttpResponse activateUser(String token) {
         try {
             up.activateUser(token);
-            return redirect(requestContext.getServerRoot());
+            return redirect("http://dm.trackman.pl/pl/trackman-help/");
         } catch (ProviderException ex) {
             return ok("");
         }
