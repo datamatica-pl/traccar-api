@@ -93,7 +93,7 @@ public class AlertDto implements ICachedDto {
             if(event.getMaintenance() != null)
                 technicalMaintenance(event.getMaintenance());
             if (event.getPosition().getSpeed() != null)
-                speed(event.getPosition().getSpeed());
+                speed(event.getPosition().getSpeedInKmh());
             return positionId(event.getPosition().getId());
         }
 

@@ -113,7 +113,7 @@ public class PositionDto implements ICachedDto {
             this.id = position.getId();
             this.altitude = position.getAltitude();
             this.course = position.getCourse();
-            this.speed = position.getSpeed();
+            this.speed = position.getSpeedInKmh();
             this.latitude = position.getLatitude();
             this.longitude = position.getLongitude();
             this.deviceTime = position.getTime();
