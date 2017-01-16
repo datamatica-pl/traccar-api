@@ -176,7 +176,7 @@ public class DeviceProvider extends ProviderBase {
         query.executeUpdate();
     }
 
-    private static final Double NauticMilesToKilometersMultiplier = 0.514;
+    private static final Double NauticMilesToKilometersMultiplier = 0.54;
     
     public void updateDevice(long id, EditDeviceDto deviceDto) throws ProviderException {
         Device device = getDevice(id);
