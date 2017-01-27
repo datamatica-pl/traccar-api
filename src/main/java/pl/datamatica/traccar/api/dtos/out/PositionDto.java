@@ -20,10 +20,10 @@ import com.google.gson.Gson;
 import java.util.Date;
 import java.util.Map;
 import pl.datamatica.traccar.model.Position;
+import pl.datamatica.traccar.api.utils.BatteryLevelConverter;
 
 public class PositionDto implements ICachedDto {
     private static final String IGNITION_KEY="ignition";
-    private static final String BATTERY_KEY = "battery";
     
     private final long id;
     private final Double altitude;
@@ -121,12 +121,10 @@ public class PositionDto implements ICachedDto {
             this.deviceId = position.getDevice().getId();
             if(other != null) {
                 this.ignition = (Boolean)other.get(IGNITION_KEY);
-                if(other.containsKey(BATTERY_KEY)) {
-                    double original = Double.parseDouble(other.get(BATTERY_KEY).toString());
-                    if(original <= 6.)
-                        this.battery = original * 100 / 6.;
-                    else
-                        this.battery = (double)original;
+                
+                Integer batteryLevel = BatteryLevelConverter.getBatteryLevelPercent(position);
+                if (batteryLevel != null) {
+                    this.battery = (double) batteryLevel;
                 }
             }
             return this;
