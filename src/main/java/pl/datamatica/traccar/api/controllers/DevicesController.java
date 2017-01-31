@@ -16,8 +16,10 @@
  */
 package pl.datamatica.traccar.api.controllers;
 
+import com.google.gson.Gson;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 import pl.datamatica.traccar.api.Application;
 import static pl.datamatica.traccar.api.controllers.ControllerBase.render;
@@ -34,6 +36,7 @@ import pl.datamatica.traccar.api.providers.ProviderException;
 import pl.datamatica.traccar.api.responses.HttpResponse;
 import pl.datamatica.traccar.api.responses.OkCachedResponse;
 import pl.datamatica.traccar.model.Device;
+import pl.datamatica.traccar.model.Position;
 import spark.Request;
 import spark.Spark;
 
@@ -170,10 +173,24 @@ public class DevicesController extends ControllerBase {
     public HttpResponse getPositions(long id) throws Exception {
         try {
             Device device = dp.getDevice(id);
-            return okCached(new ListDto<PositionDto>(positions
-                    .getAllAvailablePositions(device, minDate, MAX_RESULT_COUNT+1)
-                    .map(p -> new PositionDto.Builder().position(p).build())
-                    .collect(Collectors.toList()), MAX_RESULT_COUNT));
+            
+            return okCached(new ListDto<PositionDto>(
+                    positions
+                        .getAllAvailablePositions(device, minDate, MAX_RESULT_COUNT+1)
+                        .filter(position -> {
+                            boolean add = true;
+                            Gson gson = new Gson();
+                            if (position.getOther() != null) {
+                                Map<String, Object> other = gson.fromJson(position.getOther(), Map.class);
+                                if (other != null && other.containsKey(Position.ALARM_KEY)) {
+                                    add = !(Boolean)other.get(Position.ALARM_KEY);
+                                }
+                            }
+                            return add;
+                        })
+                        .map(p -> new PositionDto.Builder().position(p).build())
+                        .collect(Collectors.toList()),
+                    MAX_RESULT_COUNT));
         } catch (ProviderException ex) {
             return handle(ex);
         }

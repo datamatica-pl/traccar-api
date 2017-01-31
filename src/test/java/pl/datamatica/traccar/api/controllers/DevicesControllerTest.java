@@ -165,7 +165,7 @@ public class DevicesControllerTest {
     }
     
     @Test
-    public void getPositions_ok() throws Exception { 
+    public void getPositions_ok() throws Exception {
         Position position = new Position();
         position.setLatitude(1.);
         position.setLongitude(1.);
@@ -182,6 +182,61 @@ public class DevicesControllerTest {
         assertTrue(response.getContent() instanceof ListDto);
         ListDto<PositionDto> result = (ListDto<PositionDto>)response.getContent();
         assertEquals(1, result.getChanged().size());
+        assertNull(result.getIds());
+    }
+    
+    @Test
+    public void getPositionsWithoutAlarms_ok() throws Exception {
+        Position position = new Position();
+        position.setLatitude(1.);
+        position.setLongitude(1.);
+        position.setTime(new Date());
+        position.setValid(true);
+        position.setDevice(devices.get(0));
+        position.setOther( "{}" );
+        
+        Position position2 = new Position();
+        position2.setLatitude(1.);
+        position2.setLongitude(1.);
+        position2.setTime(new Date());
+        position2.setValid(true);
+        position2.setDevice(devices.get(0));
+        position2.setOther( "{\"alarm\":false}" );
+        
+        Position position3 = new Position();
+        position3.setLatitude(1.);
+        position3.setLongitude(1.);
+        position3.setTime(new Date());
+        position3.setValid(true);
+        position3.setDevice(devices.get(0));
+        position3.setOther( "{\"ignition\":false,\"battery\":6}" );
+        
+        Position position4 = new Position();
+        position4.setLatitude(1.);
+        position4.setLongitude(1.);
+        position4.setTime(new Date());
+        position4.setValid(true);
+        position4.setDevice(devices.get(0));
+        position4.setOther( "" );
+        
+        Position positionToReject = new Position();
+        positionToReject.setLatitude(1.);
+        positionToReject.setLongitude(1.);
+        positionToReject.setTime(new Date());
+        positionToReject.setValid(true);
+        positionToReject.setDevice(devices.get(0));
+        positionToReject.setOther( "{\"alarm\":true}" );
+
+        Mockito.when(pp.getAllAvailablePositions(Mockito.eq(devices.get(0)),
+                Mockito.any(Date.class), Mockito.anyInt()))
+                .thenReturn(Stream.of(position, position2, position3, position4, positionToReject));
+        
+        HttpResponse response = dc.getPositions(0);
+        
+        assertTrue(response instanceof OkCachedResponse);
+        assertTrue(response.getContent() instanceof ListDto);
+        ListDto<PositionDto> result = (ListDto<PositionDto>)response.getContent();
+        assertEquals(4, result.getChanged().size());
         assertNull(result.getIds());
     }
     
