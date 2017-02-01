@@ -19,6 +19,7 @@ package pl.datamatica.traccar.api.dtos.out;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.Date;
+import java.util.concurrent.TimeUnit;
 import pl.datamatica.traccar.api.dtos.JsonIgnore;
 import pl.datamatica.traccar.api.dtos.in.EditDeviceDto;
 import pl.datamatica.traccar.model.Device;
@@ -160,9 +161,8 @@ public class DeviceDto extends EditDeviceDto implements ICachedDto {
                 this.lastPosition = new PositionDto.Builder().position(latestPosition).build();
             this.accountId = device.getOwner().getId();
             if(device.getValidTo() != null) {
-                LocalDate date = device.getValidTo().toLocalDate().plusDays(1);
-                this.validTo = Date.from(date.atStartOfDay()
-                        .atZone(ZoneId.systemDefault()).toInstant());
+                Date dayAfter = new Date(device.getValidTo().getTime() + TimeUnit.DAYS.toMillis(1));
+                this.validTo = dayAfter;
             }
             this.historyLength = device.getHistoryLength();
             this.modificationTime = device.getLastUpdate();
