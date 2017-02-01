@@ -177,17 +177,7 @@ public class DevicesController extends ControllerBase {
             return okCached(new ListDto<PositionDto>(
                     positions
                         .getAllAvailablePositions(device, minDate, MAX_RESULT_COUNT+1)
-                        .filter(position -> {
-                            boolean add = true;
-                            Gson gson = new Gson();
-                            if (position.getOther() != null) {
-                                Map<String, Object> other = gson.fromJson(position.getOther(), Map.class);
-                                if (other != null && other.containsKey(Position.ALARM_KEY)) {
-                                    add = !(Boolean)other.get(Position.ALARM_KEY);
-                                }
-                            }
-                            return add;
-                        })
+                        .filter(position -> !position.isAlarm())
                         .map(p -> new PositionDto.Builder().position(p).build())
                         .collect(Collectors.toList()),
                     MAX_RESULT_COUNT));
