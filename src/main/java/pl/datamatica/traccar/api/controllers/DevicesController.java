@@ -174,7 +174,7 @@ public class DevicesController extends ControllerBase {
             return okCached(new ListDto<PositionDto>(
                     positions
                         .getAllAvailablePositions(device, minDate, MAX_RESULT_COUNT+1)
-                        .filter(position -> !position.isAlarm())
+                        .filter(position -> position.hasProperValidStatus())
                         .map(p -> new PositionDto.Builder().position(p).build())
                         .collect(Collectors.toList()),
                     MAX_RESULT_COUNT));
