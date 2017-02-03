@@ -78,6 +78,7 @@ public class DeviceProvider extends ProviderBase {
         device.setName(createGpsName());
         device.setUniqueId(imei);
         device.setUsers(Collections.singleton(requestUser));
+        device.setIconId(4L);
         device.setOwner(requestUser);
         em.persist(device);
         
@@ -184,6 +185,7 @@ public class DeviceProvider extends ProviderBase {
         device.setName(deviceDto.getDeviceName());
         device.setDeviceModelId(deviceDto.getDeviceModelId());
         device.setIconId(deviceDto.getIconId());
+        device.setCustomIconId(deviceDto.getCustomIconId());
         device.setColor(deviceDto.getColor());
         device.setPhoneNumber(deviceDto.getPhoneNumber());
         device.setPlateNumber(deviceDto.getPlateNumber());

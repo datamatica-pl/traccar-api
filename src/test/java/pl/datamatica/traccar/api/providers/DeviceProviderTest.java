@@ -192,7 +192,7 @@ public class DeviceProviderTest {
         assertEquals(description, actual.getDescription());
         assertEquals(modelId, actual.getDeviceModelId());
         assertEquals(name, actual.getName());
-        assertEquals(iconId, actual.getIconId());
+        assertEquals(iconId, (long)actual.getIconId());
         assertEquals(phoneNumber, actual.getPhoneNumber());
         assertEquals(plateNumber, actual.getPlateNumber());
     }

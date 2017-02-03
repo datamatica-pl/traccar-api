@@ -42,7 +42,8 @@ public class DeviceDto extends EditDeviceDto implements ICachedDto {
         private long id;
         private String deviceName;
         private long deviceModelId;
-        private long iconId;
+        private Long iconId;
+        private Long customIconId;
         private String color;
         private String phoneNumber;
         private String plateNumber;
@@ -72,8 +73,13 @@ public class DeviceDto extends EditDeviceDto implements ICachedDto {
             return this;
         }
 
-        public Builder iconId(final int value) {
+        public Builder iconId(final Long value) {
             this.iconId = value;
+            return this;
+        }
+        
+        public Builder customIconId(final Long value) {
+            this.customIconId = value;
             return this;
         }
 
@@ -149,6 +155,7 @@ public class DeviceDto extends EditDeviceDto implements ICachedDto {
             this.deviceName = device.getName();
             this.deviceModelId = device.getDeviceModelId();
             this.iconId = device.getIconId();
+            this.customIconId = device.getCustomIconId();
             this.color = device.getColor();
             this.phoneNumber = device.getPhoneNumber();
             this.plateNumber = device.getPlateNumber();
@@ -160,7 +167,8 @@ public class DeviceDto extends EditDeviceDto implements ICachedDto {
                 this.lastPosition = new PositionDto.Builder().position(latestPosition).build();
             this.accountId = device.getOwner().getId();
             if(device.getValidTo() != null) {
-                LocalDate date = device.getValidTo().toLocalDate().plusDays(1);
+                LocalDate date = device.getValidTo().toInstant().atZone(ZoneId.systemDefault())
+                        .toLocalDate().plusDays(1);
                 this.validTo = Date.from(date.atStartOfDay()
                         .atZone(ZoneId.systemDefault()).toInstant());
             }
@@ -177,6 +185,7 @@ public class DeviceDto extends EditDeviceDto implements ICachedDto {
                     deviceName, 
                     deviceModelId, 
                     iconId, 
+                    customIconId,
                     color, 
                     phoneNumber, 
                     plateNumber,
@@ -196,7 +205,8 @@ public class DeviceDto extends EditDeviceDto implements ICachedDto {
     private DeviceDto(final long id, 
             final String deviceName, 
             final long deviceModelId, 
-            final long iconId, 
+            final Long iconId, 
+            final Long customIconId,
             final String color, 
             final String phoneNumber, 
             final String plateNumber, 
@@ -210,7 +220,8 @@ public class DeviceDto extends EditDeviceDto implements ICachedDto {
             final Date modificationTime,
             final boolean blocked,
             final Double speedLimit) {
-        super(deviceName, deviceModelId, iconId, color, phoneNumber, plateNumber, description, speedLimit);
+        super(deviceName, deviceModelId, iconId, customIconId, color, phoneNumber, 
+                plateNumber, description, speedLimit);
         this.id = id;
         this.status = status;
         this.uniqueId = uniqueId;

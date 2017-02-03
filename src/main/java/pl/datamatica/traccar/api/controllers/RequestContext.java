@@ -35,6 +35,7 @@ import pl.datamatica.traccar.api.providers.ImageProvider;
 import pl.datamatica.traccar.api.providers.ImeiProvider;
 import pl.datamatica.traccar.api.providers.MailSender;
 import pl.datamatica.traccar.api.providers.NotificationSettingsProvider;
+import pl.datamatica.traccar.api.providers.PicturesProvider;
 import pl.datamatica.traccar.api.providers.PositionProvider;
 import pl.datamatica.traccar.api.providers.ReportsProvider;
 import pl.datamatica.traccar.api.providers.UserProvider;
@@ -169,6 +170,10 @@ public class RequestContext implements AutoCloseable {
         if(sessionProvider == null)
             sessionProvider = new SessionProvider(em, user);
         return sessionProvider;
+    }
+    
+    PicturesProvider getPicturesProvider() {
+        return new PicturesProvider(em);
     }
     
     public String getApiRoot() {

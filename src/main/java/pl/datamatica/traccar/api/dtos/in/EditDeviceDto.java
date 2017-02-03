@@ -27,6 +27,7 @@ public class EditDeviceDto {
     private final String deviceName;
     private final Long deviceModelId;
     private final Long iconId;
+    private final Long customIconId;
     private final String color;
     private final String phoneNumber;
     private final String plateNumber;
@@ -38,6 +39,7 @@ public class EditDeviceDto {
         private String deviceName;
         private Long deviceModelId;
         private Long iconId;
+        private Long customIconId;
         private String color;
         private String phoneNumber;
         private String plateNumber;
@@ -54,8 +56,13 @@ public class EditDeviceDto {
             return this;
         }
 
-        public Builder iconId(final long value) {
+        public Builder iconId(final Long value) {
             this.iconId = value;
+            return this;
+        }
+        
+        public Builder customIconId(final Long value) {
+            this.customIconId = value;
             return this;
         }
 
@@ -88,6 +95,7 @@ public class EditDeviceDto {
             return new EditDeviceDto(deviceName, 
                     deviceModelId, 
                     iconId, 
+                    customIconId,
                     color, 
                     phoneNumber, 
                     plateNumber, 
@@ -99,6 +107,7 @@ public class EditDeviceDto {
     protected EditDeviceDto(final String deviceName, 
             final Long deviceModelId, 
             final Long iconId, 
+            final Long customIconId,
             final String color, 
             final String phoneNumber, 
             final String plateNumber, 
@@ -107,6 +116,7 @@ public class EditDeviceDto {
         this.deviceName = deviceName;
         this.deviceModelId = deviceModelId;
         this.iconId = iconId;
+        this.customIconId = customIconId;
         this.color = color;
         this.phoneNumber = phoneNumber;
         this.plateNumber = plateNumber;
@@ -122,8 +132,12 @@ public class EditDeviceDto {
         return deviceModelId;
     }
 
-    public long getIconId() {
+    public Long getIconId() {
         return iconId;
+    }
+    
+    public Long getCustomIconId() {
+        return customIconId;
     }
 
     public String getColor() {
@@ -159,7 +173,7 @@ public class EditDeviceDto {
             errors.add(new ErrorDto(MessageKeys.ERR_DEVICE_MODEL_ID_NOT_PROVIDED));
         if(deviceDto.deviceName == null || deviceDto.deviceName.isEmpty())
             errors.add(new ErrorDto(MessageKeys.ERR_DEVICE_NAME_NOT_PROVIDED));
-        if(deviceDto.iconId == null)
+        if(deviceDto.iconId == null && deviceDto.customIconId == null)
             errors.add(new ErrorDto(MessageKeys.ERR_DEVICE_ICON_ID_NOT_PROVIDED));
         return errors;
     }
