@@ -44,8 +44,9 @@ public class PicturesProvider {
         return picture;
     }
 
-    public void deletePicture(long id) {
+    public void deletePictureIfExists(long id) {
         Picture picture = em.find(Picture.class, id);
-        em.remove(picture);
+        if(picture != null)
+            em.remove(picture);
     }
 }

@@ -205,7 +205,7 @@ public class DevicesController extends ControllerBase {
         Device device = dp.getDevice(deviceId);
         PicturesProvider pp = requestContext.getPicturesProvider();
         if(device.getCustomIconId() != null)
-            pp.deletePicture(device.getCustomIconId());
+            pp.deletePictureIfExists(device.getCustomIconId());
         Picture p = pp.createPicture(data);
         device.setCustomIconId(p.getId());
         return ok(p.getId());
