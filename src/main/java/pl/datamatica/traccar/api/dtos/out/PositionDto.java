@@ -20,7 +20,6 @@ import com.google.gson.Gson;
 import java.util.Date;
 import java.util.Map;
 import pl.datamatica.traccar.model.Position;
-import pl.datamatica.traccar.api.utils.BatteryLevelConverter;
 
 public class PositionDto implements ICachedDto {
     private static final String IGNITION_KEY="ignition";
@@ -33,7 +32,6 @@ public class PositionDto implements ICachedDto {
     private final double longitude;
     private final Date deviceTime;
     private final Boolean ignition;
-    private final Double battery;
     private final boolean isValid;
     private final long deviceId;
 
@@ -47,7 +45,6 @@ public class PositionDto implements ICachedDto {
         private double longitude;
         private Date deviceTime;
         private Boolean ignition;
-        private Double battery;
         private boolean isValid;
         private long deviceId;
 
@@ -91,11 +88,6 @@ public class PositionDto implements ICachedDto {
             return this;
         }
 
-        public Builder battery(final Double value) {
-            this.battery = value;
-            return this;
-        }
-
         public Builder isValid(final boolean value) {
             this.isValid = value;
             return this;
@@ -121,17 +113,12 @@ public class PositionDto implements ICachedDto {
             this.deviceId = position.getDevice().getId();
             if(other != null) {
                 this.ignition = (Boolean)other.get(IGNITION_KEY);
-                
-                Integer batteryLevel = BatteryLevelConverter.getBatteryLevelPercent(position);
-                if (batteryLevel != null) {
-                    this.battery = (double) batteryLevel;
-                }
             }
             return this;
         }
 
         public PositionDto build() {
-            return new PositionDto(id, altitude, course, speed, latitude, longitude, deviceTime, ignition, battery, isValid, deviceId);
+            return new PositionDto(id, altitude, course, speed, latitude, longitude, deviceTime, ignition, isValid, deviceId);
         }
     }
 
@@ -143,7 +130,6 @@ public class PositionDto implements ICachedDto {
             final double longitude, 
             final Date deviceTime, 
             final Boolean ignition, 
-            final Double battery, 
             final boolean isValid, 
             final long deviceId) {
         this.id = id;
@@ -154,7 +140,6 @@ public class PositionDto implements ICachedDto {
         this.longitude = longitude;
         this.deviceTime = deviceTime;
         this.ignition = ignition;
-        this.battery = battery;
         this.isValid = isValid;
         this.deviceId = deviceId;
     }
@@ -173,10 +158,6 @@ public class PositionDto implements ICachedDto {
 
     public Double getSpeed() {
         return speed;
-    }
-
-    public Double getBattery() {
-        return battery;
     }
 
     public long getId() {

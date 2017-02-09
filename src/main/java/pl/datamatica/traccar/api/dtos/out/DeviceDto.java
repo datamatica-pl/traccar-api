@@ -33,6 +33,7 @@ public class DeviceDto extends EditDeviceDto implements ICachedDto {
     private final Date validTo;
     private final Integer historyLength;
     private final boolean blocked;
+    private final int batteryTimeout;
     
     @JsonIgnore
     private Date modificationTime;
@@ -56,6 +57,7 @@ public class DeviceDto extends EditDeviceDto implements ICachedDto {
         private Date modificationTime;
         private boolean blocked;
         private Double speedLimit;
+        private int batteryTimeout;
 
         public Builder id(final long value) {
             this.id = value;
@@ -160,7 +162,8 @@ public class DeviceDto extends EditDeviceDto implements ICachedDto {
                 this.lastPosition = new PositionDto.Builder().position(latestPosition).build();
             this.accountId = device.getOwner().getId();
             if(device.getValidTo() != null) {
-                LocalDate date = device.getValidTo().toLocalDate().plusDays(1);
+                LocalDate date = device.getValidTo().toInstant().atZone(ZoneId.systemDefault())
+                        .toLocalDate().plusDays(1);
                 this.validTo = Date.from(date.atStartOfDay()
                         .atZone(ZoneId.systemDefault()).toInstant());
             }
@@ -169,6 +172,7 @@ public class DeviceDto extends EditDeviceDto implements ICachedDto {
             this.blocked = device.isBlocked();
             if(device.getSpeedLimit() != null)
                 this.speedLimit = device.getSpeedLimit() * KilometersToNauticMilesMultiplier;
+            this.batteryTimeout = device.getBatteryTimeout();
             return this;
         }
 
@@ -189,7 +193,8 @@ public class DeviceDto extends EditDeviceDto implements ICachedDto {
                     historyLength,
                     modificationTime,
                     blocked,
-                    speedLimit);
+                    speedLimit,
+                    batteryTimeout);
         }
     }
 
@@ -209,7 +214,8 @@ public class DeviceDto extends EditDeviceDto implements ICachedDto {
             final Integer historyLength,
             final Date modificationTime,
             final boolean blocked,
-            final Double speedLimit) {
+            final Double speedLimit,
+            final int batteryTimeout) {
         super(deviceName, deviceModelId, iconId, color, phoneNumber, plateNumber, description, speedLimit);
         this.id = id;
         this.status = status;
@@ -220,6 +226,7 @@ public class DeviceDto extends EditDeviceDto implements ICachedDto {
         this.historyLength = historyLength;
         this.modificationTime = modificationTime;
         this.blocked = blocked;
+        this.batteryTimeout = batteryTimeout;
     }
     
     public long getId() {
