@@ -19,6 +19,7 @@ package pl.datamatica.traccar.api.dtos.out;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.Date;
+import java.util.concurrent.TimeUnit;
 import pl.datamatica.traccar.api.dtos.JsonIgnore;
 import pl.datamatica.traccar.api.dtos.in.EditDeviceDto;
 import pl.datamatica.traccar.model.Device;
@@ -46,6 +47,7 @@ public class DeviceDto extends EditDeviceDto implements ICachedDto {
         private String deviceName;
         private long deviceModelId;
         private Long iconId;
+        private Long customIconId;
         private String color;
         private String phoneNumber;
         private String plateNumber;
@@ -80,6 +82,11 @@ public class DeviceDto extends EditDeviceDto implements ICachedDto {
 
         public Builder iconId(final Long value) {
             this.iconId = value;
+            return this;
+        }
+        
+        public Builder customIconId(final Long value) {
+            this.customIconId = value;
             return this;
         }
 
@@ -170,6 +177,7 @@ public class DeviceDto extends EditDeviceDto implements ICachedDto {
             this.deviceName = device.getName();
             this.deviceModelId = device.getDeviceModelId();
             this.iconId = device.getIconId();
+            this.customIconId = device.getCustomIconId();
             this.color = device.getColor();
             this.phoneNumber = device.getPhoneNumber();
             this.plateNumber = device.getPlateNumber();
@@ -181,10 +189,8 @@ public class DeviceDto extends EditDeviceDto implements ICachedDto {
                 this.lastPosition = new PositionDto.Builder().position(latestPosition).build();
             this.accountId = device.getOwner().getId();
             if(device.getValidTo() != null) {
-                LocalDate date = device.getValidTo().toInstant().atZone(ZoneId.systemDefault())
-                        .toLocalDate().plusDays(1);
-                this.validTo = Date.from(date.atStartOfDay()
-                        .atZone(ZoneId.systemDefault()).toInstant());
+                Date dayAfter = new Date(device.getValidTo().getTime() + TimeUnit.DAYS.toMillis(1));
+                this.validTo = dayAfter;
             }
             this.historyLength = device.getHistoryLength();
             this.modificationTime = device.getLastUpdate();
@@ -202,6 +208,7 @@ public class DeviceDto extends EditDeviceDto implements ICachedDto {
                     deviceName, 
                     deviceModelId, 
                     iconId, 
+                    customIconId,
                     color, 
                     phoneNumber, 
                     plateNumber,
@@ -225,6 +232,7 @@ public class DeviceDto extends EditDeviceDto implements ICachedDto {
             final String deviceName, 
             final long deviceModelId, 
             final Long iconId, 
+            final Long customIconId,
             final String color, 
             final String phoneNumber, 
             final String plateNumber, 
@@ -241,7 +249,8 @@ public class DeviceDto extends EditDeviceDto implements ICachedDto {
             final Integer batteryLevel,
             final Date batteryTime,
             final int batteryTimeout) {
-        super(deviceName, deviceModelId, iconId, color, phoneNumber, plateNumber, description, speedLimit);
+        super(deviceName, deviceModelId, iconId, customIconId, color, phoneNumber, 
+                plateNumber, description, speedLimit);
         this.id = id;
         this.status = status;
         this.uniqueId = uniqueId;
