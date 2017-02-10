@@ -307,7 +307,7 @@ public class DevicesControllerTest {
         EditDeviceDto deviceDto = new EditDeviceDto.Builder()
                 .color("00FF00")
                 .deviceModelId(-1)
-                .iconId(1)
+                .iconId(1L)
                 .deviceName("test")
                 .build();
         

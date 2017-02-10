@@ -29,11 +29,13 @@ import pl.datamatica.traccar.api.dtos.out.ErrorDto;
 import pl.datamatica.traccar.api.dtos.out.ListDto;
 import pl.datamatica.traccar.api.dtos.out.PositionDto;
 import pl.datamatica.traccar.api.providers.DeviceProvider;
+import pl.datamatica.traccar.api.providers.PicturesProvider;
 import pl.datamatica.traccar.api.providers.PositionProvider;
 import pl.datamatica.traccar.api.providers.ProviderException;
 import pl.datamatica.traccar.api.responses.HttpResponse;
 import pl.datamatica.traccar.api.responses.OkCachedResponse;
 import pl.datamatica.traccar.model.Device;
+import pl.datamatica.traccar.model.Picture;
 import spark.Request;
 import spark.Spark;
 
@@ -74,6 +76,20 @@ public class DevicesController extends ControllerBase {
                 DevicesController dc = createController(req);
                 return render(dc.getPositions(Long.parseLong(req.params(":id"))), res);
             }, gson::toJson);
+            
+            Spark.get(rootUrl()+"/:id/customicon", (req, res) -> {
+                DevicesController dc = createController(req);
+                Picture pic = dc.getCustomIcon(Long.parseLong(req.params(":id")));
+                res.raw().setContentType(pic.getMimeType());
+                res.raw().getOutputStream().write(pic.getData(),0, pic.getData().length);
+                return res;
+            });
+            
+            Spark.put(rootUrl()+"/:id/customicon", (req, res) -> {
+                DevicesController dc = createController(req);
+                long id = Long.parseLong(req.params(":id"));
+                return render(dc.updateCustomIcon(id, req.bodyAsBytes()), res);
+            });
         }
 
         private DevicesController createController(Request req) {
@@ -181,5 +197,21 @@ public class DevicesController extends ControllerBase {
         } catch (ProviderException ex) {
             return handle(ex);
         }
+    }
+    
+    private Picture getCustomIcon(long deviceId) throws ProviderException {
+        Device device = dp.getDevice(deviceId);
+        PicturesProvider provider = requestContext.getPicturesProvider();
+        return provider.getImage(device.getCustomIconId());
+    }
+
+    private HttpResponse updateCustomIcon(long deviceId, byte[] data) throws ProviderException {
+        Device device = dp.getDevice(deviceId);
+        PicturesProvider pp = requestContext.getPicturesProvider();
+        if(device.getCustomIconId() != null)
+            pp.deletePictureIfExists(device.getCustomIconId());
+        Picture p = pp.createPicture(data);
+        device.setCustomIconId(p.getId());
+        return ok(p.getId());
     }
 }
