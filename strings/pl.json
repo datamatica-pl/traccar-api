@@ -15,6 +15,7 @@
 	"err_account_expired": "Konto wygasło",
 	
 	"cmd_param_desc_timezone": "Strefa czasowa",
+	"cmd_param_desc_frequency": "Częstotliwość pozycjonowania",
     "cmd_param_desc_frequency_run": "Częstotliwość pozycjonowania w ruchu",
     "cmd_param_desc_frequency_stop": "Częstotliwość pozycjonowania podczas postoju"
 	"cmd_params_desc_center_number": "Numer administratora"
