@@ -129,14 +129,14 @@ public class UsersController extends ControllerBase {
 
     private static String emailConfirmationContent(String url) {
         return String.format("Witaj,<br/><br/>" +
-                "Dziękujemy za założenie konta w systemie DM TrackMan.<br/>" +
+                "Dziękujemy za założenie konta w systemie Petio.<br/>" +
                 "Twoje konto jest nieaktywne. Aby aktywować konto kliknij w poniższy link.<br/><br/><br/>" +
                 "<a href=\"%s\">Link do aktywacji konta</a><br/><br/>" +
                 "bądź skopiuj poniższy link i wklej do przeglądarki w pasku adresu.<br/><br/>" +
                 "%s<br/><br/>" +
                 "Uwaga: link aktywacyjny ważny jest przez 7 dni.<br/><br/><br/>" +
                 "Dziękujemy,<br/><br/>" +
-                "Zespół serwisu DM TrackMan<br/><br/>" +
+                "Zespół serwisu Petio<br/><br/>" +
                 "Ten email został wygenerowany automatycznie - nie odpowiadaj na niego.",
                 url, url);
     }
