@@ -75,6 +75,7 @@ public class CommandsController extends ControllerBase {
                         return getResponseError(MessageKeys.ERR_COMMAND_PARSE_PARAMS_FAILED);
                     }
                 }
+                commandParams.put("userId", context.getUser().getId());
 
                 ActiveDeviceProvider adp = new ActiveDeviceProvider();
                 Object activeDevice = adp.getActiveDevice(deviceId);
