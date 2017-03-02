@@ -37,6 +37,8 @@ public class DeviceDto extends EditDeviceDto implements ICachedDto {
     private final Integer batteryLevel;
     private final Date batteryTime;
     private final int batteryTimeout;
+    private final Integer positionFrequency;
+    private final Boolean autoArm;
     
     @JsonIgnore
     private final Date modificationTime;
@@ -64,6 +66,8 @@ public class DeviceDto extends EditDeviceDto implements ICachedDto {
         private Integer batteryLevel;
         private Date batteryTime;
         private int batteryTimeout;
+        private Integer positionFrequency;
+        private Boolean autoArm;
 
         public Builder id(final long value) {
             this.id = value;
@@ -200,6 +204,8 @@ public class DeviceDto extends EditDeviceDto implements ICachedDto {
             this.batteryLevel = device.getBatteryLevel();
             this.batteryTime = device.getBatteryTime();
             this.batteryTimeout = device.getBatteryTimeout();
+            this.positionFrequency = device.getPositionFreq();
+            this.autoArm = device.isAutoArmed();
             return this;
         }
 
@@ -224,7 +230,9 @@ public class DeviceDto extends EditDeviceDto implements ICachedDto {
                     speedLimit,
                     batteryLevel,
                     batteryTime,
-                    batteryTimeout);
+                    batteryTimeout,
+                    positionFrequency,
+                    autoArm);
         }
     }
 
@@ -248,7 +256,9 @@ public class DeviceDto extends EditDeviceDto implements ICachedDto {
             final Double speedLimit,
             final Integer batteryLevel,
             final Date batteryTime,
-            final int batteryTimeout) {
+            final int batteryTimeout,
+            final Integer positionFrequency,
+            final Boolean autoArm) {
         super(deviceName, deviceModelId, iconId, customIconId, color, phoneNumber, 
                 plateNumber, description, speedLimit);
         this.id = id;
@@ -263,6 +273,8 @@ public class DeviceDto extends EditDeviceDto implements ICachedDto {
         this.batteryLevel = batteryLevel;
         this.batteryTime = batteryTime;
         this.batteryTimeout = batteryTimeout;
+        this.positionFrequency = positionFrequency;
+        this.autoArm = autoArm;
     }
     
     public long getId() {
