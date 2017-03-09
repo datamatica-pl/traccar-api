@@ -131,6 +131,67 @@ public class CommandsController extends ControllerBase {
                     }
                 }
             }, gson::toJson);
+            
+            Spark.get(rootUrl()+"/devices/:deviceId/superstatus", (req, res) -> {
+                final RequestContext context = req.attribute(Application.REQUEST_CONTEXT_KEY);
+                final User requestUser = context.getUser();
+                final Long deviceId = Long.valueOf(req.params(":deviceId"));
+                final String[] cmdTypes = new String[] {"status"};
+                Map<String, Object> commandParams = new HashMap<>();
+                Device device;
+
+                res.status(HttpStatuses.BAD_REQUEST);
+                res.type("application/json");
+
+                try {
+                    device = context.getDeviceProvider().getDevice(deviceId);
+                } catch (ProviderException e) {
+                     device = null;
+                }
+
+                if (device == null && !requestUser.hasAccessTo(device)) {
+                    res.status(HttpStatuses.NOT_FOUND);
+                    return getResponseError(MessageKeys.ERR_DEVICE_NOT_FOUND_OR_NO_PRIVILEGES);
+                }
+
+                commandParams.put("userId", context.getUser().getId());
+
+                ActiveDeviceProvider adp = new ActiveDeviceProvider();
+                Object activeDevice = adp.getActiveDevice(deviceId);
+                if (activeDevice == null) {
+                    res.status(HttpStatuses.NOT_FOUND);
+                    return getResponseError(MessageKeys.ERR_ACTIVE_DEVICE_NOT_FOUND);
+                }
+                
+                Map<String, String> result = new HashMap<>();
+                for(String type : cmdTypes) {
+                    BackendCommandProvider bcp = new BackendCommandProvider();
+                    Object backendCommand = null;
+                    try {
+                        backendCommand = bcp.getBackendCommand(deviceId, type);
+                    } catch (Exception e) {
+                        result.put(type, MessageKeys.ERR_CREATE_COMMAND_OBJECT_FAILED);
+                        continue;
+                    }
+
+                    CommandService cs = new CommandService();
+
+                    Map<String, Object> tmp = cs.sendCommand(activeDevice, backendCommand);
+
+                    if (tmp == null || tmp.get("success") == null) {
+                        result.put(type, "FAILED");
+                    } else if ((boolean) tmp.get("success")) {
+                        result.put(type, tmp.get("response").toString());
+                    } else {
+                        if (tmp.get("reason") == "timeout") {
+                            result.put(type, "TIMEOUT");
+                        } else {
+                            result.put(type, "FAILED");
+                        }
+                    }
+                }
+                return result;
+            }, gson::toJson);
 
         }
 
