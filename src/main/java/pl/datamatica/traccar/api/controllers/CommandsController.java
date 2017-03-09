@@ -136,8 +136,7 @@ public class CommandsController extends ControllerBase {
                 final RequestContext context = req.attribute(Application.REQUEST_CONTEXT_KEY);
                 final User requestUser = context.getUser();
                 final Long deviceId = Long.valueOf(req.params(":deviceId"));
-                final String[] cmdTypes = new String[] {"status"};
-                Map<String, Object> commandParams = new HashMap<>();
+                final String[] cmdTypes = new String[] {"getStatus"};
                 Device device;
 
                 res.status(HttpStatuses.BAD_REQUEST);
@@ -154,8 +153,6 @@ public class CommandsController extends ControllerBase {
                     return getResponseError(MessageKeys.ERR_DEVICE_NOT_FOUND_OR_NO_PRIVILEGES);
                 }
 
-                commandParams.put("userId", context.getUser().getId());
-
                 ActiveDeviceProvider adp = new ActiveDeviceProvider();
                 Object activeDevice = adp.getActiveDevice(deviceId);
                 if (activeDevice == null) {
@@ -163,7 +160,7 @@ public class CommandsController extends ControllerBase {
                     return getResponseError(MessageKeys.ERR_ACTIVE_DEVICE_NOT_FOUND);
                 }
                 
-                Map<String, String> result = new HashMap<>();
+                Map<String, Object> result = new HashMap<>();
                 for(String type : cmdTypes) {
                     BackendCommandProvider bcp = new BackendCommandProvider();
                     Object backendCommand = null;
@@ -181,7 +178,7 @@ public class CommandsController extends ControllerBase {
                     if (tmp == null || tmp.get("success") == null) {
                         result.put(type, "FAILED");
                     } else if ((boolean) tmp.get("success")) {
-                        result.put(type, tmp.get("response").toString());
+                        result.putAll(gson.fromJson(tmp.get("response").toString(), Map.class));
                     } else {
                         if (tmp.get("reason") == "timeout") {
                             result.put(type, "TIMEOUT");
