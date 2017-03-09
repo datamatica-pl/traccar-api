@@ -44,6 +44,9 @@ public class DeviceModel extends UpdateTimestampedEntity implements Serializable
 
     @Column(length=500)
     private String imageUrl;
+    
+    @Column(length=100)
+    private String superStatusCommands;
 
     @Column(length=100)
     private String descriptionShort;
@@ -126,5 +129,9 @@ public class DeviceModel extends UpdateTimestampedEntity implements Serializable
 
     public void setIsDeleted(Boolean isDeleted) {
         this.isDeleted = isDeleted;
+    }
+    
+    public String getSuperStatusCommands() {
+        return this.superStatusCommands;
     }
 }
