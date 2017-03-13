@@ -24,6 +24,7 @@ import pl.datamatica.traccar.api.Application;
 import pl.datamatica.traccar.api.dtos.MessageKeys;
 import pl.datamatica.traccar.api.dtos.out.CommandResponseDto;
 import pl.datamatica.traccar.api.dtos.out.ErrorDto;
+import pl.datamatica.traccar.api.metadata.model.DeviceModel;
 import pl.datamatica.traccar.api.providers.ActiveDeviceProvider;
 import pl.datamatica.traccar.api.providers.BackendCommandProvider;
 import pl.datamatica.traccar.api.responses.HttpStatuses;
@@ -136,8 +137,8 @@ public class CommandsController extends ControllerBase {
                 final RequestContext context = req.attribute(Application.REQUEST_CONTEXT_KEY);
                 final User requestUser = context.getUser();
                 final Long deviceId = Long.valueOf(req.params(":deviceId"));
-                final String[] cmdTypes = new String[] {"getStatus"};
                 Device device;
+                DeviceModel model;
 
                 res.status(HttpStatuses.BAD_REQUEST);
                 res.type("application/json");
@@ -148,10 +149,12 @@ public class CommandsController extends ControllerBase {
                      device = null;
                 }
 
-                if (device == null && !requestUser.hasAccessTo(device)) {
+                if (device == null || !requestUser.hasAccessTo(device)) {
                     res.status(HttpStatuses.NOT_FOUND);
                     return getResponseError(MessageKeys.ERR_DEVICE_NOT_FOUND_OR_NO_PRIVILEGES);
                 }
+                
+                model = context.getDeviceModelProvider().getDeviceModel(device.getDeviceModelId());
 
                 ActiveDeviceProvider adp = new ActiveDeviceProvider();
                 Object activeDevice = adp.getActiveDevice(deviceId);
@@ -161,7 +164,10 @@ public class CommandsController extends ControllerBase {
                 }
                 
                 Map<String, Object> result = new HashMap<>();
-                for(String type : cmdTypes) {
+                for(String type : model.getSuperStatusCommands()) {
+                    if(type == null || type.isEmpty())
+                        continue;
+                    type = type.trim();
                     BackendCommandProvider bcp = new BackendCommandProvider();
                     Object backendCommand = null;
                     try {

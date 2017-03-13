@@ -131,7 +131,7 @@ public class DeviceModel extends UpdateTimestampedEntity implements Serializable
         this.isDeleted = isDeleted;
     }
     
-    public String getSuperStatusCommands() {
-        return this.superStatusCommands;
+    public String[] getSuperStatusCommands() {
+        return superStatusCommands.split(",");
     }
 }
