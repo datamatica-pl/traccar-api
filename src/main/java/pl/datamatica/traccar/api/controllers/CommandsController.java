@@ -163,6 +163,7 @@ public class CommandsController extends ControllerBase {
                     return getResponseError(MessageKeys.ERR_ACTIVE_DEVICE_NOT_FOUND);
                 }
                 
+                res.status(HttpStatuses.OK);
                 Map<String, Object> result = new HashMap<>();
                 for(String type : model.getSuperStatusCommands()) {
                     if(type == null || type.isEmpty())
