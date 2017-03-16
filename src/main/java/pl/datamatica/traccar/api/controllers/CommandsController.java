@@ -16,6 +16,7 @@
  */
 package pl.datamatica.traccar.api.controllers;
 
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -42,6 +43,14 @@ import spark.Spark;
  */
 public class CommandsController extends ControllerBase {
     public static class Binder extends ControllerBinder {
+        
+        public static final String[] VALID_PARAM_KEYS= {
+            "param_battery", "param_gprs", "param_gsm", "param_power", "param_gps", 
+            "param_acc", "param_oil", "param_position_t", "param_number_a", "param_number_b", 
+            "param_number_c", "param_time_zone", "param_overspeed_threshold", 
+            "param_movement_alarm", "param_vibration_alarm", "param_defense", 
+            "param_defense_time", "param_sends", "param_sensorset", "param_position_d", "param_imei"
+        };
 
         @Override
         public void bind() {
@@ -194,6 +203,7 @@ public class CommandsController extends ControllerBase {
                         }
                     }
                 }
+                result.keySet().retainAll(Arrays.asList(VALID_PARAM_KEYS));
                 return result;
             }, gson::toJson);
 
