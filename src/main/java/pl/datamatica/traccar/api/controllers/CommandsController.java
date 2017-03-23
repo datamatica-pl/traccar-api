@@ -45,11 +45,11 @@ public class CommandsController extends ControllerBase {
     public static class Binder extends ControllerBinder {
         
         public static final String[] VALID_PARAM_KEYS= {
-            "param_battery", "param_gprs", "param_gsm", "param_power", "param_gps", 
-            "param_acc", "param_oil", "param_position_t", "param_number_a", "param_number_b", 
-            "param_number_c", "param_time_zone", "param_overspeed_threshold", 
-            "param_movement_alarm", "param_vibration_alarm", "param_defense", 
-            "param_defense_time", "param_sends", "param_sensorset", "param_position_d", "param_imei"
+            "cmd_param_battery", "cmd_param_gprs", "cmd_param_gsm", "cmd_param_power", "cmd_param_gps", 
+            "cmd_param_acc", "cmd_param_oil", "cmd_param_position_t", "cmd_param_number_a", "cmd_param_number_b", 
+            "cmd_param_number_c", "cmd_param_time_zone", "cmd_param_overspeed_threshold", 
+            "cmd_param_movement_alarm", "cmd_param_vibration_alarm", "cmd_param_defense", 
+            "cmd_param_defense_time", "cmd_param_sends", "cmd_param_sensorset", "cmd_param_position_d", "cmd_param_imei"
         };
 
         @Override
