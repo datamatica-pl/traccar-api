@@ -16,6 +16,7 @@
  */
 package pl.datamatica.traccar.api.controllers;
 
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -24,6 +25,7 @@ import pl.datamatica.traccar.api.Application;
 import pl.datamatica.traccar.api.dtos.MessageKeys;
 import pl.datamatica.traccar.api.dtos.out.CommandResponseDto;
 import pl.datamatica.traccar.api.dtos.out.ErrorDto;
+import pl.datamatica.traccar.api.metadata.model.DeviceModel;
 import pl.datamatica.traccar.api.providers.ActiveDeviceProvider;
 import pl.datamatica.traccar.api.providers.BackendCommandProvider;
 import pl.datamatica.traccar.api.responses.HttpStatuses;
@@ -41,6 +43,14 @@ import spark.Spark;
  */
 public class CommandsController extends ControllerBase {
     public static class Binder extends ControllerBinder {
+        
+        public static final String[] VALID_PARAM_KEYS= {
+            "cmd_param_battery", "cmd_param_gprs", "cmd_param_gsm", "cmd_param_power", "cmd_param_gps", 
+            "cmd_param_acc", "cmd_param_oil", "cmd_param_position_t", "cmd_param_number_a", "cmd_param_number_b", 
+            "cmd_param_number_c", "cmd_param_time_zone", "cmd_param_overspeed_threshold", 
+            "cmd_param_movement_alarm", "cmd_param_vibration_alarm", "cmd_param_defense", 
+            "cmd_param_defense_time", "cmd_param_sends", "cmd_param_sensorset", "cmd_param_position_d", "cmd_param_imei"
+        };
 
         @Override
         public void bind() {
@@ -75,6 +85,7 @@ public class CommandsController extends ControllerBase {
                         return getResponseError(MessageKeys.ERR_COMMAND_PARSE_PARAMS_FAILED);
                     }
                 }
+                commandParams.put("userId", context.getUser().getId());
 
                 ActiveDeviceProvider adp = new ActiveDeviceProvider();
                 Object activeDevice = adp.getActiveDevice(deviceId);
@@ -129,6 +140,71 @@ public class CommandsController extends ControllerBase {
                         return getResponseError(MessageKeys.ERR_SEND_COMMAND_FAILED);
                     }
                 }
+            }, gson::toJson);
+            
+            Spark.get(rootUrl()+"/devices/:deviceId/superstatus", (req, res) -> {
+                final RequestContext context = req.attribute(Application.REQUEST_CONTEXT_KEY);
+                final User requestUser = context.getUser();
+                final Long deviceId = Long.valueOf(req.params(":deviceId"));
+                Device device;
+                DeviceModel model;
+
+                res.status(HttpStatuses.BAD_REQUEST);
+                res.type("application/json");
+
+                try {
+                    device = context.getDeviceProvider().getDevice(deviceId);
+                } catch (ProviderException e) {
+                     device = null;
+                }
+
+                if (device == null || !requestUser.hasAccessTo(device)) {
+                    res.status(HttpStatuses.NOT_FOUND);
+                    return getResponseError(MessageKeys.ERR_DEVICE_NOT_FOUND_OR_NO_PRIVILEGES);
+                }
+                
+                model = context.getDeviceModelProvider().getDeviceModel(device.getDeviceModelId());
+
+                ActiveDeviceProvider adp = new ActiveDeviceProvider();
+                Object activeDevice = adp.getActiveDevice(deviceId);
+                if (activeDevice == null) {
+                    res.status(HttpStatuses.NOT_FOUND);
+                    return getResponseError(MessageKeys.ERR_ACTIVE_DEVICE_NOT_FOUND);
+                }
+                
+                res.status(HttpStatuses.OK);
+                Map<String, Object> result = new HashMap<>();
+                for(String type : model.getSuperStatusCommands()) {
+                    if(type == null || type.isEmpty())
+                        continue;
+                    type = type.trim();
+                    BackendCommandProvider bcp = new BackendCommandProvider();
+                    Object backendCommand = null;
+                    try {
+                        backendCommand = bcp.getBackendCommand(deviceId, type);
+                    } catch (Exception e) {
+                        result.put(type, MessageKeys.ERR_CREATE_COMMAND_OBJECT_FAILED);
+                        continue;
+                    }
+
+                    CommandService cs = new CommandService();
+
+                    Map<String, Object> tmp = cs.sendCommand(activeDevice, backendCommand);
+
+                    if (tmp == null || tmp.get("success") == null) {
+                        result.put(type, "FAILED");
+                    } else if ((boolean) tmp.get("success")) {
+                        result.putAll(gson.fromJson(tmp.get("response").toString(), Map.class));
+                    } else {
+                        if (tmp.get("reason") == "timeout") {
+                            result.put(type, "TIMEOUT");
+                        } else {
+                            result.put(type, "FAILED");
+                        }
+                    }
+                }
+                result.keySet().retainAll(Arrays.asList(VALID_PARAM_KEYS));
+                return result;
             }, gson::toJson);
 
         }

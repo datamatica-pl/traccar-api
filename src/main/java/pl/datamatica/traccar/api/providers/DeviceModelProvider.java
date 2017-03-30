@@ -39,4 +39,11 @@ public class DeviceModelProvider extends ProviderBase {
                                             DeviceModel.class);
         return query.getResultList();
     }
+    
+    public DeviceModel getDeviceModel(long id) {
+        TypedQuery<DeviceModel> query = emMetadata.createQuery(
+                "from DeviceModel d where d.id = :id", DeviceModel.class)
+                .setParameter("id", id);
+        return query.getSingleResult();
+    }
 }
