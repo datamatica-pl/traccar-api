@@ -136,7 +136,7 @@ public class Application implements spark.servlet.SparkApplication {
                 exception.printStackTrace(new PrintWriter(sw));
                 response.status(500);
                 response.type("text/plain");
-                response.body(sw.toString());
+                response.body("Server error. Please contact us.");
             });
         }
     }
