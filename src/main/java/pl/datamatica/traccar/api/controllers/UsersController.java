@@ -128,6 +128,7 @@ public class UsersController extends ControllerBase {
     }
 
     private static String emailConfirmationContent(String url) {
+        url = url.replace("46.41.148.107", "gps.petio.eu").replace("46.41.149.43", "trackman.pl");
         return String.format("Witaj,<br/><br/>" +
                 "Dziękujemy za założenie konta w systemie DM TrackMan.<br/>" +
                 "Twoje konto jest nieaktywne. Aby aktywować konto kliknij w poniższy link.<br/><br/><br/>" +
