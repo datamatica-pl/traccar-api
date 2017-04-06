@@ -44,7 +44,7 @@ public class GeoFenceDto extends AddGeoFenceDto implements ICachedDto {
             this.id = geofence.getId();
             this.geofenceName = geofence.getName();
             this.description = geofence.getDescription();
-            this.allDevices = geofence.isAllDevices();
+            this.allDevices = false;
             this.color = geofence.getColor();
             if(geofence.getPoints() != null) {
                 points = Stream.of(geofence.getPoints().split(","))
