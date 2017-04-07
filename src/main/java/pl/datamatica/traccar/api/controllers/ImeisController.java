@@ -18,7 +18,10 @@ package pl.datamatica.traccar.api.controllers;
 
 import freemarker.cache.ClassTemplateLoader;
 import freemarker.template.Configuration;
+import java.util.HashMap;
+import java.util.Map;
 import pl.datamatica.traccar.api.Application;
+import pl.datamatica.traccar.api.providers.ImeiProvider;
 import pl.datamatica.traccar.api.responses.HttpStatuses;
 import spark.ModelAndView;
 import spark.Spark;
@@ -38,13 +41,18 @@ public class ImeisController extends ControllerBase {
             FreeMarkerEngine freeMarkerEngine = new FreeMarkerEngine();
             Configuration freeMarkerConfiguration = new Configuration();
             freeMarkerConfiguration.setTemplateLoader(new ClassTemplateLoader(Application.class, "/"));
+            freeMarkerConfiguration.setDefaultEncoding("utf-8");
             freeMarkerEngine.setConfiguration(freeMarkerConfiguration);
             
             Spark.get(rootUrl() + "/imei_manager", (req, res) -> {
-                res.status(HttpStatuses.OK);
-                res.type("text/html");
+                final RequestContext context = req.attribute(Application.REQUEST_CONTEXT_KEY);
+                final ImeiProvider imp = context.getImeiProvider();
+                Map<String, Object> attributes = new HashMap<>();
                 
-                return freeMarkerEngine.render(new ModelAndView(Application.class, "imei_manager.ftl"));
+                attributes.put("imeis", imp.getAllImeis());
+                
+                res.status(HttpStatuses.OK);
+                return freeMarkerEngine.render(new ModelAndView(attributes, "imei_manager.ftl"));
             });
             
             Spark.get(rootUrl() + "/imei_manager_js", (req, res) -> {

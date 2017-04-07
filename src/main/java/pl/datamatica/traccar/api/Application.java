@@ -71,6 +71,9 @@ public class Application implements spark.servlet.SparkApplication {
     @Override
     public void init() {
         BasicAuthFilter baf = new BasicAuthFilter();
+        
+        // Set static files. Root is 'src/main/resources', so put files in 'src/main/resources/public'
+        Spark.staticFiles.location("/public");
 
         Spark.before((req, res) -> {
             RequestContext rc = new RequestContext(req, res);
