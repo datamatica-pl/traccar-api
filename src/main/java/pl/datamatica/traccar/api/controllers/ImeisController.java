@@ -49,17 +49,17 @@ public class ImeisController extends ControllerBase {
                 final ImeiProvider imp = context.getImeiProvider();
                 Map<String, Object> attributes = new HashMap<>();
                 
+                // TODO: Check privileges
+                
                 attributes.put("imeis", imp.getAllImeis());
                 
                 res.status(HttpStatuses.OK);
                 return freeMarkerEngine.render(new ModelAndView(attributes, "imei_manager.ftl"));
             });
             
-            Spark.get(rootUrl() + "/imei_manager_js", (req, res) -> {
-                res.status(HttpStatuses.OK);
-                res.type("application/javascript");
-                
-                return freeMarkerEngine.render(new ModelAndView(Application.class, "imei_manager.js"));
+            Spark.delete("imei/:imeiId", (req, res) -> {
+                // TODO: Check privileges
+                return "TODO: Soft delete IMEI with id: " + req.params(":imeiId");
             });
         }
 

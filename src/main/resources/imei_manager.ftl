@@ -8,7 +8,7 @@
   <title>DM IMEI Manager</title>
 
   <!-- Bootstrap -->
-  <link href="css/bootstrap.min.css" rel="stylesheet">
+  <!-- <link href="css/bootstrap.min.css" rel="stylesheet"> -->
 
   <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
   <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
@@ -32,7 +32,7 @@
 
         <div class="container">
           <p>Lista aktualnych numerów IMEI w bazie</p>
-          <table class="table">
+          <table id="imei-numbers" class="table">
             <thead>
                 <tr>
                     <th>IMEI</th>
@@ -40,6 +40,7 @@
                     <th>Nazwisko</th>
                     <th>E-mail</th>
                     <th>Telefon</th>
+                    <th>Akcja</th>
                 </tr>
             </thead>
             <tbody>
@@ -50,14 +51,34 @@
                         <td></td>
                         <td></td>
                         <td></td>
+                        <td>
+                            <button type="button"
+                                    data-imei-id="${imei.id}"
+                                    href="/api/delete/${imei.id}"
+                                    class="btn btn-sm btn-danger"
+                                    data-toggle="confirmation"
+                                    data-title="Potwierdź usunięcie IMEI"
+                                    data-placement="left"
+                                    data-btn-ok-label="Usuń IMEI ${imei.imei}"
+                                    data-btn-ok-icon="glyphicon glyphicon-trash"
+                                    data-btn-cancel-label="Anuluj"
+                                    data-btn-cancel-icon="glyphicon glyphicon-ban-circle"
+                                    data-singleton="true"
+                                    data-on-confirm="imeiNumberManager.deleteImei">
+                                Usuń
+                            </button>
+                        </td>
                     </tr>
                 </#list>
-                <tr>
+                <tr id="new-imei">
                     <td>TODO: Input</td>
                     <td>TODO: Input</td>
                     <td>TODO: Input</td>
                     <td>TODO: Input</td>
                     <td>TODO: Input</td>
+                    <td>
+                        <button id="add-imei" type="button" class="btn btn-sm btn-success">Dodaj</button>
+                    </td>
                 </tr>
             </tbody>
           </table>
@@ -69,6 +90,10 @@
         <!-- <script src="js/bootstrap.min.js"></script> -->
 
         <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap-theme.min.css" integrity="sha384-rHyoN1iRsVXV4nD0JutlnGaslCJuC7uwjduW9SVrLvRYooPp2bWYgmgJQIXwl/Sp" crossorigin="anonymous">
+        <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-confirmation/1.0.5/bootstrap-confirmation.min.js"></script>
+
         <script src="//localhost/api/js/imei_manager.js"></script>
     </div>
 </body>
