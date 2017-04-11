@@ -71,7 +71,6 @@ public class GeoFenceProvider extends ProviderBase{
         GeoFence gf = new GeoFence();
         gf.setName(geoFenceDto.getGeofenceName());
         gf.setDescription(geoFenceDto.getDescription());
-        gf.setAllDevices(geoFenceDto.isAllDevices());
         gf.setColor(geoFenceDto.getColor());
         gf.setPoints(geoFenceDto.getPointsString());
         gf.setType(GeoFenceType.valueOf(geoFenceDto.getType()));
@@ -94,7 +93,6 @@ public class GeoFenceProvider extends ProviderBase{
     public void updateGeoFence(long id, AddGeoFenceDto geoFenceDto) throws ProviderException {
         GeoFence geoFence = getGeoFence(id);
         
-        geoFence.setAllDevices(geoFenceDto.isAllDevices());
         geoFence.setColor(geoFenceDto.getColor());
         geoFence.setDescription(geoFenceDto.getDescription());
 
