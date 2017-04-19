@@ -104,8 +104,8 @@ public class UsersController extends ControllerBase {
             return badRequest(errors);
         
         try {
-            User user = up.createUser(userDto.getEmail(), userDto.getPassword(), 
-                    userDto.isCheckMarketing());
+            User user = up.createUser(userDto.getEmail().trim(), 
+                    userDto.getPassword(), userDto.isCheckMarketing());
             requestContext.setUser(user);
             requestContext.getDeviceProvider().createDevice(userDto.getImei());
             String token = user.getEmailValidationToken();
