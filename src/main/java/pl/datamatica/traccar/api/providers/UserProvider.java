@@ -56,8 +56,12 @@ public class UserProvider extends ProviderBase {
         throw new AuthenticationException(ErrorType.NO_SUCH_USER);
     }
     
-    public User authenticateUser(long id) throws ProviderException {
-        return get(User.class, id, u -> true);
+    public User authenticateUser(long id) throws ProviderException, 
+            AuthenticationException {
+        requestUser = get(User.class, id, u -> true);
+        if(requestUser == null)
+            throw new AuthenticationException(ErrorType.NO_SUCH_USER);
+        return requestUser;
     }
     
     public User getRequestUser() {
@@ -68,7 +72,9 @@ public class UserProvider extends ProviderBase {
         if(requestUser.getAdmin()) 
             return getAllUsers();
         return Stream.concat(requestUser.getAllManagedUsers().stream(), 
-                Stream.of(requestUser.getManagedBy(), requestUser));
+                requestUser.getManagedBy() == null ?
+                        Stream.of(requestUser) :
+                        Stream.of(requestUser, requestUser.getManagedBy()));
     }
     
     public User getUser(long id) throws ProviderException {
