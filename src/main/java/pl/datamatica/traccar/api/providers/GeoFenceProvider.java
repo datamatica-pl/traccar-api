@@ -130,7 +130,7 @@ public class GeoFenceProvider extends ProviderBase{
         boolean shouldManageTransaction = !em.getTransaction().isActive();
         if(shouldManageTransaction)
             em.getTransaction().begin();
-        GeoFence gf = getGeoFence(id);
+        GeoFence gf = get(GeoFence.class, id, this::isVisible);
         if(!canDeleteGeofence(gf))
             throw new ProviderException(Type.ACCESS_DENIED);
         if(gf.getUsers().size() > 1) {
