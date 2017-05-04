@@ -133,8 +133,8 @@ public class GeoFenceProvider extends ProviderBase{
         GeoFence gf = get(GeoFence.class, id, this::isVisible);
         if(!canDeleteGeofence(gf))
             throw new ProviderException(Type.ACCESS_DENIED);
-        if(gf.getUsers().size() > 1) {
-            gf.getUsers().remove(requestUser);
+        gf.getUsers().remove(requestUser);
+        if(!gf.getUsers().isEmpty()) {
             logger.info("{} stopped seeing geofence {} (id={})",
                 requestUser.getLogin(), gf.getName(), gf.getId());
         } else {
