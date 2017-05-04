@@ -76,6 +76,10 @@ public class BasicAuthFilter {
         return (request.pathInfo().matches("/v[0-9]+/users") 
                 && request.requestMethod().equalsIgnoreCase("post"))
                 || (request.pathInfo().matches("/v[0-9]+/users/activate/.*")
+                && request.requestMethod().equalsIgnoreCase("get"))
+                || (request.pathInfo().matches("/v[0-9]+/users/resetreq")
+                && request.requestMethod().equalsIgnoreCase("post"))
+                || (request.pathInfo().matches("/v[0-9]+/users/reset/.*")
                 && request.requestMethod().equalsIgnoreCase("get"));
     }
 

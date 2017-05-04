@@ -16,6 +16,7 @@
  */
 package pl.datamatica.traccar.api.providers;
 
+import java.util.Random;
 import java.util.UUID;
 import java.util.stream.Stream;
 import javax.persistence.EntityManager;
@@ -96,15 +97,16 @@ public class UserProvider extends ProviderBase {
         user.setBlocked(true);
         user.setPasswordHashMethod(appSettings.getDefaultHashImplementation());
         user.setUserSettings(new UserSettings());
-        user.setEmailValidationToken(generateEmailValidationToken());
+        user.setEmailValidationToken(generateToken("emailValidationToken"));
         em.persist(user);
         
         logger.info("{} created his account", user.getLogin());
         return user;
     }
 
-    private String generateEmailValidationToken() {
-        TypedQuery<Long> tq = em.createQuery("select x.id from User x where x.emailValidationToken = :token", Long.class);
+    private String generateToken(String colName) {
+        TypedQuery<Long> tq = em.createQuery("select x.id from User x "
+                + "where x."+colName+" = :token", Long.class);
         tq.setMaxResults(1);
         while(true) {
             UUID token = UUID.randomUUID();
@@ -115,7 +117,7 @@ public class UserProvider extends ProviderBase {
     }
     
     public void activateUser(String token) throws ProviderException {
-        User user = getUserByToken(token);
+        User user = getUserByToken("emailValidationToken", token);
         if(user == null) 
             throw new ProviderException(Type.NOT_FOUND);
         user.setBlocked(false);
@@ -123,6 +125,29 @@ public class UserProvider extends ProviderBase {
         user.setEmailValidationToken(null);
         em.persist(user);
         logger.info("{} activated his account", user.getLogin());
+    }
+    
+    public String requestPasswordReset(String login) {
+        User u = getUserByLogin(login);
+        u.setPassResetToken(generateToken("passResetToken"));
+        em.persist(u);
+        return u.getPassResetToken();
+    }
+    
+    public User resetPassword(String token) throws ProviderException {
+        User user = getUserByToken("passResetToken", token);
+        if(user == null)
+            throw new ProviderException(Type.NOT_FOUND);
+        user.setPassResetToken(null);
+        StringBuilder pass = new StringBuilder();
+        Random r = new Random();
+        for(int i=0;i<14;++i)
+            pass.appendCodePoint(r.nextInt(94)+33);
+        user.setPassword(user.getPasswordHashMethod()
+                .doHash(pass.toString(), appSettings.getSalt()));
+        user.setPasswordRaw(pass.toString());
+        em.persist(user);
+        return user;
     }
     
     private User getUserByLogin(String login) {
@@ -135,9 +160,10 @@ public class UserProvider extends ProviderBase {
         }
     }
     
-    private User getUserByToken(String token) {
+    private User getUserByToken(String tokenType, String token) {
         try {
-            TypedQuery<User> tq = em.createQuery("Select x from User x where x.emailValidationToken = :token", User.class);
+            TypedQuery<User> tq = em.createQuery("Select x from User x "
+                    + "where x."+tokenType+" = :token", User.class);
             tq.setParameter("token", token);
             return tq.getSingleResult();
         } catch(NoResultException e) {
