@@ -113,7 +113,6 @@ public class GeofenceProviderTest {
         GeoFence gf = provider.createGeoFence(geoFence);
         
         assertNotNull(gf);
-        assertEquals(geoFence.isAllDevices(), gf.isAllDevices());
         assertEquals(geoFence.getColor(), gf.getColor());
         assertEquals(geoFence.getDescription(), gf.getDescription());
         assertEquals(geoFence.getGeofenceName(), gf.getName());
@@ -141,7 +140,6 @@ public class GeofenceProviderTest {
         em.flush();
         
         GeoFence actual = em.find(GeoFence.class, database.adminGeofence.getId());
-        assertEquals(geoFence.isAllDevices(), actual.isAllDevices());
         assertEquals(geoFence.getColor(), actual.getColor());
         assertEquals(geoFence.getDescription(), actual.getDescription());
         assertEquals(geoFence.getGeofenceName(), actual.getName());

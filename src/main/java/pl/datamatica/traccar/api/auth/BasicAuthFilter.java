@@ -76,6 +76,10 @@ public class BasicAuthFilter {
         return (request.pathInfo().matches("/v[0-9]+/users") 
                 && request.requestMethod().equalsIgnoreCase("post"))
                 || (request.pathInfo().matches("/v[0-9]+/users/activate/.*")
+                && request.requestMethod().equalsIgnoreCase("get"))
+                || (request.pathInfo().matches("/v[0-9]+/users/resetreq")
+                && request.requestMethod().equalsIgnoreCase("post"))
+                || (request.pathInfo().matches("/v[0-9]+/users/reset/.*")
                 && request.requestMethod().equalsIgnoreCase("get"));
     }
 
@@ -89,10 +93,7 @@ public class BasicAuthFilter {
     
     private User continueSession(Request request, UserProvider up) throws Exception {
         long userId = request.session().attribute(USER_ID_SESSION_KEY);
-        User user = up.authenticateUser(userId);
-        if(user == null)
-            throw new AuthenticationException(ErrorType.NO_SUCH_USER);
-        return user;
+        return up.authenticateUser(userId);
     }
     
     public User verifyCredentials(Credentials credentials, UserProvider up) 

@@ -18,6 +18,7 @@ package pl.datamatica.traccar.api.providers;
 
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -51,12 +52,16 @@ public class GeoFenceProvider extends ProviderBase{
             visible = getAllGeoFences();
         else
             visible = requestUser.getAllAvailableGeoFences().stream()
-                    .peek(gf -> gf.getDevices().retainAll(requestUser.getAllAvailableDevices()));
+                    .map(gf -> {
+                        GeoFence geo = gf.clone();
+                        geo.getDevices().retainAll(requestUser.getAllAvailableDevices());
+                        return geo;
+                    });
         return visible.filter(gf -> !gf.isDeleted());
     }
     
     public GeoFence getGeoFence(long id) throws ProviderException {
-        GeoFence geoFence = get(GeoFence.class, id, this::isVisible);
+        GeoFence geoFence = get(GeoFence.class, id, this::isVisible).clone();
         geoFence.getDevices().retainAll(requestUser.getAllAvailableDevices());
         return geoFence;
     }
@@ -71,7 +76,6 @@ public class GeoFenceProvider extends ProviderBase{
         GeoFence gf = new GeoFence();
         gf.setName(geoFenceDto.getGeofenceName());
         gf.setDescription(geoFenceDto.getDescription());
-        gf.setAllDevices(geoFenceDto.isAllDevices());
         gf.setColor(geoFenceDto.getColor());
         gf.setPoints(geoFenceDto.getPointsString());
         gf.setType(GeoFenceType.valueOf(geoFenceDto.getType()));
@@ -92,9 +96,8 @@ public class GeoFenceProvider extends ProviderBase{
     }
 
     public void updateGeoFence(long id, AddGeoFenceDto geoFenceDto) throws ProviderException {
-        GeoFence geoFence = getGeoFence(id);
+        GeoFence geoFence = get(GeoFence.class, id, this::isVisible);
         
-        geoFence.setAllDevices(geoFenceDto.isAllDevices());
         geoFence.setColor(geoFenceDto.getColor());
         geoFence.setDescription(geoFenceDto.getDescription());
 
@@ -127,11 +130,11 @@ public class GeoFenceProvider extends ProviderBase{
         boolean shouldManageTransaction = !em.getTransaction().isActive();
         if(shouldManageTransaction)
             em.getTransaction().begin();
-        GeoFence gf = getGeoFence(id);
+        GeoFence gf = get(GeoFence.class, id, this::isVisible);
         if(!canDeleteGeofence(gf))
             throw new ProviderException(Type.ACCESS_DENIED);
-        if(gf.getUsers().size() > 1) {
-            gf.getUsers().remove(requestUser);
+        gf.getUsers().remove(requestUser);
+        if(!gf.getUsers().isEmpty()) {
             logger.info("{} stopped seeing geofence {} (id={})",
                 requestUser.getLogin(), gf.getName(), gf.getId());
         } else {
