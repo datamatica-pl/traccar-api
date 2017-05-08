@@ -156,6 +156,7 @@ public class DeviceProvider extends ProviderBase {
         for (GeoFence geoFence : (List<GeoFence>) query.getResultList()) {
             geoFence.getDevices().remove(device);
         }
+        em.flush();
 
         query = em.createQuery("DELETE FROM Maintenance x WHERE x.device = :device");
         query.setParameter("device", device);
