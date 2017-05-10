@@ -21,6 +21,7 @@ import freemarker.template.Configuration;
 import java.util.HashMap;
 import java.util.Map;
 import pl.datamatica.traccar.api.Application;
+import pl.datamatica.traccar.api.metadata.model.ImeiNumber;
 import pl.datamatica.traccar.api.providers.ImeiProvider;
 import pl.datamatica.traccar.api.responses.HttpStatuses;
 import spark.ModelAndView;
@@ -58,8 +59,19 @@ public class ImeisController extends ControllerBase {
             });
             
             Spark.delete("imei/:imeiId", (req, res) -> {
+                final RequestContext context = req.attribute(Application.REQUEST_CONTEXT_KEY);
+                final ImeiProvider imp = context.getImeiProvider();
+                final long imeiId = Long.valueOf(req.params(":imeiId"));
+                
                 // TODO: Check privileges
-                return "TODO: Soft delete IMEI with id: " + req.params(":imeiId");
+                
+                ImeiNumber imei = imp.getImeiById(imeiId);
+                if (imei != null) {
+                    imei.setIsDeleted(true);
+                    return "TODO: Soft delete IMEI with IMEI: " + imei.getImei();
+                } else {
+                    return "IMEI hasn't been found";
+                }
             });
         }
 

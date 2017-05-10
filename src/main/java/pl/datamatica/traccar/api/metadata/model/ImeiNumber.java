@@ -16,7 +16,11 @@
  */
 package pl.datamatica.traccar.api.metadata.model;
 
+import java.io.Serializable;
 import javax.persistence.*;
+import org.hibernate.annotations.Filter;
+import org.hibernate.annotations.FilterDef;
+import org.hibernate.annotations.SQLDelete;
 
 /**
  *
@@ -25,7 +29,10 @@ import javax.persistence.*;
 @Entity
 @Table( name = "imei_numbers" )
 @PersistenceContext(unitName = "traccar_api_metadata_persistence")
-public class ImeiNumber {
+@SQLDelete(sql="UPDATE imei_numbers i SET i.isDeleted = 1 WHERE i.id = ?")
+@FilterDef(name="softDelete", defaultCondition="isDeleted = 0")
+@Filter(name="softDelete")
+public class ImeiNumber extends UpdateTimestampedEntity implements Serializable {
     
     @Id
     @GeneratedValue(strategy=GenerationType.AUTO)
@@ -33,6 +40,9 @@ public class ImeiNumber {
     
     @Column(nullable=false, length=16, unique=true)
     private String imei;
+    
+    @Column(nullable = false, columnDefinition = "boolean default false")
+    private boolean isDeleted;
 
     public long getId() {
         return id;
@@ -48,5 +58,13 @@ public class ImeiNumber {
 
     public void setImei(String imei) {
         this.imei = imei;
+    }
+    
+    public Boolean getIsDeleted() {
+        return isDeleted;
+    }
+
+    public void setIsDeleted(Boolean isDeleted) {
+        this.isDeleted = isDeleted;
     }
 }

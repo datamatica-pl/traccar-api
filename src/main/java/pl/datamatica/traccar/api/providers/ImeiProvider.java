@@ -36,6 +36,19 @@ public class ImeiProvider {
         return tq.getResultList();
     }
     
+    public ImeiNumber getImeiById(long imeiId) {
+        List<ImeiNumber> imeis  = emMetadata.createQuery("SELECT x FROM ImeiNumber x WHERE x.id = :imeiId", ImeiNumber.class)
+                                        .setParameter("imeiId", imeiId)
+                                        .setMaxResults(1)
+                                        .getResultList();
+        
+        if (imeis.isEmpty()) {
+            return null;
+        } else {
+            return imeis.get(0);
+        }
+    }
+    
     public boolean isImeiRegistered(String imei) {
         List<ImeiNumber> imeis = emMetadata.createQuery("SELECT x FROM ImeiNumber x WHERE x.imei = :imeiNumber", ImeiNumber.class)
                                         .setParameter("imeiNumber", imei)
