@@ -71,6 +71,9 @@ public class RequestContext implements AutoCloseable {
         this.em = Context.getInstance().createEntityManager();
         if (this.isRequestForMetadata(request)) {
             this.emMetadata = Context.getInstance().createMetadataEntityManager();
+            if (this.isRequestForImeiManager(request)) {
+                this.emMetadata.unwrap(org.hibernate.Session.class).enableFilter("softDelete");
+            }
         } else {
             this.emMetadata = null;
         }
@@ -198,7 +201,15 @@ public class RequestContext implements AutoCloseable {
         // TODO: We need to talk whether we want to add calls to devices here or just remove it
         // and always add metadata EntityManager and open transaction on it. Temporary return true
         // to get IMEI list on devices.
+        // Important: If we ever use is this method again, lets make sure, that request for imei_manager
+        // are also included, as they have different url. IMEI's are metadata, and must have access to
+        // its EntityManager
         return true;
+    }
+    
+    public final boolean isRequestForImeiManager(Request request) {
+        final String manager_uri_pattern = "^/imei_manager.*";
+        return request.uri().matches(manager_uri_pattern);
     }
 
     @Override

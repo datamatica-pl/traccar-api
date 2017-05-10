@@ -6,7 +6,7 @@ $(function() {
             e.preventDefault(); // Don't scroll page up after click
             
             $.ajax({
-                url: '/api/imei/' + this.imeiId,
+                url: '/api/imei_manager/imei/' + this.imeiId,
                 type: 'DELETE',
                 success: function(result) {
                     alert(result)

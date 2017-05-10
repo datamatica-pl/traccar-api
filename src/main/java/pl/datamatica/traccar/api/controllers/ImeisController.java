@@ -45,7 +45,7 @@ public class ImeisController extends ControllerBase {
             freeMarkerConfiguration.setDefaultEncoding("utf-8");
             freeMarkerEngine.setConfiguration(freeMarkerConfiguration);
             
-            Spark.get(rootUrl() + "/imei_manager", (req, res) -> {
+            Spark.get(baseUrl() + "/imeis", (req, res) -> {
                 final RequestContext context = req.attribute(Application.REQUEST_CONTEXT_KEY);
                 final ImeiProvider imp = context.getImeiProvider();
                 Map<String, Object> attributes = new HashMap<>();
@@ -58,7 +58,7 @@ public class ImeisController extends ControllerBase {
                 return freeMarkerEngine.render(new ModelAndView(attributes, "imei_manager.ftl"));
             });
             
-            Spark.delete("imei/:imeiId", (req, res) -> {
+            Spark.delete(baseUrl() + "/imei/:imeiId", (req, res) -> {
                 final RequestContext context = req.attribute(Application.REQUEST_CONTEXT_KEY);
                 final ImeiProvider imp = context.getImeiProvider();
                 final long imeiId = Long.valueOf(req.params(":imeiId"));
@@ -76,7 +76,7 @@ public class ImeisController extends ControllerBase {
         }
 
         public String baseUrl() {
-            return rootUrl() + "/imeis";
+            return "imei_manager";
         }
     }
 
