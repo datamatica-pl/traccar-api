@@ -51,6 +51,7 @@ public class ImeisController extends ControllerBase {
                 Map<String, Object> attributes = new HashMap<>();
                 
                 // TODO: Check privileges
+                // TODO: Log IMEI
                 
                 attributes.put("imeis", imp.getAllImeis());
                 
@@ -64,14 +65,24 @@ public class ImeisController extends ControllerBase {
                 final long imeiId = Long.valueOf(req.params(":imeiId"));
                 
                 // TODO: Check privileges
+                // TODO: Log IMEI
                 
-                ImeiNumber imei = imp.getImeiById(imeiId);
-                if (imei != null) {
-                    imei.setIsDeleted(true);
-                    return "TODO: Soft delete IMEI with IMEI: " + imei.getImei();
-                } else {
-                    return "IMEI hasn't been found";
+                try {
+                    ImeiNumber imei = imp.getImeiById(imeiId);
+                    if (imei != null) {
+                        imei.setIsDeleted(true);
+                        return imei.getImei() + " zastał poprawnie usunięty.";
+                    } else {
+                        res.status(404);
+                        return "IMEI nie został znaleziony";
+                    }
+                } catch (Exception e) {
+                    // TODO: Log error
+                    res.status(400);
+                    return "Wystąpił błąd przy kasowaniu numeru IMEI. Proszę odświeżyć " +
+                            "okno przeglądarki i spróbować ponownie.";
                 }
+                
             });
         }
 
