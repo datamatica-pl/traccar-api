@@ -38,4 +38,20 @@ $(function() {
         }
     });
     
+    $('#add-new-imei').on('click', function() {
+        var $addImeiForm = $('form#new-imei-number');
+        var $imeiNumber = $addImeiForm.find('#imei');
+        
+        $.ajax({
+            url: '/api/imei_manager/imei/',
+            method: 'POST',
+            data: {
+                imeiNumber: $imeiNumber.val()
+            },
+            success: function(result) {
+                alert(result);
+            }
+        });
+    });
+    
 });

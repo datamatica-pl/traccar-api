@@ -73,16 +73,39 @@ public class ImeisController extends ControllerBase {
                         imei.setIsDeleted(true);
                         return imei.getImei() + " zastał poprawnie usunięty.";
                     } else {
-                        res.status(404);
+                        res.status(HttpStatuses.NOT_FOUND);
                         return "IMEI nie został znaleziony";
                     }
                 } catch (Exception e) {
                     // TODO: Log error
-                    res.status(400);
+                    res.status(HttpStatuses.BAD_REQUEST);
                     return "Wystąpił błąd przy kasowaniu numeru IMEI. Proszę odświeżyć " +
                             "okno przeglądarki i spróbować ponownie.";
                 }
                 
+            });
+            
+            Spark.post(baseUrl() + "/imei/", (req, res) -> {
+                final RequestContext context = req.attribute(Application.REQUEST_CONTEXT_KEY);
+                final ImeiProvider imp = context.getImeiProvider();
+                final String imeiStr = req.queryParams("imeiNumber");
+                
+                // TODO: Check Privileges
+                // TODO: Check whether exists
+                
+                ImeiNumber imei = new ImeiNumber();
+                imei.setImei(imeiStr);
+                
+                try {
+                    imp.saveImeiNumber(imei);
+                    res.status(HttpStatuses.OK);
+                    // TODO: Log
+                    return String.format("IMEI %s został poprawnie dodany do bazy", imei.getImei());
+                } catch (Exception e) {
+                    res.status(HttpStatuses.BAD_REQUEST);
+                    // TODO: Log
+                    return "Wystąpił błąd przy dodawaniu numeru IMEI, proszę spróbować ponownie.";
+                }
             });
         }
 

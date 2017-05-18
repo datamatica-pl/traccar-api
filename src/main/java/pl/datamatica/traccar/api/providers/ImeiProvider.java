@@ -49,6 +49,10 @@ public class ImeiProvider {
         }
     }
     
+    public void saveImeiNumber(final ImeiNumber imei) {
+        emMetadata.persist(imei);
+    }
+    
     public boolean isImeiRegistered(String imei) {
         List<ImeiNumber> imeis = emMetadata.createQuery("SELECT x FROM ImeiNumber x WHERE x.imei = :imeiNumber", ImeiNumber.class)
                                         .setParameter("imeiNumber", imei)

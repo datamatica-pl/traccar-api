@@ -84,6 +84,37 @@
           </table>
         </div>
 
+        <!-- Button trigger modal -->
+        <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#new-imei-modal">
+          Nowy IMEI
+        </button>
+
+        <!-- Modal -->
+        <div class="modal fade" id="new-imei-modal" tabindex="-1" role="dialog" aria-labelledby="new-imei-modal-title" aria-hidden="true">
+          <div class="modal-dialog" role="document">
+            <div class="modal-content">
+              <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                  <span aria-hidden="true">&times;</span>
+                </button>
+                <h5 class="modal-title" id="new-imei-modal-title">Nowegy IMEI</h5>
+              </div>
+              <div class="modal-body">
+                <form id="new-imei-number">
+                    <div class="form-group">
+                      <label for="imei">Numer IMEI:</label>
+                      <input type="text" class="form-control" id="imei">
+                    </div>
+                  </form>
+              </div>
+              <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Zamknij</button>
+                <button id="add-new-imei" type="button" class="btn btn-primary">Dodaj IMEI</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
         <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
         <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
         <!-- Include all compiled plugins (below), or include individual files as needed -->
