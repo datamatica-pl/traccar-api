@@ -97,7 +97,7 @@
                 <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                   <span aria-hidden="true">&times;</span>
                 </button>
-                <h5 class="modal-title" id="new-imei-modal-title">Nowegy IMEI</h5>
+                <h5 class="modal-title" id="new-imei-modal-title">Nowy IMEI</h5>
               </div>
               <div class="modal-body">
                 <form id="new-imei-number">

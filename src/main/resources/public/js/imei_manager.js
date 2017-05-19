@@ -50,6 +50,12 @@ $(function() {
             },
             success: function(result) {
                 alert(result);
+                window.location.reload();
+            },
+            error: function() {
+                alert("Wystąpił błąd przy dodawaniu numeru IMEI." +
+                        " Proszę sprawdzić, czy IMEI jest poprawny," +
+                        " oraz czy nie występuje już w bazie.");
             }
         });
     });
