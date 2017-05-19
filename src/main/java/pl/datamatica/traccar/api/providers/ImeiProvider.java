@@ -66,6 +66,11 @@ public class ImeiProvider {
     
     public boolean isImeiRegistered(String imeiStr) {
         ImeiNumber imei = getImeiByImeiString(imeiStr);
-        return imei != null;
+        if (imei == null) {
+            return false;
+        } else {
+            return !imei.getIsDeleted(); // Treat softly deleted IMEI's as not registered, always,
+                                         // regardless of state of softDelete filter
+        }
     }
 }
