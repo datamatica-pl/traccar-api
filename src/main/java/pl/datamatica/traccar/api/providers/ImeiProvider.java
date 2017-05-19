@@ -53,12 +53,19 @@ public class ImeiProvider {
         emMetadata.persist(imei);
     }
     
-    public boolean isImeiRegistered(String imei) {
-        List<ImeiNumber> imeis = emMetadata.createQuery("SELECT x FROM ImeiNumber x WHERE x.imei = :imeiNumber", ImeiNumber.class)
-                                        .setParameter("imeiNumber", imei)
-                                        .setMaxResults(1)
-                                        .getResultList();
-        
-        return !imeis.isEmpty();
+    public ImeiNumber getImeiByImeiString(final String imeiStr) {
+        try {
+            ImeiNumber imei = emMetadata.createQuery("SELECT x FROM ImeiNumber x WHERE x.imei = :imeiNumber", ImeiNumber.class)
+                                        .setParameter("imeiNumber", imeiStr)
+                                        .getSingleResult();
+            return imei;
+        } catch (NoResultException nre) {
+            return null;
+        }
+    }
+    
+    public boolean isImeiRegistered(String imeiStr) {
+        ImeiNumber imei = getImeiByImeiString(imeiStr);
+        return imei != null;
     }
 }

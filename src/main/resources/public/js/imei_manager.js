@@ -52,10 +52,14 @@ $(function() {
                 alert(result);
                 window.location.reload();
             },
-            error: function() {
-                alert("Wystąpił błąd przy dodawaniu numeru IMEI." +
+            error: function(response) {
+                if (response.statusText === "Conflict") {
+                    alert(response.responseText);
+                } else {
+                    alert("Wystąpił błąd przy dodawaniu numeru IMEI." +
                         " Proszę sprawdzić, czy IMEI jest poprawny," +
                         " oraz czy nie występuje już w bazie.");
+                }
             }
         });
     });

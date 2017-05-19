@@ -20,6 +20,7 @@ import freemarker.cache.ClassTemplateLoader;
 import freemarker.template.Configuration;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 import pl.datamatica.traccar.api.Application;
 import pl.datamatica.traccar.api.metadata.model.ImeiNumber;
 import pl.datamatica.traccar.api.providers.ImeiProvider;
@@ -89,18 +90,40 @@ public class ImeisController extends ControllerBase {
                 final RequestContext context = req.attribute(Application.REQUEST_CONTEXT_KEY);
                 final ImeiProvider imp = context.getImeiProvider();
                 final String imeiStr = req.queryParams("imeiNumber");
+                ImeiNumber imei;
+                String successMsg;
                 
                 // TODO: Check Privileges
                 // TODO: Check whether exists
                 
-                ImeiNumber imei = new ImeiNumber();
-                imei.setImei(imeiStr);
+                try {
+                    context.disableSoftDeleteForMetadata(); // Allow deleted IMEI's to be retrieved,
+                                                            // because if we find one it will be restored
+                    imei = imp.getImeiByImeiString(imeiStr);
+                } catch (Exception e) {
+                    res.status(HttpStatuses.BAD_REQUEST);
+                    return "Wystąpił błąd przy dodawaniu numeru IMEI, proszę spróbować ponownie.";
+                }
+                
+                if (imei == null) {
+                    imei = new ImeiNumber();
+                    imei.setImei(imeiStr);
+                    successMsg = String.format("IMEI %s został poprawnie dodany do bazy. " +
+                                    "Proszę pamiętać o wpisaniu go do faktury.", imei.getImei());
+                } else if (Objects.equals(imei.getIsDeleted(), Boolean.TRUE)) {
+                    imei.setIsDeleted(Boolean.FALSE);
+                    successMsg = String.format("IMEI %s istniał już w bazie ale był skasowany, został przywrócony. " +
+                                    "Proszę pamiętać o wpisaniu go do faktury.", imei.getImei());
+                } else {
+                    res.status(HttpStatuses.CONFLICT);
+                    return String.format("IMEI %s istnieje już w bazie.", imei.getImei());
+                }
                 
                 try {
                     imp.saveImeiNumber(imei);
                     res.status(HttpStatuses.OK);
                     // TODO: Log
-                    return String.format("IMEI %s został poprawnie dodany do bazy", imei.getImei());
+                    return successMsg;
                 } catch (Exception e) {
                     res.status(HttpStatuses.BAD_REQUEST);
                     // TODO: Log

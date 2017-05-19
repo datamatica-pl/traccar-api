@@ -72,7 +72,7 @@ public class RequestContext implements AutoCloseable {
         if (this.isRequestForMetadata(request)) {
             this.emMetadata = Context.getInstance().createMetadataEntityManager();
             if (this.isRequestForImeiManager(request)) {
-                this.emMetadata.unwrap(org.hibernate.Session.class).enableFilter("softDelete");
+                enableSoftDeleteForMetadata();
             }
         } else {
             this.emMetadata = null;
@@ -264,5 +264,13 @@ public class RequestContext implements AutoCloseable {
                 et.rollback();
             }
         }
+    }
+    
+    public final void disableSoftDeleteForMetadata() {
+        this.emMetadata.unwrap(org.hibernate.Session.class).disableFilter("softDelete");
+    }
+    
+    public final void enableSoftDeleteForMetadata() {
+        this.emMetadata.unwrap(org.hibernate.Session.class).enableFilter("softDelete");
     }
 }
