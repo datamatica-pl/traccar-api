@@ -49,7 +49,9 @@ public class CommandsController extends ControllerBase {
             "cmd_param_acc", "cmd_param_oil", "cmd_param_position_t", "cmd_param_number_a", "cmd_param_number_b", 
             "cmd_param_number_c", "cmd_param_time_zone", "cmd_param_overspeed_threshold", 
             "cmd_param_movement_alarm", "cmd_param_vibration_alarm", "cmd_param_defense", 
-            "cmd_param_defense_time", "cmd_param_sends", "cmd_param_sensorset", "cmd_param_position_d", "cmd_param_imei"
+            "cmd_param_defense_time", "cmd_param_sends", "cmd_param_sensorset", "cmd_param_position_d", 
+            "cmd_param_imei", "cmd_param_data_link", "cmd_param_roaming", "cmd_param_init_time",
+            "cmd_param_rtc_time"
         };
 
         @Override
@@ -190,7 +192,7 @@ public class CommandsController extends ControllerBase {
                     CommandService cs = new CommandService();
 
                     Map<String, Object> tmp = cs.sendCommand(activeDevice, backendCommand);
-
+                    
                     if (tmp == null || tmp.get("success") == null) {
                         result.put(type, "FAILED");
                     } else if ((boolean) tmp.get("success")) {
