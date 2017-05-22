@@ -15,10 +15,36 @@ var imeiManager = {
             
             return $bootstrapAlert;
         }
+    },
+    imeiBackupStorage : {
+        addImei: function(imei, email) {
+            if (typeof(Storage) !== "undefined") {
+                localStorage.setItem(imei, email);
+            }
+        },
+        removeImei: function(imei) {
+            if (typeof(Storage) !== "undefined") {
+                localStorage.setItem(imei, "deleted");
+            }
+        },
+        refreshLocalImeis: function() {
+            $imeiNumberRows = $('#imei-numbers')
+                                .find('tbody')
+                                .find('tr');
+
+            $imeiNumberRows.each(function() {
+                var $cells = $(this).find('td');
+                var imei = $cells.filter('.imei').text();
+                
+                imeiManager.imeiBackupStorage.addImei(imei, '');
+            });
+        }
     }
 }
 
 $(function() {
+    
+    imeiManager.imeiBackupStorage.refreshLocalImeis();
     
     $('[data-toggle=confirmation]').confirmation({
         rootSelector: '[data-toggle=confirmation]',
@@ -30,8 +56,11 @@ $(function() {
                 type: 'DELETE',
                 success: function(result) {
                     var $alertEl = imeiManager.bootstrapAlertsFactory.getAlertEl('success', result);
+                    var $rowToDelete = $(del_button).closest('tr');
                     
-                    $(del_button).closest('tr').remove();
+                    imeiManager.imeiBackupStorage.removeImei( $rowToDelete.find('td.imei').text() );
+                    
+                    $rowToDelete.remove();
                     $("#imei-numbers").before($alertEl);
                 }
             });

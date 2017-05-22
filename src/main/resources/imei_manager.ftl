@@ -46,7 +46,7 @@
             <tbody>
                 <#list imeis as imei>
                     <tr>
-                        <td>${imei.imei}</td>
+                        <td class="imei">${imei.imei}</td>
                         <td></td>
                         <td></td>
                         <td></td>
