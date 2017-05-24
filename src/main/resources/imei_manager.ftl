@@ -21,7 +21,7 @@
     <div class="container theme-showcase" role="main">
 
         <div class="jumbotron">
-            <img src="//localhost/api/images/imei_manager_logo.png" class="img-responsive" alt="IMEI manager logo" width="128" height="128"> 
+            <img src="/api/images/imei_manager_logo.png" class="img-responsive" alt="IMEI manager logo" width="128" height="128"> 
             <h1>DM IMEI Manager</h1>
             <p>Aplikacja do zarządzania numerami IMEI</p>
         </div>
@@ -125,7 +125,7 @@
         <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
         <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-confirmation/1.0.5/bootstrap-confirmation.min.js"></script>
 
-        <script src="//localhost/api/js/imei_manager.js"></script>
+        <script src="/api/js/imei_manager.js"></script>
     </div>
 </body>
 </html>
