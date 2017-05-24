@@ -89,12 +89,13 @@ public class ImeisController extends ControllerBase {
             Spark.post(baseUrl() + "/imei/", (req, res) -> {
                 final RequestContext context = req.attribute(Application.REQUEST_CONTEXT_KEY);
                 final ImeiProvider imp = context.getImeiProvider();
-                final String imeiStr = req.queryParams("imeiNumber");
+                final String imeiStr = req.queryParams("imeiNumber").trim();
                 ImeiNumber imei;
                 String successMsg;
                 
-                // TODO: Check Privileges
-                // TODO: Check whether exists
+                if (imeiStr == null || imeiStr.equals("")) {
+                    return "Numer IMEI nie może być pusty.";
+                }
                 
                 try {
                     context.disableSoftDeleteForMetadata(); // Allow deleted IMEI's to be retrieved,
