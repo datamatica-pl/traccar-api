@@ -62,8 +62,17 @@ public class BasicAuthFilter {
                 user = beginSession(request, up);
             if(user.isBlocked()) {
                 unauthorized(response, new ErrorDto(MessageKeys.ERR_ACCOUNT_BLOCKED));
-            } else if(user.isExpired()) 
+            } else if(user.isExpired()) {
                 unauthorized(response, new ErrorDto(MessageKeys.ERR_ACCOUNT_EXPIRED));
+            }
+            
+            // Allow only IMEI manager for request to DM IMEI Manager
+            if (rc.isRequestForImeiManager(request)) {
+                if (!user.isImeiManager()) {
+                    unauthorized(response, new ErrorDto(MessageKeys.ERR_ACCESS_DENIED));
+                }
+            }
+            
             rc.setUser(user);
         } catch(AuthenticationException e) {
             unauthorized(response, e.getMessage());

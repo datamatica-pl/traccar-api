@@ -81,6 +81,9 @@ public class Application implements spark.servlet.SparkApplication {
             if (rc.isRequestForMetadata(req)) {
                 rc.beginMetadataTransaction();
             }
+            if (rc.isRequestForImeiManager(req)) {
+                String test = "abc";
+            }
             req.attribute(REQUEST_CONTEXT_KEY, rc);
             baf.handle(req, res);
         });
