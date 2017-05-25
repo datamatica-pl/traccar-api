@@ -75,6 +75,12 @@ public class BasicAuthFilter {
                     unauthorized(response, new ErrorDto(MessageKeys.ERR_ACCESS_DENIED));
                 }
                 
+                // Logout from IMEI manager
+                if (request.uri().equalsIgnoreCase("/imei_manager/logout")) {
+                    request.session().removeAttribute(USER_ID_SESSION_KEY);
+                    unauthorized(response, new ErrorDto(MessageKeys.ERR_ACCESS_DENIED));
+                }
+                
                 // Check whether IP is allowed to manage IMEI's
                 boolean isIpAllowedToAddImei = false;
                 try {

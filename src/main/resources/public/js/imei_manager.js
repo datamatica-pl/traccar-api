@@ -93,4 +93,18 @@ $(function() {
         });
     });
     
+    $('#im-logout').on('click', function() {
+        $.ajax({
+            url: '/api/imei_manager/logout',
+            method: "GET",
+            async: false,
+            error: function(response) {
+                var json = $.parseJSON(response.responseText);
+                if (json.messageKey && json.messageKey === "err_access_denied") {
+                    alert("Dostęp został zablokowany.");
+                }
+            }
+        });
+    });
+    
 });

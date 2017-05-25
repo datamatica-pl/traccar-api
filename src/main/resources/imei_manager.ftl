@@ -19,8 +19,8 @@
 </head>
 <body>
     <div class="container theme-showcase" role="main">
-
         <div class="jumbotron">
+            <button id="im-logout" type="button" class="btn btn-primary pull-right" data-toggle="modal">Wyloguj</button>
             <img src="/api/images/imei_manager_logo.png" class="img-responsive" alt="IMEI manager logo" width="128" height="128"> 
             <h1>DM IMEI Manager</h1>
             <p>Aplikacja do zarządzania numerami IMEI</p>
@@ -85,9 +85,11 @@
         </div>
 
         <!-- Button trigger modal -->
-        <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#new-imei-modal">
-          Nowy IMEI
-        </button>
+        <div class="container">
+            <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#new-imei-modal">
+              Nowy IMEI
+            </button>
+        </div>
 
         <!-- Modal -->
         <div class="modal fade" id="new-imei-modal" tabindex="-1" role="dialog" aria-labelledby="new-imei-modal-title" aria-hidden="true">
