@@ -19,16 +19,19 @@ package pl.datamatica.traccar.api.auth;
 import com.google.gson.Gson;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
 import java.util.concurrent.TimeUnit;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pl.datamatica.traccar.api.Application;
 import pl.datamatica.traccar.api.Context;
+import pl.datamatica.traccar.api.TraccarConfig;
 import spark.*;
 import static pl.datamatica.traccar.api.auth.AuthenticationException.*;
 import pl.datamatica.traccar.api.controllers.RequestContext;
 import pl.datamatica.traccar.api.dtos.MessageKeys;
 import pl.datamatica.traccar.api.dtos.out.ErrorDto;
+import pl.datamatica.traccar.api.exceptions.ConfigLoadException;
 import pl.datamatica.traccar.api.providers.ApplicationSettingsProvider;
 import pl.datamatica.traccar.api.providers.UserProvider;
 import pl.datamatica.traccar.model.User;
@@ -66,9 +69,24 @@ public class BasicAuthFilter {
                 unauthorized(response, new ErrorDto(MessageKeys.ERR_ACCOUNT_EXPIRED));
             }
             
-            // Allow only IMEI manager for request to DM IMEI Manager
             if (rc.isRequestForImeiManager(request)) {
+                // Allow only IMEI manager for request to DM IMEI Manager
                 if (!user.isImeiManager()) {
+                    unauthorized(response, new ErrorDto(MessageKeys.ERR_ACCESS_DENIED));
+                }
+                
+                // Check whether IP is allowed to manage IMEI's
+                boolean isIpAllowedToAddImei = false;
+                try {
+                    final TraccarConfig traccarConf = TraccarConfig.getInstance();
+                    final String[] allowedIps = traccarConf.getStringParam("api.imei_manager.allowed_ips").split(",");
+                    isIpAllowedToAddImei = Arrays.asList(allowedIps).contains(request.ip());
+                } catch (ConfigLoadException e) {
+                    logger.error("Get allowed IP's from traccar config failed: " + e.getMessage(), e);
+                }
+                
+                if (!isIpAllowedToAddImei) {
+                    logger.info("Attempt to reach IMEI manager from unauthorized IP: " + request.ip());
                     unauthorized(response, new ErrorDto(MessageKeys.ERR_ACCESS_DENIED));
                 }
             }
