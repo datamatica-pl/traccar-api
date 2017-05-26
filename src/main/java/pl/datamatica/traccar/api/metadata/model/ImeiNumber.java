@@ -43,6 +43,74 @@ public class ImeiNumber extends UpdateTimestampedEntity implements Serializable 
     
     @Column(nullable = false, columnDefinition = "boolean default false")
     private boolean isDeleted;
+    
+    // Not unique because one user can have many devices
+    @Column(length=250)
+    private String email;
+    
+    // Not unique because one user can have many devices
+    @Column(length=100)
+    private String contactPhone;
+    
+    @Column(length=100)
+    private String firstName;
+    
+    @Column(length=100)
+    private String lastName;
+    
+    @Column(length=50)
+    private String invoiceNumber;
+
+    @Column(length=2000)
+    private String comment;
+
+    public String getEmail() {
+        return email;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
+    }
+
+    public String getContactPhone() {
+        return contactPhone;
+    }
+
+    public void setContactPhone(String contactPhone) {
+        this.contactPhone = contactPhone;
+    }
+
+    public String getFirstName() {
+        return firstName;
+    }
+
+    public void setFirstName(String firstName) {
+        this.firstName = firstName;
+    }
+
+    public String getLastName() {
+        return lastName;
+    }
+
+    public void setLastName(String lastName) {
+        this.lastName = lastName;
+    }
+    
+    public String getInvoiceNumber() {
+        return invoiceNumber;
+    }
+
+    public void setInvoiceNumber(String invoiceNumber) {
+        this.invoiceNumber = invoiceNumber;
+    }
+
+    public String getComment() {
+        return comment;
+    }
+
+    public void setComment(String comment) {
+        this.comment = comment;
+    }
 
     public long getId() {
         return id;
