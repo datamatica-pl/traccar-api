@@ -22,6 +22,7 @@ import pl.datamatica.traccar.api.Application;
 import static pl.datamatica.traccar.api.controllers.ControllerBase.render;
 import pl.datamatica.traccar.api.dtos.MessageKeys;
 import pl.datamatica.traccar.api.dtos.in.RegisterUserDto;
+import pl.datamatica.traccar.api.dtos.in.ResetPassReqDto;
 import pl.datamatica.traccar.api.dtos.out.ErrorDto;
 import pl.datamatica.traccar.api.dtos.out.UserDto;
 import pl.datamatica.traccar.api.providers.MailSender;
@@ -57,6 +58,17 @@ public class UsersController extends ControllerBase {
             Spark.get(rootUrl()+"/activate/:token", (req, res) -> {
                 UsersController uc = createController(req);
                 return render(uc.activateUser(req.params(":token")), res);
+            });
+            
+            Spark.post(rootUrl()+"/resetreq", (req, res) -> {
+                UsersController uc = createController(req);
+                ResetPassReqDto dto = gson.fromJson(req.body(), ResetPassReqDto.class);
+                return render(uc.requestPasswordReset(dto), res);
+            });
+            
+            Spark.get(rootUrl()+"/reset/:token", (req, res) -> {
+                UsersController uc = createController(req);
+                return uc.resetPassword(req.params(":token"));
             });
         }
 
@@ -104,14 +116,15 @@ public class UsersController extends ControllerBase {
             return badRequest(errors);
         
         try {
-            User user = up.createUser(userDto.getEmail(), userDto.getPassword(), 
-                    userDto.isCheckMarketing());
+            User user = up.createUser(userDto.getEmail().trim(), 
+                    userDto.getPassword(), userDto.isCheckMarketing());
             requestContext.setUser(user);
             requestContext.getDeviceProvider().createDevice(userDto.getImei());
             String token = user.getEmailValidationToken();
             if(token != null) {
                 String url = requestContext.getApiRoot()+"/users/activate/"+token;
-                sender.sendMessage(user.getEmail(), emailConfirmationContent(url));
+                sender.sendMessage(user.getEmail(), "Email confirmation",
+                        emailConfirmationContent(url));
             }
             return created("user/"+user.getId(), "");
         } catch (ProviderException ex) {
@@ -126,7 +139,25 @@ public class UsersController extends ControllerBase {
             throw ex;
         }
     }
-
+    
+    public HttpResponse requestPasswordReset(ResetPassReqDto dto) {
+        if(dto == null || dto.getLogin() == null)
+            return badRequest();
+        String token = up.requestPasswordReset(dto.getLogin());
+        sender.sendMessage(dto.getLogin(), "Resetowanie hasła", 
+                passResetReqContent(requestContext.getApiRoot()+"/users/reset/"+token));
+        return ok("");
+    }
+    
+    public String resetPassword(String token) throws ProviderException {
+        User u = up.resetPassword(token);
+        sender.sendMessage(u.getLogin(), "Nowe hasło",
+                newPasswordContent(u.getPasswordRaw()));
+        return "<html><head></head><body>"
+                + "<h1>Nowe hasło zostało wysłane na adres e-mail</h1>"
+                + "</body></html>";
+    }
+    
     private static String emailConfirmationContent(String url) {
         url = url.replace("46.41.148.107", "gps.petio.eu").replace("46.41.149.43", "trackman.pl");
         return String.format("Witaj,<br/><br/>" +
@@ -140,6 +171,28 @@ public class UsersController extends ControllerBase {
                 "Zespół serwisu Petio<br/><br/>" +
                 "Ten email został wygenerowany automatycznie - nie odpowiadaj na niego.",
                 url, url);
+    }
+    
+    private static String passResetReqContent(String url) {
+        url = url.replace("46.41.148.107", "gps.petio.eu").replace("46.41.149.43", "trackman.pl");
+        return String.format("Witaj,<br/><br/>"
+                + "Odnotowaliśmy próbę odzyskania hasła do konta w systemie DM TrackMan.<br/>"
+                + "Nowe hasło zostanie wysłane na adres e-mail po kliknięciu poniższego linku:<br/><br/>"
+                + "%s<br/><br/>"
+                + "Zespół serwisu DM TrackMan<br/><br/>"
+                + "Ten email został wygenerowany automatycznie - nie odpowiadaj na niego.", 
+                url);
+    }
+    
+    private static String newPasswordContent(String pass) {
+        return String.format("Witaj,<br/><br/>"
+                + "Twoje hasło zostało skutecznie zresetowane. Nowe hasło:<br/><br/>"
+                + "%s<br/><br/>"
+                + "W celu zwiększenia bezpieczeństwa prosimy o zmianę wygenerowanego hasła "
+                + "po zalogowaniu się do systemu.<br/>"
+                + "Zespół serwisu DM TrackMan<br/><br/>"
+                + "Ten email został wygenerowany automatycznie - nie odpowiadaj na niego.",
+                pass);
     }
     
     public HttpResponse activateUser(String token) {
