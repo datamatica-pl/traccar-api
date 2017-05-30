@@ -181,10 +181,10 @@ public class UsersController extends ControllerBase {
     private static String passResetReqContent(String url) {
         url = url.replace("46.41.148.107", "gps.petio.eu").replace("46.41.149.43", "trackman.pl");
         return String.format("Witaj,<br/><br/>"
-                + "Odnotowaliśmy próbę odzyskania hasła do konta w systemie DM TrackMan.<br/>"
+                + "Odnotowaliśmy próbę odzyskania hasła do konta w systemie Petio.<br/>"
                 + "Nowe hasło zostanie wysłane na adres e-mail po kliknięciu poniższego linku:<br/><br/>"
                 + "%s<br/><br/>"
-                + "Zespół serwisu DM TrackMan<br/><br/>"
+                + "Zespół serwisu Petio<br/><br/>"
                 + "Ten email został wygenerowany automatycznie - nie odpowiadaj na niego.", 
                 url);
     }
@@ -195,7 +195,7 @@ public class UsersController extends ControllerBase {
                 + "%s<br/><br/>"
                 + "W celu zwiększenia bezpieczeństwa prosimy o zmianę wygenerowanego hasła "
                 + "po zalogowaniu się do systemu.<br/>"
-                + "Zespół serwisu DM TrackMan<br/><br/>"
+                + "Zespół serwisu Petio<br/><br/>"
                 + "Ten email został wygenerowany automatycznie - nie odpowiadaj na niego.",
                 pass);
     }
