@@ -16,12 +16,14 @@
  */
 package pl.datamatica.traccar.api.controllers;
 
+import com.google.gson.Gson;
 import freemarker.cache.ClassTemplateLoader;
 import freemarker.template.Configuration;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 import pl.datamatica.traccar.api.Application;
+import pl.datamatica.traccar.api.dtos.ImeiNumberDto;
 import pl.datamatica.traccar.api.metadata.model.ImeiNumber;
 import pl.datamatica.traccar.api.providers.ImeiProvider;
 import pl.datamatica.traccar.api.responses.HttpStatuses;
@@ -86,6 +88,36 @@ public class ImeisController extends ControllerBase {
                 
             });
             
+            Spark.put(baseUrl() + "/imei/:imeiId", (req, res) -> {
+                final String jsonStr = req.body();
+                final RequestContext context = req.attribute(Application.REQUEST_CONTEXT_KEY);
+                final ImeiProvider imp = context.getImeiProvider();
+                final long imeiId = Long.valueOf(req.params(":imeiId"));
+
+                ImeiNumberDto imeiDto = gson.fromJson(jsonStr, ImeiNumberDto.class);
+                
+                // TODO: Check privileges
+                // TODO: Log IMEI
+                
+                try {
+                    ImeiNumber imei = imp.getImeiById(imeiId);
+                    
+                    if (imei != null && !imei.getIsDeleted()) {
+                        imp.updateImeiNumber(imei, imeiDto);
+                        imp.saveImeiNumber(imei);
+                        return imei.getImei() + " zastał poprawnie zmodyfikowany";
+                    } else {
+                        res.status(HttpStatuses.NOT_FOUND);
+                        return "IMEI nie został znaleziony";
+                    }
+                } catch (Exception e) {
+                    // TODO: Log error
+                    res.status(HttpStatuses.BAD_REQUEST);
+                    return "Wystąpił błąd przy aktualizacji numeru IMEI. Proszę odświeżyć " +
+                            "okno przeglądarki i spróbować ponownie.";
+                }
+            });
+            
             Spark.post(baseUrl() + "/imei/", (req, res) -> {
                 final RequestContext context = req.attribute(Application.REQUEST_CONTEXT_KEY);
                 final ImeiProvider imp = context.getImeiProvider();
@@ -132,7 +164,7 @@ public class ImeisController extends ControllerBase {
                 }
             });
         }
-
+        
         public String baseUrl() {
             return "imei_manager";
         }

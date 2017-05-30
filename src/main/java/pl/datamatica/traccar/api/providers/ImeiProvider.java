@@ -18,6 +18,7 @@ package pl.datamatica.traccar.api.providers;
 
 import java.util.List;
 import javax.persistence.*;
+import pl.datamatica.traccar.api.dtos.ImeiNumberDto;
 import pl.datamatica.traccar.api.metadata.model.ImeiNumber;
 
 /**
@@ -63,6 +64,16 @@ public class ImeiProvider {
             return null;
         }
     }
+    
+    public ImeiNumber updateImeiNumber(ImeiNumber imei, final ImeiNumberDto imeiDto) {
+        imei.setEmail(imeiDto.getEmail());
+        imei.setContactPhone(imeiDto.getContactPhone());
+        imei.setFirstName(imeiDto.getFirstName());
+        imei.setLastName(imeiDto.getLastName());
+        imei.setInvoiceNumber(imeiDto.getInvoiceNumber());
+        
+        return imei;
+    };
     
     public boolean isImeiRegistered(String imeiStr) {
         ImeiNumber imei = getImeiByImeiString(imeiStr);
