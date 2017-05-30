@@ -150,9 +150,14 @@ public class UsersController extends ControllerBase {
     }
     
     public String resetPassword(String token) throws ProviderException {
-        User u = up.resetPassword(token);
-        sender.sendMessage(u.getLogin(), "Nowe hasło",
-                newPasswordContent(u.getPasswordRaw()));
+        try {
+            User u = up.resetPassword(token);
+            sender.sendMessage(u.getLogin(), "Nowe hasło",
+                    newPasswordContent(u.getPasswordRaw()));
+        } catch(ProviderException e) {
+            if(e.getType() == ProviderException.Type.NOT_FOUND)
+                return "<html><head></head><body>Niepoprawny link</body></html>";
+        }
         return "<html><head></head><body>"
                 + "<h1>Nowe hasło zostało wysłane na adres e-mail</h1>"
                 + "</body></html>";
