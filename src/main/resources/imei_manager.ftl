@@ -38,10 +38,10 @@
             <thead>
                 <tr>
                     <th>IMEI</th>
+                    <th>E-mail</th>
+                    <th>Telefon kontaktowy</th>
                     <th>Imię</th>
                     <th>Nazwisko</th>
-                    <th>E-mail</th>
-                    <th>Telefon</th>
                     <th>Akcja</th>
                 </tr>
             </thead>
@@ -49,10 +49,10 @@
                 <#list imeis as imei>
                     <tr>
                         <td class="imei">${imei.imei}</td>
-                        <td></td>
-                        <td></td>
-                        <td></td>
-                        <td></td>
+                        <td class="email">${imei.email!''}</td>
+                        <td class="contact-phone">${imei.contactPhone!''}</td>
+                        <td class="first-name">${imei.firstName!''}</td>
+                        <td class="last-name">${imei.lastName!''}</td>
                         <td>
                             <button type="button"
                                     data-imei-id="${imei.id}"
@@ -72,16 +72,6 @@
                         </td>
                     </tr>
                 </#list>
-                <tr id="new-imei">
-                    <td>TODO: Input</td>
-                    <td>TODO: Input</td>
-                    <td>TODO: Input</td>
-                    <td>TODO: Input</td>
-                    <td>TODO: Input</td>
-                    <td>
-                        <button id="add-imei" type="button" class="btn btn-sm btn-success">Dodaj</button>
-                    </td>
-                </tr>
             </tbody>
           </table>
         </div>
