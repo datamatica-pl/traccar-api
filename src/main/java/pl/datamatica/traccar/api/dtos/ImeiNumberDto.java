@@ -61,4 +61,14 @@ public class ImeiNumberDto {
     public String getComment() {
         return comment;
     }
+    
+    public void trimAllStrings() {
+        imei = imei.trim();
+        email = email.trim();
+        contactPhone = contactPhone.trim();
+        firstName = firstName.trim();
+        lastName = lastName.trim();
+        invoiceNumber = invoiceNumber.trim();
+        comment = comment.trim();
+    }
 }

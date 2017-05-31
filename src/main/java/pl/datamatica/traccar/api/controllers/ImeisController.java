@@ -95,6 +95,7 @@ public class ImeisController extends ControllerBase {
                 final long imeiId = Long.valueOf(req.params(":imeiId"));
 
                 ImeiNumberDto imeiDto = gson.fromJson(jsonStr, ImeiNumberDto.class);
+                imeiDto.trimAllStrings();
                 
                 // TODO: Check privileges
                 // TODO: Log IMEI
@@ -126,6 +127,7 @@ public class ImeisController extends ControllerBase {
                 String successMsg;
                 
                 ImeiNumberDto imeiDto = gson.fromJson(jsonStr, ImeiNumberDto.class);
+                imeiDto.trimAllStrings();
                 
                 if (imeiDto.getImei() == null || imeiDto.getImei().equals("")) {
                     return "Numer IMEI nie może być pusty.";

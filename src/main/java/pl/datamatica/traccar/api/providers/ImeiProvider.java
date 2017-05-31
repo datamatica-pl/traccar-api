@@ -66,18 +66,18 @@ public class ImeiProvider {
     }
     
     public ImeiNumber setNewImeiNumber(ImeiNumber imei, final ImeiNumberDto imeiDto) {
-        imei.setImei(imeiDto.getImei().trim());
+        imei.setImei(imeiDto.getImei());
         imei = updateImeiNumber(imei, imeiDto);
         
         return imei;
     }
     
     public ImeiNumber updateImeiNumber(ImeiNumber imei, final ImeiNumberDto imeiDto) {
-        imei.setEmail(imeiDto.getEmail().trim());
-        imei.setContactPhone(imeiDto.getContactPhone().trim());
-        imei.setFirstName(imeiDto.getFirstName().trim());
-        imei.setLastName(imeiDto.getLastName().trim());
-        imei.setInvoiceNumber(imeiDto.getInvoiceNumber().trim());
+        imei.setEmail(imeiDto.getEmail());
+        imei.setContactPhone(imeiDto.getContactPhone());
+        imei.setFirstName(imeiDto.getFirstName());
+        imei.setLastName(imeiDto.getLastName());
+        imei.setInvoiceNumber(imeiDto.getInvoiceNumber());
         
         return imei;
     };
