@@ -1,3 +1,5 @@
+<#import "imei_manager_macros.ftl" as imm>
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -91,7 +93,7 @@
             </button>
         </div>
 
-        <!-- Modal -->
+        <!-- New IMEI modal -->
         <div class="modal fade" id="new-imei-modal" tabindex="-1" role="dialog" aria-labelledby="new-imei-modal-title" aria-hidden="true">
           <div class="modal-dialog" role="document">
             <div class="modal-content">
@@ -102,12 +104,7 @@
                 <h5 class="modal-title" id="new-imei-modal-title">Nowy IMEI</h5>
               </div>
               <div class="modal-body">
-                <form id="new-imei-number">
-                    <div class="form-group">
-                      <label for="imei">Numer IMEI:</label>
-                      <input type="text" class="form-control" id="imei">
-                    </div>
-                  </form>
+                <@imm.imeiDataForm formIdAttr="new-imei-number" />
               </div>
               <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-dismiss="modal">Zamknij</button>
