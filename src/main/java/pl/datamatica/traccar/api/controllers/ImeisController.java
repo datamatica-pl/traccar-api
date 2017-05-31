@@ -119,32 +119,38 @@ public class ImeisController extends ControllerBase {
             });
             
             Spark.post(baseUrl() + "/imei/", (req, res) -> {
+                final String jsonStr = req.body();
                 final RequestContext context = req.attribute(Application.REQUEST_CONTEXT_KEY);
                 final ImeiProvider imp = context.getImeiProvider();
-                final String imeiStr = req.queryParams("imeiNumber").trim();
                 ImeiNumber imei;
                 String successMsg;
                 
-                if (imeiStr == null || imeiStr.equals("")) {
+                ImeiNumberDto imeiDto = gson.fromJson(jsonStr, ImeiNumberDto.class);
+                
+                if (imeiDto.getImei() == null || imeiDto.getImei().equals("")) {
                     return "Numer IMEI nie może być pusty.";
                 }
                 
                 try {
                     context.disableSoftDeleteForMetadata(); // Allow deleted IMEI's to be retrieved,
                                                             // because if we find one it will be restored
-                    imei = imp.getImeiByImeiString(imeiStr);
+                    imei = imp.getImeiByImeiString(imeiDto.getImei());
                 } catch (Exception e) {
+                    // TODO: Log
                     res.status(HttpStatuses.BAD_REQUEST);
                     return "Wystąpił błąd przy dodawaniu numeru IMEI, proszę spróbować ponownie.";
                 }
                 
                 if (imei == null) {
                     imei = new ImeiNumber();
-                    imei.setImei(imeiStr);
+                    imei = imp.setNewImeiNumber(imei, imeiDto);
                     successMsg = String.format("IMEI %s został poprawnie dodany do bazy. " +
                                     "Proszę pamiętać o wpisaniu go do faktury.", imei.getImei());
                 } else if (Objects.equals(imei.getIsDeleted(), Boolean.TRUE)) {
                     imei.setIsDeleted(Boolean.FALSE);
+                    // Update values with new ones when restoring deleted IMEI
+                    imp.updateImeiNumber(imei, imeiDto);
+                    
                     successMsg = String.format("IMEI %s istniał już w bazie ale był skasowany, został przywrócony. " +
                                     "Proszę pamiętać o wpisaniu go do faktury.", imei.getImei());
                 } else {

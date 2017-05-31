@@ -39,6 +39,19 @@ var imeiManager = {
                 imeiManager.imeiBackupStorage.addImei(imei, '');
             });
         }
+    },
+    getImeiJsonFromForm: function($form) {
+        var imeiJson = {
+            imei: $form.find('#imei').val(),
+            email: $form.find('#email').val(),
+            contactPhone: $form.find('#contact-phone').val(),
+            firstName: $form.find('#first-name').val(),
+            lastName: $form.find('#last-name').val(),
+            invoiceNumber: $form.find('#invoice-number').val(),
+            comment: $form.find('#comment').val()
+        };
+        
+        return imeiJson;
     }
 }
 
@@ -69,14 +82,11 @@ $(function() {
     
     $('#add-new-imei').on('click', function() {
         var $addImeiForm = $('form#new-imei-number');
-        var $imeiNumber = $addImeiForm.find('#imei');
         
         $.ajax({
             url: '/api/imei_manager/imei/',
             method: 'POST',
-            data: {
-                imeiNumber: $imeiNumber.val()
-            },
+            data: JSON.stringify( imeiManager.getImeiJsonFromForm( $addImeiForm ) ),
             success: function(result) {
                 alert(result);
                 window.location.reload();
