@@ -78,6 +78,7 @@ public class ImeiProvider {
         imei.setFirstName(imeiDto.getFirstName());
         imei.setLastName(imeiDto.getLastName());
         imei.setInvoiceNumber(imeiDto.getInvoiceNumber());
+        imei.setComment(imeiDto.getComment());
         
         return imei;
     };
