@@ -51,7 +51,7 @@
                 <#list imeis as imei>
                     <tr data-invoice-number="${imei.invoiceNumber!''}">
                         <td class="id col-md-1">${imei.id}</td>
-                        <td class="imei col-md-2"><a class="imei-details" href="#" data-id="${imei.id}">${imei.imei}</a></td>
+                        <td class="imei col-md-2"><a class="imei-details" href="#" data-imei-id="${imei.id}">${imei.imei}</a></td>
                         <td class="email col-md-2">${imei.email!''}</td>
                         <td class="contact-phone col-md-2">${imei.contactPhone!''}</td>
                         <td class="first-name col-md-1">${imei.firstName!''}</td>
@@ -123,7 +123,8 @@
               </div>
               <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-dismiss="modal">Zamknij</button>
-                <button id="add-new-imei" type="button" class="btn btn-primary">Edytuj IMEI</button>
+                <button id="edit-imei" type="button" class="btn btn-primary">Edytuj IMEI</button>
+                <button id="update-imei" type="button" class="btn btn-success" style="display:none;">Aktualizuj IMEI</button>
               </div>
             </div>
           </div>

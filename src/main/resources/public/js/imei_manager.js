@@ -41,14 +41,16 @@ var imeiManager = {
         }
     },
     getImeiJsonFromForm: function($form) {
+        var $form_inputs = $form.find('.form-control');
+        
         var imeiJson = {
-            imei: $form.find('#imei').val(),
-            email: $form.find('#email').val(),
-            contactPhone: $form.find('#contact-phone').val(),
-            firstName: $form.find('#first-name').val(),
-            lastName: $form.find('#last-name').val(),
-            invoiceNumber: $form.find('#invoice-number').val(),
-            comment: $form.find('#comment').val()
+            imei: $form_inputs.filter('.imei').val(),
+            email: $form_inputs.filter('.email').val(),
+            contactPhone: $form_inputs.filter('.contact-phone').val(),
+            firstName: $form_inputs.filter('.first-name').val(),
+            lastName: $form_inputs.filter('.last-name').val(),
+            invoiceNumber: $form_inputs.filter('.invoice-number').val(),
+            comment: $form_inputs.filter('.comment').val()
         };
         
         return imeiJson;
@@ -129,8 +131,10 @@ $(function() {
         var current_invoice_number = $imei_row.data('invoice-number');
         var current_comment = $imei_row_cells.filter('.comment').text();
         
-        var $modal = $('#imei-details-modal').modal('show'); // Otwiera modal
+        var $modal = $('#imei-details-modal').modal('show');
         var $modal_inputs = $modal.find('.form-control');
+        
+        $modal.data('imei-id', $imei_link.data('imei-id'));
         
         $modal_inputs
                 .filter('.imei').val(current_imei).end()
@@ -141,7 +145,31 @@ $(function() {
                 .filter('.invoice-number').val(current_invoice_number).end()
                 .filter('.comment').val(current_comment);
         
+        $modal_inputs.attr('readonly', 'readonly');
+        $('#update-imei').hide();
+        $('#edit-imei').show();
+        
         return false; // Prevent go to top of the page on click
+    });
+    
+    $('#edit-imei').on('click', function() {
+        $('#imei-details-modal').find('.form-control').not('.imei').removeAttr('readonly');
+        $('#edit-imei').hide();
+        $('#update-imei').show();
+    });
+    
+    $('#update-imei').on('click', function() {
+        var $modal = $('#imei-details-modal').modal();
+        
+        $.ajax({
+            url: '/api/imei_manager/imei/' + $modal.data('imei-id'),
+            type: 'PUT',
+            data: JSON.stringify( imeiManager.getImeiJsonFromForm( $('#imei-number-details') ) ),
+            success: function(result) {
+                alert(result);
+                window.location.reload();
+            }
+        });
     });
     
 });
