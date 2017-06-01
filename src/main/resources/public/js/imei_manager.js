@@ -117,4 +117,31 @@ $(function() {
         });
     });
     
+    $('#imei-numbers').find('.imei-details').on('click', function() {
+        var $imei_link = $(this);
+        var $imei_row = $imei_link.closest('tr');
+        var $imei_row_cells = $imei_row.find('td');
+        var current_imei = $imei_row_cells.filter('.imei').find('a').text();
+        var current_email = $imei_row_cells.filter('.email').text();
+        var current_contact_phone = $imei_row_cells.filter('.contact-phone').text();
+        var current_first_name = $imei_row_cells.filter('.first-name').text();
+        var current_last_name = $imei_row_cells.filter('.last-name').text();
+        var current_invoice_number = $imei_row.data('invoice-number');
+        var current_comment = $imei_row_cells.filter('.comment').text();
+        
+        var $modal = $('#imei-details-modal').modal('show'); // Otwiera modal
+        var $modal_inputs = $modal.find('.form-control');
+        
+        $modal_inputs
+                .filter('.imei').val(current_imei).end()
+                .filter('.email').val(current_email).end()
+                .filter('.contact-phone').val(current_contact_phone).end()
+                .filter('.first-name').val(current_first_name).end()
+                .filter('.last-name').val(current_last_name).end()
+                .filter('.invoice-number').val(current_invoice_number).end()
+                .filter('.comment').val(current_comment);
+        
+        return false; // Prevent go to top of the page on click
+    });
+    
 });

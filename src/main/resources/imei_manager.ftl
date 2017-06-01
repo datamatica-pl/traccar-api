@@ -37,23 +37,27 @@
           <table id="imei-numbers" class="table">
             <thead>
                 <tr>
+                    <th>ID</th>
                     <th>IMEI</th>
                     <th>E-mail</th>
                     <th>Telefon kontaktowy</th>
                     <th>Imię</th>
                     <th>Nazwisko</th>
+                    <th>Uwagi</th>
                     <th>Akcja</th>
                 </tr>
             </thead>
             <tbody>
                 <#list imeis as imei>
-                    <tr>
-                        <td class="imei">${imei.imei}</td>
-                        <td class="email">${imei.email!''}</td>
-                        <td class="contact-phone">${imei.contactPhone!''}</td>
-                        <td class="first-name">${imei.firstName!''}</td>
-                        <td class="last-name">${imei.lastName!''}</td>
-                        <td>
+                    <tr data-invoice-number="${imei.invoiceNumber!''}">
+                        <td class="id col-md-1">${imei.id}</td>
+                        <td class="imei col-md-2"><a class="imei-details" href="#" data-id="${imei.id}">${imei.imei}</a></td>
+                        <td class="email col-md-2">${imei.email!''}</td>
+                        <td class="contact-phone col-md-2">${imei.contactPhone!''}</td>
+                        <td class="first-name col-md-1">${imei.firstName!''}</td>
+                        <td class="last-name col-md-1">${imei.lastName!''}</td>
+                        <td class="comment col-md-2">${imei.comment!''}</td>
+                        <td class="action col-md-1">
                             <button type="button"
                                     data-imei-id="${imei.id}"
                                     href="/api/delete/${imei.id}"
@@ -99,6 +103,27 @@
               <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-dismiss="modal">Zamknij</button>
                 <button id="add-new-imei" type="button" class="btn btn-primary">Dodaj IMEI</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- IMEI details/edit modal -->
+        <div class="modal fade" id="imei-details-modal" tabindex="-1" role="dialog" aria-labelledby="imei-details-modal-title" aria-hidden="true">
+          <div class="modal-dialog" role="document">
+            <div class="modal-content">
+              <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                  <span aria-hidden="true">&times;</span>
+                </button>
+                <h5 class="modal-title" id="imei-details-modal-title">Szczegóły IMEI</h5>
+              </div>
+              <div class="modal-body">
+                <@imm.imeiDataForm formIdAttr="imei-number-details" />
+              </div>
+              <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Zamknij</button>
+                <button id="add-new-imei" type="button" class="btn btn-primary">Edytuj IMEI</button>
               </div>
             </div>
           </div>
