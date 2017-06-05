@@ -49,7 +49,7 @@
             </thead>
             <tbody>
                 <#list imeis as imei>
-                    <tr data-invoice-number="${imei.invoiceNumber!''}">
+                    <tr data-invoice-number="${imei.invoiceNumber!''}" data-imei-obj='${imei.toJsonString()}' >
                         <td class="id col-md-1">${imei.id}</td>
                         <td class="imei col-md-2"><a class="imei-details" href="#" data-imei-id="${imei.id}">${imei.imei}</a></td>
                         <td class="email col-md-2">${imei.email!''}</td>

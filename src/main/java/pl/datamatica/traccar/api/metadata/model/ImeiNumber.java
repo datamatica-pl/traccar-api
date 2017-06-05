@@ -21,6 +21,7 @@ import javax.persistence.*;
 import org.hibernate.annotations.Filter;
 import org.hibernate.annotations.FilterDef;
 import org.hibernate.annotations.SQLDelete;
+import com.google.gson.Gson;
 
 /**
  *
@@ -135,4 +136,11 @@ public class ImeiNumber extends UpdateTimestampedEntity implements Serializable 
     public void setIsDeleted(Boolean isDeleted) {
         this.isDeleted = isDeleted;
     }
+    
+    @Transient
+    public String toJsonString() {
+        Gson gsonObj = new Gson();
+        return gsonObj.toJson(this);
+    }
+    
 }

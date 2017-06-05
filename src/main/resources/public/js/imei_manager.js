@@ -17,9 +17,9 @@ var imeiManager = {
         }
     },
     imeiBackupStorage : {
-        addImei: function(imei, email) {
+        addImei: function(imei, value) {
             if (typeof(Storage) !== "undefined") {
-                localStorage.setItem(imei, email);
+                localStorage.setItem(imei, value);
             }
         },
         removeImei: function(imei) {
@@ -33,10 +33,9 @@ var imeiManager = {
                                 .find('tr');
 
             $imeiNumberRows.each(function() {
-                var $cells = $(this).find('td');
-                var imei = $cells.filter('.imei').text();
-                
-                imeiManager.imeiBackupStorage.addImei(imei, '');
+                var $row = $(this);
+                var imeiObj = $row.data('imei-obj');
+                imeiManager.imeiBackupStorage.addImei(imeiObj.imei, JSON.stringify(imeiObj));
             });
         }
     },
