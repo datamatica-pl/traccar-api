@@ -16,7 +16,6 @@
  */
 package pl.datamatica.traccar.api.controllers;
 
-import com.google.gson.Gson;
 import freemarker.cache.ClassTemplateLoader;
 import freemarker.template.Configuration;
 import java.util.HashMap;
@@ -40,13 +39,11 @@ public class ImeisController extends ControllerBase {
 
         @Override
         public void bind() {
-
-            // TODO Try to change not to use of deprecated methods
-            FreeMarkerEngine freeMarkerEngine = new FreeMarkerEngine();
-            Configuration freeMarkerConfiguration = new Configuration();
+            
+            Configuration freeMarkerConfiguration = new Configuration(Configuration.VERSION_2_3_23);
             freeMarkerConfiguration.setTemplateLoader(new ClassTemplateLoader(Application.class, "/"));
             freeMarkerConfiguration.setDefaultEncoding("utf-8");
-            freeMarkerEngine.setConfiguration(freeMarkerConfiguration);
+            FreeMarkerEngine freeMarkerEngine = new FreeMarkerEngine(freeMarkerConfiguration);
             
             Spark.get(baseUrl() + "/imeis", (req, res) -> {
                 final RequestContext context = req.attribute(Application.REQUEST_CONTEXT_KEY);
