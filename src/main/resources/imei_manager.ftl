@@ -49,32 +49,38 @@
             </thead>
             <tbody>
                 <#list imeis as imei>
-                    <tr data-invoice-number="${imei.invoiceNumber!''}" data-imei-obj='${imei.toJsonString()}' >
-                        <td class="id col-md-1">${imei.id}</td>
-                        <td class="imei col-md-2"><a class="imei-details" href="#" data-imei-id="${imei.id}">${imei.imei}</a></td>
-                        <td class="email col-md-2">${imei.email!''}</td>
-                        <td class="contact-phone col-md-2">${imei.contactPhone!''}</td>
-                        <td class="first-name col-md-1">${imei.firstName!''}</td>
-                        <td class="last-name col-md-1">${imei.lastName!''}</td>
-                        <td class="comment col-md-2">${imei.comment!''}</td>
-                        <td class="action col-md-1">
-                            <button type="button"
-                                    data-imei-id="${imei.id}"
-                                    href="/api/delete/${imei.id}"
-                                    class="btn btn-sm btn-danger"
-                                    data-toggle="confirmation"
-                                    data-title="Potwierdź usunięcie IMEI"
-                                    data-placement="left"
-                                    data-btn-ok-label="Usuń IMEI ${imei.imei}"
-                                    data-btn-ok-icon="glyphicon glyphicon-trash"
-                                    data-btn-cancel-label="Anuluj"
-                                    data-btn-cancel-icon="glyphicon glyphicon-ban-circle"
-                                    data-singleton="true"
-                                    data-on-confirm="imeiNumberManager.deleteImei">
-                                Usuń
-                            </button>
-                        </td>
-                    </tr>
+                    <#escape x as x?html>
+                        <tr data-invoice-number="${imei.invoiceNumber!''}" data-imei-obj='${imei.toJsonString()}' >
+                            <td class="id col-md-1">${imei.id}</td>
+                            <td class="imei col-md-2"><a class="imei-details" href="#" data-imei-id="${imei.id}">${imei.imei}</a></td>
+                            <td class="email col-md-2">${imei.email!''}</td>
+                            <td class="contact-phone col-md-2">${imei.contactPhone!''}</td>
+
+                            <td class="first-name col-md-1">${imei.firstName!''}</td>
+
+                            <td class="last-name col-md-1">${imei.lastName!''}</td>
+
+                            <td class="comment col-md-2">${imei.comment!''}</td>
+
+                            <td class="action col-md-1">
+                                <button type="button"
+                                        data-imei-id="${imei.id}"
+                                        href="/api/delete/${imei.id}"
+                                        class="btn btn-sm btn-danger"
+                                        data-toggle="confirmation"
+                                        data-title="Potwierdź usunięcie IMEI"
+                                        data-placement="left"
+                                        data-btn-ok-label="Usuń IMEI ${imei.imei}"
+                                        data-btn-ok-icon="glyphicon glyphicon-trash"
+                                        data-btn-cancel-label="Anuluj"
+                                        data-btn-cancel-icon="glyphicon glyphicon-ban-circle"
+                                        data-singleton="true"
+                                        data-on-confirm="imeiNumberManager.deleteImei">
+                                    Usuń
+                                </button>
+                            </td>
+                        </tr>
+                    </#escape>
                 </#list>
             </tbody>
           </table>
