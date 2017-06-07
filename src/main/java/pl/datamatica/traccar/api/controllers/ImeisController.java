@@ -21,7 +21,6 @@ import freemarker.template.Configuration;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
-import org.slf4j.Logger;
 import pl.datamatica.traccar.api.Application;
 import pl.datamatica.traccar.api.dtos.ImeiNumberDto;
 import pl.datamatica.traccar.api.metadata.model.ImeiNumber;
@@ -31,6 +30,7 @@ import pl.datamatica.traccar.api.responses.HttpStatuses;
 import spark.ModelAndView;
 import spark.Spark;
 import spark.template.freemarker.FreeMarkerEngine;
+import org.slf4j.Logger;
 
 /**
  *
@@ -38,7 +38,7 @@ import spark.template.freemarker.FreeMarkerEngine;
  */
 public class ImeisController extends ControllerBase {
     public static class Binder extends ControllerBinder {
-        private static final Logger DB_LOGGER = DbLog.getLogger();
+        private static final Logger dbLogger = DbLog.getLogger();
         
         @Override
         public void bind() {
@@ -64,23 +64,18 @@ public class ImeisController extends ControllerBase {
                 final ImeiProvider imp = context.getImeiProvider();
                 final long imeiId = Long.valueOf(req.params(":imeiId"));
                 
-                try {
-                    ImeiNumber imei = imp.getImeiById(imeiId);
-                    if (imei != null) {
-                        imei.setIsDeleted(true);
-                        DB_LOGGER.info(getLogMsgBegin(imei.getImei()) + " has been softly deleted.");
-                        return imei.getImei() + " zastał poprawnie usunięty.";
-                    } else {
-                        res.status(HttpStatuses.NOT_FOUND);
-                        return "IMEI nie został znaleziony";
-                    }
-                } catch (Exception e) {
-                    // TODO: Log error
-                    res.status(HttpStatuses.BAD_REQUEST);
-                    return "Wystąpił błąd przy kasowaniu numeru IMEI. Proszę odświeżyć " +
-                            "okno przeglądarki i spróbować ponownie.";
-                }
+                ImeiNumber imei = imp.getImeiById(imeiId);
                 
+                if (imei != null) {
+                    imei.setIsDeleted(true);
+                    imp.saveImeiNumber(imei);
+                    
+                    dbLogger.info(getLogMsgBegin(imei.getImei()) + " has been softly deleted.");
+                    return imei.getImei() + " zastał poprawnie usunięty.";
+                } else {
+                    res.status(HttpStatuses.NOT_FOUND);
+                    return "IMEI nie został znaleziony";
+                }
             });
             
             Spark.put(baseUrl() + "/imei/:imeiId", (req, res) -> {
@@ -98,13 +93,15 @@ public class ImeisController extends ControllerBase {
                     if (imei != null && !imei.getIsDeleted()) {
                         imp.updateImeiNumber(imei, imeiDto);
                         imp.saveImeiNumber(imei);
-                        DB_LOGGER.info(getLogMsgBegin(imei.getImei()) + " has been updated.");
+                        
+                        dbLogger.info(getLogMsgBegin(imei.getImei()) + " has been updated.");
                         return imei.getImei() + " zastał poprawnie zmodyfikowany";
                     } else {
                         res.status(HttpStatuses.NOT_FOUND);
                         return "IMEI nie został znaleziony";
                     }
                 } catch (Exception e) {
+                    // Maybe just 
                     // TODO: Log error
                     res.status(HttpStatuses.BAD_REQUEST);
                     return "Wystąpił błąd przy aktualizacji numeru IMEI. Proszę odświeżyć " +
@@ -160,7 +157,7 @@ public class ImeisController extends ControllerBase {
                 try {
                     imp.saveImeiNumber(imei);
                     res.status(HttpStatuses.OK);
-                    DB_LOGGER.info(logMsg);
+                    dbLogger.info(logMsg);
                     return successMsg;
                 } catch (Exception e) {
                     res.status(HttpStatuses.BAD_REQUEST);

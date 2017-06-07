@@ -76,6 +76,9 @@ $(function() {
                     
                     $rowToDelete.remove();
                     $("#imei-numbers").before($alertEl);
+                },
+                error: function() {
+                    alert("Wystąpił bład przy kasowaniu numeru IMEI, proszę odświerzyć stronę i spróbować ponownie");
                 }
             });
         }
