@@ -21,9 +21,11 @@ import freemarker.template.Configuration;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
+import org.slf4j.Logger;
 import pl.datamatica.traccar.api.Application;
 import pl.datamatica.traccar.api.dtos.ImeiNumberDto;
 import pl.datamatica.traccar.api.metadata.model.ImeiNumber;
+import pl.datamatica.traccar.api.providers.DbLog;
 import pl.datamatica.traccar.api.providers.ImeiProvider;
 import pl.datamatica.traccar.api.responses.HttpStatuses;
 import spark.ModelAndView;
@@ -36,7 +38,8 @@ import spark.template.freemarker.FreeMarkerEngine;
  */
 public class ImeisController extends ControllerBase {
     public static class Binder extends ControllerBinder {
-
+        private static final Logger DB_LOGGER = DbLog.getLogger();
+        
         @Override
         public void bind() {
             
@@ -50,9 +53,6 @@ public class ImeisController extends ControllerBase {
                 final ImeiProvider imp = context.getImeiProvider();
                 Map<String, Object> attributes = new HashMap<>();
                 
-                // TODO: Check privileges
-                // TODO: Log IMEI
-                
                 attributes.put("imeis", imp.getAllImeis());
                 
                 res.status(HttpStatuses.OK);
@@ -64,13 +64,11 @@ public class ImeisController extends ControllerBase {
                 final ImeiProvider imp = context.getImeiProvider();
                 final long imeiId = Long.valueOf(req.params(":imeiId"));
                 
-                // TODO: Check privileges
-                // TODO: Log IMEI
-                
                 try {
                     ImeiNumber imei = imp.getImeiById(imeiId);
                     if (imei != null) {
                         imei.setIsDeleted(true);
+                        DB_LOGGER.info(getLogMsgBegin(imei.getImei()) + " has been softly deleted.");
                         return imei.getImei() + " zastał poprawnie usunięty.";
                     } else {
                         res.status(HttpStatuses.NOT_FOUND);
@@ -94,15 +92,13 @@ public class ImeisController extends ControllerBase {
                 ImeiNumberDto imeiDto = gson.fromJson(jsonStr, ImeiNumberDto.class);
                 imeiDto.trimAllStrings();
                 
-                // TODO: Check privileges
-                // TODO: Log IMEI
-                
                 try {
                     ImeiNumber imei = imp.getImeiById(imeiId);
                     
                     if (imei != null && !imei.getIsDeleted()) {
                         imp.updateImeiNumber(imei, imeiDto);
                         imp.saveImeiNumber(imei);
+                        DB_LOGGER.info(getLogMsgBegin(imei.getImei()) + " has been updated.");
                         return imei.getImei() + " zastał poprawnie zmodyfikowany";
                     } else {
                         res.status(HttpStatuses.NOT_FOUND);
@@ -122,6 +118,7 @@ public class ImeisController extends ControllerBase {
                 final ImeiProvider imp = context.getImeiProvider();
                 ImeiNumber imei;
                 String successMsg;
+                String logMsg;
                 
                 ImeiNumberDto imeiDto = gson.fromJson(jsonStr, ImeiNumberDto.class);
                 imeiDto.trimAllStrings();
@@ -135,7 +132,7 @@ public class ImeisController extends ControllerBase {
                                                             // because if we find one it will be restored
                     imei = imp.getImeiByImeiString(imeiDto.getImei());
                 } catch (Exception e) {
-                    // TODO: Log
+                    // TODO: Error log
                     res.status(HttpStatuses.BAD_REQUEST);
                     return "Wystąpił błąd przy dodawaniu numeru IMEI, proszę spróbować ponownie.";
                 }
@@ -143,6 +140,8 @@ public class ImeisController extends ControllerBase {
                 if (imei == null) {
                     imei = new ImeiNumber();
                     imei = imp.setNewImeiNumber(imei, imeiDto);
+                    
+                    logMsg = getLogMsgBegin(imei.getImei()) + " has been added.";
                     successMsg = String.format("IMEI %s został poprawnie dodany do bazy. " +
                                     "Proszę pamiętać o wpisaniu go do faktury.", imei.getImei());
                 } else if (Objects.equals(imei.getIsDeleted(), Boolean.TRUE)) {
@@ -150,6 +149,7 @@ public class ImeisController extends ControllerBase {
                     // Update values with new ones when restoring deleted IMEI
                     imp.updateImeiNumber(imei, imeiDto);
                     
+                    logMsg = getLogMsgBegin(imei.getImei()) + " has been restored.";
                     successMsg = String.format("IMEI %s istniał już w bazie ale był skasowany, został przywrócony. " +
                                     "Proszę pamiętać o wpisaniu go do faktury.", imei.getImei());
                 } else {
@@ -160,11 +160,11 @@ public class ImeisController extends ControllerBase {
                 try {
                     imp.saveImeiNumber(imei);
                     res.status(HttpStatuses.OK);
-                    // TODO: Log
+                    DB_LOGGER.info(logMsg);
                     return successMsg;
                 } catch (Exception e) {
                     res.status(HttpStatuses.BAD_REQUEST);
-                    // TODO: Log
+                    // TODO: Log error
                     return "Wystąpił błąd przy dodawaniu numeru IMEI, proszę spróbować ponownie.";
                 }
             });
@@ -172,6 +172,10 @@ public class ImeisController extends ControllerBase {
         
         public String baseUrl() {
             return "imei_manager";
+        }
+        
+        private String getLogMsgBegin(String imeiStr) {
+            return "ImeiManager: IMEI " + imeiStr;
         }
     }
 
