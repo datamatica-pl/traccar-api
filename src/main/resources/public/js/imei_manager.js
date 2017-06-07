@@ -170,6 +170,9 @@ $(function() {
             success: function(result) {
                 alert(result);
                 window.location.reload();
+            },
+            error: function() {
+                alert("Wystąpił błąd podczas aktualizacji IMEI, proszę odświeżyć stronę i spróbować ponownie.");
             }
         });
     });

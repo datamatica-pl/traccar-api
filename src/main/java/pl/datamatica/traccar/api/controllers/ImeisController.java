@@ -87,25 +87,17 @@ public class ImeisController extends ControllerBase {
                 ImeiNumberDto imeiDto = gson.fromJson(jsonStr, ImeiNumberDto.class);
                 imeiDto.trimAllStrings();
                 
-                try {
-                    ImeiNumber imei = imp.getImeiById(imeiId);
+                ImeiNumber imei = imp.getImeiById(imeiId);
+
+                if (imei != null && !imei.getIsDeleted()) {
+                    imp.updateImeiNumber(imei, imeiDto);
+                    imp.saveImeiNumber(imei);
                     
-                    if (imei != null && !imei.getIsDeleted()) {
-                        imp.updateImeiNumber(imei, imeiDto);
-                        imp.saveImeiNumber(imei);
-                        
-                        dbLogger.info(getLogMsgBegin(imei.getImei()) + " has been updated.");
-                        return imei.getImei() + " zastał poprawnie zmodyfikowany";
-                    } else {
-                        res.status(HttpStatuses.NOT_FOUND);
-                        return "IMEI nie został znaleziony";
-                    }
-                } catch (Exception e) {
-                    // Maybe just 
-                    // TODO: Log error
-                    res.status(HttpStatuses.BAD_REQUEST);
-                    return "Wystąpił błąd przy aktualizacji numeru IMEI. Proszę odświeżyć " +
-                            "okno przeglądarki i spróbować ponownie.";
+                    dbLogger.info(getLogMsgBegin(imei.getImei()) + " has been updated.");
+                    return imei.getImei() + " zastał poprawnie zmodyfikowany";
+                } else {
+                    res.status(HttpStatuses.NOT_FOUND);
+                    return "IMEI nie został znaleziony";
                 }
             });
             
