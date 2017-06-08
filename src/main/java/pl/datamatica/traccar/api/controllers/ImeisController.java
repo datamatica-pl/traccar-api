@@ -116,15 +116,10 @@ public class ImeisController extends ControllerBase {
                     return "Numer IMEI nie może być pusty.";
                 }
                 
-                try {
-                    context.disableSoftDeleteForMetadata(); // Allow deleted IMEI's to be retrieved,
-                                                            // because if we find one it will be restored
-                    imei = imp.getImeiByImeiString(imeiDto.getImei());
-                } catch (Exception e) {
-                    // TODO: Error log
-                    res.status(HttpStatuses.BAD_REQUEST);
-                    return "Wystąpił błąd przy dodawaniu numeru IMEI, proszę spróbować ponownie.";
-                }
+                context.disableSoftDeleteForMetadata(); // Allow deleted IMEI's to be retrieved,
+                                                        // because if we find one it will be restored
+                
+                imei = imp.getImeiByImeiString(imeiDto.getImei());
                 
                 if (imei == null) {
                     imei = new ImeiNumber();
@@ -145,17 +140,13 @@ public class ImeisController extends ControllerBase {
                     res.status(HttpStatuses.CONFLICT);
                     return String.format("IMEI %s istnieje już w bazie.", imei.getImei());
                 }
-                
-                try {
-                    imp.saveImeiNumber(imei);
-                    res.status(HttpStatuses.OK);
-                    dbLogger.info(logMsg);
-                    return successMsg;
-                } catch (Exception e) {
-                    res.status(HttpStatuses.BAD_REQUEST);
-                    // TODO: Log error
-                    return "Wystąpił błąd przy dodawaniu numeru IMEI, proszę spróbować ponownie.";
-                }
+
+                imp.saveImeiNumber(imei);
+
+                res.status(HttpStatuses.OK);
+                dbLogger.info(logMsg);
+
+                return successMsg;
             });
         }
         
