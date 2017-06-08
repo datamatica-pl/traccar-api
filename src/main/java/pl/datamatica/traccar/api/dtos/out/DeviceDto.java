@@ -41,6 +41,7 @@ public class DeviceDto extends EditDeviceDto implements ICachedDto {
     private final Date ignitionTime;
     private final Integer positionFrequency;
     private final Boolean autoArm;
+    private final Long groupId;
     
     @JsonIgnore
     private final Date modificationTime;
@@ -72,6 +73,7 @@ public class DeviceDto extends EditDeviceDto implements ICachedDto {
         private Date ignitionTime;
         private Integer positionFrequency;
         private Boolean autoArm;
+        private Long groupId;
 
         public Builder id(final long value) {
             this.id = value;
@@ -212,6 +214,8 @@ public class DeviceDto extends EditDeviceDto implements ICachedDto {
             this.ignitionTime = device.getIgnitionTime();
             this.positionFrequency = device.getPositionFreq();
             this.autoArm = device.isAutoArmed();
+            if(device.getGroup() != null)
+                this.groupId = device.getGroup().getId();
             return this;
         }
 
@@ -240,7 +244,8 @@ public class DeviceDto extends EditDeviceDto implements ICachedDto {
                     ignition,
                     ignitionTime,
                     positionFrequency,
-                    autoArm);
+                    autoArm,
+                    groupId);
         }
     }
 
@@ -268,7 +273,8 @@ public class DeviceDto extends EditDeviceDto implements ICachedDto {
             final Boolean ignition,
             final Date ignitionTime,
             final Integer positionFrequency,
-            final Boolean autoArm) {
+            final Boolean autoArm,
+            final Long groupId) {
         super(deviceName, deviceModelId, iconId, customIconId, color, phoneNumber, 
                 plateNumber, description, speedLimit);
         this.id = id;
@@ -287,6 +293,7 @@ public class DeviceDto extends EditDeviceDto implements ICachedDto {
         this.ignitionTime = ignitionTime;
         this.positionFrequency = positionFrequency;
         this.autoArm = autoArm;
+        this.groupId = groupId;
     }
     
     public long getId() {
