@@ -62,15 +62,19 @@ $(function() {
     
     $('[data-toggle=confirmation]').confirmation({
         rootSelector: '[data-toggle=confirmation]',
-        onConfirm: function(e, del_button) {
+        onConfirm: function(e, delButton) {
+            var $delButton = $(delButton);
+            var $confirmButtons = $delButton.siblings('.popover').find('.btn');
             e.preventDefault(); // Don't scroll page up after click
+            
+            $delButton.add($confirmButtons).addClass("disabled");
             
             $.ajax({
                 url: '/api/imei_manager/imei/' + this.imeiId,
                 type: 'DELETE',
                 success: function(result) {
                     var $alertEl = imeiManager.bootstrapAlertsFactory.getAlertEl('success', result);
-                    var $rowToDelete = $(del_button).closest('tr');
+                    var $rowToDelete = $delButton.closest('tr');
                     
                     imeiManager.imeiBackupStorage.removeImei( $rowToDelete.find('td.imei').text() );
                     
@@ -79,6 +83,9 @@ $(function() {
                 },
                 error: function() {
                     alert("Wystąpił bład przy kasowaniu numeru IMEI, proszę odświerzyć stronę i spróbować ponownie");
+                },
+                complete: function() {
+                    $delButton.add($confirmButtons).removeClass("disabled");
                 }
             });
         }
@@ -86,6 +93,8 @@ $(function() {
     
     $('#add-new-imei').on('click', function() {
         var $addImeiForm = $('form#new-imei-number');
+        var $button = $(this);
+        $button.addClass('disabled');
         
         $.ajax({
             url: '/api/imei_manager/imei/',
@@ -103,6 +112,9 @@ $(function() {
                         " Proszę sprawdzić, czy IMEI jest poprawny," +
                         " oraz czy nie występuje już w bazie.");
                 }
+            },
+            complete: function() {
+                $button.removeClass('disabled');
             }
         });
     });
@@ -132,7 +144,6 @@ $(function() {
         var current_last_name = $imei_row_cells.filter('.last-name').text();
         var current_invoice_number = $imei_row.data('invoice-number');
         var current_comment = $imei_row_cells.filter('.comment').text();
-        
         var $modal = $('#imei-details-modal').modal('show');
         var $modal_inputs = $modal.find('.form-control');
         
@@ -162,6 +173,8 @@ $(function() {
     
     $('#update-imei').on('click', function() {
         var $modal = $('#imei-details-modal').modal();
+        var $button = $(this);
+        $button.addClass('disabled');
         
         $.ajax({
             url: '/api/imei_manager/imei/' + $modal.data('imei-id'),
@@ -173,6 +186,9 @@ $(function() {
             },
             error: function() {
                 alert("Wystąpił błąd podczas aktualizacji IMEI, proszę odświeżyć stronę i spróbować ponownie.");
+            },
+            complete: function() {
+                $button.removeClass('disabled');
             }
         });
     });
