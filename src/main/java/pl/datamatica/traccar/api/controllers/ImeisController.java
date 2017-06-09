@@ -148,6 +148,21 @@ public class ImeisController extends ControllerBase {
 
                 return successMsg;
             });
+
+            Spark.head(baseUrl() + "/imei/:imeiStr", (req, res) -> {
+                final String imeiStr = req.params(":imeiStr");
+                final RequestContext context = req.attribute(Application.REQUEST_CONTEXT_KEY);
+                final ImeiProvider imp = context.getImeiProvider();
+
+                if (imp.isImeiRegisteredLocally(imeiStr)) {
+                    res.status(HttpStatuses.OK);
+                } else {
+                    res.status(HttpStatuses.NOT_FOUND);
+                }
+
+                return "";
+            });
+
         }
         
         public String baseUrl() {
