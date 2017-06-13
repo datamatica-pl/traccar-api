@@ -16,6 +16,7 @@
  */
 package pl.datamatica.traccar.api.controllers;
 
+import java.awt.Image;
 import pl.datamatica.traccar.api.providers.SessionProvider;
 import java.text.ParseException;
 import java.util.Date;
@@ -64,6 +65,8 @@ public class RequestContext implements AutoCloseable {
     private PositionProvider positions;
     private NotificationSettingsProvider notificationSettings;
     private SessionProvider sessionProvider;
+    
+    private Image emptyMarker;
     
     public RequestContext(Request request, Response response) throws ParseException {
         if(request.headers(IF_MODIFIED_SINCE_HEADER) != null)
@@ -211,6 +214,10 @@ public class RequestContext implements AutoCloseable {
 
     public Session session() {
         return request.session();
+    }
+    
+    public void setEmptyMarkerImage(Image img) {
+        this.emptyMarker = img;
     }
 
     public void beginTransaction() {
