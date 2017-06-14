@@ -53,6 +53,8 @@ public class ImageProvider {
     public byte[] getMarker(String name) throws IOException {
         if(!markerCache.containsKey(name)) {
             Image icon = getImage(name+".png");
+            if(icon == null)
+                return null;
             float l = 30f/141, t=28f/189, r=110f/141, b=108f/189;
             int w = emptyMarker.getWidth(null), h = emptyMarker.getHeight(null);
             BufferedImage marker = new BufferedImage(w, h, BufferedImage.TYPE_INT_ARGB);
