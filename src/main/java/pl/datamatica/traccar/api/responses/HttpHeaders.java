@@ -15,8 +15,15 @@
  *  along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 package pl.datamatica.traccar.api.responses;
+import org.apache.commons.codec.binary.Base64;
 
 public class HttpHeaders {
+
     public static final String LAST_MODIFIED = "Last-Modified";
     public static final String LOCATION = "Location";
+
+    public static final String getEncodedCredentials(String username, String password) {
+        String userPassword = username + ":" + password;
+        return Base64.encodeBase64String(userPassword.getBytes());
+    }
 }
