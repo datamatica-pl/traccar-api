@@ -105,7 +105,7 @@ $(function() {
                 window.location.reload();
             },
             error: function(response) {
-                if (response.statusText === "Conflict") {
+                if (response.statusText === "Conflict" || response.statusText === "Not Acceptable") {
                     alert(response.responseText);
                 } else {
                     alert("Wystąpił błąd przy dodawaniu numeru IMEI." +

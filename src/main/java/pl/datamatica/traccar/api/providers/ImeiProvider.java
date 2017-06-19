@@ -29,6 +29,7 @@ import pl.datamatica.traccar.api.dtos.ImeiNumberDto;
 import pl.datamatica.traccar.api.exceptions.ConfigLoadException;
 import pl.datamatica.traccar.api.metadata.model.ImeiNumber;
 import pl.datamatica.traccar.api.responses.HttpHeaders;
+import pl.datamatica.traccar.api.validators.MetadataValidator;
 
 /**
  *
@@ -99,8 +100,9 @@ public class ImeiProvider {
             final String imeiExistenceCheckURL = traccarConf.getStringParam("api.imei_manager.check_imei_existence_url");
             final String imeiManagerUser = traccarConf.getStringParam("api.imei_manager.imei_manager_user");
             final String imeiManagerPassword = traccarConf.getStringParam("api.imei_manager.imei_manager_password");
+            final MetadataValidator mdv = new MetadataValidator();
             
-            if (!imeiStr.matches("[0-9]+")) {
+            if (!mdv.isImeiValid(imeiStr)) {
                 throw new IllegalArgumentException("Invalid IMEI, only digits are valid in IMEI.");
             }
 

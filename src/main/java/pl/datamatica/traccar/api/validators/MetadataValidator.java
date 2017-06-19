@@ -14,18 +14,14 @@
  *  You should have received a copy of the GNU Affero General Public License
  *  along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-package pl.datamatica.traccar.api.responses;
+package pl.datamatica.traccar.api.validators;
 
-public class HttpStatuses {
-    public static int OK = 200;
-    public static int CREATED = 201;
-    
-    public static int NOT_MODIFIED = 304;
-    
-    public static int BAD_REQUEST = 400;
-    public static int FORBIDDEN = 403;
-    public static int NOT_FOUND = 404;
-    public static int NOT_ACCEPTABLE = 406;
-    public static int TIMED_OUT = 408;
-    public static int CONFLICT = 409;
+/**
+ *
+ * @author Jan Usarek
+ */
+public class MetadataValidator {
+    public boolean isImeiValid(String imeiStr) {
+        return imeiStr.matches("[0-9]{10,16}");
+    }
 }

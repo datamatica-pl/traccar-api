@@ -31,6 +31,7 @@ import spark.ModelAndView;
 import spark.Spark;
 import spark.template.freemarker.FreeMarkerEngine;
 import org.slf4j.Logger;
+import pl.datamatica.traccar.api.validators.MetadataValidator;
 
 /**
  *
@@ -105,6 +106,7 @@ public class ImeisController extends ControllerBase {
                 final String jsonStr = req.body();
                 final RequestContext context = req.attribute(Application.REQUEST_CONTEXT_KEY);
                 final ImeiProvider imp = context.getImeiProvider();
+                final MetadataValidator mdv = new MetadataValidator();
                 ImeiNumber imei;
                 String successMsg;
                 String logMsg;
@@ -112,8 +114,9 @@ public class ImeisController extends ControllerBase {
                 ImeiNumberDto imeiDto = gson.fromJson(jsonStr, ImeiNumberDto.class);
                 imeiDto.trimAllStrings();
                 
-                if (imeiDto.getImei() == null || imeiDto.getImei().equals("")) {
-                    return "Numer IMEI nie może być pusty.";
+                if (!mdv.isImeiValid(imeiDto.getImei())) {
+                    res.status(HttpStatuses.NOT_ACCEPTABLE);
+                    return "Numer IMEI jest nieprawidłowy.";
                 }
                 
                 context.disableSoftDeleteForMetadata(); // Allow deleted IMEI's to be retrieved,
