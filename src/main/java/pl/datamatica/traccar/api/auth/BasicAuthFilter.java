@@ -34,6 +34,7 @@ import pl.datamatica.traccar.api.dtos.out.ErrorDto;
 import pl.datamatica.traccar.api.exceptions.ConfigLoadException;
 import pl.datamatica.traccar.api.providers.ApplicationSettingsProvider;
 import pl.datamatica.traccar.api.providers.UserProvider;
+import pl.datamatica.traccar.api.responses.HttpStatuses;
 import pl.datamatica.traccar.model.User;
 
 public class BasicAuthFilter {
@@ -59,6 +60,7 @@ public class BasicAuthFilter {
             UserProvider up = rc.getUserProvider();
             ApplicationSettingsProvider asp = rc.getApplicationSettingsProvider();
             User user;
+            
             if(request.session().attributes().contains(USER_ID_SESSION_KEY))
                 user = continueSession(request, up);
             else
@@ -70,6 +72,24 @@ public class BasicAuthFilter {
             }
             
             if (rc.isRequestForImeiManager(request)) {
+                // Check whether IP is allowed to manage IMEI's
+                boolean isIpAllowedToAddImei = false;
+                boolean isImeiManagerEnabled = false;
+                try {
+                    final TraccarConfig traccarConf = TraccarConfig.getInstance();
+                    final String[] allowedIps = traccarConf.getStringParam("api.imei_manager.allowed_ips").split(",");
+                    
+                    isIpAllowedToAddImei = Arrays.asList(allowedIps).contains(request.ip());
+                    isImeiManagerEnabled = traccarConf.getBooleanParam("api.imei_manager.enabled");
+                } catch (ConfigLoadException e) {
+                    logger.error("Get allowed IP's from traccar config failed: " + e.getMessage(), e);
+                }
+                
+                if (!isImeiManagerEnabled) {
+                    logger.info("Trying to run IMEI manager, but it's disabled.");
+                    notFound();
+                }
+                
                 // Allow only IMEI manager for request to DM IMEI Manager
                 if (!user.isImeiManager()) {
                     unauthorized(response, new ErrorDto(MessageKeys.ERR_ACCESS_DENIED));
@@ -79,16 +99,6 @@ public class BasicAuthFilter {
                 if (request.uri().equalsIgnoreCase("/imei_manager/logout")) {
                     request.session().removeAttribute(USER_ID_SESSION_KEY);
                     unauthorized(response, new ErrorDto(MessageKeys.ERR_ACCESS_DENIED));
-                }
-                
-                // Check whether IP is allowed to manage IMEI's
-                boolean isIpAllowedToAddImei = false;
-                try {
-                    final TraccarConfig traccarConf = TraccarConfig.getInstance();
-                    final String[] allowedIps = traccarConf.getStringParam("api.imei_manager.allowed_ips").split(",");
-                    isIpAllowedToAddImei = Arrays.asList(allowedIps).contains(request.ip());
-                } catch (ConfigLoadException e) {
-                    logger.error("Get allowed IP's from traccar config failed: " + e.getMessage(), e);
                 }
                 
                 if (!isIpAllowedToAddImei) {
@@ -179,6 +189,10 @@ public class BasicAuthFilter {
         response.header("WWW-Authenticate", SCHEME + " " + "realm=\"" + REALM + "\"");
         closeConnections();
         Spark.halt(401, errorMessage);
+    }
+    
+    private void notFound() {
+        Spark.halt(HttpStatuses.NOT_FOUND);
     }
     
     private void serverError(Response response, String errorMessage) {

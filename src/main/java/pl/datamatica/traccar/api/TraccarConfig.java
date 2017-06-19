@@ -75,4 +75,9 @@ public class TraccarConfig {
     public String getStringParam(String paramPath) throws IllegalAccessException, InvocationTargetException {
         return (String)getStringMethod.invoke(configObject, paramPath);
     }
+    
+    public boolean getBooleanParam(String paramPath) throws IllegalAccessException, InvocationTargetException {
+        String paramStr = getStringParam(paramPath);
+        return paramStr.equalsIgnoreCase("true");
+    }
 }
