@@ -105,15 +105,19 @@ public class ImeiProvider {
             if (!mdv.isImeiValid(imeiStr)) {
                 throw new IllegalArgumentException("Invalid IMEI, only digits are valid in IMEI.");
             }
+            
+            if (imeiExistenceCheckURL.equals("")) {
+                return isImeiRegisteredLocally(imeiStr);
+            } else {
+                URL myURL = new URL(imeiExistenceCheckURL + imeiStr);
+                HttpURLConnection connection = (HttpURLConnection) myURL.openConnection();
+                connection.setRequestProperty("Authorization", "Basic " 
+                                            + HttpHeaders.getEncodedCredentials(imeiManagerUser, imeiManagerPassword));
+                connection.setRequestMethod("HEAD");
 
-            URL myURL = new URL(imeiExistenceCheckURL + imeiStr);
-            HttpURLConnection connection = (HttpURLConnection) myURL.openConnection();
-            connection.setRequestProperty("Authorization", "Basic " 
-                                        + HttpHeaders.getEncodedCredentials(imeiManagerUser, imeiManagerPassword));
-            connection.setRequestMethod("HEAD");
-
-            int responseCode = connection.getResponseCode();
-            return responseCode == HttpURLConnection.HTTP_OK;
+                int responseCode = connection.getResponseCode();
+                return responseCode == HttpURLConnection.HTTP_OK;
+            }
         } catch (IOException | ConfigLoadException | IllegalAccessException | InvocationTargetException e) {
             logger.error(String.format("Existence of IMEI %s can't be check by API, trying to check in local DB.", imeiStr), e);
             return isImeiRegisteredLocally(imeiStr);
