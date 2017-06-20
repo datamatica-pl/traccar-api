@@ -41,6 +41,7 @@
                     <th>IMEI</th>
                     <th>E-mail</th>
                     <th>Telefon kontaktowy</th>
+                    <th>Model urządzenia</th>
                     <th>Imię</th>
                     <th>Nazwisko</th>
                     <th>Uwagi</th>
@@ -55,6 +56,7 @@
                             <td class="imei"><a class="imei-details" href="#" data-imei-id="${imei.id}">${imei.imei}</a></td>
                             <td class="email">${imei.email!''}</td>
                             <td class="contact-phone">${imei.contactPhone!''}</td>
+                            <td class="device-model">${imei.deviceModel!''}</td>
 
                             <td class="first-name">${imei.firstName!''}</td>
 

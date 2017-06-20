@@ -86,6 +86,7 @@ public class ImeiProvider {
     public ImeiNumber updateImeiNumber(ImeiNumber imei, final ImeiNumberDto imeiDto) {
         imei.setEmail(imeiDto.getEmail());
         imei.setContactPhone(imeiDto.getContactPhone());
+        imei.setDeviceModel(imeiDto.getDeviceModel());
         imei.setFirstName(imeiDto.getFirstName());
         imei.setLastName(imeiDto.getLastName());
         imei.setInvoiceNumber(imeiDto.getInvoiceNumber());

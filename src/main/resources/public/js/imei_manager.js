@@ -46,6 +46,7 @@ var imeiManager = {
             imei: $form_inputs.filter('.imei').val(),
             email: $form_inputs.filter('.email').val(),
             contactPhone: $form_inputs.filter('.contact-phone').val(),
+            deviceModel: $form_inputs.filter('.device-model').val(),
             firstName: $form_inputs.filter('.first-name').val(),
             lastName: $form_inputs.filter('.last-name').val(),
             invoiceNumber: $form_inputs.filter('.invoice-number').val(),
@@ -133,6 +134,7 @@ $(function() {
         });
     });
     
+    // Show IMEI details/edition modal
     $('#imei-numbers').find('.imei-details').on('click', function() {
         var $imei_link = $(this);
         var $imei_row = $imei_link.closest('tr');
@@ -140,6 +142,7 @@ $(function() {
         var current_imei = $imei_row_cells.filter('.imei').find('a').text();
         var current_email = $imei_row_cells.filter('.email').text();
         var current_contact_phone = $imei_row_cells.filter('.contact-phone').text();
+        var current_device_model = $imei_row_cells.filter('.device-model').text();
         var current_first_name = $imei_row_cells.filter('.first-name').text();
         var current_last_name = $imei_row_cells.filter('.last-name').text();
         var current_invoice_number = $imei_row.data('invoice-number');
@@ -153,6 +156,7 @@ $(function() {
                 .filter('.imei').val(current_imei).end()
                 .filter('.email').val(current_email).end()
                 .filter('.contact-phone').val(current_contact_phone).end()
+                .filter('.device-model').val(current_device_model).end()
                 .filter('.first-name').val(current_first_name).end()
                 .filter('.last-name').val(current_last_name).end()
                 .filter('.invoice-number').val(current_invoice_number).end()

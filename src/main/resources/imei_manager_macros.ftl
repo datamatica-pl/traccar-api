@@ -13,6 +13,10 @@
             <input type="text" class="form-control contact-phone" id="${formIdAttr}-contact-phone"></input>
         </div>
         <div class="form-group">
+            <label for="${formIdAttr}-device-model">Model urządzenia</label>
+            <input type="text" class="form-control device-model" id="${formIdAttr}-device-model"></input>
+        </div>
+        <div class="form-group">
             <label for="${formIdAttr}-first-name">Imię</label>
             <input type="text" class="form-control first-name" id="${formIdAttr}-first-name"></input>
         </div>
