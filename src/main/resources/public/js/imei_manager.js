@@ -215,7 +215,9 @@ $(function() {
                 .empty()
                 .append( imeiManager.getGpsSelectOptions(current_device_model) );
         
-        $modal_inputs.attr('readonly', 'readonly');
+        $modal_inputs.not('.device-model').attr('readonly', 'readonly');
+        $modal_inputs.filter('.device-model').attr('disabled', 'disabled');
+        
         $('#update-imei').hide();
         $('#edit-imei').show();
         
@@ -223,7 +225,10 @@ $(function() {
     });
     
     $('#edit-imei').on('click', function() {
-        $('#imei-details-modal').find('.form-control').not('.imei').removeAttr('readonly');
+        var $form_controls = $('#imei-details-modal').find('.form-control').not('.imei');
+        
+        $form_controls.not('.device-model').removeAttr('readonly');
+        $form_controls.filter('.device-model').removeAttr('disabled');
         
         $('#edit-imei').hide();
         $('#update-imei').show();
