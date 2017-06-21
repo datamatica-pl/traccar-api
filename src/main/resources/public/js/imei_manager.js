@@ -54,12 +54,61 @@ var imeiManager = {
         };
         
         return imeiJson;
+    },
+    getAvailableGpsModels: function() {
+        return [
+            "",
+            "MT200",
+            "ET17",
+            "ET20",
+            "GT03A",
+            "GT710",
+            "GT100",
+            "GT800",
+            "GT06N/TR06",
+            "Teltonika FMA120",
+            "LK210",
+            "LK209",
+            "LK106",
+            "LK109",
+            "RF-V16",
+            "TK909",
+            "Seria LK",
+            "Seria GT",
+            "Seria ET",
+            "Seria Teltonika"
+        ];
+    },
+    getGpsSelectOptions: function(current_device_model) {
+        var available_models = this.getAvailableGpsModels();
+        var gps_select_options = [];
+        
+        if ($.inArray(current_device_model, available_models) === -1) {
+            available_models.push(current_device_model);
+        }
+        
+        $.each(available_models, function(index, model_option) {
+            var $option = $('<option/>');
+            
+            if (model_option === current_device_model) {
+                $option.attr('selected', 'selected');
+            }
+            gps_select_options.push( $option.val(model_option).text(model_option) );
+        });
+        
+        return gps_select_options;
     }
 }
 
 $(function() {
     
     imeiManager.imeiBackupStorage.refreshLocalImeis();
+    
+    // Fill device model select options on new IMEI modal on page load
+    $('#new-imei-modal')
+            .find('.form-control.device-model')
+            .empty()
+            .append( imeiManager.getGpsSelectOptions("") );
     
     $('[data-toggle=confirmation]').confirmation({
         rootSelector: '[data-toggle=confirmation]',
@@ -149,6 +198,7 @@ $(function() {
         var current_comment = $imei_row_cells.filter('.comment').text();
         var $modal = $('#imei-details-modal').modal('show');
         var $modal_inputs = $modal.find('.form-control');
+        var $dev_model_input = $modal_inputs.filter('.device-model');
         
         $modal.data('imei-id', $imei_link.data('imei-id'));
         
@@ -156,11 +206,14 @@ $(function() {
                 .filter('.imei').val(current_imei).end()
                 .filter('.email').val(current_email).end()
                 .filter('.contact-phone').val(current_contact_phone).end()
-                .filter('.device-model').val(current_device_model).end()
                 .filter('.first-name').val(current_first_name).end()
                 .filter('.last-name').val(current_last_name).end()
                 .filter('.invoice-number').val(current_invoice_number).end()
                 .filter('.comment').val(current_comment);
+
+        $dev_model_input
+                .empty()
+                .append( imeiManager.getGpsSelectOptions(current_device_model) );
         
         $modal_inputs.attr('readonly', 'readonly');
         $('#update-imei').hide();
@@ -171,6 +224,7 @@ $(function() {
     
     $('#edit-imei').on('click', function() {
         $('#imei-details-modal').find('.form-control').not('.imei').removeAttr('readonly');
+        
         $('#edit-imei').hide();
         $('#update-imei').show();
     });
