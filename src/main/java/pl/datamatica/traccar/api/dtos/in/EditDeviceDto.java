@@ -33,6 +33,8 @@ public class EditDeviceDto {
     private final String plateNumber;
     private final String description;
     private final Double speedLimit;
+    private final Double fuelCapacity;
+    
 
     public static class Builder {
 
@@ -45,6 +47,7 @@ public class EditDeviceDto {
         private String plateNumber;
         private String description;
         private Double speedLimit;
+        private Double fuelCapacity;
 
         public Builder deviceName(final String value) {
             this.deviceName = value;
@@ -90,6 +93,11 @@ public class EditDeviceDto {
             this.speedLimit = value;
             return this;
         }
+        
+        public Builder fuelCapacity(final Double value) {
+            this.fuelCapacity = value;
+            return this;
+        }
 
         public EditDeviceDto build() {
             return new EditDeviceDto(deviceName, 
@@ -100,7 +108,8 @@ public class EditDeviceDto {
                     phoneNumber, 
                     plateNumber, 
                     description,
-                    speedLimit);
+                    speedLimit,
+                    fuelCapacity);
         }
     }
 
@@ -112,7 +121,8 @@ public class EditDeviceDto {
             final String phoneNumber, 
             final String plateNumber, 
             final String description,
-            final Double speedLimit) {
+            final Double speedLimit,
+            final Double fuelCapacity) {
         this.deviceName = deviceName;
         this.deviceModelId = deviceModelId;
         this.iconId = iconId;
@@ -122,6 +132,7 @@ public class EditDeviceDto {
         this.plateNumber = plateNumber;
         this.description = description;
         this.speedLimit = speedLimit;
+        this.fuelCapacity = fuelCapacity;
     }
 
     public String getDeviceName() {
@@ -158,6 +169,10 @@ public class EditDeviceDto {
     
     public Double getSpeedLimit() {
         return speedLimit;
+    }
+    
+    public Double getFuelCapacity() {
+        return fuelCapacity;
     }
     
     public static List<ErrorDto> validate(EditDeviceDto deviceDto) {
