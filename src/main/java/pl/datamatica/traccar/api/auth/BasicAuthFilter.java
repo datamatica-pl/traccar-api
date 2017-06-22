@@ -86,12 +86,13 @@ public class BasicAuthFilter {
                 }
                 
                 if (!isImeiManagerEnabled) {
-                    logger.info("Trying to run IMEI manager, but it's disabled.");
+                    logger.error("Trying to run IMEI manager, but it's disabled.");
                     notFound();
                 }
                 
                 // Allow only IMEI manager for request to DM IMEI Manager
                 if (!user.isImeiManager()) {
+                    logger.error(String.format("User %s tried to access IMEI manager without permissions.", user.getLogin()));
                     unauthorized(response, new ErrorDto(MessageKeys.ERR_ACCESS_DENIED));
                 }
                 
@@ -102,7 +103,7 @@ public class BasicAuthFilter {
                 }
                 
                 if (!isIpAllowedToAddImei) {
-                    logger.info("Attempt to reach IMEI manager from unauthorized IP: " + request.ip());
+                    logger.error("Attempt to reach IMEI manager from unauthorized IP: " + request.ip());
                     unauthorized(response, new ErrorDto(MessageKeys.ERR_ACCESS_DENIED));
                 }
             }
