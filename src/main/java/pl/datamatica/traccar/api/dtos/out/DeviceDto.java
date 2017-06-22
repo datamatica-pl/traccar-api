@@ -72,6 +72,7 @@ public class DeviceDto extends EditDeviceDto implements ICachedDto {
         private Date ignitionTime;
         private Integer positionFrequency;
         private Boolean autoArm;
+        private Double fuelCapacity;
 
         public Builder id(final long value) {
             this.id = value;
@@ -178,6 +179,11 @@ public class DeviceDto extends EditDeviceDto implements ICachedDto {
             return this;
         }
         
+       public Builder fuelCapacity(final double capacity) {
+            this.fuelCapacity = capacity;
+            return this;
+        }
+        
         private static final Double KilometersToNauticMilesMultiplier = 1.852;
 
         public Builder device(final Device device) {
@@ -212,6 +218,7 @@ public class DeviceDto extends EditDeviceDto implements ICachedDto {
             this.ignitionTime = device.getIgnitionTime();
             this.positionFrequency = device.getPositionFreq();
             this.autoArm = device.isAutoArmed();
+            this.fuelCapacity = device.getFuelCapacity();
             return this;
         }
 
@@ -240,7 +247,8 @@ public class DeviceDto extends EditDeviceDto implements ICachedDto {
                     ignition,
                     ignitionTime,
                     positionFrequency,
-                    autoArm);
+                    autoArm,
+                    fuelCapacity);
         }
     }
 
@@ -268,9 +276,10 @@ public class DeviceDto extends EditDeviceDto implements ICachedDto {
             final Boolean ignition,
             final Date ignitionTime,
             final Integer positionFrequency,
-            final Boolean autoArm) {
+            final Boolean autoArm,
+            final Double fuelCapacity) {
         super(deviceName, deviceModelId, iconId, customIconId, color, phoneNumber, 
-                plateNumber, description, speedLimit);
+                plateNumber, description, speedLimit, fuelCapacity);
         this.id = id;
         this.status = status;
         this.uniqueId = uniqueId;

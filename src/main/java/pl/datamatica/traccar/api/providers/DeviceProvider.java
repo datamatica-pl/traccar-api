@@ -197,6 +197,8 @@ public class DeviceProvider extends ProviderBase {
         else
             device.setSpeedLimit(null);
         
+        device.setFuelCapacity(deviceDto.getFuelCapacity());
+        
         em.persist(device);
         
         logger.info("{} updated device {} (id={})", 
