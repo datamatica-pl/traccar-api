@@ -25,6 +25,7 @@ import javax.persistence.TypedQuery;
 import org.slf4j.Logger;
 import pl.datamatica.traccar.api.auth.AuthenticationException;
 import pl.datamatica.traccar.api.auth.AuthenticationException.ErrorType;
+import pl.datamatica.traccar.api.dtos.MessageKeys;
 import pl.datamatica.traccar.api.providers.ProviderException.Type;
 import pl.datamatica.traccar.model.ApplicationSettings;
 import pl.datamatica.traccar.model.User;
@@ -150,7 +151,7 @@ public class UserProvider extends ProviderBase {
         return user;
     }
     
-    private User getUserByLogin(String login) {
+    public User getUserByLogin(String login) {
         try {
             TypedQuery<User> tq = em.createQuery("Select x from User x where x.login = :login", User.class);
             tq.setParameter("login", login);

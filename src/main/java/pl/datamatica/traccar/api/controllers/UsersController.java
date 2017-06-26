@@ -49,7 +49,7 @@ public class UsersController extends ControllerBase {
                 return render(uc.get(Long.parseLong(req.params(":id"))), res);
             }, gson::toJson);
             
-            Spark.post(rootUrl(), (req, res) ->{
+            Spark.post(rootUrl(), (req, res) -> {
                 UsersController uc = createController(req);
                 RegisterUserDto userDto = gson.fromJson(req.body(), RegisterUserDto.class);
                 return render(uc.post(userDto), res);
@@ -69,6 +69,12 @@ public class UsersController extends ControllerBase {
             Spark.get(rootUrl()+"/reset/:token", (req, res) -> {
                 UsersController uc = createController(req);
                 return uc.resetPassword(req.params(":token"));
+            });
+            
+            Spark.post(rootUrl()+"/resend", (req, res) -> {
+                UsersController uc = createController(req);
+                ResetPassReqDto dto = gson.fromJson(req.body(), ResetPassReqDto.class);
+                return render(uc.resendLink(dto), res);
             });
         }
 
@@ -110,6 +116,16 @@ public class UsersController extends ControllerBase {
         }
     }
     
+    public HttpResponse resendLink(ResetPassReqDto dto) {
+        User user = up.getUserByLogin(dto.getLogin());
+        if(user == null)
+            return ok("");
+        if(!user.isBlocked() || user.isEmailValid())
+            return ok("");
+        sendActivationToken(user);
+        return ok("");
+    }
+    
     public HttpResponse post(RegisterUserDto userDto) throws ProviderException {
         List<ErrorDto> errors = RegisterUserDto.validate(userDto);
         if(!errors.isEmpty())
@@ -120,12 +136,7 @@ public class UsersController extends ControllerBase {
                     userDto.getPassword(), userDto.isCheckMarketing());
             requestContext.setUser(user);
             requestContext.getDeviceProvider().createDevice(userDto.getImei());
-            String token = user.getEmailValidationToken();
-            if(token != null) {
-                String url = requestContext.getApiRoot()+"/users/activate/"+token;
-                sender.sendMessage(user.getEmail(), "Email confirmation",
-                        emailConfirmationContent(url));
-            }
+            sendActivationToken(user);
             return created("user/"+user.getId(), "");
         } catch (ProviderException ex) {
             requestContext.rollbackTransaction();
@@ -137,6 +148,15 @@ public class UsersController extends ControllerBase {
                     return badRequest(MessageKeys.ERR_INVALID_IMEI);                    
             }
             throw ex;
+        }
+    }
+
+    private void sendActivationToken(User user) {
+        String token = user.getEmailValidationToken();
+        if(token != null) {
+            String url = requestContext.getApiRoot()+"/users/activate/"+token;
+            sender.sendMessage(user.getEmail(), "Email confirmation",
+                    emailConfirmationContent(url));
         }
     }
     
