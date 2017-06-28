@@ -78,11 +78,16 @@ public class DevicesController extends ControllerBase {
             }, gson::toJson);
             
             Spark.get(rootUrl()+"/:id/customicon", (req, res) -> {
-                DevicesController dc = createController(req);
-                Picture pic = dc.getCustomIcon(Long.parseLong(req.params(":id")));
-                res.raw().setContentType(pic.getMimeType());
-                res.raw().getOutputStream().write(pic.getData(),0, pic.getData().length);
-                return res;
+                try {
+                    DevicesController dc = createController(req);
+                    Picture pic = dc.getCustomIcon(Long.parseLong(req.params(":id")));
+                    res.raw().setContentType(pic.getMimeType());
+                    res.raw().getOutputStream().write(pic.getData(),0, pic.getData().length);
+                    return res;
+                } catch(ProviderException e) {
+                    res.status(404);
+                    return res;
+                }
             });
             
             Spark.put(rootUrl()+"/:id/customicon", (req, res) -> {
