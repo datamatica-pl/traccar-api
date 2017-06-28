@@ -81,6 +81,10 @@ public class DevicesController extends ControllerBase {
                 try {
                     DevicesController dc = createController(req);
                     Picture pic = dc.getCustomIcon(Long.parseLong(req.params(":id")));
+                    if(pic == null) {
+                        res.status(404);
+                        return res;
+                    }
                     res.raw().setContentType(pic.getMimeType());
                     res.raw().getOutputStream().write(pic.getData(),0, pic.getData().length);
                     return res;
