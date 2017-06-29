@@ -34,7 +34,7 @@ public class PositionProvider extends ProviderBase {
         this.user = user;
         
         positionListQuery = em.createQuery("from Position p "
-                + "where p.device = :device and p.time >= :minDate "
+                + "where p.device = :device and p.time >= :minDate and (validStatus is NULL or validStatus = :valid) "
                 + "order by p.time", Position.class);
     }
     
@@ -54,6 +54,7 @@ public class PositionProvider extends ProviderBase {
         
         positionListQuery.setParameter("device", device);
         positionListQuery.setParameter("minDate", minDate);
+        positionListQuery.setParameter("valid", Position.VALID_STATUS_CORRECT_POSITION);
         positionListQuery.setMaxResults(maxCount);            
         
         return positionListQuery.getResultList().stream();
