@@ -16,10 +16,16 @@
  */
 package pl.datamatica.traccar.api.providers;
 
+import java.util.Calendar;
+import java.util.Date;
+import java.util.stream.Stream;
 import javax.persistence.*;
 import org.junit.*;
 import static org.junit.Assert.*;
+import pl.datamatica.traccar.api.dtos.out.ListDto;
+import pl.datamatica.traccar.api.dtos.out.PositionDto;
 import pl.datamatica.traccar.api.providers.ProviderException.*;
+import pl.datamatica.traccar.api.responses.OkCachedResponse;
 import pl.datamatica.traccar.model.Position;
 
 public class PositionProviderTest {
@@ -73,6 +79,37 @@ public class PositionProviderTest {
             return;
         }
         fail();
+    }
+    
+    @Test
+    public void getAllAvailablePositions_success() {
+        provider = new PositionProvider(em, database.manager);
+        
+        Position position = new Position();
+        position.setLatitude(1.);
+        position.setLongitude(1.);
+        position.setTime(new Date());
+        position.setValid(true);
+        position.setValidStatus(position.VALID_STATUS_ALARM);
+        position.setDevice(database.managerDevice);
+        
+        Position position2 = new Position();
+        position2.setLatitude(1.);
+        position2.setLongitude(1.);
+        position2.setTime(new Date());
+        position2.setValid(true);
+        position2.setValidStatus(position.VALID_STATUS_CORRECT_POSITION);
+        position2.setDevice(database.managerDevice);
+        
+        em.persist(position);
+        em.persist(position2);
+        
+        Calendar cal = Calendar.getInstance();
+        cal.add(Calendar.DATE, -2);
+        
+        Stream<Position> result = provider.getAllAvailablePositions(database.managerDevice, cal.getTime(), 100);
+    
+        assertEquals(1, result.count());
     }
     
     @After
