@@ -38,6 +38,15 @@ public class CommandType extends UpdateTimestampedEntity implements Serializable
 
     @Column(length=100)
     private String description;
+    
+    @Column(nullable=false, columnDefinition="boolean default true")
+    private boolean isTCP;
+    
+    @Column(length=300)
+    private String commandSMS;
+    
+    @Column(length=100)
+    private String warning;
 
     @OneToMany(fetch=FetchType.EAGER)
     @JoinColumn(name="CommandTypeId", nullable = false)
@@ -70,5 +79,16 @@ public class CommandType extends UpdateTimestampedEntity implements Serializable
     public void setDescription(String description) {
         this.description = description;
     }
-
+    
+    public boolean isTCP() {
+        return isTCP;
+    }
+    
+    public String getCommandSMS() {
+        return commandSMS;
+    }
+    
+    public String getWarning() {
+        return warning;
+    }
 }
