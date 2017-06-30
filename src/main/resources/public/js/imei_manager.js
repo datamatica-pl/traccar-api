@@ -188,6 +188,7 @@ $(function() {
         var $imei_link = $(this);
         var $imei_row = $imei_link.closest('tr');
         var $imei_row_cells = $imei_row.find('td');
+        var imeiObj = $imei_row.data('imei-obj');
         var current_imei = $imei_row_cells.filter('.imei').find('a').text();
         var current_email = $imei_row_cells.filter('.email').text();
         var current_contact_phone = $imei_row_cells.filter('.contact-phone').text();
@@ -200,7 +201,7 @@ $(function() {
         var $modal_inputs = $modal.find('.form-control');
         var $dev_model_input = $modal_inputs.filter('.device-model');
         
-        $modal.data('imei-id', $imei_link.data('imei-id'));
+        $modal.data('imei-id', imeiObj.id);
         
         $modal_inputs
                 .filter('.imei').val(current_imei).end()
@@ -224,6 +225,7 @@ $(function() {
         return false; // Prevent go to top of the page on click
     });
     
+    // Enable IMEI edition on IMEI details view
     $('#edit-imei').on('click', function() {
         var $form_controls = $('#imei-details-modal').find('.form-control').not('.imei');
         
@@ -234,9 +236,11 @@ $(function() {
         $('#update-imei').show();
     });
     
+    // Update IMEI
     $('#update-imei').on('click', function() {
         var $modal = $('#imei-details-modal').modal();
         var $button = $(this);
+        
         $button.addClass('disabled');
         
         $.ajax({
