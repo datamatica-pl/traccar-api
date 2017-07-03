@@ -16,6 +16,7 @@
  */
 package pl.datamatica.traccar.api.providers;
 
+import java.util.List;
 import javax.persistence.EntityManager;
 import javax.persistence.TypedQuery;
 import pl.datamatica.traccar.model.ApplicationSettings;
@@ -31,6 +32,7 @@ public class ApplicationSettingsProvider{
         TypedQuery<ApplicationSettings> tq = em.createQuery("Select x from ApplicationSettings x", 
                 ApplicationSettings.class);
         tq.setMaxResults(1);
-        return tq.getSingleResult();
+        List<ApplicationSettings> result = tq.getResultList();
+        return result.isEmpty() ? new ApplicationSettings() : tq.getSingleResult();
     }
 }
