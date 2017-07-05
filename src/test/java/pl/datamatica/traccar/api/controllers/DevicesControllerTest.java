@@ -186,53 +186,6 @@ public class DevicesControllerTest {
     }
     
     @Test
-    public void getPositionsWithProperValidStatus_ok() throws Exception {
-        Position position = new Position();
-        position.setLatitude(1.);
-        position.setLongitude(1.);
-        position.setTime(new Date());
-        position.setValid(true);
-        position.setValidStatus(position.VALID_STATUS_ALARM);
-        position.setDevice(devices.get(0));
-        
-        Position position2 = new Position();
-        position2.setLatitude(1.);
-        position2.setLongitude(1.);
-        position2.setTime(new Date());
-        position2.setValid(true);
-        position2.setValidStatus(position.VALID_STATUS_CORRECT_POSITION);
-        position2.setDevice(devices.get(0));
-        
-        Position position3 = new Position();
-        position3.setLatitude(1.);
-        position3.setLongitude(1.);
-        position3.setTime(new Date());
-        position3.setValid(true);
-        position3.setValidStatus(position.VALID_STATUS_ALARM_AND_TIME_OUT_OF_RANGE);
-        position3.setDevice(devices.get(0));
-        
-        Position position4 = new Position();
-        position4.setLatitude(1.);
-        position4.setLongitude(1.);
-        position4.setTime(new Date());
-        position4.setValid(true);
-        position4.setValidStatus(position.VALID_STATUS_TIME_OUT_OF_RANGE);
-        position4.setDevice(devices.get(0));
-
-        Mockito.when(pp.getAllAvailablePositions(Mockito.eq(devices.get(0)),
-                Mockito.any(Date.class), Mockito.anyInt()))
-                .thenReturn(Stream.of(position, position2, position3, position4));
-        
-        HttpResponse response = dc.getPositions(0);
-        
-        assertTrue(response instanceof OkCachedResponse);
-        assertTrue(response.getContent() instanceof ListDto);
-        ListDto<PositionDto> result = (ListDto<PositionDto>)response.getContent();
-        assertEquals(1, result.getChanged().size());
-        assertNull(result.getIds());
-    }
-    
-    @Test
     public void getPositions_forbidden() throws Exception {
         Mockito.when(dp.getDevice(3)).thenThrow(new ProviderException(Type.ACCESS_DENIED));
         

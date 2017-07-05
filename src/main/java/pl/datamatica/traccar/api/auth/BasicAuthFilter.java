@@ -19,18 +19,22 @@ package pl.datamatica.traccar.api.auth;
 import com.google.gson.Gson;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
 import java.util.concurrent.TimeUnit;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pl.datamatica.traccar.api.Application;
 import pl.datamatica.traccar.api.Context;
+import pl.datamatica.traccar.api.TraccarConfig;
 import spark.*;
 import static pl.datamatica.traccar.api.auth.AuthenticationException.*;
 import pl.datamatica.traccar.api.controllers.RequestContext;
 import pl.datamatica.traccar.api.dtos.MessageKeys;
 import pl.datamatica.traccar.api.dtos.out.ErrorDto;
+import pl.datamatica.traccar.api.exceptions.ConfigLoadException;
 import pl.datamatica.traccar.api.providers.ApplicationSettingsProvider;
 import pl.datamatica.traccar.api.providers.UserProvider;
+import pl.datamatica.traccar.api.responses.HttpStatuses;
 import pl.datamatica.traccar.model.User;
 
 public class BasicAuthFilter {
@@ -56,14 +60,54 @@ public class BasicAuthFilter {
             UserProvider up = rc.getUserProvider();
             ApplicationSettingsProvider asp = rc.getApplicationSettingsProvider();
             User user;
+            
             if(request.session().attributes().contains(USER_ID_SESSION_KEY))
                 user = continueSession(request, up);
             else
                 user = beginSession(request, up);
             if(user.isBlocked()) {
                 unauthorized(response, new ErrorDto(MessageKeys.ERR_ACCOUNT_BLOCKED));
-            } else if(user.isExpired()) 
+            } else if(user.isExpired()) {
                 unauthorized(response, new ErrorDto(MessageKeys.ERR_ACCOUNT_EXPIRED));
+            }
+            
+            if (rc.isRequestForImeiManager(request)) {
+                // Check whether IP is allowed to manage IMEI's
+                boolean isIpAllowedToAddImei = false;
+                boolean isImeiManagerEnabled = false;
+                try {
+                    final TraccarConfig traccarConf = TraccarConfig.getInstance();
+                    final String[] allowedIps = traccarConf.getStringParam("api.imei_manager.allowed_ips").split(",");
+                    
+                    isIpAllowedToAddImei = Arrays.asList(allowedIps).contains(request.ip());
+                    isImeiManagerEnabled = traccarConf.getBooleanParam("api.imei_manager.enabled");
+                } catch (ConfigLoadException e) {
+                    logger.error("Get allowed IP's from traccar config failed: " + e.getMessage(), e);
+                }
+                
+                if (!isImeiManagerEnabled) {
+                    logger.error("Trying to run IMEI manager, but it's disabled.");
+                    notFound();
+                }
+                
+                // Allow only IMEI manager for request to DM IMEI Manager
+                if (!user.isImeiManager()) {
+                    logger.error(String.format("User %s tried to access IMEI manager without permissions.", user.getLogin()));
+                    unauthorized(response, new ErrorDto(MessageKeys.ERR_ACCESS_DENIED));
+                }
+                
+                // Logout from IMEI manager
+                if (request.uri().equalsIgnoreCase("/imei_manager/logout")) {
+                    request.session().removeAttribute(USER_ID_SESSION_KEY);
+                    unauthorized(response, new ErrorDto(MessageKeys.ERR_ACCESS_DENIED));
+                }
+                
+                if (!isIpAllowedToAddImei) {
+                    logger.error("Attempt to reach IMEI manager from unauthorized IP: " + request.ip());
+                    unauthorized(response, new ErrorDto(MessageKeys.ERR_ACCESS_DENIED));
+                }
+            }
+            
             rc.setUser(user);
         } catch(AuthenticationException e) {
             unauthorized(response, e.getMessage());
@@ -147,6 +191,10 @@ public class BasicAuthFilter {
         response.header("WWW-Authenticate", SCHEME + " " + "realm=\"" + REALM + "\"");
         closeConnections();
         Spark.halt(401, errorMessage);
+    }
+    
+    private void notFound() {
+        Spark.halt(HttpStatuses.NOT_FOUND);
     }
     
     private void serverError(Response response, String errorMessage) {

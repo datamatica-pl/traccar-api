@@ -65,6 +65,7 @@ public class Application implements spark.servlet.SparkApplication {
             new ImagesController.Binder(),
             new AlertsController.Binder(),
             new NotificationSettingsController.Binder(),
+            new ImeisController.Binder(),
             new MarkersController.Binder()
         };
     
@@ -85,11 +86,17 @@ public class Application implements spark.servlet.SparkApplication {
                     .log(Level.SEVERE, null, ex);
         }
         
+        // Set static files. Root is 'src/main/resources', so put files in 'src/main/resources/public'
+        Spark.staticFiles.location("/public");
+
         Spark.before((req, res) -> {
             RequestContext rc = new RequestContext(req, res);
             rc.beginTransaction();
             if (rc.isRequestForMetadata(req)) {
                 rc.beginMetadataTransaction();
+            }
+            if (rc.isRequestForImeiManager(req)) {
+                String test = "abc";
             }
             req.attribute(REQUEST_CONTEXT_KEY, rc);
             baf.handle(req, res);
