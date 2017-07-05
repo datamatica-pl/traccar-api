@@ -53,7 +53,7 @@
                     <#escape x as x?html>
                         <tr data-invoice-number="${imei.invoiceNumber!''}" data-imei-obj='${imei.toJsonString()}' >
                             <td class="id">${imei.id}</td>
-                            <td class="imei"><a class="imei-details" href="#" data-imei-id="${imei.id}">${imei.imei}</a></td>
+                            <td class="imei"><a class="imei-details" href="#">${imei.imei}</a></td>
                             <td class="email">${imei.email!''}</td>
                             <td class="contact-phone">${imei.contactPhone!''}</td>
                             <td class="device-model">${imei.deviceModel!''}</td>
@@ -66,8 +66,8 @@
 
                             <td class="action">
                                 <button type="button"
-                                        data-imei-id="${imei.id}"
-                                        href="/api/delete/${imei.id}"
+                                        data-imei-id="${imei.id?c}"
+                                        href="/api/delete/${imei.id?c}"
                                         class="btn btn-sm btn-danger"
                                         data-toggle="confirmation"
                                         data-title="Potwierdź usunięcie IMEI"

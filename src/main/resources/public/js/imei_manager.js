@@ -110,15 +110,16 @@ $(function() {
             .empty()
             .append( imeiManager.getGpsSelectOptions("") );
     
+    // Delete IMEI
     $('[data-toggle=confirmation]').confirmation({
         rootSelector: '[data-toggle=confirmation]',
         onConfirm: function(e, delButton) {
             var $delButton = $(delButton);
             var $confirmButtons = $delButton.siblings('.popover').find('.btn');
             e.preventDefault(); // Don't scroll page up after click
-            
+
             $delButton.add($confirmButtons).addClass("disabled");
-            
+
             $.ajax({
                 url: '/api/imei_manager/imei/' + this.imeiId,
                 type: 'DELETE',
