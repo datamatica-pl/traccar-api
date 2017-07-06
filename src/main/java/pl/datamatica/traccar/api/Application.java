@@ -129,13 +129,11 @@ public class Application implements spark.servlet.SparkApplication {
     }
 
     public static String getStringsDir() throws Exception {
-        InitialContext context = new InitialContext();
-        return (String)context.lookup(STRINGS_DIR_NAME);
+        return getConfigRecord(STRINGS_DIR_NAME);
     }
 
     public static String getImagesDir() throws Exception {
-        InitialContext context = new InitialContext();
-        return (String)context.lookup(IMAGES_DIR_NAME);
+        return getConfigRecord(IMAGES_DIR_NAME);
     }
     
     public static String getConfigRecord(String key) throws Exception {
