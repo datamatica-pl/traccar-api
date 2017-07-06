@@ -16,6 +16,7 @@
  */
 package pl.datamatica.traccar.api.controllers;
 
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -37,6 +38,7 @@ import pl.datamatica.traccar.api.providers.DeviceProvider;
 import pl.datamatica.traccar.api.providers.PositionProvider;
 import pl.datamatica.traccar.api.providers.ProviderException;
 import pl.datamatica.traccar.api.providers.ProviderException.Type;
+import pl.datamatica.traccar.api.providers.UserProvider;
 import pl.datamatica.traccar.api.responses.*;
 import pl.datamatica.traccar.model.Device;
 import pl.datamatica.traccar.model.Position;
@@ -47,6 +49,7 @@ public class DevicesControllerTest {
     private User user;
     private DeviceProvider dp;
     private PositionProvider pp;
+    private UserProvider up;
     private DevicesController dc;
     private RequestContext rc;
     private List<Device> devices;
@@ -58,15 +61,20 @@ public class DevicesControllerTest {
         rc = Mockito.mock(RequestContext.class);
         dp = Mockito.mock(DeviceProvider.class);
         pp = Mockito.mock(PositionProvider.class);
+        up = Mockito.mock(UserProvider.class);
         Mockito.when(rc.getDeviceProvider()).thenReturn(dp);
         Mockito.when(rc.getPositionProvider()).thenReturn(pp);
+        Mockito.when(rc.getUserProvider()).thenReturn(up);
         Mockito.when(rc.getUser()).thenReturn(user);
+        Mockito.when(up.getAllAvailableUsers()).thenReturn(Stream.<User>empty());
         dc = new DevicesController(rc);
         devices = IntStream.range(0, 3)
                 .mapToObj(i -> {
                     Device device = new Device();
                     device.setUniqueId(i+"");
                     device.setOwner(user);
+                    device.setUsers(Collections.singleton(user));
+                    device.setMaintenances(Collections.EMPTY_LIST);
                     device.setLastUpdate(new Date((i+1)*1000));
                     return device;
                 })
@@ -79,7 +87,7 @@ public class DevicesControllerTest {
     
     @Test
     public void getAll_emptyList() throws Exception {
-        Mockito.when(dp.getAllAvailableDevices()).thenReturn(Stream.empty());
+        Mockito.when(dp.getAllAvailableDevices()).thenReturn(Stream.<Device>empty());
         
         HttpResponse response = dc.get();
         
@@ -211,7 +219,9 @@ public class DevicesControllerTest {
         final long id = 0;
         
         Device expectedContent = new Device();
-        expectedContent.setOwner(new User());
+        expectedContent.setOwner(user);
+        expectedContent.setUsers(Collections.singleton(user));
+        expectedContent.setMaintenances(Collections.EMPTY_LIST);
         expectedContent.setUniqueId(uniqueId);
         Mockito.when(dp.createDevice(uniqueId)).thenReturn(expectedContent);
         AddDeviceDto deviceDto = new AddDeviceDto(uniqueId);

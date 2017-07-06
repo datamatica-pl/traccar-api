@@ -16,10 +16,12 @@
  */
 package pl.datamatica.traccar.api.dtos.out;
 
-import java.time.LocalDate;
-import java.time.ZoneId;
+import java.util.Collections;
 import java.util.Date;
+import java.util.List;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 import pl.datamatica.traccar.api.dtos.JsonIgnore;
 import pl.datamatica.traccar.api.dtos.in.EditDeviceDto;
 import pl.datamatica.traccar.model.Device;
@@ -41,6 +43,11 @@ public class DeviceDto extends EditDeviceDto implements ICachedDto {
     private final Date ignitionTime;
     private final Integer positionFrequency;
     private final Boolean autoArm;
+    
+    private final Date lastAlarmsCheck;
+    private final boolean unreadAlarms;
+    private final Set<Long> userIds;
+    private final List<MaintenanceDto> maintenances;
     private final Long groupId;
     
     @JsonIgnore
@@ -73,8 +80,13 @@ public class DeviceDto extends EditDeviceDto implements ICachedDto {
         private Date ignitionTime;
         private Integer positionFrequency;
         private Boolean autoArm;
-        private Long groupId;
         private Double fuelCapacity;
+        //web
+        private Long groupId;
+        private Date lastAlarmsCheck;
+        private boolean unreadAlarms;
+        private Set<Long> userIds;
+        private List<MaintenanceDto> maintenances;
 
         public Builder id(final long value) {
             this.id = value;
@@ -188,7 +200,7 @@ public class DeviceDto extends EditDeviceDto implements ICachedDto {
         
         private static final Double KilometersToNauticMilesMultiplier = 1.852;
 
-        public Builder device(final Device device) {
+        public Builder device(final Device device, Set<Long> availableUserIds) {
             this.id = device.getId();
             this.deviceName = device.getName();
             this.deviceModelId = device.getDeviceModelId();
@@ -223,6 +235,17 @@ public class DeviceDto extends EditDeviceDto implements ICachedDto {
             if(device.getGroup() != null)
                 this.groupId = device.getGroup().getId();
             this.fuelCapacity = device.getFuelCapacity();
+            this.lastAlarmsCheck = device.getLastAlarmsCheck();
+            this.unreadAlarms = device.hasUnreadAlarms();
+            this.userIds = device.getUsers().stream().map(u-> u.getId())
+                    .filter(id->availableUserIds.contains(id))
+                    .collect(Collectors.toSet());
+            if(device.getMaintenances() == null)
+                this.maintenances = Collections.EMPTY_LIST;
+            else
+                this.maintenances = device.getMaintenances().stream()
+                        .map(m -> new MaintenanceDto.Builder().technicalMaintenance(m).build())
+                        .collect(Collectors.toList());
             return this;
         }
 
@@ -253,7 +276,11 @@ public class DeviceDto extends EditDeviceDto implements ICachedDto {
                     positionFrequency,
                     autoArm,
                     groupId,
-                    fuelCapacity);
+                    fuelCapacity,
+                    lastAlarmsCheck,
+                    unreadAlarms,
+                    userIds,
+                    maintenances);
         }
     }
 
@@ -283,7 +310,11 @@ public class DeviceDto extends EditDeviceDto implements ICachedDto {
             final Integer positionFrequency,
             final Boolean autoArm,
             final Long groupId,
-            final Double fuelCapacity) {
+            final Double fuelCapacity,
+            final Date lastAlarmsCheck,
+            final boolean unreadAlarms,
+            final Set<Long> userIds,
+            final List<MaintenanceDto> maintenances) {
         super(deviceName, deviceModelId, iconId, customIconId, color, phoneNumber, 
                 plateNumber, description, speedLimit, fuelCapacity);
         this.id = id;
@@ -303,6 +334,10 @@ public class DeviceDto extends EditDeviceDto implements ICachedDto {
         this.positionFrequency = positionFrequency;
         this.autoArm = autoArm;
         this.groupId = groupId;
+        this.lastAlarmsCheck = lastAlarmsCheck;
+        this.unreadAlarms = unreadAlarms;
+        this.userIds = userIds;
+        this.maintenances = maintenances;
     }
     
     public long getId() {
