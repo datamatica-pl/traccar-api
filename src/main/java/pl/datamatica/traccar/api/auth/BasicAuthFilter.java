@@ -33,6 +33,7 @@ import pl.datamatica.traccar.api.dtos.MessageKeys;
 import pl.datamatica.traccar.api.dtos.out.ErrorDto;
 import pl.datamatica.traccar.api.exceptions.ConfigLoadException;
 import pl.datamatica.traccar.api.providers.ApplicationSettingsProvider;
+import pl.datamatica.traccar.api.providers.ProviderException;
 import pl.datamatica.traccar.api.providers.UserProvider;
 import pl.datamatica.traccar.api.responses.HttpStatuses;
 import pl.datamatica.traccar.model.User;
@@ -109,6 +110,8 @@ public class BasicAuthFilter {
             }
             
             rc.setUser(user);
+        } catch(ProviderException e) {
+            unauthorized(response, AuthenticationException.ErrorType.NO_SUCH_USER.getMessage());
         } catch(AuthenticationException e) {
             unauthorized(response, e.getMessage());
         } catch(IllegalArgumentException e) {
