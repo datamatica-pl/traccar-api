@@ -128,7 +128,9 @@ public class BasicAuthFilter {
                 && request.requestMethod().equalsIgnoreCase("post"))
                 || (request.pathInfo().matches("/v[0-9]+/users/reset/.*")
                 && request.requestMethod().equalsIgnoreCase("get"))
-                || request.requestMethod().equalsIgnoreCase("options");
+                || request.requestMethod().equalsIgnoreCase("options")
+                || (request.pathInfo().matches("/v[0-9]+/users/resend")
+                && request.requestMethod().equalsIgnoreCase("post"));
     }
 
     private User beginSession(Request request, UserProvider up) throws IllegalArgumentException, AuthenticationException {
