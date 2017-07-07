@@ -61,8 +61,6 @@ public class UserProvider extends ProviderBase {
     public User authenticateUser(long id) throws ProviderException, 
             AuthenticationException {
         requestUser = get(User.class, id, u -> true);
-        if(requestUser == null)
-            throw new AuthenticationException(ErrorType.NO_SUCH_USER);
         return requestUser;
     }
     
