@@ -28,9 +28,8 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.Hashtable;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import javax.imageio.ImageIO;
 import javax.persistence.EntityManager;
 import pl.datamatica.traccar.model.Picture;
@@ -40,8 +39,8 @@ public class ImageProvider {
     private final File rootDirectory;
     private final EntityManager em;
     private static Image emptyMarker;
-    private static final Map<String, byte[]> markerCache = new Hashtable<>();
-    private static final Map<Long, byte[]> custMarkerCache = new Hashtable<>();
+    private static final Map<String, byte[]> markerCache = new ConcurrentHashMap<>();
+    private static final Map<Long, byte[]> custMarkerCache = new ConcurrentHashMap<>();
     
     public ImageProvider(String rootDirectory, EntityManager em) {
         this.rootDirectory = new File(rootDirectory);
@@ -87,7 +86,6 @@ public class ImageProvider {
             Image img = ImageIO.read(new ByteArrayInputStream(pic.getData()));
             float l = 17f/141, t=15f/189, r=123f/141, b=120f/189;
             int w = emptyMarker.getWidth(null), h = emptyMarker.getHeight(null);
-            int rad = (int)(Math.min(img.getWidth(null), img.getHeight(null))/2);
             BufferedImage marker = new BufferedImage(w, h, BufferedImage.TYPE_INT_ARGB);
             marker.createGraphics().drawImage(emptyMarker, 0, 0, null);
             Graphics2D g = marker.createGraphics();
