@@ -16,14 +16,10 @@
  */
 package pl.datamatica.traccar.api.controllers;
 
-import java.awt.Image;
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import javax.imageio.ImageIO;
 import pl.datamatica.traccar.api.Application;
 import static pl.datamatica.traccar.api.controllers.ControllerBase.render;
 import pl.datamatica.traccar.api.providers.ImageProvider;
-import pl.datamatica.traccar.api.responses.HttpResponse;
 import spark.Request;
 import spark.Spark;
 
@@ -45,6 +41,20 @@ public class MarkersController extends ControllerBase {
                 res.raw().setContentType("image/png;charset=utf-8");
                 // By using OutputStream maximum size of image if 64kB. 
                 // To provide bigger images data should be wrote in loop (max 64kB at once).
+                res.raw().getOutputStream().write(imageData, 0, imageData.length);
+                
+                return res;
+            });
+            
+            Spark.get(baseUrl()+"/custom/:id", (req, res) -> {
+                MarkersController mc = createController(req);
+                
+                byte[] imageData = mc.getRawCustom(Long.parseLong(req.params(":id")));
+                
+                if(imageData == null)
+                    return gson.toJson(render(mc.notFound(), res));
+                
+                res.raw().setContentType("image/png;charset=utf-8");
                 res.raw().getOutputStream().write(imageData, 0, imageData.length);
                 
                 return res;
@@ -75,5 +85,13 @@ public class MarkersController extends ControllerBase {
         } catch(IOException e) {
             return null;
         }
-    }       
+    }
+    
+    private byte[] getRawCustom(long id) {
+        try {
+            return imageProvider.getCustomMarker(id);
+        } catch(IOException e) {
+            return null;
+        }
+    }
 }

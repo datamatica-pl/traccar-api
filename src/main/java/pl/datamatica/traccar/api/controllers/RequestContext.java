@@ -122,7 +122,7 @@ public class RequestContext implements AutoCloseable {
     
     public ImageProvider getImageProvider() throws Exception {
         if(images == null) 
-            images = new ImageProvider(Application.getImagesDir());
+            images = new ImageProvider(Application.getImagesDir(), em);
         return images;
     }
     
