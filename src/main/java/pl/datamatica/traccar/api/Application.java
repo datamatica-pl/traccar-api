@@ -60,7 +60,8 @@ public class Application implements spark.servlet.SparkApplication {
             new ImagesController.Binder(),
             new AlertsController.Binder(),
             new NotificationSettingsController.Binder(),
-            new ImeisController.Binder()
+            new ImeisController.Binder(),
+            new AppVersionsController.Binder()
         };
     
     private final Daemon[] DAEMONS = new Daemon[]{
@@ -86,27 +87,6 @@ public class Application implements spark.servlet.SparkApplication {
             }
             req.attribute(REQUEST_CONTEXT_KEY, rc);
             baf.handle(req, res);
-        });
-
-        Spark.get("v1/appversions", (req, res) -> {
-            AppVersionsInfoDto appVer = new AppVersionsInfoDto();
-            appVer.setAndroidVersion("0.1.0");
-            appVer.setAndroidRequired("0.1.0");
-            appVer.setIosVersion("0.3.0");
-            appVer.setIosRequired("0.2.0");
-            //appVer.setMessageKey("msg");
-            //appVer.setLocalizedMessage("msg");
-            //appVer.setMessageUrl("msg");
-            GsonBuilder builder = new GsonBuilder();
-            Gson gson = builder
-                            .setPrettyPrinting()
-                            .create();
-
-            res.status(200);
-            res.type("application/json");
-            res.body(gson.toJson(appVer));
-
-            return(res);
         });
 
         Spark.after((req, res)-> {
@@ -149,12 +129,15 @@ public class Application implements spark.servlet.SparkApplication {
     }
 
     public static String getStringsDir() throws Exception {
-        InitialContext context = new InitialContext();
-        return (String)context.lookup(STRINGS_DIR_NAME);
+        return getConfigRecord(STRINGS_DIR_NAME);
     }
 
     public static String getImagesDir() throws Exception {
-        InitialContext context = new InitialContext();
-        return (String)context.lookup(IMAGES_DIR_NAME);
+        return getConfigRecord(IMAGES_DIR_NAME);
     }
-}
+    
+    public static String getConfigRecord(String key) throws Exception {
+        InitialContext context = new InitialContext();
+        return (String)context.lookup(key);
+    }
+}   
