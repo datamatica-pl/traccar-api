@@ -91,8 +91,7 @@ public class SessionController extends ControllerBase {
         SessionProvider sp = requestContext.getSessionProvider();
         sp.deleteSession(requestContext.session().id());
         requestContext.session().removeAttribute(BasicAuthFilter.USER_ID_SESSION_KEY);
-        //NOT WORKING
-        //requestContext.session().invalidate();
+        requestContext.session().invalidate();
         return ok("");
     }  
 }

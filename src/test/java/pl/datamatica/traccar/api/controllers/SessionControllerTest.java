@@ -103,7 +103,7 @@ public class SessionControllerTest {
     public void delete() {
         HttpResponse response = controller.delete();
         
-        Mockito.verify(session, Mockito.times(1)).removeAttribute(BasicAuthFilter.USER_ID_SESSION_KEY);
+        Mockito.verify(session, Mockito.times(1)).invalidate();
         assertTrue(response instanceof OkResponse);
         assertEquals("", response.getContent());
     }
