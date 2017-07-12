@@ -22,6 +22,7 @@ import org.junit.*;
 import static org.junit.Assert.*;
 import org.mockito.Mockito;
 import pl.datamatica.traccar.api.Application;
+import pl.datamatica.traccar.api.auth.BasicAuthFilter;
 import pl.datamatica.traccar.api.dtos.MessageKeys;
 import pl.datamatica.traccar.api.dtos.in.NotificationTokenDto;
 import pl.datamatica.traccar.api.dtos.out.ErrorDto;
@@ -102,7 +103,7 @@ public class SessionControllerTest {
     public void delete() {
         HttpResponse response = controller.delete();
         
-        Mockito.verify(session, Mockito.timeout(1)).invalidate();
+        Mockito.verify(session, Mockito.times(1)).removeAttribute(BasicAuthFilter.USER_ID_SESSION_KEY);
         assertTrue(response instanceof OkResponse);
         assertEquals("", response.getContent());
     }
