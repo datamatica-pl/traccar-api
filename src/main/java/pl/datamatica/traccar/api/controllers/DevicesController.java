@@ -18,6 +18,7 @@ package pl.datamatica.traccar.api.controllers;
 
 import java.util.Date;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 import pl.datamatica.traccar.api.Application;
 import static pl.datamatica.traccar.api.controllers.ControllerBase.render;
@@ -36,6 +37,7 @@ import pl.datamatica.traccar.api.responses.HttpResponse;
 import pl.datamatica.traccar.api.responses.OkCachedResponse;
 import pl.datamatica.traccar.model.Device;
 import pl.datamatica.traccar.model.Picture;
+import pl.datamatica.traccar.model.User;
 import spark.Request;
 import spark.Spark;
 
@@ -117,12 +119,15 @@ public class DevicesController extends ControllerBase {
     private final DeviceProvider dp;
     private final PositionProvider positions;
     private final Date minDate;
+    private final Set<Long> userIds;
 
     public DevicesController(RequestContext requestContext) {
         super(requestContext);
         this.dp = requestContext.getDeviceProvider();
         this.positions = requestContext.getPositionProvider();
         this.minDate = requestContext.getModificationDate();
+        this.userIds = requestContext.getUserProvider().getAllAvailableUsers()
+                .map(User::getId).collect(Collectors.toSet());
     }
 
     public HttpResponse get() throws Exception {
@@ -130,7 +135,7 @@ public class DevicesController extends ControllerBase {
                 .filter(d -> !d.isDeleted())
                 .collect(Collectors.toList());
         List<DeviceDto> changedDevices = devices.stream()
-                .map(d -> new DeviceDto.Builder().device(d).build())
+                .map(d -> new DeviceDto.Builder().device(d, userIds).build())
                 .filter(d -> isModified(d.getModificationTime()))
                 .collect(Collectors.toList());
         long[] deviceIds = devices.stream()
@@ -146,7 +151,7 @@ public class DevicesController extends ControllerBase {
 
     public HttpResponse get(long id) throws Exception {
         try{
-            return okCached(new DeviceDto.Builder().device(dp.getDevice(id)).build());
+            return okCached(new DeviceDto.Builder().device(dp.getDevice(id), userIds).build());
         } catch(ProviderException e) {
             return handle(e);
         }
@@ -158,7 +163,7 @@ public class DevicesController extends ControllerBase {
             return badRequest(validationErrors);
         try {
             Device device = dp.createDevice(deviceDto.getImei());
-            return created("devices/"+device.getId(), new DeviceDto.Builder().device(device).build());
+            return created("devices/"+device.getId(), new DeviceDto.Builder().device(device, userIds).build());
         } catch(ProviderException e) {
             switch(e.getType()) {
                 case INVALID_IMEI:
@@ -169,7 +174,7 @@ public class DevicesController extends ControllerBase {
             throw e;
         }
     }
-
+    
     public HttpResponse put(long id, EditDeviceDto deviceDto) throws ProviderException {
         List<ErrorDto> errors = EditDeviceDto.validate(deviceDto);
         if(!errors.isEmpty())

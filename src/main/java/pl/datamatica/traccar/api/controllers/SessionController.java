@@ -18,6 +18,7 @@ package pl.datamatica.traccar.api.controllers;
 
 import java.util.List;
 import pl.datamatica.traccar.api.Application;
+import pl.datamatica.traccar.api.auth.BasicAuthFilter;
 import pl.datamatica.traccar.api.dtos.MessageKeys;
 import pl.datamatica.traccar.api.dtos.in.NotificationTokenDto;
 import pl.datamatica.traccar.api.dtos.out.ErrorDto;
@@ -87,9 +88,10 @@ public class SessionController extends ControllerBase {
     }
     
     public HttpResponse delete() {
-        requestContext.session().invalidate();
         SessionProvider sp = requestContext.getSessionProvider();
         sp.deleteSession(requestContext.session().id());
+        requestContext.session().removeAttribute(BasicAuthFilter.USER_ID_SESSION_KEY);
+        requestContext.session().invalidate();
         return ok("");
     }  
 }

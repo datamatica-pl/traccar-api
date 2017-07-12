@@ -16,8 +16,11 @@
  */
 package pl.datamatica.traccar.api.providers;
 
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Random;
 import java.util.stream.Stream;
 import javax.persistence.EntityManager;
@@ -28,8 +31,10 @@ import pl.datamatica.traccar.api.dtos.in.EditDeviceDto;
 import pl.datamatica.traccar.api.providers.ProviderException.Type;
 import pl.datamatica.traccar.model.Device;
 import pl.datamatica.traccar.model.GeoFence;
+import pl.datamatica.traccar.model.Maintenance;
 import pl.datamatica.traccar.model.Report;
 import pl.datamatica.traccar.model.User;
+import pl.datamatica.traccar.model.UserDeviceStatus;
 
 public class DeviceProvider extends ProviderBase {
     private User requestUser;
@@ -57,10 +62,48 @@ public class DeviceProvider extends ProviderBase {
     }
     
     public Stream<Device> getAllAvailableDevices() {
+        List<Device> devices = null;
         if(requestUser.getAdmin())
-            return getAllDevices();
+            devices = getAllDevices();
         else
-            return requestUser.getAllAvailableDevices().stream();
+            devices = new ArrayList<>(requestUser.getAllAvailableDevices());
+        
+        loadAlarmStatus(devices);
+        loadMaintenances(devices);
+        
+        return devices.stream();
+    }
+
+    private void loadMaintenances(List<Device> devices) {
+        List<Maintenance> maintenaces = em.createQuery(
+                "SELECT m FROM Maintenance m WHERE m.device IN :devices ORDER BY m.indexNo ASC", Maintenance.class)
+                .setParameter("devices", devices)
+                .getResultList();
+        for (Maintenance maintenance : maintenaces) {
+            Device device = maintenance.getDevice();
+            if (device.getMaintenances() == null) {
+                device.setMaintenances(new ArrayList<>());
+            }
+            device.getMaintenances().add(maintenance);
+        }
+    }
+
+    private void loadAlarmStatus(List<Device> devices) {
+        TypedQuery<UserDeviceStatus> alarmQuery = em.createQuery(
+                "FROM UserDeviceStatus x "
+                        + "WHERE x.id.user = :user AND x.id.device in (:devices)", UserDeviceStatus.class);
+        alarmQuery.setParameter("user", requestUser);
+        alarmQuery.setParameter("devices", devices);
+        Map<Device, UserDeviceStatus> statesMap = new HashMap<>();
+        for(UserDeviceStatus x : alarmQuery.getResultList())
+            statesMap.put(x.getDevice(), x);
+        for(Device d : devices) {
+            UserDeviceStatus status = statesMap.get(d);
+            if(status != null) {
+                d.setUnreadAlarms(status.hasUnreadAlarms());
+                d.setLastAlarmsCheck(status.getLastCheck());
+            }
+        }
     }
 
     public Device createDevice(String imei) throws ProviderException {
@@ -129,9 +172,9 @@ public class DeviceProvider extends ProviderBase {
         return getAllAvailableDevices().anyMatch(d -> d.equals(device));
     }
     
-    private Stream<Device> getAllDevices() {
+    private List<Device> getAllDevices() {
         TypedQuery<Device> tq = em.createQuery("Select x from Device x", Device.class);
-        return tq.getResultList().stream();
+        return tq.getResultList();
     }
     
     private boolean isImeiValid(String imei) {

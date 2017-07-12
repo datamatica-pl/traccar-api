@@ -18,11 +18,15 @@ package pl.datamatica.traccar.api;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import java.awt.Image;
+import java.io.File;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.Date;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.logging.Level;
 import java.util.regex.Pattern;
+import javax.imageio.ImageIO;
 import javax.naming.InitialContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -35,6 +39,7 @@ import pl.datamatica.traccar.api.controllers.RequestContext;
 import pl.datamatica.traccar.api.fcm.AlarmDaemon;
 import pl.datamatica.traccar.api.fcm.Daemon;
 import pl.datamatica.traccar.api.fcm.SubscriptionDaemon;
+import pl.datamatica.traccar.api.providers.ImageProvider;
 
 
 public class Application implements spark.servlet.SparkApplication {
@@ -61,6 +66,7 @@ public class Application implements spark.servlet.SparkApplication {
             new AlertsController.Binder(),
             new NotificationSettingsController.Binder(),
             new ImeisController.Binder(),
+            new MarkersController.Binder(),
             new AppVersionsController.Binder()
         };
     
@@ -72,6 +78,14 @@ public class Application implements spark.servlet.SparkApplication {
     @Override
     public void init() {
         BasicAuthFilter baf = new BasicAuthFilter();
+        try {
+            File f = new File(getImagesDir(), "empty_marker.png");
+            Image emptyMarker = ImageIO.read(f);
+            ImageProvider.setEmptyMarker(emptyMarker);
+        } catch (Exception ex) {
+            java.util.logging.Logger.getLogger(Application.class.getName())
+                    .log(Level.SEVERE, null, ex);
+        }
         
         // Set static files. Root is 'src/main/resources', so put files in 'src/main/resources/public'
         Spark.staticFiles.location("/public");
@@ -87,7 +101,20 @@ public class Application implements spark.servlet.SparkApplication {
             }
             req.attribute(REQUEST_CONTEXT_KEY, rc);
             baf.handle(req, res);
+            //uncomment for debug
+            //res.header("Access-Control-Allow-Origin", "http://127.0.0.1:8888");
+            res.header("Cache-Control", "max-age=10");
         });
+        
+        //uncomment for debug
+//        Spark.options("/*", (req, res) -> {
+//            res.header("Access-Control-Allow-Methods", "GET, POST");
+//            res.header("Access-Control-Allow-Headers", "Content-Type,"
+//                    + "x-http-method-override,Authorization");
+//            res.header("Access-Control-Max-Age", "86400");
+//            res.body("");
+//            return res;
+//        });
 
         Spark.after((req, res)-> {
             RequestContext rc = (RequestContext)req.attribute(REQUEST_CONTEXT_KEY);
