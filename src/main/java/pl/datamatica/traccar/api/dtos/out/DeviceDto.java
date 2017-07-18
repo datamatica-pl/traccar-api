@@ -236,7 +236,7 @@ public class DeviceDto extends EditDeviceDto implements ICachedDto {
             this.ignitionTime = device.getIgnitionTime();
             this.positionFrequency = device.getPositionFreq();
             this.autoArm = device.isAutoArmed();
-            this.idleSpeedThreshold = device.getIdleSpeedThreshold();
+            this.idleSpeedThreshold = device.getIdleSpeedThreshold() * KilometersToNauticMilesMultiplier;
             this.minIdleTime = device.getMinIdleTime();
             if(device.getGroup() != null)
                 this.groupId = device.getGroup().getId();
