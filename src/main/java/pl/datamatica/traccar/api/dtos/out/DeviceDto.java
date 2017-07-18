@@ -43,6 +43,8 @@ public class DeviceDto extends EditDeviceDto implements ICachedDto {
     private final Date ignitionTime;
     private final Integer positionFrequency;
     private final Boolean autoArm;
+    private final Double idleSpeedThreshold;
+    private final Integer minIdleTime;
     
     private final Date lastAlarmsCheck;
     private final boolean unreadAlarms;
@@ -81,6 +83,8 @@ public class DeviceDto extends EditDeviceDto implements ICachedDto {
         private Integer positionFrequency;
         private Boolean autoArm;
         private Double fuelCapacity;
+        private Double idleSpeedThreshold;
+        private Integer minIdleTime;
         //web
         private Long groupId;
         private Date lastAlarmsCheck;
@@ -232,6 +236,8 @@ public class DeviceDto extends EditDeviceDto implements ICachedDto {
             this.ignitionTime = device.getIgnitionTime();
             this.positionFrequency = device.getPositionFreq();
             this.autoArm = device.isAutoArmed();
+            this.idleSpeedThreshold = device.getIdleSpeedThreshold() * KilometersToNauticMilesMultiplier;
+            this.minIdleTime = device.getMinIdleTime();
             if(device.getGroup() != null)
                 this.groupId = device.getGroup().getId();
             this.fuelCapacity = device.getFuelCapacity();
@@ -275,6 +281,8 @@ public class DeviceDto extends EditDeviceDto implements ICachedDto {
                     ignitionTime,
                     positionFrequency,
                     autoArm,
+                    idleSpeedThreshold,
+                    minIdleTime,
                     groupId,
                     fuelCapacity,
                     lastAlarmsCheck,
@@ -309,6 +317,8 @@ public class DeviceDto extends EditDeviceDto implements ICachedDto {
             final Date ignitionTime,
             final Integer positionFrequency,
             final Boolean autoArm,
+            final Double idleSpeedThreshold,
+            final Integer minIdleTime,
             final Long groupId,
             final Double fuelCapacity,
             final Date lastAlarmsCheck,
@@ -333,6 +343,8 @@ public class DeviceDto extends EditDeviceDto implements ICachedDto {
         this.ignitionTime = ignitionTime;
         this.positionFrequency = positionFrequency;
         this.autoArm = autoArm;
+        this.idleSpeedThreshold = idleSpeedThreshold;
+        this.minIdleTime = minIdleTime;
         this.groupId = groupId;
         this.lastAlarmsCheck = lastAlarmsCheck;
         this.unreadAlarms = unreadAlarms;
