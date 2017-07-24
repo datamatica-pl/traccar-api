@@ -180,6 +180,7 @@ public class DevicesControllerTest {
         position.setTime(new Date());
         position.setValid(true);
         position.setDevice(devices.get(0));
+        position.setServerTime(new Date());
         Mockito.when(pp.getAllAvailablePositions(Mockito.eq(devices.get(0)), 
                 Mockito.any(Date.class), Mockito.anyInt()))
                 .thenReturn(Stream.of(position));
