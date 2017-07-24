@@ -20,8 +20,10 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -75,6 +77,7 @@ public class SubscriptionDaemon extends Daemon {
     }
 
     private void sendNotification(EntityManager em, User user, List<Device> devices) {
+        clearInactiveSessions(em, user);
         for(UserSession session : user.getSessions()) {
             FcmNotificationDto dto = FcmNotificationDto.subsciption(
                     devices,
