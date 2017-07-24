@@ -9,7 +9,7 @@
       <property name="hibernate.connection.url" value="jdbc:mysql://127.0.0.1:3306/traccar_api_metadata?allowMultiQueries=true&amp;autoReconnect=true&amp;useUnicode=yes&amp;characterEncoding=UTF-8&amp;sessionVariables=sql_mode=ANSI_QUOTES"/>
       <property name="hibernate.connection.username" value="traccar"/>
       <property name="hibernate.connection.password" value="123"/>
-      <property name="hibernate.show_sql" value="true"/>
+      <property name="hibernate.show_sql" value="false"/>
       <property name="hibernate.hbm2ddl.auto" value="update"/>
     </properties>
   </persistence-unit>
