@@ -55,6 +55,7 @@ public class AlarmDaemon extends Daemon{
         
         for(User u : users) {
             if (!u.isBlocked()) {
+                clearInactiveSessions(em, u);
                 for(UserSession session : u.getSessions())
                     sendNotification(em, session);
             }
