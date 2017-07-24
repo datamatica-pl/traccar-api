@@ -38,6 +38,7 @@ public class PositionDto implements ICachedDto {
     private final long deviceId;
     private final Double fuelLevel;
     private final Double fuelUsed;
+    private final String other;
 
     public static class Builder {
 
@@ -53,6 +54,7 @@ public class PositionDto implements ICachedDto {
         private long deviceId;
         private Double fuelLevel;
         private Double fuelUsed;
+        private String other;
 
         public Builder id(final long value) {
             this.id = value;
@@ -104,6 +106,11 @@ public class PositionDto implements ICachedDto {
             return this;
         }
         
+        public Builder other(final String value) {
+            this.other = value;
+            return this;
+        }
+        
         public Builder position(final Position position) {
             Gson gson = new Gson();
             Map<String, Object> other = gson.fromJson(position.getOther(), Map.class);
@@ -124,12 +131,14 @@ public class PositionDto implements ICachedDto {
                 if(fuelUsed != null)
                     fuelUsed *= 0.1;
             }
+            this.other = position.getOther();
             return this;
         }
 
         public PositionDto build() {
             return new PositionDto(id, altitude, course, speed, latitude, longitude, 
-                    deviceTime, ignition, isValid, deviceId, fuelLevel, fuelUsed);
+                    deviceTime, ignition, isValid, deviceId, fuelLevel, fuelUsed,
+                    other);
         }
     }
 
@@ -144,7 +153,8 @@ public class PositionDto implements ICachedDto {
             final boolean isValid, 
             final long deviceId,
             final Double fuelLevel,
-            final Double fuelUsed) {
+            final Double fuelUsed,
+            final String other) {
         this.id = id;
         this.altitude = altitude;
         this.course = course;
@@ -157,6 +167,7 @@ public class PositionDto implements ICachedDto {
         this.deviceId = deviceId;
         this.fuelLevel = fuelLevel;
         this.fuelUsed = fuelUsed;
+        this.other = other;
     }
 
     public double getLatitude() {
@@ -197,6 +208,10 @@ public class PositionDto implements ICachedDto {
 
     public long getDeviceId() {
         return deviceId;
+    }
+    
+    public String getOther(){
+        return other;
     }
 
     @Override
