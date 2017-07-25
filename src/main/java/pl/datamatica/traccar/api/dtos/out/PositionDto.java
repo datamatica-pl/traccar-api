@@ -19,6 +19,7 @@ package pl.datamatica.traccar.api.dtos.out;
 import com.google.gson.Gson;
 import java.util.Date;
 import java.util.Map;
+import pl.datamatica.traccar.api.dtos.JsonIgnore;
 import pl.datamatica.traccar.model.Position;
 
 public class PositionDto implements ICachedDto {
@@ -39,6 +40,9 @@ public class PositionDto implements ICachedDto {
     private final Double fuelLevel;
     private final Double fuelUsed;
     private final String other;
+	
+    @JsonIgnore
+    private final Date serverTime;
 
     public static class Builder {
 
@@ -54,7 +58,9 @@ public class PositionDto implements ICachedDto {
         private long deviceId;
         private Double fuelLevel;
         private Double fuelUsed;
-        private String other;
+		private String other;
+        
+        private Date serverTime;
 
         public Builder id(final long value) {
             this.id = value;
@@ -106,6 +112,11 @@ public class PositionDto implements ICachedDto {
             return this;
         }
         
+        public Builder serverTime(final Date value) {
+            this.serverTime = value;
+			return this;
+		}
+		
         public Builder other(final String value) {
             this.other = value;
             return this;
@@ -131,14 +142,15 @@ public class PositionDto implements ICachedDto {
                 if(fuelUsed != null)
                     fuelUsed *= 0.1;
             }
-            this.other = position.getOther();
+			this.other = position.getOther();
+            this.serverTime = position.getServerTime();
             return this;
         }
 
         public PositionDto build() {
-            return new PositionDto(id, altitude, course, speed, latitude, longitude, 
-                    deviceTime, ignition, isValid, deviceId, fuelLevel, fuelUsed,
-                    other);
+            return new PositionDto(id, altitude, course, speed, 		latitude, longitude, 
+                    deviceTime, ignition, isValid, deviceId, fuelLevel, fuelUsed, other,
+                    serverTime);
         }
     }
 
@@ -154,7 +166,8 @@ public class PositionDto implements ICachedDto {
             final long deviceId,
             final Double fuelLevel,
             final Double fuelUsed,
-            final String other) {
+			final String other,
+            final Date serverTime) {
         this.id = id;
         this.altitude = altitude;
         this.course = course;
@@ -167,7 +180,8 @@ public class PositionDto implements ICachedDto {
         this.deviceId = deviceId;
         this.fuelLevel = fuelLevel;
         this.fuelUsed = fuelUsed;
-        this.other = other;
+		this.other = other;
+        this.serverTime = serverTime;
     }
 
     public double getLatitude() {
@@ -216,6 +230,6 @@ public class PositionDto implements ICachedDto {
 
     @Override
     public Date getModificationTime() {
-        return getDeviceTime();
+        return serverTime;
     }
 }

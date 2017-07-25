@@ -34,8 +34,9 @@ public class PositionProvider extends ProviderBase {
         this.user = user;
         
         positionListQuery = em.createQuery("from Position p "
-                + "where p.device = :device and p.time >= :minDate and (validStatus is null or validStatus = :valid) "
-                + "order by p.time", Position.class);
+                + "where p.device = :device and p.serverTime >= :minDate "
+                +   "and (validStatus is null or validStatus = :valid) "
+                + "order by p.serverTime", Position.class);
     }
     
     public Position get(long id) throws ProviderException {

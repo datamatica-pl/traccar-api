@@ -89,6 +89,7 @@ public class PositionProviderTest {
         position.setLatitude(1.);
         position.setLongitude(1.);
         position.setTime(new Date());
+        position.setServerTime(new Date());
         position.setValid(true);
         position.setValidStatus(position.VALID_STATUS_ALARM);
         position.setDevice(database.managerDevice);
@@ -97,6 +98,7 @@ public class PositionProviderTest {
         position2.setLatitude(1.);
         position2.setLongitude(1.);
         position2.setTime(new Date());
+        position2.setServerTime(new Date());
         position2.setValid(true);
         position2.setValidStatus(position.VALID_STATUS_CORRECT_POSITION);
         position2.setDevice(database.managerDevice);
