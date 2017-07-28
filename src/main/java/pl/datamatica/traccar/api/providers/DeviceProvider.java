@@ -264,12 +264,8 @@ public class DeviceProvider extends ProviderBase {
 
     public void applyPatch(long id, JsonObject changes) throws ProviderException {
         Device d = getDevice(id);
-        if(changes.has("deviceName")) {
-            if(changes.get("deviceName").isJsonNull())
-                d.setName(null);
-            else
-                d.setName(changes.get("deviceName").getAsString());
-        }
+        if(changes.has("deviceName"))
+            d.setName(changes.get("deviceName").getAsString());
         if(changes.has("deviceModelId"))
             d.setDeviceModelId(changes.get("deviceModelId").getAsLong());
         if(changes.has("iconId")) {
