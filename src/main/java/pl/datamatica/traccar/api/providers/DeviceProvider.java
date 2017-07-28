@@ -35,17 +35,28 @@ import pl.datamatica.traccar.model.Maintenance;
 import pl.datamatica.traccar.model.Report;
 import pl.datamatica.traccar.model.User;
 import pl.datamatica.traccar.model.UserDeviceStatus;
+import com.google.gson.JsonObject;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.logging.Level;
+import pl.datamatica.traccar.api.Application;
 
 public class DeviceProvider extends ProviderBase {
     private User requestUser;
     private ImeiProvider imeis;
+    private GroupProvider groups;
     private Logger logger;
+    private final SimpleDateFormat dateFormat;
     
-    public DeviceProvider(EntityManager em, User requestUser, ImeiProvider imeis) {
+    public DeviceProvider(EntityManager em, User requestUser, ImeiProvider imeis,
+            GroupProvider groups) {
         super(em);
         this.requestUser = requestUser;
         this.imeis = imeis;
+        this.groups = groups;
         logger = DbLog.getLogger();
+        dateFormat = new SimpleDateFormat(Application.DATE_FORMAT);
     }
     
     public Device getDevice(long id) throws ProviderException {
@@ -224,30 +235,151 @@ public class DeviceProvider extends ProviderBase {
         query.executeUpdate();
     }
 
-    private static final Double NauticMilesToKilometersMultiplier = 0.54;
+    public static final Double NauticMilesToKilometersMultiplier = 0.54;
     
-    public void updateDevice(long id, EditDeviceDto deviceDto) throws ProviderException {
+    public void updateDevice(long id, EditDeviceDto dto) throws ProviderException {
         Device device = getDevice(id);
         
-        device.setName(deviceDto.getDeviceName());
-        device.setDeviceModelId(deviceDto.getDeviceModelId());
-        device.setIconId(deviceDto.getIconId());
-        device.setCustomIconId(deviceDto.getCustomIconId());
-        device.setColor(deviceDto.getColor());
-        device.setPhoneNumber(deviceDto.getPhoneNumber());
-        device.setPlateNumber(deviceDto.getPlateNumber());
-        device.setDescription(deviceDto.getDescription());
+        device.setName(dto.getDeviceName());
+        device.setDeviceModelId(dto.getDeviceModelId());
+        device.setIconId(dto.getIconId());
+        device.setCustomIconId(dto.getCustomIconId());
+        device.setColor(dto.getColor());
+        device.setPhoneNumber(dto.getPhoneNumber());
+        device.setPlateNumber(dto.getPlateNumber());
+        device.setDescription(dto.getDescription());
         
-        if(deviceDto.getSpeedLimit() != null)
-            device.setSpeedLimit(deviceDto.getSpeedLimit() * NauticMilesToKilometersMultiplier);
+        if(dto.getSpeedLimit() != null)
+            device.setSpeedLimit(dto.getSpeedLimit() * NauticMilesToKilometersMultiplier);
         else
             device.setSpeedLimit(null);
         
-        device.setFuelCapacity(deviceDto.getFuelCapacity());
+        device.setFuelCapacity(dto.getFuelCapacity());
         
         em.persist(device);
         
         logger.info("{} updated device {} (id={})", 
                 requestUser.getEmail(), device.getName(), device.getId());
+    }
+
+    public void applyPatch(long id, JsonObject changes) throws ProviderException {
+        Device d = getDevice(id);
+        if(changes.has("deviceName")) {
+            if(changes.get("deviceName").isJsonNull())
+                d.setName(null);
+            else
+                d.setName(changes.get("deviceName").getAsString());
+        }
+        if(changes.has("deviceModelId"))
+            d.setDeviceModelId(changes.get("deviceModelId").getAsLong());
+        if(changes.has("iconId")) {
+            if(changes.get("iconId").isJsonNull())
+                d.setIconId(null);
+            else
+                d.setIconId(changes.get("iconId").getAsLong());
+        }
+        if(changes.has("customIconId")) {
+            if(changes.get("customIconId").isJsonNull())
+                d.setCustomIconId(null);
+            else
+                d.setCustomIconId(changes.get("customIconId").getAsLong());
+        }
+        if(changes.has("color"))
+            d.setColor(changes.get("color").getAsString());
+        if(changes.has("phoneNumber")) {
+            if(changes.get("phoneNumber").isJsonNull())
+                d.setPhoneNumber(null);
+            else
+                d.setPhoneNumber(changes.get("phoneNumber").getAsString());
+        }
+        if(changes.has("plateNumber")) {
+            if(changes.get("plateNumber").isJsonNull())
+                d.setPlateNumber(null);
+            else
+                d.setPlateNumber(changes.get("plateNumber").getAsString());
+        }
+        if(changes.has("description")) {
+            if(changes.get("description").isJsonNull())
+                d.setDescription(changes.get("description").getAsString());
+            else
+                d.setDescription(changes.get("description").getAsString());
+        }
+        if(changes.has("speedLimit")) {
+            if(changes.get("speedLimit").isJsonNull())
+                d.setSpeedLimit(null);
+            else
+                d.setSpeedLimit(changes.get("speedLimit").getAsDouble()*
+                        DeviceProvider.NauticMilesToKilometersMultiplier);
+        }
+        if(changes.has("fuelCapacity")) {
+            if(changes.get("fuelCapacity").isJsonNull())
+                d.setFuelCapacity(null);
+            else
+                d.setFuelCapacity(changes.get("fuelCapacity").getAsDouble());
+        }
+        //web
+        if(changes.has("groupId")) {
+            if(changes.get("groupId").isJsonNull())
+                d.setGroup(null);
+            else
+                d.setGroup(groups.getGroup(changes.get("groupId").getAsLong()));
+        }
+        if(changes.has("vehicleInfo")) {
+            if(changes.get("vehicleInfo").isJsonNull())
+                d.setVehicleInfo(null);
+            else
+                d.setVehicleInfo(changes.get("vehicleInfo").getAsString());
+        }
+        if(changes.has("autoUpdateOdometer")) {
+            d.setAutoUpdateOdometer(changes.get("autoUpdateOdometer").getAsBoolean());
+        }
+        if(changes.has("timeout"))
+            d.setTimeout(changes.get("timeout").getAsInt());
+        if(changes.has("minIdleTime"))
+            d.setMinIdleTime(changes.get("minIdleTime").getAsInt());
+        if(changes.has("idleSpeedThreshold"))
+            d.setIdleSpeedThreshold(changes.get("idleSpeedThreshold").getAsDouble());
+        if(changes.has("timeZoneOffset")) {
+            if(changes.get("timeZoneOffset").isJsonNull())
+                d.setTimezoneOffset(null);
+            else
+                d.setTimezoneOffset(changes.get("timeZoneOffset").getAsInt());
+        }
+        if(changes.has("commandPassword")) {
+            if(changes.get("commandPassword").isJsonNull())
+                d.setCommandPassword(null);
+            else
+                d.setCommandPassword(changes.get("commandPassword").getAsString());
+        }
+        if(changes.has("historyLength") && requestUser.getAdmin())
+            d.setHistoryLength(changes.get("historyLength").getAsInt());
+        if(changes.has("validTo") && requestUser.getAdmin()) {
+            if(changes.get("validTo").isJsonNull())
+                d.setValidTo(null);
+            else
+                try {
+                    Date date = dateFormat.parse(changes.get("validTo").getAsString());
+                    d.setValidTo(date);
+                } catch (ParseException ex) {
+                    throw new IllegalArgumentException("Unparseable validTo");
+                }
+        }
+        if(changes.has("showOdometer"))
+            d.setShowOdometer(changes.get("showOdometer").getAsBoolean());
+        if(changes.has("showProtocol"))
+            d.setShowProtocol(changes.get("showProtocol").getAsBoolean());
+        //
+        if(changes.has("showName"))
+            d.setShowName(changes.get("showName").getAsBoolean());
+        if(changes.has("arrowRadius"))
+            d.setIconArrowRadius(changes.get("arrowRadius").getAsDouble());
+        if(changes.has("arrowMovingColor"))
+            d.setIconArrowMovingColor(changes.get("arrowMovingColor").getAsString());
+        if(changes.has("arrowStoppedColor"))
+            d.setIconArrowStoppedColor(changes.get("arrowStoppedColor").getAsString());
+        if(changes.has("arrowPausedColor"))
+            d.setIconArrowPausedColor(changes.get("arrowPausedColor").getAsString());
+        if(changes.has("arrowOfflineColor"))
+            d.setIconArrowOfflineColor(changes.get("arrowOfflineColor").getAsString());
     }
 }
