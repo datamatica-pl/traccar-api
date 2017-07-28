@@ -50,7 +50,7 @@ public class ApplicationSettingsDto extends EditApplicationSettingsDto {
                     allowCommandsOnlyForAdmins);
         this.id = id;
     }
- 
+    
     public static class Builder {
         private long id;
         private boolean registrationEnabled;
@@ -119,6 +119,12 @@ public class ApplicationSettingsDto extends EditApplicationSettingsDto {
         
         public Builder allowCommandsOnlyForAdmins(final boolean value) {
             this.allowCommandsOnlyForAdmins = value;
+            return this;
+        }
+        
+        public Builder purgeConfidentialData() {
+            this.bingMapsKey = null;
+            this.matchServiceURL = null;
             return this;
         }
         
