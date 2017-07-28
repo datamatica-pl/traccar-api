@@ -88,4 +88,17 @@ public class MessageKeys {
 
     public static final String NOTIFICATION_ENDING_SUBSCRIPTION_SINGLE = "notification_ending_subscription_single";
     public static final String NOTIFICATION_ENDING_SUBSCRIPTION_MULTIPLE = "notification_ending_subscription_multiple";
+
+    public static final String ERR_APPSETTINGS_DATA_NOT_PROVIDED = "err_appsettings_data_not_provided";
+    public static final String ERR_APPSETTINGS_REGISTRATION_ENABLED_NOT_PROVIDED = "err_appsettings_registration_enabled_not_provided";
+    public static final String ERR_APPSETTINGS_UPDATED_INTERVAL_NOT_PROVIDED = "err_appsettings_updated_interval_not_provided";
+    public static final String ERR_APPSETTINGS_DISALLOW_DEVICE_MANAGEMENT_NOT_PROVIDED = "err_appsettings_disallow_device_management_not_provided";
+    public static final String ERR_APPSETTINGS_EVENT_RECORDING_NOT_PROVIDED = "err_appsettings_event_recording_not_provided";
+    public static final String ERR_APPSETTINGS_NOTIFICATION_EXPIRATION_PERIOD_NOT_PROVIDED = "err_appsettings_notification_expiration_period_not_provided";
+    public static final String ERR_APPSETTINGS_LANGUAGE_NOT_PROVIDED = "err_appsettings_language_not_provided";
+    public static final String ERR_APPSETTINGS_ALLOW_COMMANDS_ONLY_FOR_ADMINS_NOT_PROVIDED = "err_appsettings_allow_commands_only_for_admins_not_provided";
+    public static final String ERR_APPSETTINGS_PASSWORD_HASH_METHOD_NOT_PROVIDED = "err_appsettings_password_hash_method_not_provided";
+    public static final String ERR_APPSETTINGS_ILLEGAL_PASSWORD_HASH_METHOD = "err_appsettings_illegal_password_hash_method";
+
+   
 }

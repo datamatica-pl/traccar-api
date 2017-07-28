@@ -64,7 +64,8 @@ public class Application implements spark.servlet.SparkApplication {
             new NotificationSettingsController.Binder(),
             new ImeisController.Binder(),
             new MarkersController.Binder(),
-            new AppVersionsController.Binder()
+            new AppVersionsController.Binder(),
+            new ApplicationSettingsController.Binder()
         };
     
     private final Daemon[] DAEMONS = new Daemon[]{

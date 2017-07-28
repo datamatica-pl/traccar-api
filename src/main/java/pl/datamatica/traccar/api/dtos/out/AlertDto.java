@@ -21,14 +21,14 @@ import pl.datamatica.traccar.model.DeviceEvent;
 import pl.datamatica.traccar.model.Maintenance;
 
 public class AlertDto implements ICachedDto {
-    private long id;
-    private Date time;
-    private String type;
-    private long deviceId;
-    private Long geofenceId;
-    private Double speed;
-    private MaintenanceDto maintenance;
-    private long positionId;
+    private final long id;
+    private final Date time;
+    private final String type;
+    private final long deviceId;
+    private final Long geofenceId;
+    private final Double speed;
+    private final MaintenanceDto maintenance;
+    private final long positionId;
 
     public static class Builder {
 
