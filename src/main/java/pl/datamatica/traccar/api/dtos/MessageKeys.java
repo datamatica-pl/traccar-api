@@ -31,6 +31,20 @@ public class MessageKeys {
     public static final String ERR_DEVICE_MODEL_ID_NOT_PROVIDED = "err_device_model_id_not_provided";
     public static final String ERR_DEVICE_NAME_NOT_PROVIDED = "err_device_name_not_provided";
     public static final String ERR_DEVICE_ICON_ID_NOT_PROVIDED = "err_device_icon_id_not_provided";
+    public static final String ERR_INVALID_VALID_TO_FORMAT = "err_invalid_valid_to_format";
+    public static final String ERR_AUTO_UPDATE_ODOMETER_CANT_BE_NULL = "err_auto_update_odometer_cant_be_null";
+    public static final String ERR_TIMEOUT_CANT_BE_NULL = "err_timeout_cant_be_null";
+    public static final String ERR_MIN_IDLE_TIME_CANT_BE_NULL = "err_min_idle_time_cant_be_null";
+    public static final String ERR_IDLE_SPEED_THRESHOLD_CANT_BE_NULL = "err_idle_speed_threshold_cant_be_null";
+    public static final String ERR_HISTORY_LENGTH_CANT_BE_NULL = "err_history_length_cant_be_null";
+    public static final String ERR_SHOW_ODOMETER_CANT_BE_NULL = "err_show_odometer_cant_be_null";
+    public static final String ERR_SHOW_PROTOCOL_CANT_BE_NULL = "err_show_protocol_cant_be_null";
+    public static final String ERR_SHOW_NAME_CANT_BE_NULL = "err_show_name_cant_be_null";
+    public static final String ERR_ARROW_RADIUS_CANT_BE_NULL = "err_arrow_radius_cant_be_null";
+    public static final String ERR_ARROW_MOVING_COLOR_CANT_BE_NULL = "err_arrow_moving_color_cant_be_null";
+    public static final String ERR_ARROW_STOPPED_COLOR_CANT_BE_NULL = "err_arrow_stopped_color_cant_be_null";
+    public static final String ERR_ARROW_PAUSED_COLOR_CANT_BE_NULL = "err_arrow_paused_color_cant_be_null";
+    public static final String ERR_ARROW_OFFLINE_COLOR_CANT_BE_NULL = "err_arrow_offline_color_cant_be_null";
     
     public static final String ERR_USER_ALREADY_EXISTS = "err_user_already_exists";
     public static final String ERR_REGISTRATION_DATA_NOT_PROVIDED = "err_registration_data_not_provided";

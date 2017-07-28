@@ -18,6 +18,7 @@ package pl.datamatica.traccar.api.dtos.in;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Date;
 import java.util.List;
 import pl.datamatica.traccar.api.Application;
 import pl.datamatica.traccar.api.dtos.MessageKeys;
@@ -35,6 +36,26 @@ public class EditDeviceDto {
     private final Double speedLimit;
     private final Double fuelCapacity;
     
+    //web
+    private final Long groupId;
+    private final String vehicleInfo;
+    private final Boolean autoUpdateOdometer;
+    private final Integer timeout;
+    private final Integer minIdleTime;
+    private final Double idleSpeedThreshold;
+    private final Integer timeZoneOffset;
+    private final String commandPassword;
+    private final Integer historyLength;
+    private final Date validTo;
+    private final Boolean showOdometer;
+    private final Boolean showProtocol;
+    //
+    private final Boolean showName;
+    private final Double arrowRadius;
+    private final String arrowMovingColor;
+    private final String arrowStoppedColor;
+    private final String arrowPausedColor;
+    private final String arrowOfflineColor;
 
     public static class Builder {
 
@@ -48,6 +69,26 @@ public class EditDeviceDto {
         private String description;
         private Double speedLimit;
         private Double fuelCapacity;
+        //web
+        private Long groupId;
+        private String vehicleInfo;
+        private boolean autoUpdateOdometer;
+        private int timeout;
+        private Integer minIdleTime;
+        private Double idleSpeedThreshold;
+        private int timeZoneOffset;
+        private String commandPassword;
+        private int historyLength;
+        private Date validTo;
+        private boolean showOdometer;
+        private boolean showProtocol;
+        //
+        private boolean showName;
+        private Double arrowRadius;
+        private String arrowMovingColor;
+        private String arrowStoppedColor;
+        private String arrowPausedColor;
+        private String arrowOfflineColor;
 
         public Builder deviceName(final String value) {
             this.deviceName = value;
@@ -109,7 +150,11 @@ public class EditDeviceDto {
                     plateNumber, 
                     description,
                     speedLimit,
-                    fuelCapacity);
+                    fuelCapacity,
+                    groupId, minIdleTime, idleSpeedThreshold, historyLength, validTo,
+                    vehicleInfo, autoUpdateOdometer, timeout, timeZoneOffset,commandPassword,
+                    showOdometer, showProtocol, showName, arrowRadius, arrowMovingColor,
+                    arrowStoppedColor, arrowPausedColor, arrowOfflineColor);
         }
     }
 
@@ -122,7 +167,25 @@ public class EditDeviceDto {
             final String plateNumber, 
             final String description,
             final Double speedLimit,
-            final Double fuelCapacity) {
+            final Double fuelCapacity,
+            final Long groupId,
+            final Integer minIdleTime,
+            final Double idleSpeedThreshold,
+            final int historyLength,
+            final Date validTo,
+            final String vehicleInfo,
+            final boolean autoUpdateOdometer,
+            final int timeout,
+            final int timeZoneOffset,
+            final String commandPassword,
+            final boolean showOdometer,
+            final boolean showProtocol,
+            final boolean showName,
+            final Double arrowRadius,
+            final String arrowMovingColor,
+            final String arrowStoppedColor,
+            final String arrowPausedColor,
+            final String arrowOfflineColor) {
         this.deviceName = deviceName;
         this.deviceModelId = deviceModelId;
         this.iconId = iconId;
@@ -133,6 +196,24 @@ public class EditDeviceDto {
         this.description = description;
         this.speedLimit = speedLimit;
         this.fuelCapacity = fuelCapacity;
+        this.groupId = groupId;
+        this.vehicleInfo = vehicleInfo;
+        this.autoUpdateOdometer = autoUpdateOdometer;
+        this.timeout = timeout;
+        this.minIdleTime = minIdleTime;
+        this.idleSpeedThreshold = idleSpeedThreshold;
+        this.timeZoneOffset = timeZoneOffset;
+        this.commandPassword = commandPassword;
+        this.historyLength = historyLength;
+        this.validTo = validTo;
+        this.showOdometer = showOdometer;
+        this.showProtocol = showProtocol;
+        this.showName = showName;
+        this.arrowRadius = arrowRadius;
+        this.arrowMovingColor = arrowMovingColor;
+        this.arrowStoppedColor = arrowStoppedColor;
+        this.arrowPausedColor = arrowPausedColor;
+        this.arrowOfflineColor = arrowOfflineColor;
     }
 
     public String getDeviceName() {
@@ -173,6 +254,78 @@ public class EditDeviceDto {
     
     public Double getFuelCapacity() {
         return fuelCapacity;
+    }
+
+    public Double getArrowRadius() {
+        return arrowRadius;
+    }
+
+    public String getArrowMovingColor() {
+        return arrowMovingColor;
+    }
+
+    public String getArrowStoppedColor() {
+        return arrowStoppedColor;
+    }
+
+    public String getArrowPausedColor() {
+        return arrowPausedColor;
+    }
+
+    public String getArrowOfflineColor() {
+        return arrowOfflineColor;
+    }
+
+    public Long getGroupId() {
+        return groupId;
+    }
+
+    public boolean isAutoUpdateOdometer() {
+        return autoUpdateOdometer;
+    }
+
+    public String getCommandPassword() {
+        return commandPassword;
+    }
+
+    public Integer getMinIdleTime() {
+        return minIdleTime;
+    }
+
+    public Double getIdleSpeedThreshold() {
+        return idleSpeedThreshold;
+    }
+
+    public Integer getHistoryLength() {
+        return historyLength;
+    }
+
+    public Boolean isShowName() {
+        return showName;
+    }
+
+    public String getVehicleInfo() {
+        return vehicleInfo;
+    }
+
+    public Integer getTimeout() {
+        return timeout;
+    }
+
+    public Integer getTimeZoneOffset() {
+        return timeZoneOffset;
+    }
+
+    public Date getValidTo() {
+        return validTo;
+    }
+
+    public Boolean isShowOdometer() {
+        return showOdometer;
+    }
+
+    public Boolean isShowProtocol() {
+        return showProtocol;
     }
     
     public static List<ErrorDto> validate(EditDeviceDto deviceDto) {

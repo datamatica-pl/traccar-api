@@ -16,9 +16,17 @@
  */
 package pl.datamatica.traccar.api.controllers;
 
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import pl.datamatica.traccar.api.Application;
 import static pl.datamatica.traccar.api.controllers.ControllerBase.render;
@@ -30,6 +38,7 @@ import pl.datamatica.traccar.api.dtos.out.ErrorDto;
 import pl.datamatica.traccar.api.dtos.out.ListDto;
 import pl.datamatica.traccar.api.dtos.out.PositionDto;
 import pl.datamatica.traccar.api.providers.DeviceProvider;
+import pl.datamatica.traccar.api.providers.GroupProvider;
 import pl.datamatica.traccar.api.providers.PicturesProvider;
 import pl.datamatica.traccar.api.providers.PositionProvider;
 import pl.datamatica.traccar.api.providers.ProviderException;
@@ -101,6 +110,13 @@ public class DevicesController extends ControllerBase {
                 long id = Long.parseLong(req.params(":id"));
                 return render(dc.updateCustomIcon(id, req.bodyAsBytes()), res);
             });
+            
+            Spark.patch(rootUrl()+"/:id", (req, res)-> {
+                DevicesController dc = createController(req);
+                long id = Long.parseLong(req.params(":id"));
+                JsonElement body = new JsonParser().parse(req.body());
+                return render(dc.patch(id, body), res);
+            }, gson::toJson);
         }
 
         private DevicesController createController(Request req) {
@@ -117,17 +133,21 @@ public class DevicesController extends ControllerBase {
 
     private static final int MAX_RESULT_COUNT = 4000;
     private final DeviceProvider dp;
+    private final GroupProvider gp;
     private final PositionProvider positions;
     private final Date minDate;
     private final Set<Long> userIds;
+    private final SimpleDateFormat dateFormat;
 
     public DevicesController(RequestContext requestContext) {
         super(requestContext);
         this.dp = requestContext.getDeviceProvider();
+        this.gp = requestContext.getGroupProvider();
         this.positions = requestContext.getPositionProvider();
         this.minDate = requestContext.getModificationDate();
         this.userIds = requestContext.getUserProvider().getAllAvailableUsers()
                 .map(User::getId).collect(Collectors.toSet());
+        this.dateFormat = new SimpleDateFormat(Application.DATE_FORMAT);
     }
 
     public HttpResponse get() throws Exception {
@@ -188,6 +208,76 @@ public class DevicesController extends ControllerBase {
         }
     }
 
+    public HttpResponse patch(long id, JsonElement body) throws ProviderException {
+        if(!body.isJsonObject()) {
+            return badRequest();
+        }
+        SimpleDateFormat sdf = new SimpleDateFormat(Application.DATE_FORMAT);
+        JsonObject changes = body.getAsJsonObject();
+        Device d = dp.getDevice(id);
+        List<ErrorDto> errors = validatePatch(changes, d);
+        if(!errors.isEmpty())
+            return badRequest(errors);
+        try {
+            dp.applyPatch(id, changes);
+            return ok("");
+        } catch(ProviderException e) {
+            return handle(e);
+        }
+    }
+    
+    private List<ErrorDto> validatePatch(JsonObject changes, Device d) {
+        List<ErrorDto> errors = new ArrayList<>();
+        if(changes.has("deviceName") && changes.get("deviceName").isJsonNull())
+            errors.add(new ErrorDto(MessageKeys.ERR_DEVICE_NAME_NOT_PROVIDED));
+        if(changes.has("deviceModelId") && changes.get("deviceModelId").isJsonNull())
+            errors.add(new ErrorDto(MessageKeys.ERR_DEVICE_MODEL_ID_NOT_PROVIDED));
+        if(changes.has("iconId") && changes.get("iconId").isJsonNull()
+                && ((d.getCustomIconId() == null && !changes.has("customIconId"))
+                    || (changes.has("customIconId") && changes.get("customIconId").isJsonNull())))
+            errors.add(new ErrorDto(MessageKeys.ERR_DEVICE_ICON_ID_NOT_PROVIDED));
+        else if(changes.has("customIconId") && changes.get("customIconId").isJsonNull()
+                && ((d.getIconId() == null && !changes.has("iconId"))
+                    || (changes.has("iconId") && changes.get("iconId").isJsonNull())))
+            errors.add(new ErrorDto(MessageKeys.ERR_DEVICE_ICON_ID_NOT_PROVIDED));
+        if(changes.has("color") && changes.get("color").isJsonNull())
+            errors.add(new ErrorDto(MessageKeys.ERR_DEVICE_COLOR_NOT_PROVIDED));
+        if(changes.has("autoUpdateOdometer") && changes.get("autoUpdateOdometer").isJsonNull())
+            errors.add(new ErrorDto(MessageKeys.ERR_AUTO_UPDATE_ODOMETER_CANT_BE_NULL));
+        if(changes.has("timeout") && changes.get("timeout").isJsonNull())
+            errors.add(new ErrorDto(MessageKeys.ERR_TIMEOUT_CANT_BE_NULL));
+        if(changes.has("minIdleTime") && changes.get("minIdleTime").isJsonNull())
+            errors.add(new ErrorDto(MessageKeys.ERR_MIN_IDLE_TIME_CANT_BE_NULL));
+        if(changes.has("idleSpeedThreshold") && changes.get("idleSpeedThreshold").isJsonNull())
+            errors.add(new ErrorDto(MessageKeys.ERR_IDLE_SPEED_THRESHOLD_CANT_BE_NULL));
+        if(changes.has("historyLength") && changes.get("historyLength").isJsonNull())
+            errors.add(new ErrorDto(MessageKeys.ERR_HISTORY_LENGTH_CANT_BE_NULL));
+        if(changes.has("showOdometer") && changes.get("showOdometer").isJsonNull())
+            errors.add(new ErrorDto(MessageKeys.ERR_SHOW_ODOMETER_CANT_BE_NULL));
+        if(changes.has("showProtocol") && changes.get("showProtocol").isJsonNull())
+            errors.add(new ErrorDto(MessageKeys.ERR_SHOW_PROTOCOL_CANT_BE_NULL));
+        if(changes.has("showName") && changes.get("showName").isJsonNull())
+            errors.add(new ErrorDto(MessageKeys.ERR_SHOW_NAME_CANT_BE_NULL));
+        if(changes.has("arrowRadius") && changes.get("arrowRadius").isJsonNull())
+            errors.add(new ErrorDto(MessageKeys.ERR_ARROW_RADIUS_CANT_BE_NULL));
+        if(changes.has("arrowMovingColor") && changes.get("arrowMovingColor").isJsonNull())
+            errors.add(new ErrorDto(MessageKeys.ERR_ARROW_MOVING_COLOR_CANT_BE_NULL));
+        if(changes.has("arrowStoppedColor") && changes.get("arrowStoppedColor").isJsonNull())
+            errors.add(new ErrorDto(MessageKeys.ERR_ARROW_STOPPED_COLOR_CANT_BE_NULL));
+        if(changes.has("arrowPausedColor") && changes.get("arrowPausedColor").isJsonNull())
+            errors.add(new ErrorDto(MessageKeys.ERR_ARROW_PAUSED_COLOR_CANT_BE_NULL));
+        if(changes.has("arrowOfflineColor") && changes.get("arrowOfflineColor").isJsonNull())
+            errors.add(new ErrorDto(MessageKeys.ERR_ARROW_OFFLINE_COLOR_CANT_BE_NULL));
+        if(changes.has("validTo") && !changes.get("validTo").isJsonNull()) {
+            try {
+                dateFormat.parse(changes.get("validTo").getAsString());
+            } catch(ParseException e) {
+                errors.add(new ErrorDto(MessageKeys.ERR_INVALID_VALID_TO_FORMAT));
+            }
+        }
+        return errors;
+    }
+    
     public HttpResponse delete(long id) throws Exception {
         try {
             dp.delete(id);
