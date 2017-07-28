@@ -16,22 +16,16 @@
  */
 package pl.datamatica.traccar.api.dtos.out;
 
+import java.util.Date;
+import pl.datamatica.traccar.api.dtos.in.EditApplicationSettingsDto;
+import pl.datamatica.traccar.model.ApplicationSettings;
+
 /**
  *
  * @author piotrkrzeszewski
  */
-public class ApplicationSettingsDto {
+public class ApplicationSettingsDto extends EditApplicationSettingsDto {
     private final long id;
-    private final boolean registrationEnabled;
-    private final Short updateInterval;
-    private final String defaultPasswordHash;
-    private final boolean disallowDeviceManagementByUsers;
-    private final boolean evantRecordingEnabled;
-    private final int notificationExpirationPeriod;
-    private final String language;
-    private final String bingMapsKey;
-    private final String matchServiceURL;
-    private final boolean allowCommandsOnlyForAdmins;
 
     private ApplicationSettingsDto(long id, 
             boolean registrationEnabled, 
@@ -44,17 +38,17 @@ public class ApplicationSettingsDto {
             String bingMapsKey, 
             String matchServiceURL, 
             boolean allowCommandsOnlyForAdmins) {
+        super(registrationEnabled, 
+                    updateInterval, 
+                    defaultPasswordHash, 
+                    disallowDeviceManagementByUsers, 
+                    evantRecordingEnabled, 
+                    notificationExpirationPeriod, 
+                    language, 
+                    bingMapsKey, 
+                    matchServiceURL, 
+                    allowCommandsOnlyForAdmins);
         this.id = id;
-        this.registrationEnabled = registrationEnabled;
-        this.updateInterval = updateInterval;
-        this.defaultPasswordHash = defaultPasswordHash;
-        this.disallowDeviceManagementByUsers = disallowDeviceManagementByUsers;
-        this.evantRecordingEnabled = evantRecordingEnabled;
-        this.notificationExpirationPeriod = notificationExpirationPeriod;
-        this.language = language;
-        this.bingMapsKey = bingMapsKey;
-        this.matchServiceURL = matchServiceURL;
-        this.allowCommandsOnlyForAdmins = allowCommandsOnlyForAdmins;
     }
  
     public static class Builder {
@@ -128,6 +122,21 @@ public class ApplicationSettingsDto {
             return this;
         }
         
+        public Builder applicationSettings(final ApplicationSettings as) {
+            this.id = as.getId();
+            this.registrationEnabled = as.getRegistrationEnabled();
+            this.updateInterval = as.getUpdateInterval();
+            this.defaultPasswordHash = as.getDefaultHashImplementation().getName();
+            this.disallowDeviceManagementByUsers = as.isDisallowDeviceManagementByUsers();
+            this.evantRecordingEnabled = as.isEventRecordingEnabled();
+            this.notificationExpirationPeriod = as.getNotificationExpirationPeriod();
+            this.language = as.getLanguage();
+            this.bingMapsKey = as.getBingMapsKey();
+            this.matchServiceURL = as.getMatchServiceURL();
+            this.allowCommandsOnlyForAdmins = as.isAllowCommandsOnlyForAdmins();
+            return this;
+        }
+        
         public ApplicationSettingsDto build() {
             return new ApplicationSettingsDto(id, 
                     registrationEnabled, 
@@ -142,7 +151,5 @@ public class ApplicationSettingsDto {
                     allowCommandsOnlyForAdmins);
         }
     }
-    
-
 }
 

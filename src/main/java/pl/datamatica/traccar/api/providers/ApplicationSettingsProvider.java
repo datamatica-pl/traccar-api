@@ -19,7 +19,9 @@ package pl.datamatica.traccar.api.providers;
 import java.util.List;
 import javax.persistence.EntityManager;
 import javax.persistence.TypedQuery;
+import pl.datamatica.traccar.api.dtos.in.EditApplicationSettingsDto;
 import pl.datamatica.traccar.model.ApplicationSettings;
+import pl.datamatica.traccar.model.PasswordHashMethod;
 
 public class ApplicationSettingsProvider{
     private final EntityManager em;
@@ -34,5 +36,22 @@ public class ApplicationSettingsProvider{
         tq.setMaxResults(1);
         List<ApplicationSettings> result = tq.getResultList();
         return result.isEmpty() ? new ApplicationSettings() : tq.getSingleResult();
+    }
+    
+    public void updateApplicationSetting(EditApplicationSettingsDto updated) {
+        ApplicationSettings as = get();
+        
+        as.setRegistrationEnabled(updated.isRegistrationEnabled());
+        as.setUpdateInterval(updated.getUpdateInterval());
+        as.setDefaultHashImplementation(PasswordHashMethod.fromString(updated.getDefaultPasswordHash()));
+        as.setDisallowDeviceManagementByUsers(updated.isDisallowDeviceManagementByUsers());
+        as.setEventRecordingEnabled(updated.isEvantRecordingEnabled());
+        as.setNotificationExpirationPeriod(updated.getNotificationExpirationPeriod());
+        as.setLanguage(updated.getLanguage());
+        as.setBingMapsKey(updated.getBingMapsKey());
+        as.setMatchServiceURL(updated.getMatchServiceURL());
+        as.setAllowCommandsOnlyForAdmins(updated.isAllowCommandsOnlyForAdmins());
+        
+        em.persist(as);
     }
 }
