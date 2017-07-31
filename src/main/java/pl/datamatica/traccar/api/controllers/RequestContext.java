@@ -32,7 +32,7 @@ import pl.datamatica.traccar.api.providers.DeviceModelProvider;
 import pl.datamatica.traccar.api.providers.DeviceProvider;
 import pl.datamatica.traccar.api.providers.FileProvider;
 import pl.datamatica.traccar.api.providers.GeoFenceProvider;
-import pl.datamatica.traccar.api.providers.GroupProvider;
+import pl.datamatica.traccar.api.providers.DeviceGroupProvider;
 import pl.datamatica.traccar.api.providers.ImageProvider;
 import pl.datamatica.traccar.api.providers.ImeiProvider;
 import pl.datamatica.traccar.api.providers.MailSender;
@@ -98,7 +98,7 @@ public class RequestContext implements AutoCloseable {
     
     public DeviceProvider getDeviceProvider() {
         if(devices == null)
-            devices = new DeviceProvider(em, user, getImeiProvider(), getGroupProvider());
+            devices = new DeviceProvider(em, user, getImeiProvider(), getDeviceGroupProvider());
         return devices;
     }
     
@@ -183,8 +183,8 @@ public class RequestContext implements AutoCloseable {
         return new PicturesProvider(em);
     }
     
-    public GroupProvider getGroupProvider() {
-        return new GroupProvider(em, user);
+    public DeviceGroupProvider getDeviceGroupProvider() {
+        return new DeviceGroupProvider(em, user);
     }
     
     public String getApiRoot() {

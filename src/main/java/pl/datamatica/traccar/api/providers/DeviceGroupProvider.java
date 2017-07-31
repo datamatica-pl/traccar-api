@@ -16,15 +16,15 @@
  */
 package pl.datamatica.traccar.api.providers;
 
+import java.util.stream.Stream;
 import javax.persistence.EntityManager;
-import pl.datamatica.traccar.model.Device;
 import pl.datamatica.traccar.model.Group;
 import pl.datamatica.traccar.model.User;
 
-public class GroupProvider extends ProviderBase {
-    private User requestUser;
+public class DeviceGroupProvider extends ProviderBase {
+    private final User requestUser;
     
-    public GroupProvider(EntityManager em, User requestUser) {
+    public DeviceGroupProvider(EntityManager em, User requestUser) {
         super(em);
         this.requestUser = requestUser;
     }
@@ -32,5 +32,9 @@ public class GroupProvider extends ProviderBase {
     public Group getGroup(long id) throws ProviderException {
         return get(Group.class, id, 
                 g -> requestUser.getAdmin() || requestUser.getGroups().contains(g));
+    }
+    
+    public Stream<Group> getAllAvailableGroups() throws ProviderException {
+        return requestUser.getGroups().stream();
     }
 }
