@@ -16,8 +16,10 @@
  */
 package pl.datamatica.traccar.api.providers;
 
+import java.util.Collections;
 import java.util.stream.Stream;
 import javax.persistence.EntityManager;
+import pl.datamatica.traccar.api.dtos.in.AddDeviceGroupDto;
 import pl.datamatica.traccar.model.Group;
 import pl.datamatica.traccar.model.User;
 
@@ -36,5 +38,26 @@ public class DeviceGroupProvider extends ProviderBase {
     
     public Stream<Group> getAllAvailableGroups() throws ProviderException {
         return requestUser.getGroups().stream();
+    }
+    
+    public void updateGroup(long id, AddDeviceGroupDto dto) throws ProviderException {
+        Group group = getGroup(id);
+        group.setDescription(dto.getDescription());
+        group.setName(dto.getName());
+        group.setParent(getGroup(dto.getParent_id()));
+        
+        em.persist(group);
+    }
+    
+    public Group createGroup(AddDeviceGroupDto dto) throws ProviderException {
+        Group group = new Group();
+        group.setDescription(dto.getDescription());
+        group.setName(dto.getName());
+        group.setParent(getGroup(dto.getParent_id()));
+        group.setUsers(Collections.singleton(requestUser));
+        
+        em.persist(group);
+        
+        return group;
     }
 }

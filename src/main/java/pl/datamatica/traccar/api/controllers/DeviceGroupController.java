@@ -20,8 +20,12 @@ import java.util.List;
 import java.util.stream.Collectors;
 import pl.datamatica.traccar.api.Application;
 import static pl.datamatica.traccar.api.controllers.ControllerBase.render;
+import pl.datamatica.traccar.api.dtos.in.AddDeviceDto;
+import pl.datamatica.traccar.api.dtos.in.AddDeviceGroupDto;
 import pl.datamatica.traccar.api.dtos.out.DeviceGroupDto;
+import pl.datamatica.traccar.api.dtos.out.ErrorDto;
 import pl.datamatica.traccar.api.providers.DeviceGroupProvider;
+import pl.datamatica.traccar.api.providers.ProviderException;
 import pl.datamatica.traccar.api.responses.HttpResponse;
 import pl.datamatica.traccar.model.Group;
 import spark.Request;
@@ -46,6 +50,18 @@ public class DeviceGroupController extends ControllerBase {
             Spark.get(baseUrl()+"/:id", (req, res) -> {
                 DeviceGroupController dgc = createController(req);
                 return render(dgc.get(Long.parseLong(req.params(":id"))), res);
+            }, gson::toJson);
+            
+            Spark.post(baseUrl(), (req, res) -> {
+                DeviceGroupController dgc = createController(req);
+                AddDeviceGroupDto deviceDto = gson.fromJson(req.body(), AddDeviceGroupDto.class);
+                return render(dgc.post(deviceDto), res);
+            }, gson::toJson);
+            
+            Spark.put(baseUrl()+"/:id", (req, res) -> {
+                DeviceGroupController dgc = createController(req);
+                AddDeviceGroupDto dto = gson.fromJson(req.body(), AddDeviceGroupDto.class);
+                return render(dgc.put(Long.parseLong(req.params(":id")), dto), res);
             }, gson::toJson);
         }
 
@@ -83,5 +99,29 @@ public class DeviceGroupController extends ControllerBase {
         DeviceGroupDto dto = new DeviceGroupDto.Builder().deviceGroup(gr).build();
         
         return (HttpResponse)ok(dto);
+    }
+    
+    public HttpResponse post(AddDeviceGroupDto dto) throws Exception {
+        List<ErrorDto> validationErrors = AddDeviceGroupDto.validate(dto);
+        if(!validationErrors.isEmpty())
+            return badRequest(validationErrors);
+        
+        Group newGroup = provider.createGroup(dto);
+        
+        return created("devicegroups/"+newGroup.getId(), new DeviceGroupDto.Builder().deviceGroup(newGroup).build());
+    }
+    
+    public HttpResponse put(long id, AddDeviceGroupDto dto) throws ProviderException {
+        List<ErrorDto> validationErrors = AddDeviceGroupDto.validate(dto);
+        if(!validationErrors.isEmpty())
+            return badRequest(validationErrors);
+        
+        try {
+            provider.updateGroup(id, dto);
+            return ok("");
+        } catch (ProviderException e) {
+            return handle(e);
+        }
+        
     }
 }
