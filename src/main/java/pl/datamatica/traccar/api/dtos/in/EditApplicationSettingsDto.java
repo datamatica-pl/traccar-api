@@ -136,7 +136,6 @@ public class EditApplicationSettingsDto {
             }
         }
         
-        
         return errors;
     }
     

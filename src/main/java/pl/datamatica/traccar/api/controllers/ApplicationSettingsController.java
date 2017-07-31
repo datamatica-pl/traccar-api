@@ -73,11 +73,13 @@ public class ApplicationSettingsController extends ControllerBase {
     }
     
     public HttpResponse get() {
-        if (!requestContext.getUser().getAdmin()) {
-            return forbidden();
-        }
+        ApplicationSettingsDto.Builder builder = new ApplicationSettingsDto.Builder().applicationSettings(provider.get());
         
-        ApplicationSettingsDto as = new ApplicationSettingsDto.Builder().applicationSettings(provider.get()).build();
+        if (!requestContext.getUser().getAdmin()) {
+            // Some fields should be passed only to admin
+            builder = builder.purgeConfidentialData();
+        }
+        ApplicationSettingsDto as = builder.build();
         return (HttpResponse)ok(as);
     }
     
