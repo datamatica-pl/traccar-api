@@ -94,7 +94,6 @@ public class DeviceGroupController extends ControllerBase {
     public HttpResponse get() throws Exception {
         List<DeviceGroupDto> dtos = provider.getAllAvailableGroups()
                 .map(g -> new DeviceGroupDto.Builder().deviceGroup(g).build())
-                .filter(g -> true)
                 .collect(Collectors.toList());
                 
         return (HttpResponse)ok(dtos);
@@ -119,14 +118,14 @@ public class DeviceGroupController extends ControllerBase {
     
     public HttpResponse put(long id, AddDeviceGroupDto dto) throws ProviderException {
         List<ErrorDto> validationErrors = AddDeviceGroupDto.validate(dto);
-        if (dto.getParent_id() != null && dto.getParent_id() == id) {
-            //It's basic check but it still allows for cycles between groups
-            validationErrors.add(new ErrorDto(MessageKeys.ERR_DEVICE_GROUP_PARANT_SAME_AS_ID));
-        }
-        if(!validationErrors.isEmpty())
-            return badRequest(validationErrors);
         
         try {
+            if (dto.getParentId() != null && !provider.checkCorrectnessOfGroupTree(id, dto.getParentId())) {
+                validationErrors.add(new ErrorDto(MessageKeys.ERR_DEVICE_GROUP_WOULD_CREATE_CYCLE));
+            }
+            if(!validationErrors.isEmpty())
+                return badRequest(validationErrors);
+        
             provider.updateGroup(id, dto);
             return ok("");
         } catch (ProviderException e) {

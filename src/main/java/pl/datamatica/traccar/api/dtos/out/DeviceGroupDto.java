@@ -35,7 +35,7 @@ public class DeviceGroupDto extends AddDeviceGroupDto {
         private long id;
         private String description;
         private String name;
-        private Long parent_id = null;
+        private Long parentId = null;
     
         public Builder() {
         }
@@ -56,7 +56,7 @@ public class DeviceGroupDto extends AddDeviceGroupDto {
         }
         
         public Builder parent(long value) {
-            this.parent_id = value;
+            this.parentId = value;
             return this;
         }
         
@@ -65,13 +65,13 @@ public class DeviceGroupDto extends AddDeviceGroupDto {
             this.description = group.getDescription();
             this.name = group.getName();
             if (group.getParent() != null) {
-                this.parent_id = group.getParent().getId();
+                this.parentId = group.getParent().getId();
             }
             return this;
         }
         
         public DeviceGroupDto build() {
-            return new DeviceGroupDto(id, description, name, parent_id);
+            return new DeviceGroupDto(id, description, name, parentId);
         }
     }
 

@@ -29,12 +29,12 @@ import pl.datamatica.traccar.api.dtos.out.ErrorDto;
 public class AddDeviceGroupDto {
     private final String description;
     private final String name;
-    private final Long parent_id;
+    private final Long parentId;
     
     protected AddDeviceGroupDto(String description, String name, Long parent) {
         this.description = description;
         this.name = name;
-        this.parent_id = parent;
+        this.parentId = parent;
     }
     
     public static List<ErrorDto> validate(AddDeviceGroupDto dto) {
@@ -52,7 +52,7 @@ public class AddDeviceGroupDto {
     public static class Builder {
         private String description;
         private String name;
-        private long parent_id;
+        private long parentId;
     
         public Builder() {
         }
@@ -68,12 +68,12 @@ public class AddDeviceGroupDto {
         }
         
         public Builder parent(long value) {
-            this.parent_id = value;
+            this.parentId = value;
             return this;
         }
         
         public AddDeviceGroupDto build() {
-            return new AddDeviceGroupDto(description, name, parent_id);
+            return new AddDeviceGroupDto(description, name, parentId);
         }
     }
 
@@ -85,8 +85,8 @@ public class AddDeviceGroupDto {
         return name;
     }
 
-    public Long getParent_id() {
-        return parent_id;
+    public Long getParentId() {
+        return parentId;
     }
     
     

@@ -101,5 +101,5 @@ public class MessageKeys {
     public static final String ERR_APPSETTINGS_ILLEGAL_PASSWORD_HASH_METHOD = "err_appsettings_illegal_password_hash_method";
 
     public static final String ERR_DEVICE_GROUP_NAME_NOT_PROVIDED = "err_device_group_name_not_provided";
-    public static final String ERR_DEVICE_GROUP_PARANT_SAME_AS_ID = "err_device_group_parent_same_as_id";
+    public static final String ERR_DEVICE_GROUP_WOULD_CREATE_CYCLE = "err_device_group_would_create_cycle";
 }
