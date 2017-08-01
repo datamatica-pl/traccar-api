@@ -75,18 +75,15 @@ public class DeviceGroupProvider extends ProviderBase {
     public boolean checkCorrectnessOfGroupTree(long childId, long parentId) throws ProviderException {
         if (childId == parentId)
             return false;
-        System.out.print("parentId: " + parentId + ", childId: " + childId);
-
+        
         Long r = parentId;  
         do { 
-            System.out.print("r: " + r);
             Group parent = get(Group.class, r, g -> true).getParent();
             if (parent == null) {
                 // We reached root without cycle
                 return true;
             }
             r = parent.getId();
-            System.out.print("r: " + r);
         } while (r != childId && r != parentId);
         //We broke loop and there would be a cycle
         return false;
