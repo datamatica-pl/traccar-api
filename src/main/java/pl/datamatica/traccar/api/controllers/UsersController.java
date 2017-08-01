@@ -21,6 +21,7 @@ import java.util.stream.Collectors;
 import pl.datamatica.traccar.api.Application;
 import static pl.datamatica.traccar.api.controllers.ControllerBase.render;
 import pl.datamatica.traccar.api.dtos.MessageKeys;
+import pl.datamatica.traccar.api.dtos.in.EditUserDto;
 import pl.datamatica.traccar.api.dtos.in.RegisterUserDto;
 import pl.datamatica.traccar.api.dtos.in.ResetPassReqDto;
 import pl.datamatica.traccar.api.dtos.out.ErrorDto;
@@ -54,6 +55,12 @@ public class UsersController extends ControllerBase {
                 RegisterUserDto userDto = gson.fromJson(req.body(), RegisterUserDto.class);
                 return render(uc.post(userDto), res);
             }, gson::toJson);
+            
+            Spark.put(rootUrl()+"/:id", (req, res) -> {
+                UsersController uc = createController(req);
+                EditUserDto dto = gson.fromJson(req.body(), EditUserDto.class);
+                return render(uc.put(Long.parseLong(req.params(":id")), dto), res);
+            });
             
             Spark.get(rootUrl()+"/activate/:token", (req, res) -> {
                 UsersController uc = createController(req);
@@ -124,6 +131,18 @@ public class UsersController extends ControllerBase {
             return ok("");
         sendActivationToken(user);
         return ok("");
+    }
+    
+    public HttpResponse put(long id, EditUserDto dto) throws ProviderException {
+        List<ErrorDto> errors = EditUserDto.validate(dto);
+        if(!errors.isEmpty())
+            return badRequest(errors);
+        try {
+            up.updateUser(id, dto);
+            return ok("");
+        } catch(ProviderException e) {
+            return handle(e);
+        }
     }
     
     public HttpResponse post(RegisterUserDto userDto) throws ProviderException {
