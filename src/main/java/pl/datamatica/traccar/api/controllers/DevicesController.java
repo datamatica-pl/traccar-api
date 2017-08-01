@@ -38,7 +38,7 @@ import pl.datamatica.traccar.api.dtos.out.ErrorDto;
 import pl.datamatica.traccar.api.dtos.out.ListDto;
 import pl.datamatica.traccar.api.dtos.out.PositionDto;
 import pl.datamatica.traccar.api.providers.DeviceProvider;
-import pl.datamatica.traccar.api.providers.GroupProvider;
+import pl.datamatica.traccar.api.providers.DeviceGroupProvider;
 import pl.datamatica.traccar.api.providers.PicturesProvider;
 import pl.datamatica.traccar.api.providers.PositionProvider;
 import pl.datamatica.traccar.api.providers.ProviderException;
@@ -133,7 +133,7 @@ public class DevicesController extends ControllerBase {
 
     private static final int MAX_RESULT_COUNT = 4000;
     private final DeviceProvider dp;
-    private final GroupProvider gp;
+    private final DeviceGroupProvider gp;
     private final PositionProvider positions;
     private final Date minDate;
     private final Set<Long> userIds;
@@ -142,7 +142,7 @@ public class DevicesController extends ControllerBase {
     public DevicesController(RequestContext requestContext) {
         super(requestContext);
         this.dp = requestContext.getDeviceProvider();
-        this.gp = requestContext.getGroupProvider();
+        this.gp = requestContext.getDeviceGroupProvider();
         this.positions = requestContext.getPositionProvider();
         this.minDate = requestContext.getModificationDate();
         this.userIds = requestContext.getUserProvider().getAllAvailableUsers()

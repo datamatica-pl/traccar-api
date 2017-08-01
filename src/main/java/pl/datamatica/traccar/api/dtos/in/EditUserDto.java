@@ -25,7 +25,7 @@ import static pl.datamatica.traccar.api.dtos.MessageKeys.*;
 
 /**
  *
- * @author Lukasz
+ * @author ŁŁ
  */
 public class EditUserDto {
     public static final String PASSWORD_PLACEHOLDER = "******";
@@ -33,7 +33,7 @@ public class EditUserDto {
     public static List<ErrorDto> validate(EditUserDto dto) {
         List<ErrorDto> errors = new ArrayList<>();
         if (dto == null)
-            return Collections.singletonList(new ErrorDto(ERR_USER_DATA_NOT_PROVIDED));
+            return Collections.singletonList(new ErrorDto(ERR_DATA_NOT_PROVIDED));
         if(dto.manager == null)
             errors.add(new ErrorDto(ERR_USER_MANAGER_NOT_PROVIDED));
         if(dto.admin == null)

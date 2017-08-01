@@ -45,12 +45,12 @@ import pl.datamatica.traccar.api.Application;
 public class DeviceProvider extends ProviderBase {
     private User requestUser;
     private ImeiProvider imeis;
-    private GroupProvider groups;
+    private DeviceGroupProvider groups;
     private Logger logger;
     private final SimpleDateFormat dateFormat;
     
     public DeviceProvider(EntityManager em, User requestUser, ImeiProvider imeis,
-            GroupProvider groups) {
+            DeviceGroupProvider groups) {
         super(em);
         this.requestUser = requestUser;
         this.imeis = imeis;
