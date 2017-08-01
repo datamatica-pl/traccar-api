@@ -88,7 +88,7 @@ public class SessionControllerTest {
     
     @Test
     public void putNotificationToken_noToken() {
-        ErrorDto expectedError = new ErrorDto(MessageKeys.ERR_TOKEN_NOT_PROVIDED);
+        ErrorDto expectedError = new ErrorDto(MessageKeys.ERR_DATA_NOT_PROVIDED);
         
         HttpResponse response = controller.putNotificationToken(null);
         

@@ -103,7 +103,7 @@ public class EditApplicationSettingsDto {
     
     public static List<ErrorDto> validate(EditApplicationSettingsDto dto) {
         if(dto == null)
-            return Collections.singletonList(new ErrorDto(MessageKeys.ERR_APPSETTINGS_DATA_NOT_PROVIDED));
+            return Collections.singletonList(new ErrorDto(MessageKeys.ERR_DATA_NOT_PROVIDED));
         
         List<ErrorDto> errors = new ArrayList<>();
         if (dto.registrationEnabled == null) {
