@@ -95,7 +95,14 @@ public class MessageKeys {
     public static final String ERR_APPSETTINGS_ALLOW_COMMANDS_ONLY_FOR_ADMINS_NOT_PROVIDED = "err_appsettings_allow_commands_only_for_admins_not_provided";
     public static final String ERR_APPSETTINGS_PASSWORD_HASH_METHOD_NOT_PROVIDED = "err_appsettings_password_hash_method_not_provided";
     public static final String ERR_APPSETTINGS_ILLEGAL_PASSWORD_HASH_METHOD = "err_appsettings_illegal_password_hash_method";
-
+    
+    public static final String ERR_USER_MANAGER_NOT_PROVIDED = "err_user_manager_not_provided";
+    public static final String ERR_USER_ADMIN_NOT_PROVIDED = "err_user_admin_not_provided";
+    public static final String ERR_USER_ARCHIVE_NOT_PROVIDED = "err_user_archive_not_provided";
+    public static final String ERR_USER_READONLY_NOT_PROVIDED = "err_user_readonly_not_provided";
+    public static final String ERR_USER_PASSWORD_NOT_PROVIDED = "err_user_password_not_provided";
+    public static final String ERR_USER_NOTIFICATION_EVENTS_NOT_PROVIDED = "err_user_notification_events_not_provided";
+    
     public static final String ERR_DEVICE_GROUP_NAME_NOT_PROVIDED = "err_device_group_name_not_provided";
     public static final String ERR_DEVICE_GROUP_WOULD_CREATE_CYCLE = "err_device_group_would_create_cycle";
 }

@@ -16,7 +16,9 @@
  */
 package pl.datamatica.traccar.api.providers;
 
+import java.util.HashSet;
 import java.util.Random;
+import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Stream;
 import javax.persistence.EntityManager;
@@ -25,9 +27,11 @@ import javax.persistence.TypedQuery;
 import org.slf4j.Logger;
 import pl.datamatica.traccar.api.auth.AuthenticationException;
 import pl.datamatica.traccar.api.auth.AuthenticationException.ErrorType;
-import pl.datamatica.traccar.api.dtos.MessageKeys;
+import pl.datamatica.traccar.api.dtos.in.EditUserDto;
+import pl.datamatica.traccar.api.dtos.out.UserDto;
 import pl.datamatica.traccar.api.providers.ProviderException.Type;
 import pl.datamatica.traccar.model.ApplicationSettings;
+import pl.datamatica.traccar.model.DeviceEventType;
 import pl.datamatica.traccar.model.User;
 import pl.datamatica.traccar.model.UserSettings;
 
@@ -101,6 +105,33 @@ public class UserProvider extends ProviderBase {
         
         logger.info("{} created his account", user.getLogin());
         return user;
+    }
+    
+    public void updateUser(long id, EditUserDto dto) throws ProviderException {
+        User u = getUser(id);
+        u.setAdmin(dto.isAdmin());
+        u.setArchive(dto.isArchive());
+        u.setBlocked(dto.isBlocked());
+        u.setCompanyName(dto.getCompanyName());
+        u.setEmail(dto.getEmail());
+        u.setExpirationDate(dto.getExpirationDate());
+        u.setFirstName(dto.getFirstName());
+        u.setLastName(dto.getLastName());
+        u.setManager(dto.isManager());
+        u.setMaxNumOfDevices(dto.getMaxNumOfDevices());
+        Set<DeviceEventType> notificationEvents = new HashSet<>();
+        for(String ev : dto.getNotificationEvents()) {
+            notificationEvents.add(DeviceEventType.valueOf(ev));
+        }
+        u.setNotificationEvents(notificationEvents);
+        if(!EditUserDto.PASSWORD_PLACEHOLDER.equals(dto.getPassword()))
+            u.setPassword(u.getPasswordHashMethod()
+                    .doHash(dto.getPassword(), appSettings.getSalt()));
+        u.setPhoneNumber(dto.getPhoneNumber());
+        u.setReadOnly(dto.isReadOnly());
+        em.persist(u);
+        
+        logger.info("{} updated user {}", requestUser.getLogin(), u.getLogin());
     }
 
     private String generateToken(String colName) {
