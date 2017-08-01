@@ -42,22 +42,28 @@ public class DeviceGroupProvider extends ProviderBase {
     
     public void updateGroup(long id, AddDeviceGroupDto dto) throws ProviderException {
         Group group = getGroup(id);
-        group.setDescription(dto.getDescription());
-        group.setName(dto.getName());
-        group.setParent(getGroup(dto.getParent_id()));
+        editGroupWithDto(group, dto);
         
         em.persist(group);
     }
     
     public Group createGroup(AddDeviceGroupDto dto) throws ProviderException {
         Group group = new Group();
-        group.setDescription(dto.getDescription());
-        group.setName(dto.getName());
-        group.setParent(getGroup(dto.getParent_id()));
-        group.setUsers(Collections.singleton(requestUser));
+        editGroupWithDto(group, dto);
         
         em.persist(group);
-        
         return group;
+    }
+    
+    private void editGroupWithDto(Group group, AddDeviceGroupDto dto) throws ProviderException {
+        group.setDescription(dto.getDescription());
+        group.setName(dto.getName());
+        if (dto.getParent_id() != null)
+            group.setParent(getGroup(dto.getParent_id()));
+        else {
+            group.setParent(null);
+        }
+        group.setUsers(Collections.singleton(requestUser));
+        
     }
 }

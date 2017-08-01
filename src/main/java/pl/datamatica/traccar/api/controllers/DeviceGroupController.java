@@ -20,6 +20,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 import pl.datamatica.traccar.api.Application;
 import static pl.datamatica.traccar.api.controllers.ControllerBase.render;
+import pl.datamatica.traccar.api.dtos.MessageKeys;
 import pl.datamatica.traccar.api.dtos.in.AddDeviceDto;
 import pl.datamatica.traccar.api.dtos.in.AddDeviceGroupDto;
 import pl.datamatica.traccar.api.dtos.out.DeviceGroupDto;
@@ -113,6 +114,10 @@ public class DeviceGroupController extends ControllerBase {
     
     public HttpResponse put(long id, AddDeviceGroupDto dto) throws ProviderException {
         List<ErrorDto> validationErrors = AddDeviceGroupDto.validate(dto);
+        if (dto.getParent_id() != null && dto.getParent_id() == id) {
+            //It's basic check but it still allows for cycles between groups
+            validationErrors.add(new ErrorDto(MessageKeys.ERR_DEVICE_GROUP_PARANT_SAME_AS_ID));
+        }
         if(!validationErrors.isEmpty())
             return badRequest(validationErrors);
         

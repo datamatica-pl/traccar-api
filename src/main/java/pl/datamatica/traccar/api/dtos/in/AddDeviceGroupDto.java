@@ -85,7 +85,7 @@ public class AddDeviceGroupDto {
         return name;
     }
 
-    public long getParent_id() {
+    public Long getParent_id() {
         return parent_id;
     }
     
