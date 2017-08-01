@@ -34,7 +34,7 @@ public class AddDeviceDto {
     
     public static List<ErrorDto> validate(AddDeviceDto deviceDto) {
         if(deviceDto == null || deviceDto.getImei() == null)
-            return Collections.singletonList(new ErrorDto(MessageKeys.ERR_IMEI_NOT_PROVIDED));
+            return Collections.singletonList(new ErrorDto(MessageKeys.ERR_DATA_NOT_PROVIDED));
         return Collections.EMPTY_LIST;
     }
 }

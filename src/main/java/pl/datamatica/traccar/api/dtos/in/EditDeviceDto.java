@@ -330,7 +330,7 @@ public class EditDeviceDto {
     
     public static List<ErrorDto> validate(EditDeviceDto deviceDto) {
         if(deviceDto == null)
-            return Collections.singletonList(new ErrorDto(MessageKeys.ERR_DEVICE_DATA_NOT_PROVIDED));
+            return Collections.singletonList(new ErrorDto(MessageKeys.ERR_DATA_NOT_PROVIDED));
         
         List<ErrorDto> errors = new ArrayList<>();
         if(deviceDto.color == null || deviceDto.color.isEmpty())

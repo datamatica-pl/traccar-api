@@ -239,7 +239,7 @@ public class DevicesControllerTest {
     @Test
     public void post_noImei() throws Exception {
         AddDeviceDto deviceDto = new AddDeviceDto(null);
-        ErrorDto expectedError = new ErrorDto(MessageKeys.ERR_IMEI_NOT_PROVIDED);
+        ErrorDto expectedError = new ErrorDto(MessageKeys.ERR_DATA_NOT_PROVIDED);
         
         HttpResponse response = dc.post(deviceDto);
              
