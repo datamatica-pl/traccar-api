@@ -63,7 +63,7 @@ public class DeviceGroupProvider extends ProviderBase {
     
     public void deleteGroup(long id) throws ProviderException {
         Group group = getGroup(id);
-        if (group.getUsers().size() == 1) {
+        if (requestUser.getAdmin() || group.getUsers().size() == 1) {
             hardRemoveGroup(group);
         }
         else {
@@ -71,11 +71,32 @@ public class DeviceGroupProvider extends ProviderBase {
         }
     }
     
+    /// Method returns true if adding parentId's group as childId group's parent won't create cycle in tree
+    public boolean checkCorrectnessOfGroupTree(long childId, long parentId) throws ProviderException {
+        if (childId == parentId)
+            return false;
+        System.out.print("parentId: " + parentId + ", childId: " + childId);
+
+        Long r = parentId;  
+        do { 
+            System.out.print("r: " + r);
+            Group parent = get(Group.class, r, g -> true).getParent();
+            if (parent == null) {
+                // We reached root without cycle
+                return true;
+            }
+            r = parent.getId();
+            System.out.print("r: " + r);
+        } while (r != childId && r != parentId);
+        //We broke loop and there would be a cycle
+        return false;
+    }
+    
     private void editGroupWithDto(Group group, AddDeviceGroupDto dto) throws ProviderException {
         group.setDescription(dto.getDescription());
         group.setName(dto.getName());
-        if (dto.getParent_id() != null)
-            group.setParent(getGroup(dto.getParent_id()));
+        if (dto.getParentId() != null)
+            group.setParent(getGroup(dto.getParentId()));
         else {
             group.setParent(null);
         }
