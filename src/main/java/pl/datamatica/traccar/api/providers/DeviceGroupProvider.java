@@ -17,8 +17,10 @@
 package pl.datamatica.traccar.api.providers;
 
 import java.util.Collections;
+import java.util.List;
 import java.util.stream.Stream;
 import javax.persistence.EntityManager;
+import javax.persistence.Query;
 import pl.datamatica.traccar.api.dtos.in.AddDeviceGroupDto;
 import pl.datamatica.traccar.model.Group;
 import pl.datamatica.traccar.model.User;
@@ -37,6 +39,10 @@ public class DeviceGroupProvider extends ProviderBase {
     }
     
     public Stream<Group> getAllAvailableGroups() throws ProviderException {
+        if (requestUser.getAdmin()) {
+            Query query = em.createQuery("SELECT g FROM Group g");
+            return query.getResultList().stream();
+        }
         return requestUser.getGroups().stream();
     }
     
@@ -55,6 +61,16 @@ public class DeviceGroupProvider extends ProviderBase {
         return group;
     }
     
+    public void deleteGroup(long id) throws ProviderException {
+        Group group = getGroup(id);
+        if (group.getUsers().size() == 1) {
+            hardRemoveGroup(group);
+        }
+        else {
+            group.getUsers().remove(requestUser);
+        }
+    }
+    
     private void editGroupWithDto(Group group, AddDeviceGroupDto dto) throws ProviderException {
         group.setDescription(dto.getDescription());
         group.setName(dto.getName());
@@ -64,6 +80,20 @@ public class DeviceGroupProvider extends ProviderBase {
             group.setParent(null);
         }
         group.setUsers(Collections.singleton(requestUser));
+    }
+    
+    private void hardRemoveGroup(Group group) {
+        Query query = em.createQuery("SELECT g FROM Group g WHERE parent_id = :id");
+        query.setParameter("id", group.getId());
+        for (Group gr : (List<Group>) query.getResultList()) {
+            gr.setParent(group.getParent());
+        }
         
+        group.getUsers().clear();
+        em.flush();
+    
+        query = em.createQuery("DELETE FROM Group WHERE id = ?");
+        query.setParameter(1, group.getId());
+        query.executeUpdate();
     }
 }

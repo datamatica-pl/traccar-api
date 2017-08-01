@@ -64,6 +64,11 @@ public class DeviceGroupController extends ControllerBase {
                 AddDeviceGroupDto dto = gson.fromJson(req.body(), AddDeviceGroupDto.class);
                 return render(dgc.put(Long.parseLong(req.params(":id")), dto), res);
             }, gson::toJson);
+            
+            Spark.delete(baseUrl()+"/:id", (req, res) -> {
+                DeviceGroupController dgc = createController(req);
+                return render(dgc.delete(Long.parseLong(req.params(":id"))), res);
+            }, gson::toJson);
         }
 
         private DeviceGroupController createController(Request req) {
@@ -127,6 +132,14 @@ public class DeviceGroupController extends ControllerBase {
         } catch (ProviderException e) {
             return handle(e);
         }
-        
+    }
+    
+    public HttpResponse delete(long id) throws ProviderException {
+        try {
+            provider.deleteGroup(id);
+            return ok("");
+        } catch(ProviderException e) {
+            return handle(e);
+        }
     }
 }
