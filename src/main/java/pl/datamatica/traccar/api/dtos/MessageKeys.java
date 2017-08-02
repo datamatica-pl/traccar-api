@@ -98,4 +98,11 @@ public class MessageKeys {
 
     public static final String ERR_DEVICE_GROUP_NAME_NOT_PROVIDED = "err_device_group_name_not_provided";
     public static final String ERR_DEVICE_GROUP_WOULD_CREATE_CYCLE = "err_device_group_would_create_cycle";
+    
+    public static final String ERR_POSITIONS_QUERY_MINDISTANCE_VALUE_NOT_PROVIDED = "err_positions_query_mindistance_value_not_provided";
+    public static final String ERR_POSITIONS_QUERY_MINDISTANCE_WRONG_FORMAT = "err_positions_query_mindistance_wrong_format";
+    public static final String ERR_POSITIONS_QUERY_SPEED_VALUE_NOT_PROVIDED = "err_positions_query_speed_value_not_provided";
+    public static final String ERR_POSITIONS_QUERY_SPEED_WRONG_FORMAT = "err_positions_query_speed_wrong_format";
+    public static final String ERR_POSITIONS_QUERY_DATE_VALUE_NOT_PROVIDED = "err_positions_query_date_value_not_provided";
+    public static final String ERR_POSITIONS_QUERY_DATE_WRONG_FORMAT = "err_positions_query_date_wrong_format";
 }

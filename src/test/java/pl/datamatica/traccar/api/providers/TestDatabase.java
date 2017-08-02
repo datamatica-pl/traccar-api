@@ -16,7 +16,11 @@
  */
 package pl.datamatica.traccar.api.providers;
 
+import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Collections;
+import java.util.Date;
+import java.util.List;
 import javax.persistence.EntityManager;
 import pl.datamatica.traccar.model.ApplicationSettings;
 import pl.datamatica.traccar.model.Device;
@@ -39,6 +43,7 @@ public class TestDatabase {
     User managed2;
     Device managed2Device;
     GeoFence adminGeofence;
+    List<Position> managed2Positions;
     
     public TestDatabase(EntityManager em) {
         this.em = em;
@@ -55,6 +60,7 @@ public class TestDatabase {
         createDevices();
         createPositions();
         createGeofences();
+        createPositionsManaged2Device();
         em.getTransaction().commit();
     }
     
@@ -139,6 +145,29 @@ public class TestDatabase {
         adminPosition.setLongitude(19.);
         adminPosition.setDevice(adminDevice);
         em.persist(adminPosition);
+    }
+    
+    // Creates positions for managed2device. This device shouldn't gen any more positions. 
+    // This data will be used in device/<id>/positions filter tests
+    private void createPositionsManaged2Device() {
+        final long MINUTE = 60000;//millisecs
+        
+        Calendar date = Calendar.getInstance();
+        long baseTime = date.getTimeInMillis() - 60 * MINUTE;
+
+        em.persist(preparePosition(51., 21., managed2Device, new Date(baseTime + 10 * MINUTE)));
+        em.persist(preparePosition(52., 21., managed2Device, new Date(baseTime + 20 * MINUTE)));
+        em.persist(preparePosition(53., 21., managed2Device, new Date(baseTime + 30 * MINUTE)));
+    }
+    
+    private Position preparePosition(double lat, double lon, Device dev, Date date) {
+        Position pos = new Position();
+        pos.setLatitude(lat);
+        pos.setLongitude(lon);
+        pos.setDevice(dev);
+        pos.setTime(date);
+        pos.setServerTime(date);
+        return pos;
     }
     
     private void createGeofences() {
