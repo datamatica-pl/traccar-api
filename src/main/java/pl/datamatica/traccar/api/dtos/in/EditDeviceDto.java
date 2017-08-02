@@ -23,6 +23,7 @@ import java.util.List;
 import pl.datamatica.traccar.api.Application;
 import pl.datamatica.traccar.api.dtos.MessageKeys;
 import pl.datamatica.traccar.api.dtos.out.ErrorDto;
+import pl.datamatica.traccar.api.dtos.out.MaintenanceDto;
 
 public class EditDeviceDto {
     private final String deviceName;
@@ -56,6 +57,8 @@ public class EditDeviceDto {
     private final String arrowStoppedColor;
     private final String arrowPausedColor;
     private final String arrowOfflineColor;
+    private final List<MaintenanceDto> maintenances;
+    private final List<MaintenanceDto> registrations;
 
     public static class Builder {
 
@@ -89,6 +92,8 @@ public class EditDeviceDto {
         private String arrowStoppedColor;
         private String arrowPausedColor;
         private String arrowOfflineColor;
+        private List<MaintenanceDto> maintenances;
+        private List<MaintenanceDto> registrations;
 
         public Builder deviceName(final String value) {
             this.deviceName = value;
@@ -153,8 +158,9 @@ public class EditDeviceDto {
                     fuelCapacity,
                     groupId, minIdleTime, idleSpeedThreshold, historyLength, validTo,
                     vehicleInfo, autoUpdateOdometer, timeout, timeZoneOffset,commandPassword,
-                    showOdometer, showProtocol, showName, arrowRadius, arrowMovingColor,
-                    arrowStoppedColor, arrowPausedColor, arrowOfflineColor);
+                    showOdometer, showProtocol, showName, arrowRadius, 
+                    arrowMovingColor, arrowStoppedColor, arrowPausedColor, arrowOfflineColor, 
+                    maintenances, registrations);
         }
     }
 
@@ -185,7 +191,9 @@ public class EditDeviceDto {
             final String arrowMovingColor,
             final String arrowStoppedColor,
             final String arrowPausedColor,
-            final String arrowOfflineColor) {
+            final String arrowOfflineColor,
+            final List<MaintenanceDto> maintenances,
+            final List<MaintenanceDto> registrations) {
         this.deviceName = deviceName;
         this.deviceModelId = deviceModelId;
         this.iconId = iconId;
@@ -214,6 +222,12 @@ public class EditDeviceDto {
         this.arrowStoppedColor = arrowStoppedColor;
         this.arrowPausedColor = arrowPausedColor;
         this.arrowOfflineColor = arrowOfflineColor;
+        this.maintenances = new ArrayList<>();
+        if(maintenances != null)
+            this.maintenances.addAll(maintenances);
+        this.registrations = new ArrayList<>();
+        if(registrations != null)
+            this.registrations.addAll(registrations);
     }
 
     public String getDeviceName() {
@@ -326,6 +340,14 @@ public class EditDeviceDto {
 
     public Boolean isShowProtocol() {
         return showProtocol;
+    }
+    
+    public List<MaintenanceDto> getMaintenances() {
+        return maintenances;
+    }
+    
+    public List<MaintenanceDto> getRegistrations() {
+        return registrations;
     }
     
     public static List<ErrorDto> validate(EditDeviceDto deviceDto) {
