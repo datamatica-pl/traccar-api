@@ -16,6 +16,7 @@
  */
 package pl.datamatica.traccar.api.providers;
 
+import com.google.gson.JsonArray;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -41,6 +42,7 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.logging.Level;
 import pl.datamatica.traccar.api.Application;
+import pl.datamatica.traccar.model.RegistrationMaintenance;
 
 public class DeviceProvider extends ProviderBase {
     private User requestUser;
@@ -81,6 +83,7 @@ public class DeviceProvider extends ProviderBase {
         
         loadAlarmStatus(devices);
         loadMaintenances(devices);
+        loadRegistrations(devices);
         
         return devices.stream();
     }
@@ -96,6 +99,19 @@ public class DeviceProvider extends ProviderBase {
                 device.setMaintenances(new ArrayList<>());
             }
             device.getMaintenances().add(maintenance);
+        }
+    }
+    
+    private void loadRegistrations(List<Device> devices) {
+        List<RegistrationMaintenance> ms = em.createQuery(
+                "SELECT m FROM RegistrationMaintenance m WHERE m.device IN :devices ORDER BY m.indexNo ASC", RegistrationMaintenance.class)
+                .setParameter("devices", devices)
+                .getResultList();
+        for(RegistrationMaintenance m : ms) {
+            Device d = m.getDevice();
+            if(d.getRegistrations() == null)
+                d.setRegistrations(new ArrayList<>());
+            d.getRegistrations().add(m);
         }
     }
 
@@ -296,7 +312,7 @@ public class DeviceProvider extends ProviderBase {
         }
         if(changes.has("description")) {
             if(changes.get("description").isJsonNull())
-                d.setDescription(changes.get("description").getAsString());
+                d.setDescription(null);
             else
                 d.setDescription(changes.get("description").getAsString());
         }
@@ -377,5 +393,49 @@ public class DeviceProvider extends ProviderBase {
             d.setIconArrowPausedColor(changes.get("arrowPausedColor").getAsString());
         if(changes.has("arrowOfflineColor"))
             d.setIconArrowOfflineColor(changes.get("arrowOfflineColor").getAsString());
+        
+        if(changes.has("maintenances") && changes.get("maintenances").isJsonArray()) {
+            JsonArray ms = changes.get("maintenances").getAsJsonArray();
+            em.createQuery("DELETE FROM Maintenance m WHERE m.device = :device")
+                    .setParameter("device", d).executeUpdate();
+            List<Maintenance> mts = new ArrayList<>();
+            for(int i=0;i<ms.size();++i) {
+                Maintenance m = new Maintenance();
+                JsonObject ob = ms.get(i).getAsJsonObject();
+                m.setId(ob.get("id").getAsLong());
+                m.setName(ob.get("name").getAsString());
+                m.setLastService(ob.get("lastService").getAsDouble());
+                m.setServiceInterval(ob.get("serviceInterval").getAsDouble());
+                m.setIndexNo(i);
+                m.setDevice(d);
+                em.merge(m);
+                mts.add(m);
+            }
+            d.setMaintenances(mts);
+        }
+        
+        if(changes.has("registrations") && changes.get("registrations").isJsonArray()) {
+            JsonArray rs = changes.get("registrations").getAsJsonArray();
+            em.createQuery("DELETE FROM RegistrationMaintenance m WHERE m.device = :device")
+                    .setParameter("device", d).executeUpdate();
+            List<RegistrationMaintenance> rms = new ArrayList<>();
+            for(int i=0;i<rs.size();++i) {
+                try {
+                    RegistrationMaintenance m = new RegistrationMaintenance();
+                    JsonObject ob = rs.get(i).getAsJsonObject();
+                    m.setId(ob.get("id").getAsLong());
+                    m.setName(ob.get("name").getAsString());
+                    m.setServiceDate(dateFormat.parse(ob.get("serviceDate").getAsString()));
+                    m.setIndexNo(i);
+                    m.setDevice(d);
+                    em.merge(m);
+                    rms.add(m);
+                } catch (ParseException ex) {
+                    //ignore
+                }
+            }
+            d.setRegistrations(rms);
+        }
+        em.persist(d);
     }
 }
