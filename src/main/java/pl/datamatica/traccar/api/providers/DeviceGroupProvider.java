@@ -47,13 +47,20 @@ public class DeviceGroupProvider extends ProviderBase {
     }
     
     public Stream<Group> getAllAvailableGroups() throws ProviderException {
-        Set<Group> groups = devicesProvider.getAllAvailableDevices().map(d -> d.getGroup()).map(g -> {g.setOwned(false); return g;}).collect(Collectors.toSet());
+        Set<Group> groups = devicesProvider.getAllAvailableDevices()
+                .filter(d -> d.getGroup() != null)
+                .map(d -> d.getGroup())
+                .map(g -> {g.setOwned(false); return g;})
+                .collect(Collectors.toSet());
         
+        Stream<Group> stream;
         if (requestUser.getAdmin()) {
-            Query query = em.createQuery("SELECT g FROM Group g");
-            return query.getResultList().stream();
+            stream = em.createQuery("SELECT g FROM Group g").getResultList().stream();
         }
-        Set<Group> result = requestUser.getGroups().stream().map(g -> {g.setOwned(false); return g;}).collect(Collectors.toSet());
+        else {
+            stream = requestUser.getGroups().stream();
+        }
+        Set<Group> result = stream.map(g -> {g.setOwned(true); return g;}).collect(Collectors.toSet());
         result.addAll(groups);
         return result.stream();
     }
