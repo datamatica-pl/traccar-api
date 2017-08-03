@@ -453,9 +453,9 @@ public class DevicesControllerTest {
         
         assertNotNull(res);
         assertEquals(list.size() - 2, res.size());
-        for (Position re : res) {
+        res.forEach((re) -> {
             assertTrue(re.getLatitude() != 0 || re.getLongitude() != 0);
-        }
+        });
     }
     
     @Test
@@ -468,9 +468,9 @@ public class DevicesControllerTest {
         
         assertNotNull(res);
         assertEquals(list.size() - 2, res.size());
-        for (Position re : res) {
+        res.forEach((re) -> {
             assertTrue(re.getValid());
-        }
+        });
     }
         
     @Test
