@@ -80,6 +80,9 @@ public class DeviceProvider extends ProviderBase {
             devices = getAllDevices();
         else
             devices = new ArrayList<>(requestUser.getAllAvailableDevices());
+
+        if (devices.isEmpty()) 
+            return Stream.<Device>empty();
         
         loadAlarmStatus(devices);
         loadMaintenances(devices);

@@ -19,15 +19,16 @@ package pl.datamatica.traccar.api.controllers;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import pl.datamatica.traccar.api.Application;
 import static pl.datamatica.traccar.api.controllers.ControllerBase.render;
 import pl.datamatica.traccar.api.dtos.MessageKeys;
@@ -44,8 +45,10 @@ import pl.datamatica.traccar.api.providers.PositionProvider;
 import pl.datamatica.traccar.api.providers.ProviderException;
 import pl.datamatica.traccar.api.responses.HttpResponse;
 import pl.datamatica.traccar.api.responses.OkCachedResponse;
+import pl.datamatica.traccar.api.utils.GeoUtils;
 import pl.datamatica.traccar.model.Device;
 import pl.datamatica.traccar.model.Picture;
+import pl.datamatica.traccar.model.Position;
 import pl.datamatica.traccar.model.User;
 import spark.Request;
 import spark.Spark;
@@ -85,7 +88,7 @@ public class DevicesController extends ControllerBase {
 
             Spark.get(rootUrl() + "/:id/positions", (req, res) -> {
                 DevicesController dc = createController(req);
-                return render(dc.getPositions(Long.parseLong(req.params(":id"))), res);
+                return render(dc.getPositions(Long.parseLong(req.params(":id")), req.queryMap().toMap()), res);
             }, gson::toJson);
             
             Spark.get(rootUrl()+"/:id/customicon", (req, res) -> {
@@ -287,20 +290,159 @@ public class DevicesController extends ControllerBase {
         }
     }
 
-    public HttpResponse getPositions(long id) throws Exception {
+    public HttpResponse getPositions(long id, Map<String, String[]> params) throws Exception {
         try {
-            Device device = dp.getDevice(id);
+            Device device = dp.getDevice(id);  
+            PositionsQueryParams qp = parsePositionsQuery(params);
+            if (!qp.errors.isEmpty()) 
+                return badRequest(qp.errors);
             
-            return okCached(new ListDto<PositionDto>(
-                    positions
-                        .getAllAvailablePositions(device, minDate, MAX_RESULT_COUNT+1)
+            List<Position> pos = positions
+                    .getAllAvailablePositions(device, qp.minDate, qp.maxDate, 
+                            qp.getAll ? 0 : MAX_RESULT_COUNT+1)
+                    .collect(Collectors.toList());
+            
+            pos = filterPositions(pos, qp);
+            
+            return okCached(new ListDto<>(
+                    pos.stream()
                         .map(p -> new PositionDto.Builder().position(p).build())
                         .collect(Collectors.toList()),
-                    MAX_RESULT_COUNT));
+                    qp.getAll ? Integer.MAX_VALUE : MAX_RESULT_COUNT));
         } catch (ProviderException ex) {
             return handle(ex);
         }
     }
+    
+    List<Position> filterPositions(List<Position> pos, PositionsQueryParams qp) {
+        Stream<Position> filtered = pos.stream();
+             
+        if (qp.hideZero)
+            filtered = filtered.filter(p -> p.getLatitude() != 0 || p.getLongitude() != 0);
+        if (qp.hideInvalid)
+            filtered = filtered.filter(p -> p.getValid() != null && p.getValid());
+        if (qp.speedValue != null) {
+            filtered = filtered.filter(p -> p.getSpeed() != null);
+            switch (qp.speedComp) {
+                case LESS: filtered = filtered.filter(p -> p.getSpeed() < qp.speedValue); break;
+                case LESSEQUAL: filtered = filtered.filter(p -> p.getSpeed() <= qp.speedValue); break;
+                case EQUAL: filtered = filtered.filter(p -> p.getSpeed() == qp.speedValue.doubleValue()); break;
+                case GREATEREQUAL: filtered = filtered.filter(p -> p.getSpeed() >= qp.speedValue); break;
+                case GREATER: filtered = filtered.filter(p -> p.getSpeed() > qp.speedValue); break;
+            }
+        }
+        
+        List<Position> posList = filtered.collect(Collectors.toList());
+        if (posList.isEmpty())
+            return posList;
+        
+        List<Position> resList = new ArrayList<>();
+        Position last = posList.get(0);
+        resList.add(last);
+        for (int i = 1; i < posList.size(); i++) {
+            boolean add = true;
+            Position current = posList.get(i);
+            
+            if (qp.hideDuplicates && last.getTime().equals(current.getTime()))
+                add = false;
+            if (qp.minDistance > 0)
+                if (GeoUtils.getDistance(last.getLongitude(), last.getLatitude(), current.getLongitude(), current.getLatitude()) * 1000.0 < qp.minDistance)
+                    add = false;
+            
+            if (add) {
+                resList.add(current);
+                last = current;
+            }
+        }
+        return resList;
+    }
+    
+    /* PARSING POSITIONS QUERY */
+    
+    enum PositionSpeedOperator {
+        LESS, LESSEQUAL, EQUAL, GREATEREQUAL, GREATER
+    }
+    
+    class PositionsQueryParams {
+        public Date minDate = null;
+        public Date maxDate = null;
+        public Boolean hideZero = false;
+        public Boolean hideInvalid = false;
+        public Boolean hideDuplicates = false;
+        public Integer minDistance = 0;
+        public PositionSpeedOperator speedComp;
+        public Integer speedValue = null;
+        public Boolean getAll = false;
+        
+        public List<ErrorDto> errors = new ArrayList<>();
+        
+        public PositionsQueryParams() {}
+    }
+    
+    PositionsQueryParams parsePositionsQuery(Map<String, String[]> params) {
+        PositionsQueryParams parsed = new PositionsQueryParams();
+        
+        if (params.containsKey("fromDate") && params.containsKey("toDate")) {
+            DateFormat df = new SimpleDateFormat(Application.DATE_FORMAT);
+            try {
+                parsed.minDate = df.parse(params.get("fromDate")[0]);
+                parsed.maxDate = df.parse(params.get("toDate")[0]);
+            }
+            catch(ArrayIndexOutOfBoundsException oob) {
+                parsed.errors.add(new ErrorDto(MessageKeys.ERR_POSITIONS_QUERY_DATE_VALUE_NOT_PROVIDED));
+                parsed.minDate = parsed.maxDate = null;
+            }
+            catch(ParseException pe) {
+                parsed.errors.add(new ErrorDto(MessageKeys.ERR_POSITIONS_QUERY_DATE_WRONG_FORMAT));
+                parsed.minDate = parsed.maxDate = null;
+            }
+        }
+        if (params.containsKey("hideZero"))
+            parsed.hideZero = true;
+        if (params.containsKey("hideInvalid"))
+            parsed.hideInvalid = true;
+        if (params.containsKey("hideDup"))
+            parsed.hideDuplicates = true;
+        if (params.containsKey("minDistance")) {
+            try {
+                parsed.minDistance = Integer.parseInt(params.get("minDistance")[0]);
+            }
+            catch(ArrayIndexOutOfBoundsException oob) {
+                parsed.errors.add(new ErrorDto(MessageKeys.ERR_POSITIONS_QUERY_MINDISTANCE_VALUE_NOT_PROVIDED));
+            }
+            catch (NumberFormatException nfe) {
+                parsed.errors.add(new ErrorDto(MessageKeys.ERR_POSITIONS_QUERY_MINDISTANCE_WRONG_FORMAT));
+            }
+        }
+        if (params.containsKey("speedComp") && params.containsKey("speedValue")) {
+            try {
+                switch (params.get("speedComp")[0]) {
+                    case "lt": parsed.speedComp = PositionSpeedOperator.LESS; break;
+                    case "lte": parsed.speedComp = PositionSpeedOperator.LESSEQUAL; break;
+                    case "eq": parsed.speedComp = PositionSpeedOperator.EQUAL; break;
+                    case "gte": parsed.speedComp = PositionSpeedOperator.GREATEREQUAL; break;
+                    case "gt": parsed.speedComp = PositionSpeedOperator.GREATER; break;
+                    default:
+                        throw new IllegalArgumentException();
+                }
+                parsed.speedValue = Integer.parseInt(params.get("speedValue")[0]);
+            }
+            catch(ArrayIndexOutOfBoundsException oob) {
+                parsed.errors.add(new ErrorDto(MessageKeys.ERR_POSITIONS_QUERY_SPEED_VALUE_NOT_PROVIDED));
+            }
+            catch (IllegalArgumentException e) {
+                parsed.errors.add(new ErrorDto(MessageKeys.ERR_POSITIONS_QUERY_SPEED_WRONG_FORMAT));
+            }
+        }
+        if (params.containsKey("all"))
+            parsed.getAll = true;
+        
+        return parsed;
+    }
+    
+    /* PARSING POSITIONS QUERY - END */
+    
+    
     
     private Picture getCustomIcon(long deviceId) throws ProviderException {
         Device device = dp.getDevice(deviceId);

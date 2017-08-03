@@ -109,7 +109,39 @@ public class PositionProviderTest {
         Calendar cal = Calendar.getInstance();
         cal.add(Calendar.DATE, -2);
         
-        Stream<Position> result = provider.getAllAvailablePositions(database.managerDevice, cal.getTime(), 100);
+        Stream<Position> result = provider.getAllAvailablePositions(database.managerDevice, cal.getTime(), null, 100);
+    
+        assertEquals(1, result.count());
+    }
+    
+    @Test
+    public void getAllAvailable_maxZero() {
+        provider = new PositionProvider(em, database.manager);
+        Calendar cal = Calendar.getInstance();
+        cal.add(Calendar.DATE, -2);
+        Stream<Position> result = provider.getAllAvailablePositions(database.managed2Device, cal.getTime(), null, 0);
+    
+        assertEquals(3, result.count());
+    }
+    
+    @Test
+    public void getAllAvailable_maxOne() {
+        provider = new PositionProvider(em, database.manager);
+        Calendar cal = Calendar.getInstance();
+        cal.add(Calendar.DATE, -2);
+        Stream<Position> result = provider.getAllAvailablePositions(database.managed2Device, cal.getTime(), null, 1);
+    
+        assertEquals(1, result.count());
+    }
+    
+    @Test
+    public void getAllAvailable_withEndTime() {
+        provider = new PositionProvider(em, database.manager);
+        Calendar startCal = Calendar.getInstance();
+        startCal.add(Calendar.DATE, -2);
+        Calendar endCal = Calendar.getInstance();
+        endCal.add(Calendar.MINUTE, -45);
+        Stream<Position> result = provider.getAllAvailablePositions(database.managed2Device, startCal.getTime(), endCal.getTime(), 100);
     
         assertEquals(1, result.count());
     }
