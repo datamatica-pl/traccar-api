@@ -543,8 +543,7 @@ public class DevicesControllerTest {
     private List<Position> getFilterTestPositionsList() {
         final long MINUTE = 60000;//millisecs
         
-        Calendar date = Calendar.getInstance();
-        long baseTime = date.getTimeInMillis() - 60 * MINUTE;
+        long baseTime = System.currentTimeMillis() - 60 * MINUTE;
 
         List<Position> positions = new ArrayList<>();
         positions.add(preparePosition(52., 19., 10., new Date(baseTime)));
