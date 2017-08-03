@@ -21,7 +21,6 @@ import java.util.stream.Collectors;
 import pl.datamatica.traccar.api.Application;
 import static pl.datamatica.traccar.api.controllers.ControllerBase.render;
 import pl.datamatica.traccar.api.dtos.MessageKeys;
-import pl.datamatica.traccar.api.dtos.in.AddDeviceDto;
 import pl.datamatica.traccar.api.dtos.in.AddDeviceGroupDto;
 import pl.datamatica.traccar.api.dtos.out.DeviceGroupDto;
 import pl.datamatica.traccar.api.dtos.out.ErrorDto;
@@ -83,12 +82,10 @@ public class DeviceGroupController extends ControllerBase {
     }
     
     DeviceGroupProvider provider;
-    RequestContext requestContext;
     
     public DeviceGroupController(RequestContext rc) {
         super(rc);
         provider = rc.getDeviceGroupProvider();
-        requestContext = rc;
     }
     
     public HttpResponse get() throws Exception {
@@ -118,14 +115,10 @@ public class DeviceGroupController extends ControllerBase {
     
     public HttpResponse put(long id, AddDeviceGroupDto dto) throws ProviderException {
         List<ErrorDto> validationErrors = AddDeviceGroupDto.validate(dto);
-        
-        try {
-            if (dto.getParentId() != null && !provider.checkCorrectnessOfGroupTree(id, dto.getParentId())) {
-                validationErrors.add(new ErrorDto(MessageKeys.ERR_DEVICE_GROUP_WOULD_CREATE_CYCLE));
-            }
-            if(!validationErrors.isEmpty())
+        if(!validationErrors.isEmpty())
                 return badRequest(validationErrors);
         
+        try {
             provider.updateGroup(id, dto);
             return ok("");
         } catch (ProviderException e) {

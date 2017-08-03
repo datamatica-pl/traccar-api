@@ -26,8 +26,8 @@ import pl.datamatica.traccar.model.Group;
 public class DeviceGroupDto extends AddDeviceGroupDto {
     private final long id;
     
-    private DeviceGroupDto(long id, String description, String name, Long parent) {
-        super(description, name, parent);
+    private DeviceGroupDto(long id, String description, String name) {
+        super(description, name);
         this.id = id;
     }
     
@@ -35,7 +35,6 @@ public class DeviceGroupDto extends AddDeviceGroupDto {
         private long id;
         private String description;
         private String name;
-        private Long parentId = null;
     
         public Builder() {
         }
@@ -55,23 +54,15 @@ public class DeviceGroupDto extends AddDeviceGroupDto {
             return this;
         }
         
-        public Builder parent(long value) {
-            this.parentId = value;
-            return this;
-        }
-        
         public Builder deviceGroup(Group group) {
             this.id = group.getId();
             this.description = group.getDescription();
             this.name = group.getName();
-            if (group.getParent() != null) {
-                this.parentId = group.getParent().getId();
-            }
             return this;
         }
         
         public DeviceGroupDto build() {
-            return new DeviceGroupDto(id, description, name, parentId);
+            return new DeviceGroupDto(id, description, name);
         }
     }
 
