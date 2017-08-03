@@ -20,11 +20,14 @@ import java.util.Calendar;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import javax.persistence.EntityManager;
 import pl.datamatica.traccar.model.ApplicationSettings;
 import pl.datamatica.traccar.model.Device;
 import pl.datamatica.traccar.model.GeoFence;
 import pl.datamatica.traccar.model.GeoFenceType;
+import pl.datamatica.traccar.model.Group;
 import pl.datamatica.traccar.model.PasswordHashMethod;
 import pl.datamatica.traccar.model.Position;
 import pl.datamatica.traccar.model.User;
@@ -40,8 +43,12 @@ public class TestDatabase {
     User managedUser;
     Device managedDevice;
     User managed2;
+    User managed3;
     Device managed2Device;
     GeoFence adminGeofence;
+    Group adminDeviceGroup;
+    Group managedDeviceDeviceGroup;
+    Group managed2DeviceGroup;
     List<Position> managed2Positions;
     
     public TestDatabase(EntityManager em) {
@@ -56,6 +63,8 @@ public class TestDatabase {
         createManager();
         createManagedUser();
         createManaged2();
+        createManaged3();
+        createDeviceGroups();
         createDevices();
         createPositions();
         createGeofences();
@@ -110,7 +119,34 @@ public class TestDatabase {
         managedUser.setManagedUsers(Collections.singleton(managed2));
         em.persist(managed2);
     }
+    
+    //this user will have access to adminDevice - to check if he'll get proper groups
+    private void createManaged3() {
+        managed3 = new User();
+        managed3.setLogin("managed3@test.pl");
+        managed3.setEmail("managed3@test.pl");
+        managed3.setPassword(PasswordHashMethod.MD5.doHash("managed_3", salt));
+        em.persist(managed3);
+    }
 
+    private void createDeviceGroups() {
+        adminDeviceGroup = new Group();
+        adminDeviceGroup.setName("Admins group");
+        em.persist(adminDeviceGroup);
+        
+        managedDeviceDeviceGroup = new Group();
+        managedDeviceDeviceGroup.setName("ManagedDevice's Group, shared with managed2");
+        em.persist(managedDeviceDeviceGroup);
+        
+        managed2DeviceGroup = new Group();
+        managed2DeviceGroup.setName("Managed2Users, not shared");
+        em.persist(managed2DeviceGroup);
+        
+        admin.setGroups(Collections.singleton(adminDeviceGroup));
+        managedUser.setGroups(Collections.singleton(managedDeviceDeviceGroup));
+        managed2.setGroups(Stream.of(managedDeviceDeviceGroup, managed2DeviceGroup).collect(Collectors.toSet()));
+    }
+    
     private void createDevices() {
         managerDevice = new Device();
         managerDevice.setUniqueId("20");
@@ -122,20 +158,25 @@ public class TestDatabase {
         managedDevice.setUniqueId("10");
         managedDevice.setOwner(managedUser);
         managedDevice.setDeleted(true);
+        managedDevice.setGroup(managedDeviceDeviceGroup);
         managedUser.setDevices(Collections.singleton(managedDevice));
         em.persist(managedDevice);
         
         adminDevice = new Device();
         adminDevice.setUniqueId("30");
         adminDevice.setOwner(admin);
+        adminDevice.setGroup(adminDeviceGroup);
         admin.setDevices(Collections.singleton(adminDevice));
         em.persist(adminDevice);
         
         managed2Device = new Device();
         managed2Device.setUniqueId("5");
         managed2Device.setOwner(managed2);
+        managed2Device.setGroup(managed2DeviceGroup);
         managed2.setDevices(Collections.singleton(managed2Device));
         em.persist(managed2Device);
+        
+        managed3.setDevices(Collections.singleton(adminDevice));
     }
 
     private void createPositions() {

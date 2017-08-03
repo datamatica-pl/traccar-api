@@ -22,10 +22,7 @@ import java.util.stream.Stream;
 import javax.persistence.*;
 import org.junit.*;
 import static org.junit.Assert.*;
-import pl.datamatica.traccar.api.dtos.out.ListDto;
-import pl.datamatica.traccar.api.dtos.out.PositionDto;
 import pl.datamatica.traccar.api.providers.ProviderException.*;
-import pl.datamatica.traccar.api.responses.OkCachedResponse;
 import pl.datamatica.traccar.model.Position;
 
 public class PositionProviderTest {
@@ -91,7 +88,7 @@ public class PositionProviderTest {
         position.setTime(new Date());
         position.setServerTime(new Date());
         position.setValid(true);
-        position.setValidStatus(position.VALID_STATUS_ALARM);
+        position.setValidStatus(Position.VALID_STATUS_ALARM);
         position.setDevice(database.managerDevice);
         
         Position position2 = new Position();
@@ -100,7 +97,7 @@ public class PositionProviderTest {
         position2.setTime(new Date());
         position2.setServerTime(new Date());
         position2.setValid(true);
-        position2.setValidStatus(position.VALID_STATUS_CORRECT_POSITION);
+        position2.setValidStatus(Position.VALID_STATUS_CORRECT_POSITION);
         position2.setDevice(database.managerDevice);
         
         em.persist(position);

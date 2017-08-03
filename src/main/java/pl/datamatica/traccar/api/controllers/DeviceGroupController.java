@@ -20,8 +20,6 @@ import java.util.List;
 import java.util.stream.Collectors;
 import pl.datamatica.traccar.api.Application;
 import static pl.datamatica.traccar.api.controllers.ControllerBase.render;
-import pl.datamatica.traccar.api.dtos.MessageKeys;
-import pl.datamatica.traccar.api.dtos.in.AddDeviceDto;
 import pl.datamatica.traccar.api.dtos.in.AddDeviceGroupDto;
 import pl.datamatica.traccar.api.dtos.out.DeviceGroupDto;
 import pl.datamatica.traccar.api.dtos.out.ErrorDto;
@@ -83,27 +81,29 @@ public class DeviceGroupController extends ControllerBase {
     }
     
     DeviceGroupProvider provider;
-    RequestContext requestContext;
     
     public DeviceGroupController(RequestContext rc) {
         super(rc);
         provider = rc.getDeviceGroupProvider();
-        requestContext = rc;
     }
     
     public HttpResponse get() throws Exception {
-        List<DeviceGroupDto> dtos = provider.getAllAvailableGroups()
-                .map(g -> new DeviceGroupDto.Builder().deviceGroup(g).build())
-                .collect(Collectors.toList());
-                
-        return (HttpResponse)ok(dtos);
+        try{
+            List<DeviceGroupDto> dtos = provider.getAllAvailableGroups()
+                    .map(g -> new DeviceGroupDto.Builder().deviceGroup(g).build())
+                    .collect(Collectors.toList());     
+            return (HttpResponse)ok(dtos);
+        } catch(ProviderException e) {
+            return handle(e);
+        }
     }
     
     public HttpResponse get(long id) throws Exception {
-        Group gr = provider.getGroup(id);
-        DeviceGroupDto dto = new DeviceGroupDto.Builder().deviceGroup(gr).build();
-        
-        return (HttpResponse)ok(dto);
+        try{
+            return (HttpResponse)ok(new DeviceGroupDto.Builder().deviceGroup(provider.getSingleGroup(id)).build());
+        } catch(ProviderException e) {
+            return handle(e);
+        }
     }
     
     public HttpResponse post(AddDeviceGroupDto dto) throws Exception {
@@ -112,20 +112,15 @@ public class DeviceGroupController extends ControllerBase {
             return badRequest(validationErrors);
         
         Group newGroup = provider.createGroup(dto);
-        
         return created("devicegroups/"+newGroup.getId(), new DeviceGroupDto.Builder().deviceGroup(newGroup).build());
     }
     
     public HttpResponse put(long id, AddDeviceGroupDto dto) throws ProviderException {
         List<ErrorDto> validationErrors = AddDeviceGroupDto.validate(dto);
-        
-        try {
-            if (dto.getParentId() != null && !provider.checkCorrectnessOfGroupTree(id, dto.getParentId())) {
-                validationErrors.add(new ErrorDto(MessageKeys.ERR_DEVICE_GROUP_WOULD_CREATE_CYCLE));
-            }
-            if(!validationErrors.isEmpty())
+        if(!validationErrors.isEmpty())
                 return badRequest(validationErrors);
         
+        try {
             provider.updateGroup(id, dto);
             return ok("");
         } catch (ProviderException e) {

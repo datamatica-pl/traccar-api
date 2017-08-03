@@ -25,17 +25,19 @@ import pl.datamatica.traccar.model.Group;
  */
 public class DeviceGroupDto extends AddDeviceGroupDto {
     private final long id;
+    private final boolean owned;
     
-    private DeviceGroupDto(long id, String description, String name, Long parent) {
-        super(description, name, parent);
+    private DeviceGroupDto(long id, String description, String name, boolean owned) {
+        super(description, name);
         this.id = id;
+        this.owned = owned;
     }
     
     public static class Builder {
         private long id;
         private String description;
         private String name;
-        private Long parentId = null;
+        private boolean owned;
     
         public Builder() {
         }
@@ -55,8 +57,8 @@ public class DeviceGroupDto extends AddDeviceGroupDto {
             return this;
         }
         
-        public Builder parent(long value) {
-            this.parentId = value;
+        public Builder owned(boolean value) {
+            this.owned = value;
             return this;
         }
         
@@ -64,14 +66,12 @@ public class DeviceGroupDto extends AddDeviceGroupDto {
             this.id = group.getId();
             this.description = group.getDescription();
             this.name = group.getName();
-            if (group.getParent() != null) {
-                this.parentId = group.getParent().getId();
-            }
+            this.owned = group.isOwned();
             return this;
         }
         
         public DeviceGroupDto build() {
-            return new DeviceGroupDto(id, description, name, parentId);
+            return new DeviceGroupDto(id, description, name, owned);
         }
     }
 
