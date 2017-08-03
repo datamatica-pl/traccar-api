@@ -88,18 +88,22 @@ public class DeviceGroupController extends ControllerBase {
     }
     
     public HttpResponse get() throws Exception {
-        List<DeviceGroupDto> dtos = provider.getAllAvailableGroups()
-                .map(g -> new DeviceGroupDto.Builder().deviceGroup(g).build())
-                .collect(Collectors.toList());
-                
-        return (HttpResponse)ok(dtos);
+        try{
+            List<DeviceGroupDto> dtos = provider.getAllAvailableGroups()
+                    .map(g -> new DeviceGroupDto.Builder().deviceGroup(g).build())
+                    .collect(Collectors.toList());     
+            return (HttpResponse)ok(dtos);
+        } catch(ProviderException e) {
+            return handle(e);
+        }
     }
     
     public HttpResponse get(long id) throws Exception {
-        Group gr = provider.getGroup(id);
-        DeviceGroupDto dto = new DeviceGroupDto.Builder().deviceGroup(gr).build();
-        
-        return (HttpResponse)ok(dto);
+        try{
+            return (HttpResponse)ok(new DeviceGroupDto.Builder().deviceGroup(provider.getSingleGroup(id)).build());
+        } catch(ProviderException e) {
+            return handle(e);
+        }
     }
     
     public HttpResponse post(AddDeviceGroupDto dto) throws Exception {
@@ -108,7 +112,6 @@ public class DeviceGroupController extends ControllerBase {
             return badRequest(validationErrors);
         
         Group newGroup = provider.createGroup(dto);
-        
         return created("devicegroups/"+newGroup.getId(), new DeviceGroupDto.Builder().deviceGroup(newGroup).build());
     }
     

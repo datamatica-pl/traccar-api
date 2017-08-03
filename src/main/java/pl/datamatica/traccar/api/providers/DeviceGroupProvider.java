@@ -46,6 +46,20 @@ public class DeviceGroupProvider extends ProviderBase {
                 g -> requestUser.getAdmin() || requestUser.getGroups().contains(g));
     }
     
+    public Group getSingleGroup(long id)  throws ProviderException {
+        List<Group> allAvailable = getAllAvailableGroups().collect(Collectors.toList());
+        
+        List<Group> group = allAvailable.stream().filter(g -> g.getId() == id).collect(Collectors.toList());
+        if (group.size() == 1) {
+            return group.get(0);
+        }
+        
+        //This method should throw exception, otherwise proper group would be found earlier.
+        get(Group.class, id, g -> true);
+        
+        throw new ProviderException(ProviderException.Type.ACCESS_DENIED);
+    }
+    
     public Stream<Group> getAllAvailableGroups() throws ProviderException {
         Set<Group> groups = devicesProvider.getAllAvailableDevices()
                 .filter(d -> d.getGroup() != null)
