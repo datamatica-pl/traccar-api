@@ -43,7 +43,7 @@ public class PositionProvider extends ProviderBase {
         return get(Position.class, id, this::isVisible);
     }
     
-    // If maxCount == 0, then there is now upper limit for numer of positions
+    // If maxCount == 0, then there is no upper limit for number of positions
     public Stream<Position> getAllAvailablePositions(Device device, Date minDate,
             Date maxDate, int maxCount) {
         Date lastAvailPos = device.getLastAvailablePositionDate(new Date());

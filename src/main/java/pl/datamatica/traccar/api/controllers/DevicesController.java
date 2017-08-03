@@ -298,8 +298,7 @@ public class DevicesController extends ControllerBase {
                 return badRequest(qp.errors);
             
             List<Position> pos = positions
-                    .getAllAvailablePositions(device, qp.minDate != null ? qp.minDate : minDate, 
-                            qp.maxDate != null ? qp.maxDate : null, 
+                    .getAllAvailablePositions(device, qp.minDate, qp.maxDate, 
                             qp.getAll ? 0 : MAX_RESULT_COUNT+1)
                     .collect(Collectors.toList());
             
@@ -309,7 +308,7 @@ public class DevicesController extends ControllerBase {
                     pos.stream()
                         .map(p -> new PositionDto.Builder().position(p).build())
                         .collect(Collectors.toList()),
-                    qp.getAll ? Integer.MAX_VALUE : MAX_RESULT_COUNT+1));
+                    qp.getAll ? Integer.MAX_VALUE : MAX_RESULT_COUNT));
         } catch (ProviderException ex) {
             return handle(ex);
         }
