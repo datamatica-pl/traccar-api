@@ -20,7 +20,6 @@ import java.util.List;
 import java.util.stream.Collectors;
 import pl.datamatica.traccar.api.Application;
 import static pl.datamatica.traccar.api.controllers.ControllerBase.render;
-import pl.datamatica.traccar.api.dtos.MessageKeys;
 import pl.datamatica.traccar.api.dtos.in.AddDeviceGroupDto;
 import pl.datamatica.traccar.api.dtos.out.DeviceGroupDto;
 import pl.datamatica.traccar.api.dtos.out.ErrorDto;

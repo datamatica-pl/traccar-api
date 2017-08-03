@@ -66,6 +66,7 @@ public class RequestContext implements AutoCloseable {
     private PositionProvider positions;
     private NotificationSettingsProvider notificationSettings;
     private SessionProvider sessionProvider;
+    private DeviceGroupProvider deviceGroupProvider;
     
     private Image emptyMarker;
     
@@ -184,7 +185,14 @@ public class RequestContext implements AutoCloseable {
     }
     
     public DeviceGroupProvider getDeviceGroupProvider() {
-        return new DeviceGroupProvider(em, user);
+        if (deviceGroupProvider == null) {
+            deviceGroupProvider = new DeviceGroupProvider(em, user);
+            if (devices == null) {
+                devices = new DeviceProvider(em, user, getImeiProvider(), deviceGroupProvider);
+            }
+            deviceGroupProvider.setDeviceProvider(devices);
+        }
+        return deviceGroupProvider;
     }
     
     public String getApiRoot() {

@@ -18,6 +18,8 @@ package pl.datamatica.traccar.api.providers;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import javax.persistence.EntityManager;
 import javax.persistence.Query;
@@ -28,9 +30,15 @@ import pl.datamatica.traccar.model.User;
 public class DeviceGroupProvider extends ProviderBase {
     private final User requestUser;
     
+    private DeviceProvider devicesProvider;
+    
     public DeviceGroupProvider(EntityManager em, User requestUser) {
         super(em);
         this.requestUser = requestUser;
+    }
+    
+    public void setDeviceProvider(DeviceProvider devices) {
+        devicesProvider = devices;
     }
     
     public Group getGroup(long id) throws ProviderException {
@@ -39,13 +47,17 @@ public class DeviceGroupProvider extends ProviderBase {
     }
     
     public Stream<Group> getAllAvailableGroups() throws ProviderException {
+        Set<Group> groups = devicesProvider.getAllAvailableDevices().map(d -> d.getGroup()).map(g -> {g.setOwned(false); return g;}).collect(Collectors.toSet());
+        
         if (requestUser.getAdmin()) {
             Query query = em.createQuery("SELECT g FROM Group g");
             return query.getResultList().stream();
         }
-        return requestUser.getGroups().stream();
+        Set<Group> result = requestUser.getGroups().stream().map(g -> {g.setOwned(false); return g;}).collect(Collectors.toSet());
+        result.addAll(groups);
+        return result.stream();
     }
-        
+          
     public Group createGroup(AddDeviceGroupDto dto) throws ProviderException {
         Group group = new Group();
         editGroupWithDto(group, dto);
