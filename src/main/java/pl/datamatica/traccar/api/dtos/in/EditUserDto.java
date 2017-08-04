@@ -48,6 +48,7 @@ public class EditUserDto {
             errors.add(new ErrorDto(ERR_USER_NOTIFICATION_EVENTS_NOT_PROVIDED));
         return errors;
     }
+    
     protected final String email;
     protected final String companyName;
     protected final String firstName;

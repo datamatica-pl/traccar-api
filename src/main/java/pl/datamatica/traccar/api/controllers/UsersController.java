@@ -56,6 +56,12 @@ public class UsersController extends ControllerBase {
                 return render(uc.post(userDto), res);
             }, gson::toJson);
             
+            Spark.post(rootUrl()+"/register", (req, res) -> {
+                UsersController uc = createController(req);
+                RegisterUserDto userDto = gson.fromJson(req.body(), RegisterUserDto.class);
+                return render(uc.post(userDto), res);
+            }, gson::toJson);
+            
             Spark.put(rootUrl()+"/:id", (req, res) -> {
                 UsersController uc = createController(req);
                 EditUserDto dto = gson.fromJson(req.body(), EditUserDto.class);
@@ -95,7 +101,6 @@ public class UsersController extends ControllerBase {
         public String rootUrl() {
             return super.rootUrl() + "/users";
         }
-
     }
     
     private UserProvider up;
@@ -146,12 +151,16 @@ public class UsersController extends ControllerBase {
     }
     
     public HttpResponse post(RegisterUserDto userDto) throws ProviderException {
+        return badRequest();
+    }
+
+    public HttpResponse register(RegisterUserDto userDto) throws ProviderException {
         List<ErrorDto> errors = RegisterUserDto.validate(userDto);
         if(!errors.isEmpty())
             return badRequest(errors);
         
         try {
-            User user = up.createUser(userDto.getEmail().trim(), 
+            User user = up.registerUser(userDto.getEmail().trim(), 
                     userDto.getPassword(), userDto.isCheckMarketing());
             requestContext.setUser(user);
             requestContext.getDeviceProvider().createDevice(userDto.getImei());
@@ -169,7 +178,7 @@ public class UsersController extends ControllerBase {
             throw ex;
         }
     }
-
+    
     private void sendActivationToken(User user) {
         String token = user.getEmailValidationToken();
         if(token != null) {

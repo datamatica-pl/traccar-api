@@ -85,7 +85,7 @@ public class UserProvider extends ProviderBase {
         return get(User.class, id, this::isVisible);
     }
 
-    public User createUser(String email, String password, boolean checkMarketing) 
+    public User registerUser(String email, String password, boolean checkMarketing) 
             throws ProviderException {
         User existing = getUserByLogin(email);
         if(existing != null)

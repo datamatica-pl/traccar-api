@@ -113,7 +113,7 @@ public class UsersControllerTest {
     
     @Test
     public void post_ok() throws ProviderException {
-        Mockito.when(provider.createUser(userDto.getEmail(), userDto.getPassword(), userDto.isCheckMarketing()))
+        Mockito.when(provider.registerUser(userDto.getEmail(), userDto.getPassword(), userDto.isCheckMarketing()))
                 .thenReturn(new User());
         
         HttpResponse response = controller.post(userDto);
@@ -133,7 +133,7 @@ public class UsersControllerTest {
     
     @Test
     public void post_conflict() throws ProviderException {
-        Mockito.when(provider.createUser(userDto.getEmail(), userDto.getPassword(), userDto.isCheckMarketing()))
+        Mockito.when(provider.registerUser(userDto.getEmail(), userDto.getPassword(), userDto.isCheckMarketing()))
                 .thenThrow(new ProviderException(Type.USER_ALREADY_EXISTS));
 
         HttpResponse response = controller.post(userDto);

@@ -56,7 +56,7 @@ public class UserProviderTest {
         
         appSettings.setSalt(salt);
         appSettings.setDefaultHashImplementation(PasswordHashMethod.MD5);
-        User user = provider.createUser(email, password, marketing);
+        User user = provider.registerUser(email, password, marketing);
         em.flush();
         em.refresh(user);
         
@@ -73,7 +73,7 @@ public class UserProviderTest {
         appSettings.setSalt("asdf");
         appSettings.setDefaultHashImplementation(PasswordHashMethod.MD5);
         try {
-            provider.createUser("admin@admin.pl", "qwe85", true);
+            provider.registerUser("admin@admin.pl", "qwe85", true);
         } catch(ProviderException e) {
             assertEquals(Type.USER_ALREADY_EXISTS, e.getType());
             return;

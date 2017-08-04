@@ -102,6 +102,7 @@ public class MessageKeys {
     public static final String ERR_USER_READONLY_NOT_PROVIDED = "err_user_readonly_not_provided";
     public static final String ERR_USER_PASSWORD_NOT_PROVIDED = "err_user_password_not_provided";
     public static final String ERR_USER_NOTIFICATION_EVENTS_NOT_PROVIDED = "err_user_notification_events_not_provided";
+    public static final String ERR_USER_LOGIN_NOT_PROVIDED = "err_user_login_not_provided";
     
     public static final String ERR_DEVICE_GROUP_NAME_NOT_PROVIDED = "err_device_group_name_not_provided";
     public static final String ERR_DEVICE_GROUP_WOULD_CREATE_CYCLE = "err_device_group_would_create_cycle";
