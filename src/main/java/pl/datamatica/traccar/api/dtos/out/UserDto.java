@@ -21,6 +21,7 @@ import pl.datamatica.traccar.api.dtos.in.EditUserDto;
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
+import pl.datamatica.traccar.model.Device;
 import pl.datamatica.traccar.model.DeviceEventType;
 import pl.datamatica.traccar.model.User;
 
@@ -28,6 +29,8 @@ public class UserDto extends EditUserDto {
     private final Long id;
     private final String login;
     private final Long managedById;
+    private final UserSettingsDto settings;
+    private final boolean premium;
 
     public static class Builder {
 
@@ -47,6 +50,8 @@ public class UserDto extends EditUserDto {
         private boolean blocked;
         private boolean readOnly;
         private List<String> notificationEvents = new ArrayList<>();
+        private UserSettingsDto settings;
+        private boolean premium;
 
         public Builder id(final long value) {
             this.id = value;
@@ -151,13 +156,27 @@ public class UserDto extends EditUserDto {
             this.archive = user.isArchive();
             this.blocked = user.isBlocked();
             this.readOnly = user.getReadOnly();
+            
+            this.premium = false;
+            for(Device d : user.getDevices())
+                if(d.isValid(new Date())) {
+                    this.premium = true;
+                    break;
+                }
+            return this;
+        }
+        
+        public Builder userWithSettings(final User user) {
+            user(user);
+            settings = new UserSettingsDto.Builder().userSettings(user.getUserSettings()).build();
             return this;
         }
 
         public UserDto build() {
             return new UserDto(id, login, email, companyName, firstName, lastName, 
                     phoneNumber, expirationDate, maxNumOfDevices, managedById, 
-                    manager, admin, archive, blocked, notificationEvents, readOnly);
+                    manager, admin, archive, blocked, notificationEvents, readOnly,
+                    settings, premium);
         }
     }
     
@@ -176,13 +195,17 @@ public class UserDto extends EditUserDto {
             final boolean archive, 
             final boolean blocked,
             final List<String> notificationEvents,
-            final boolean readOnly) {
+            final boolean readOnly,
+            final UserSettingsDto settings,
+            final boolean premium) {
         super(email, companyName, firstName, lastName, phoneNumber,
                 expirationDate, maxNumOfDevices, manager, admin, archive,
                 blocked, PASSWORD_PLACEHOLDER, notificationEvents, readOnly);
         this.id = id;
         this.login = login;
         this.managedById = managedById;
+        this.settings = settings;
+        this.premium = premium;
     }
     
     public long getId() {
@@ -196,6 +219,10 @@ public class UserDto extends EditUserDto {
 
     public Long getManagedById() {
         return managedById;
+    }
+    
+    public boolean isPremium() {
+        return premium;
     }
 
 }

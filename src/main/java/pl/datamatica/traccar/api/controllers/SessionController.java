@@ -71,7 +71,7 @@ public class SessionController extends ControllerBase {
     }
     
     public HttpResponse getUser() {
-        return ok(new UserDto.Builder().user(requestContext.getUser()).build());
+        return ok(new UserDto.Builder().userWithSettings(requestContext.getUser()).build());
     }
     
     public HttpResponse putNotificationToken(NotificationTokenDto tokenDto) {
