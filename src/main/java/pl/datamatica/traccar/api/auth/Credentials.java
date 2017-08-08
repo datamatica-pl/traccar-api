@@ -19,7 +19,7 @@ package pl.datamatica.traccar.api.auth;
 import java.nio.charset.Charset;
 import java.util.Base64;
 import java.util.Objects;
-import pl.datamatica.traccar.api.auth.AuthenticationException.ErrorType;
+import pl.datamatica.traccar.api.dtos.MessageKeys;
 
 public class Credentials {
     private static final String BASIC_AUTH_SEPARATOR = ":";
@@ -50,11 +50,11 @@ public class Credentials {
         try {
             decoded = new String(Base64.getDecoder().decode(credentials), charset);
         } catch(IllegalArgumentException e) {
-            throw new AuthenticationException(ErrorType.PARAMETER_NOT_BASE64);
+            throw new AuthenticationException(MessageKeys.ERR_AUTH_PARAMETER_NOT_BASE64);
         }
         int firstSeparator = decoded.indexOf(BASIC_AUTH_SEPARATOR);
         if(firstSeparator == -1)
-            throw new AuthenticationException(ErrorType.NO_COLON_IN_PARAMETER);
+            throw new AuthenticationException(MessageKeys.ERR_AUTH_NO_COLON_IN_PARAMETER);
         String login = decoded.substring(0, firstSeparator);
         String password = decoded.substring(firstSeparator + 1);
         return new Credentials(login, password);

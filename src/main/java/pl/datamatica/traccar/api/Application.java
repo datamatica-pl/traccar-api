@@ -100,6 +100,12 @@ public class Application implements spark.servlet.SparkApplication {
             }
             req.attribute(REQUEST_CONTEXT_KEY, rc);
             baf.handle(req, res);
+            if (!BasicAuthFilter.shouldPassErrorsToController(req)) {
+                if (req.attribute(RequestContext.REQUEST_FIELD_IS_AUTH) != null
+                        && (Boolean)req.attribute(RequestContext.REQUEST_FIELD_IS_AUTH) == false) {
+                    baf.unauthorized(res, req.attribute(RequestContext.REQUEST_FIELD_ERROR_DTO));
+                }
+            }
             //uncomment for debug
             //res.header("Access-Control-Allow-Origin", "http://127.0.0.1:8888");
             res.header("Cache-Control", "max-age=10");

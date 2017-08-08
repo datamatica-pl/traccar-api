@@ -18,41 +18,9 @@ package pl.datamatica.traccar.api.auth;
 
 public class AuthenticationException extends IllegalArgumentException {
 
-    public static enum ErrorType {
-        HEADER_FORMAT("Too many words in authentication header"),
-        INVALID_SCHEME("Invalid scheme name"),
-        PARAMETER_NOT_BASE64("Authentication parameter not in base 64"),
-        NO_PASSWORD("Password not found in parameter"),
-        NO_CREDENTIALS("No credentials were included in request"),
-        NO_SUCH_USER("Invalid username or password"), 
-        NO_COLON_IN_PARAMETER("Authentication parameter doesn't contain ':'");
-        
-        private String msg;
-        ErrorType(String msg) {
-            this.msg = msg;
-        }
-
-        public String getMessage() {
-            return msg;
-        }
-        
+    public AuthenticationException(String err) {
+        super(err);
     }
     
-    ErrorType type;
-    
-    public AuthenticationException(ErrorType type) {
-        super();
-        this.type = type;
-    }
-
-    public AuthenticationException(ErrorType t, Throwable cause) {
-        super(cause);
-        this.type = t;
-    }
-
-    @Override
-    public String getMessage() {
-        return type.getMessage();
-    }
     
 }

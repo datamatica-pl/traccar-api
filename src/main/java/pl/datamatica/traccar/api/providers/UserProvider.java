@@ -26,7 +26,7 @@ import javax.persistence.NoResultException;
 import javax.persistence.TypedQuery;
 import org.slf4j.Logger;
 import pl.datamatica.traccar.api.auth.AuthenticationException;
-import pl.datamatica.traccar.api.auth.AuthenticationException.ErrorType;
+import pl.datamatica.traccar.api.dtos.MessageKeys;
 import pl.datamatica.traccar.api.dtos.in.EditUserDto;
 import pl.datamatica.traccar.api.dtos.out.UserDto;
 import pl.datamatica.traccar.api.providers.ProviderException.Type;
@@ -48,18 +48,18 @@ public class UserProvider extends ProviderBase {
     
     public User authenticateUser(String email, String password) throws AuthenticationException {
         if(email == null || email.isEmpty())
-            throw new AuthenticationException(ErrorType.NO_SUCH_USER);
+            throw new AuthenticationException(MessageKeys.ERR_AUTH_NO_SUCH_USER);
         if(password == null || password.isEmpty())
-            throw new AuthenticationException(ErrorType.NO_PASSWORD);
+            throw new AuthenticationException(MessageKeys.ERR_AUTH_NO_PASSWORD);
         
         User user = getUserByLogin(email);
         if(user == null)
-            throw new AuthenticationException(ErrorType.NO_SUCH_USER);
+            throw new AuthenticationException(MessageKeys.ERR_AUTH_NO_SUCH_USER);
         if(user.getPasswordHashMethod().doHash(password, appSettings.getSalt()).equals(user.getPassword())) {
             requestUser = user;
             return user;
         }
-        throw new AuthenticationException(ErrorType.NO_SUCH_USER);
+        throw new AuthenticationException(MessageKeys.ERR_AUTH_NO_SUCH_USER);
     }
     
     public User authenticateUser(long id) throws ProviderException, 
