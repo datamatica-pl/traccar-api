@@ -54,4 +54,8 @@ public class AddUserDto extends EditUserDto {
 
         return errors;
     }
+
+    public String getLogin() {
+        return login;
+    }
 }

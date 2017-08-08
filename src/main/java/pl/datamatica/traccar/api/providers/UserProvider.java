@@ -27,6 +27,7 @@ import javax.persistence.TypedQuery;
 import org.slf4j.Logger;
 import pl.datamatica.traccar.api.auth.AuthenticationException;
 import pl.datamatica.traccar.api.dtos.MessageKeys;
+import pl.datamatica.traccar.api.dtos.in.AddUserDto;
 import pl.datamatica.traccar.api.dtos.in.EditUserDto;
 import pl.datamatica.traccar.api.dtos.out.UserDto;
 import pl.datamatica.traccar.api.providers.ProviderException.Type;
@@ -84,15 +85,20 @@ public class UserProvider extends ProviderBase {
     public User getUser(long id) throws ProviderException {
         return get(User.class, id, this::isVisible);
     }
+    
+    public User createUser(AddUserDto dto) throws ProviderException {
+        User user = prepareNewUser(dto.getLogin(), dto.getPassword());
+        
+        editUser(user, dto);
+        user.setManagedBy(requestUser);
+        
+        em.persist(user);
+        return user;
+    }
 
     public User registerUser(String email, String password, boolean checkMarketing) 
             throws ProviderException {
-        User existing = getUserByLogin(email);
-        if(existing != null)
-            throw new ProviderException(Type.USER_ALREADY_EXISTS);
-        
-        String hashedPassword = appSettings.getDefaultHashImplementation().doHash(password, appSettings.getSalt());
-        User user = new User(email, hashedPassword);
+        User user = prepareNewUser(email, password);
         user.setEmail(email);
         user.setManager(true);
         user.setMarketingCheck(checkMarketing);
@@ -107,31 +113,46 @@ public class UserProvider extends ProviderBase {
         return user;
     }
     
+    private User prepareNewUser(String login, String password) throws ProviderException {
+        User existing = getUserByLogin(login);
+        if(existing != null)
+            throw new ProviderException(Type.USER_ALREADY_EXISTS);
+        
+        String hashedPassword = appSettings.getDefaultHashImplementation().doHash(password, appSettings.getSalt());
+        return new User(login, hashedPassword);
+    }
+    
     public void updateUser(long id, EditUserDto dto) throws ProviderException {
         User u = getUser(id);
-        u.setAdmin(dto.isAdmin());
-        u.setArchive(dto.isArchive());
-        u.setBlocked(dto.isBlocked());
-        u.setCompanyName(dto.getCompanyName());
-        u.setEmail(dto.getEmail());
-        u.setExpirationDate(dto.getExpirationDate());
-        u.setFirstName(dto.getFirstName());
-        u.setLastName(dto.getLastName());
-        u.setManager(dto.isManager());
-        u.setMaxNumOfDevices(dto.getMaxNumOfDevices());
+
+        editUser(u, dto);
+        
+        if(!EditUserDto.PASSWORD_PLACEHOLDER.equals(dto.getPassword()))
+            u.setPassword(u.getPasswordHashMethod()
+                    .doHash(dto.getPassword(), appSettings.getSalt()));
+        em.persist(u);
+        
+        logger.info("{} updated user {}", requestUser.getLogin(), u.getLogin());
+    }
+    
+    private void editUser(User user, EditUserDto dto) {
+        user.setAdmin(dto.isAdmin());
+        user.setArchive(dto.isArchive());
+        user.setBlocked(dto.isBlocked());
+        user.setCompanyName(dto.getCompanyName());
+        user.setEmail(dto.getEmail());
+        user.setExpirationDate(dto.getExpirationDate());
+        user.setFirstName(dto.getFirstName());
+        user.setLastName(dto.getLastName());
+        user.setManager(dto.isManager());
+        user.setMaxNumOfDevices(dto.getMaxNumOfDevices());
         Set<DeviceEventType> notificationEvents = new HashSet<>();
         for(String ev : dto.getNotificationEvents()) {
             notificationEvents.add(DeviceEventType.valueOf(ev));
         }
-        u.setNotificationEvents(notificationEvents);
-        if(!EditUserDto.PASSWORD_PLACEHOLDER.equals(dto.getPassword()))
-            u.setPassword(u.getPasswordHashMethod()
-                    .doHash(dto.getPassword(), appSettings.getSalt()));
-        u.setPhoneNumber(dto.getPhoneNumber());
-        u.setReadOnly(dto.isReadOnly());
-        em.persist(u);
-        
-        logger.info("{} updated user {}", requestUser.getLogin(), u.getLogin());
+        user.setNotificationEvents(notificationEvents);
+        user.setPhoneNumber(dto.getPhoneNumber());
+        user.setReadOnly(dto.isReadOnly());
     }
 
     private String generateToken(String colName) {

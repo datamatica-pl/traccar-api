@@ -27,7 +27,6 @@ import pl.datamatica.traccar.api.Application;
 import pl.datamatica.traccar.api.Context;
 import pl.datamatica.traccar.api.TraccarConfig;
 import spark.*;
-import static pl.datamatica.traccar.api.auth.AuthenticationException.*;
 import pl.datamatica.traccar.api.controllers.RequestContext;
 import pl.datamatica.traccar.api.dtos.MessageKeys;
 import pl.datamatica.traccar.api.dtos.out.ErrorDto;
@@ -141,9 +140,7 @@ public class BasicAuthFilter {
     }
     
     private static boolean shouldAllowUnauthorized(Request request) {
-        return (request.pathInfo().matches("/v[0-9]+/users") 
-                && request.requestMethod().equalsIgnoreCase("post"))
-                || (request.pathInfo().matches("/v[0-9]+/users/activate/.*")
+        return (request.pathInfo().matches("/v[0-9]+/users/activate/.*")
                 && request.requestMethod().equalsIgnoreCase("get"))
                 || (request.pathInfo().matches("/v[0-9]+/users/resetreq")
                 && request.requestMethod().equalsIgnoreCase("post"))

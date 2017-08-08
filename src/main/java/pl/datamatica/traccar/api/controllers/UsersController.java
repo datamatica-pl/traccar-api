@@ -21,6 +21,7 @@ import java.util.stream.Collectors;
 import pl.datamatica.traccar.api.Application;
 import static pl.datamatica.traccar.api.controllers.ControllerBase.render;
 import pl.datamatica.traccar.api.dtos.MessageKeys;
+import pl.datamatica.traccar.api.dtos.in.AddUserDto;
 import pl.datamatica.traccar.api.dtos.in.EditUserDto;
 import pl.datamatica.traccar.api.dtos.in.RegisterUserDto;
 import pl.datamatica.traccar.api.dtos.in.ResetPassReqDto;
@@ -52,14 +53,19 @@ public class UsersController extends ControllerBase {
             
             Spark.post(rootUrl(), (req, res) -> {
                 UsersController uc = createController(req);
+                if (req.attribute(RequestContext.REQUEST_FIELD_IS_AUTH) != null 
+                        && (Boolean)req.attribute(RequestContext.REQUEST_FIELD_IS_AUTH) == true) {
+                    AddUserDto addDto = gson.fromJson(req.body(), AddUserDto.class);
+                    return render(uc.post(addDto), res);
+                }
                 RegisterUserDto userDto = gson.fromJson(req.body(), RegisterUserDto.class);
-                return render(uc.post(userDto), res);
+                return render(uc.register(userDto), res);
             }, gson::toJson);
             
             Spark.post(rootUrl()+"/register", (req, res) -> {
                 UsersController uc = createController(req);
                 RegisterUserDto userDto = gson.fromJson(req.body(), RegisterUserDto.class);
-                return render(uc.post(userDto), res);
+                return render(uc.register(userDto), res);
             }, gson::toJson);
             
             Spark.put(rootUrl()+"/:id", (req, res) -> {
@@ -150,8 +156,17 @@ public class UsersController extends ControllerBase {
         }
     }
     
-    public HttpResponse post(RegisterUserDto userDto) throws ProviderException {
-        return badRequest();
+    public HttpResponse post(AddUserDto userDto) throws ProviderException {
+        List<ErrorDto> errors = AddUserDto.validate(userDto);
+        if(!errors.isEmpty())
+            return badRequest(errors);
+        
+        try {
+            User user = up.createUser(userDto);
+            return created("users/"+user.getId(), new UserDto.Builder().user(user).build());
+        } catch (ProviderException e) {
+            return handle(e);
+        }
     }
 
     public HttpResponse register(RegisterUserDto userDto) throws ProviderException {
