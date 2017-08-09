@@ -130,7 +130,7 @@ public class BasicAuthFilter {
             request.attribute(RequestContext.REQUEST_FIELD_ERROR_DTO, new ErrorDto(e.getMessage()));
             return;
         }
-        // I got here that mean
+        // I got here that mean it's success
         request.attribute(RequestContext.REQUEST_FIELD_IS_AUTH, true);
     }
 
@@ -168,7 +168,7 @@ public class BasicAuthFilter {
             throws AuthenticationException {
         User user;
         if(credentials == null)
-            throw new IllegalArgumentException("Credentials can't be null");
+            throw new IllegalArgumentException(MessageKeys.ERR_AUTH_NO_CREDENTIALS);
         if(credentials.getPassword().isEmpty())
             throw new AuthenticationException(MessageKeys.ERR_AUTH_NO_PASSWORD);
         user = up.authenticateUser(credentials.getLogin(), credentials.getPassword());
@@ -191,7 +191,7 @@ public class BasicAuthFilter {
     
     private String checkAndRemoveScheme(String authInfo) throws IllegalArgumentException {
         if(authInfo == null)
-            throw new IllegalArgumentException("authInfo can't be null");
+            throw new IllegalArgumentException(MessageKeys.ERR_AUTH_NO_CREDENTIALS);
         String[] authInfoParts = authInfo.split(AUTH_INFO_SEPARATOR);
         if(authInfoParts.length != 2 || authInfoParts[1].isEmpty())
             throw new AuthenticationException(MessageKeys.ERR_AUTH_INVALID_HEADER_FORMAT);
