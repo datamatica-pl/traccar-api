@@ -22,10 +22,12 @@ import pl.datamatica.traccar.api.Application;
 import static pl.datamatica.traccar.api.controllers.ControllerBase.render;
 import pl.datamatica.traccar.api.dtos.MessageKeys;
 import pl.datamatica.traccar.api.dtos.in.EditUserDto;
+import pl.datamatica.traccar.api.dtos.in.EditUserSettingsDto;
 import pl.datamatica.traccar.api.dtos.in.RegisterUserDto;
 import pl.datamatica.traccar.api.dtos.in.ResetPassReqDto;
 import pl.datamatica.traccar.api.dtos.out.ErrorDto;
 import pl.datamatica.traccar.api.dtos.out.UserDto;
+import pl.datamatica.traccar.api.dtos.out.UserSettingsDto;
 import pl.datamatica.traccar.api.providers.MailSender;
 import pl.datamatica.traccar.api.providers.ProviderException;
 import pl.datamatica.traccar.api.providers.UserProvider;
@@ -82,6 +84,13 @@ public class UsersController extends ControllerBase {
                 UsersController uc = createController(req);
                 ResetPassReqDto dto = gson.fromJson(req.body(), ResetPassReqDto.class);
                 return render(uc.resendLink(dto), res);
+            });
+            
+            Spark.put(rootUrl()+"/:id/settings", (req, res) -> {
+                UsersController uc = createController(req);
+                long id = Long.parseLong(req.params(":id"));
+                UserSettingsDto dto = gson.fromJson(req.body(), UserSettingsDto.class);
+                return render(uc.updateUserSettings(id, dto), res);
             });
         }
 
@@ -200,6 +209,20 @@ public class UsersController extends ControllerBase {
         return "<html><head></head><body>"
                 + "<h1>Nowe hasło zostało wysłane na adres e-mail</h1>"
                 + "</body></html>";
+    }
+    
+    public HttpResponse updateUserSettings(long id, EditUserSettingsDto dto) throws ProviderException {
+        if(id != requestContext.getUser().getId())
+            return forbidden();
+        List<ErrorDto> errors = EditUserSettingsDto.validate(dto);
+        if(!errors.isEmpty())
+            return badRequest(errors);
+        try {
+            up.updateUserSettings(id, dto);
+        } catch(ProviderException e) {
+            return handle(e);
+        }
+        return ok("");
     }
     
     private static String emailConfirmationContent(String url) {
