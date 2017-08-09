@@ -148,6 +148,8 @@ public class BasicAuthFilter {
                 && request.requestMethod().equalsIgnoreCase("get"))
                 || request.requestMethod().equalsIgnoreCase("options")
                 || (request.pathInfo().matches("/v[0-9]+/users/resend")
+                && request.requestMethod().equalsIgnoreCase("post"))
+                || (request.pathInfo().matches("/v[0-9]+/users/register")
                 && request.requestMethod().equalsIgnoreCase("post"));
     }
 
