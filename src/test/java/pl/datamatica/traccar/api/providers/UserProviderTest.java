@@ -81,6 +81,26 @@ public class UserProviderTest {
         fail();
     }
     
+    @Test 
+    public void removeUser_success() throws Exception {
+
+        long removedId = database.managed2.getId();
+        
+        provider.authenticateUser(database.admin.getId());
+        provider.removeUser(database.managed2.getId());
+
+        em.flush();
+        
+        UserProvider provider2 = new UserProvider(em, appSettings);
+        try {
+            User user1 = provider2.getUser(removedId);
+        } catch (ProviderException pe) {
+            //success
+            return;
+        }
+        fail();
+    }
+    
     @After
     public void testCleanup() {
         em.getTransaction().rollback();

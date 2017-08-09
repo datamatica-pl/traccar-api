@@ -16,23 +16,29 @@
  */
 package pl.datamatica.traccar.api.providers;
 
+import java.util.Collections;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Random;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Stream;
 import javax.persistence.EntityManager;
 import javax.persistence.NoResultException;
+import javax.persistence.Query;
 import javax.persistence.TypedQuery;
 import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import pl.datamatica.traccar.api.auth.AuthenticationException;
 import pl.datamatica.traccar.api.dtos.MessageKeys;
 import pl.datamatica.traccar.api.dtos.in.AddUserDto;
 import pl.datamatica.traccar.api.dtos.in.EditUserDto;
-import pl.datamatica.traccar.api.dtos.out.UserDto;
 import pl.datamatica.traccar.api.providers.ProviderException.Type;
 import pl.datamatica.traccar.model.ApplicationSettings;
+import pl.datamatica.traccar.model.Device;
 import pl.datamatica.traccar.model.DeviceEventType;
+import pl.datamatica.traccar.model.GeoFence;
+import pl.datamatica.traccar.model.Group;
 import pl.datamatica.traccar.model.User;
 import pl.datamatica.traccar.model.UserSettings;
 
@@ -104,8 +110,6 @@ public class UserProvider extends ProviderBase {
         user.setMarketingCheck(checkMarketing);
         user.setEmailValid(false);
         user.setBlocked(true);
-        user.setPasswordHashMethod(appSettings.getDefaultHashImplementation());
-        user.setUserSettings(new UserSettings());
         user.setEmailValidationToken(generateToken("emailValidationToken"));
         em.persist(user);
         
@@ -119,7 +123,10 @@ public class UserProvider extends ProviderBase {
             throw new ProviderException(Type.USER_ALREADY_EXISTS);
         
         String hashedPassword = appSettings.getDefaultHashImplementation().doHash(password, appSettings.getSalt());
-        return new User(login, hashedPassword);
+        User user = new User(login, hashedPassword);
+        user.setPasswordHashMethod(appSettings.getDefaultHashImplementation());
+        user.setUserSettings(new UserSettings());
+        return user;
     }
     
     public void updateUser(long id, EditUserDto dto) throws ProviderException {
@@ -134,6 +141,131 @@ public class UserProvider extends ProviderBase {
         
         logger.info("{} updated user {}", requestUser.getLogin(), u.getLogin());
     }
+    
+    // REMOVING USER - START //
+    
+    public void removeUser(long id) throws Exception {
+        if (requestUser.getId() == id) 
+            throw new ProviderRemovingException(Type.DELETING_ITSELF);
+        if (requestUser.getManagedBy() != null && requestUser.getManagedBy().getId() == id) 
+            throw new ProviderRemovingException(Type.ACCESS_DENIED);
+        
+        User user;
+        try {
+            user = getUser(id);
+        } catch (ProviderException pe) {
+            if (pe.getType() == Type.ACCESS_DENIED)
+                throw new ProviderRemovingException(Type.ACCESS_DENIED);
+            if (pe.getType() == Type.NOT_FOUND)
+                throw new ProviderRemovingException(Type.NOT_FOUND);
+            throw pe;
+        }
+        
+        removeUserSettings(user);
+        removeUserResources(user);
+        
+        Long userSettingsId =  user.getUserSettings() != null ? user.getUserSettings().getId() : null;
+        String removedLogin = user.getLogin();
+        Query query = em.createQuery("DELETE FROM User WHERE id = ?");
+        query.setParameter(1, user.getId());
+        query.executeUpdate();
+        
+        if (user.getUserSettings() != null) {
+            query = em.createQuery("DELETE FROM UserSettings WHERE id = ?");
+            query.setParameter(1, userSettingsId.longValue());
+            query.executeUpdate();
+        }
+        
+        em.flush();
+        logger.info("{} removed {} account", requestUser.getLogin(), removedLogin);
+    }
+    
+    private void removeUserSettings(User user) throws Exception {
+        Query query;
+        
+        query = em.createQuery("DELETE FROM NotificationSettings WHERE user = ?");
+        query.setParameter(1, user);
+        query.executeUpdate();
+        
+        //Remove user data from table users_notifications
+        user.setNotificationEvents(Collections.EMPTY_SET);
+        
+        //Remove user data from table users_mobilenotifications        
+        user.setMobileNotificationSettings(Collections.EMPTY_MAP);
+        
+        em.persist(user);
+        
+        query = em.createQuery("DELETE FROM UIStateEntry WHERE user = ?");
+        query.setParameter(1, user);
+        query.executeUpdate();
+        
+        query = em.createQuery("DELETE FROM UserDeviceStatus uds WHERE uds.id.user = ?");
+        query.setParameter(1, user);
+        query.executeUpdate();
+    }
+    
+    private void removeUserResources(User user) throws Exception {
+ 
+        DeviceGroupProvider deviceGroupProvider = new DeviceGroupProvider(em, user);        
+        GeoFenceProvider geoProvider = new GeoFenceProvider(em);
+        geoProvider.setRequestUser(user);
+        
+        //users
+        user.setManagedUsers(Collections.EMPTY_SET);
+        em.persist(user);
+        
+        Query query = em.createQuery("SELECT u FROM User u WHERE u.managedBy = :manager");
+        query.setParameter("manager", user);
+        for (User us : (List<User>) query.getResultList()) {
+            us.setManagedBy(requestUser);
+        }
+        
+        // devices
+        user.setDevices(Collections.EMPTY_SET);
+        em.persist(user);
+        
+        query = em.createQuery("SELECT d FROM Device d WHERE d.owner = :owner");
+        query.setParameter("owner", user);
+        for (Device dev : (List<Device>) query.getResultList()) {
+            dev.setOwner(requestUser);
+        }
+        em.flush();
+
+        // tracks
+        query = em.createQuery("DELETE FROM DbRoute r WHERE r.owner = :owner");
+        query.setParameter("owner", user);
+        query.executeUpdate();
+        
+        // geofences
+        query = em.createQuery("SELECT g FROM GeoFence g WHERE :user in elements(g.users)");
+        query.setParameter("user", user);
+        for (GeoFence geo : (List<GeoFence>) query.getResultList()) {
+            Set<User> us = geo.getUsers();
+            if (us.size() == 1) {
+                geoProvider.delete(geo.getId());
+            }
+            else {
+                us.remove(user);
+                geo.setUsers(us);
+            }
+        }
+        
+        // groups
+        for (Group gr : user.getGroups()) {
+            Set<User> us = gr.getUsers();
+            if (us == null) 
+                continue;
+            if (us.size() == 1) {
+                deviceGroupProvider.deleteGroup(gr.getId());
+            }
+            else {
+                us.remove(user);
+                gr.setUsers(us);
+            }
+        }
+    }
+    
+    // REMOVING USER - END //
     
     private void editUser(User user, EditUserDto dto) {
         user.setAdmin(dto.isAdmin());
