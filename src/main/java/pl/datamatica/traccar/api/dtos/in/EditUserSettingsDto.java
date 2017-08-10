@@ -47,6 +47,8 @@ public class EditUserSettingsDto {
             errors.add(new ErrorDto(MessageKeys.ERR_USERSETTINGS_MAXIMIZE_OVERVIEW_MAP_NOT_PROVIDED));
         if(dto.overlays == null)
             errors.add(new ErrorDto(MessageKeys.ERR_USERSETTINGS_OVERLAYS_NOT_PROVIDED));
+        if(dto.speedUnit == null || dto.speedUnit.isEmpty())
+            errors.add(new ErrorDto(MessageKeys.ERR_USERSETTINGS_SPEED_UNIT_NOT_PROVIDED));
         if(dto.timePrintInterval == null)
             errors.add(new ErrorDto(MessageKeys.ERR_TIME_PRINT_INTERVAL_NOT_PROVIDED));
         if(dto.timeZoneId == null)

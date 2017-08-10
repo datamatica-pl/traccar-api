@@ -33,6 +33,7 @@ import pl.datamatica.traccar.api.providers.ProviderException;
 import pl.datamatica.traccar.api.providers.UserProvider;
 import pl.datamatica.traccar.api.responses.HttpResponse;
 import pl.datamatica.traccar.model.User;
+import pl.datamatica.traccar.model.UserSettings;
 import spark.Request;
 import spark.Spark;
 
@@ -62,7 +63,7 @@ public class UsersController extends ControllerBase {
                 UsersController uc = createController(req);
                 EditUserDto dto = gson.fromJson(req.body(), EditUserDto.class);
                 return render(uc.put(Long.parseLong(req.params(":id")), dto), res);
-            });
+            }, gson::toJson);
             
             Spark.get(rootUrl()+"/activate/:token", (req, res) -> {
                 UsersController uc = createController(req);
@@ -86,12 +87,18 @@ public class UsersController extends ControllerBase {
                 return render(uc.resendLink(dto), res);
             });
             
+            Spark.get(rootUrl()+"/:id/settings", (req, res) -> {
+                UsersController uc = createController(req);
+                long id = Long.parseLong(req.params(":id"));
+                return render(uc.getUserSettings(id), res);
+            }, gson::toJson);
+            
             Spark.put(rootUrl()+"/:id/settings", (req, res) -> {
                 UsersController uc = createController(req);
                 long id = Long.parseLong(req.params(":id"));
                 UserSettingsDto dto = gson.fromJson(req.body(), UserSettingsDto.class);
                 return render(uc.updateUserSettings(id, dto), res);
-            });
+            }, gson::toJson);
         }
 
         private UsersController createController(Request req) {
@@ -209,6 +216,15 @@ public class UsersController extends ControllerBase {
         return "<html><head></head><body>"
                 + "<h1>Nowe hasło zostało wysłane na adres e-mail</h1>"
                 + "</body></html>";
+    }
+    
+    private HttpResponse getUserSettings(long id) throws ProviderException {
+        try {
+            UserSettings us = up.getUserSettings(id);
+            return ok(new UserSettingsDto.Builder().userSettings(us).build());
+        } catch(ProviderException e) {
+            return handle(e);
+        }
     }
     
     public HttpResponse updateUserSettings(long id, EditUserSettingsDto dto) throws ProviderException {

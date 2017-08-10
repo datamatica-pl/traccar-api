@@ -124,4 +124,5 @@ public class MessageKeys {
     public static final String ERR_TIME_PRINT_INTERVAL_NOT_PROVIDED = "err_time_print_interval_not_provided";
     public static final String ERR_TIME_ZONE_ID_NOT_PROVIDED = "err_time_zone_id_not_provided";
     public static final String ERR_ZOOM_LEVEL_NOT_PROVIDED = "err_zoom_level_not_provided";
+    public static final String ERR_USERSETTINGS_SPEED_UNIT_NOT_PROVIDED = "err_usersettings_speed_unit_not_provided";
 }

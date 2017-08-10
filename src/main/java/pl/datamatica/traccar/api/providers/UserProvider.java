@@ -219,8 +219,9 @@ public class UserProvider extends ProviderBase {
     }
 
     public void updateUserSettings(long id, EditUserSettingsDto dto) throws ProviderException {
-        User u = getUser(id);
-        UserSettings us = u.getUserSettings();
+        if(id != requestUser.getId())
+            throw new ProviderException(Type.ACCESS_DENIED);
+        UserSettings us = requestUser.getUserSettings();
         if(dto.getArchiveMarkerType() != null && ! dto.getArchiveMarkerType().isEmpty())
             us.setArchiveMarkerType(PositionIconType.valueOf(dto.getArchiveMarkerType()));
         else
@@ -239,11 +240,15 @@ public class UserProvider extends ProviderBase {
         us.setSpeedModifier(dto.getSpeedModifier());
         if(dto.getSpeedUnit() != null && !dto.getSpeedUnit().isEmpty())
             us.setSpeedUnit(SpeedUnit.valueOf(dto.getSpeedUnit()));
-        else
-            us.setSpeedUnit(null);
         us.setTimePrintInterval(dto.getTimePrintInterval());
         us.setTimeZoneId(dto.getTimeZoneId());
         us.setTraceInterval(dto.getTraceInterval());
         us.setZoomLevel(dto.getZoomLevel());
+    }
+
+    public UserSettings getUserSettings(long id) throws ProviderException {
+        if(id != requestUser.getId())
+            throw new ProviderException(Type.ACCESS_DENIED);
+        return requestUser.getUserSettings();
     }
 }
