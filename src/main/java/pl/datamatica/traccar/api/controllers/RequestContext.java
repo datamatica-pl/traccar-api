@@ -49,6 +49,9 @@ import spark.Session;
 
 public class RequestContext implements AutoCloseable {
     
+    public static final String REQUEST_FIELD_IS_AUTH = "isAuthorized";
+    public static final String REQUEST_FIELD_ERROR_DTO = "errorDto";
+    
     private static final String IF_MODIFIED_SINCE_HEADER = "If-Modified-Since";
     
     private Date ifModifiedSince;

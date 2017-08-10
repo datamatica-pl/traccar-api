@@ -46,6 +46,7 @@ public class TestDatabase {
     User managed3;
     Device managed2Device;
     GeoFence adminGeofence;
+    GeoFence managedUserGeofence;
     Group adminDeviceGroup;
     Group managedDeviceDeviceGroup;
     Group managed2DeviceGroup;
@@ -216,6 +217,12 @@ public class TestDatabase {
         adminGeofence.setName("Zażółć gęślą jaźń");
         adminGeofence.setUsers(Collections.singleton(admin));
         em.persist(adminGeofence);
+        
+        managedUserGeofence = new GeoFence();
+        managedUserGeofence.setType(GeoFenceType.LINE);
+        managedUserGeofence.setName("ManagedUser's geofence");
+        managedUserGeofence.setUsers(Collections.singleton(managedUser));
+        em.persist(managedUser);
     }
 
     public void prepareEm(EntityManager newEm) {

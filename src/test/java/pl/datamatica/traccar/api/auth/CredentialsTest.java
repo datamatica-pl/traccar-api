@@ -19,7 +19,7 @@ package pl.datamatica.traccar.api.auth;
 import java.nio.charset.StandardCharsets;
 import static org.junit.Assert.*;
 import org.junit.Test;
-import pl.datamatica.traccar.api.auth.AuthenticationException.ErrorType;
+import pl.datamatica.traccar.api.dtos.MessageKeys;
 
 public class CredentialsTest {
     private final String login = "asdf@op.pl";
@@ -39,7 +39,7 @@ public class CredentialsTest {
         try {
             Credentials.fromBasic("AlZa!(&/kXM", StandardCharsets.UTF_8);
         } catch(AuthenticationException e) {
-            assertEquals(e.type, ErrorType.PARAMETER_NOT_BASE64);
+            assertEquals(e.getMessage(), MessageKeys.ERR_AUTH_PARAMETER_NOT_BASE64);
             return;
         }
         fail();
@@ -51,7 +51,7 @@ public class CredentialsTest {
         try {
             Credentials.fromBasic(paramNoColon, StandardCharsets.UTF_8);
         } catch(AuthenticationException e) {
-            assertEquals(e.type, ErrorType.NO_COLON_IN_PARAMETER);
+            assertEquals(e.getMessage(), MessageKeys.ERR_AUTH_NO_COLON_IN_PARAMETER);
             return;
         }
         fail();

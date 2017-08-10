@@ -42,7 +42,7 @@ public class UsersControllerTest {
     private RequestContext rc;
     private User user;
     private List<User> users;
-    private RegisterUserDto userDto;
+    private RegisterUserDto registerDto;
     
     @Before
     public void testInit() {
@@ -64,7 +64,7 @@ public class UsersControllerTest {
                 })
                 .collect(Collectors.toList());
         users.add(user);
-        userDto = new RegisterUserDto("test@test.pl", "test", true, "123456");
+        registerDto = new RegisterUserDto("test@test.pl", "test", true, "123456");
     }
     
     
@@ -112,42 +112,42 @@ public class UsersControllerTest {
     }
     
     @Test
-    public void post_ok() throws ProviderException {
-        Mockito.when(provider.createUser(userDto.getEmail(), userDto.getPassword(), userDto.isCheckMarketing()))
+    public void register_ok() throws ProviderException {
+        Mockito.when(provider.registerUser(registerDto.getEmail(), registerDto.getPassword(), registerDto.isCheckMarketing()))
                 .thenReturn(new User());
         
-        HttpResponse response = controller.post(userDto);
+        HttpResponse response = controller.register(registerDto);
         
-        Mockito.verify(devices, Mockito.times(1)).createDevice(userDto.getImei());
+        Mockito.verify(devices, Mockito.times(1)).createDevice(registerDto.getImei());
         assertTrue(response instanceof CreatedResponse);
         assertEquals("", response.getContent());
     }
     
     @Test
-    public void post_noData() throws ProviderException {
-        HttpResponse response = controller.post(null);
+    public void register_noData() throws ProviderException {
+        HttpResponse response = controller.register(null);
         
         assertTrue(response instanceof ErrorResponse);
         assertEquals(400, response.getHttpStatus());
     }
     
     @Test
-    public void post_conflict() throws ProviderException {
-        Mockito.when(provider.createUser(userDto.getEmail(), userDto.getPassword(), userDto.isCheckMarketing()))
+    public void register_conflict() throws ProviderException {
+        Mockito.when(provider.registerUser(registerDto.getEmail(), registerDto.getPassword(), registerDto.isCheckMarketing()))
                 .thenThrow(new ProviderException(Type.USER_ALREADY_EXISTS));
 
-        HttpResponse response = controller.post(userDto);
+        HttpResponse response = controller.register(registerDto);
 
         assertTrue(response instanceof ErrorResponse);
         assertEquals(409, response.getHttpStatus());
     }
     
     @Test
-    public void post_invalidImei() throws ProviderException {
-        Mockito.when(devices.createDevice(userDto.getImei()))
+    public void register_invalidImei() throws ProviderException {
+        Mockito.when(devices.createDevice(registerDto.getImei()))
                 .thenThrow(new ProviderException(Type.INVALID_IMEI));
         
-        HttpResponse response = controller.post(userDto);
+        HttpResponse response = controller.register(registerDto);
         
         assertTrue(response instanceof ErrorResponse);
         assertEquals(400, response.getHttpStatus());

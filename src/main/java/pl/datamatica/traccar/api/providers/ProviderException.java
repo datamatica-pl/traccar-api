@@ -19,7 +19,8 @@ package pl.datamatica.traccar.api.providers;
 public class ProviderException extends Exception {
     public enum Type {
         NOT_FOUND, ACCESS_DENIED, ALREADY_DELETED,
-        USER_ALREADY_EXISTS, DEVICE_ALREADY_EXISTS, INVALID_IMEI
+        USER_ALREADY_EXISTS, DEVICE_ALREADY_EXISTS, INVALID_IMEI,
+        DELETING_ITSELF
     }
     
     private final Type type;
