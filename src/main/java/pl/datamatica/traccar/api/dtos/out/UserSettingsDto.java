@@ -16,57 +16,27 @@
  */
 package pl.datamatica.traccar.api.dtos.out;
 
+import pl.datamatica.traccar.api.dtos.in.EditUserSettingsDto;
 import pl.datamatica.traccar.model.UserSettings;
 
 /**
  *
  * @author ŁŁ
  */
-public class UserSettingsDto {
+public class UserSettingsDto extends EditUserSettingsDto {
     private final long id;
-    private final String archiveMarkerType;
-    private final double centerLatitude;
-    private final double centerLongitude;
-    private final boolean hideDuplicates;
-    private final boolean hideInvalidLocations;
-    private final boolean hideZeroCoordinates;
-    private final String mapType;
-    private final boolean maximizeOverviewMap;
-    private final Double minDistance;
-    private final String overlays;
-    private final Double speedForFilter;
-    private final String speedModifier;
-    private final String speedUnit;
-    private final short timePrintInterval;
-    private final String timeZoneId;
-    private final Short traceInterval;
-    private final int zoomLevel;
-    private final Short followedDeviceZoomLevel;
 
     public UserSettingsDto(long id, String archiveMarkerType, double centerLatitude, double centerLongitude, 
             boolean hideDuplicates, boolean hideInvalidLocations, boolean hideZeroCoordinates, 
             String mapType, boolean maximizeOverviewMap, Double minDistance, String overlays, 
             Double speedForFilter, String speedModifier, String speedUnit, short timePrintInterval, 
             String timeZoneId, Short traceInterval, int zoomLevel, Short followedDeviceZoomLevel) {
+        super(archiveMarkerType, centerLatitude, centerLongitude, 
+                hideDuplicates, hideInvalidLocations, hideZeroCoordinates,
+                mapType, maximizeOverviewMap, minDistance, overlays, speedForFilter,
+                speedModifier, speedUnit, timePrintInterval, timeZoneId, traceInterval, 
+                zoomLevel, followedDeviceZoomLevel);
         this.id = id;
-        this.archiveMarkerType = archiveMarkerType;
-        this.centerLatitude = centerLatitude;
-        this.centerLongitude = centerLongitude;
-        this.hideDuplicates = hideDuplicates;
-        this.hideInvalidLocations = hideInvalidLocations;
-        this.hideZeroCoordinates = hideZeroCoordinates;
-        this.mapType = mapType;
-        this.maximizeOverviewMap = maximizeOverviewMap;
-        this.minDistance = minDistance;
-        this.overlays = overlays;
-        this.speedForFilter = speedForFilter;
-        this.speedModifier = speedModifier;
-        this.speedUnit = speedUnit;
-        this.timePrintInterval = timePrintInterval;
-        this.timeZoneId = timeZoneId;
-        this.traceInterval = traceInterval;
-        this.zoomLevel = zoomLevel;
-        this.followedDeviceZoomLevel = followedDeviceZoomLevel;
     }
 
     public static class Builder {
@@ -225,78 +195,4 @@ public class UserSettingsDto {
     public long getId() {
         return id;
     }
-
-    public String getArchiveMarkerType() {
-        return archiveMarkerType;
-    }
-
-    public double getCenterLatitude() {
-        return centerLatitude;
-    }
-
-    public double getCenterLongitude() {
-        return centerLongitude;
-    }
-
-    public boolean isHideDuplicates() {
-        return hideDuplicates;
-    }
-
-    public boolean isHideInvalidLocations() {
-        return hideInvalidLocations;
-    }
-
-    public boolean isHideZeroCoordinates() {
-        return hideZeroCoordinates;
-    }
-
-    public String getMapType() {
-        return mapType;
-    }
-
-    public boolean isMaximizeOverviewMap() {
-        return maximizeOverviewMap;
-    }
-
-    public Double getMinDistance() {
-        return minDistance;
-    }
-
-    public String getOverlays() {
-        return overlays;
-    }
-
-    public Double getSpeedForFilter() {
-        return speedForFilter;
-    }
-
-    public String getSpeedModifier() {
-        return speedModifier;
-    }
-
-    public String getSpeedUnit() {
-        return speedUnit;
-    }
-
-    public short getTimePrintInterval() {
-        return timePrintInterval;
-    }
-
-    public String getTimeZoneId() {
-        return timeZoneId;
-    }
-
-    public Short getTraceInterval() {
-        return traceInterval;
-    }
-
-    public int getZoomLevel() {
-        return zoomLevel;
-    }
-
-    public Short getFollowedDeviceZoomLevel() {
-        return followedDeviceZoomLevel;
-    }
-    
-    
 }

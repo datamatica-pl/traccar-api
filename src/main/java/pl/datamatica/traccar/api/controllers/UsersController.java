@@ -24,16 +24,19 @@ import static pl.datamatica.traccar.api.controllers.ControllerBase.render;
 import pl.datamatica.traccar.api.dtos.MessageKeys;
 import pl.datamatica.traccar.api.dtos.in.AddUserDto;
 import pl.datamatica.traccar.api.dtos.in.EditUserDto;
+import pl.datamatica.traccar.api.dtos.in.EditUserSettingsDto;
 import pl.datamatica.traccar.api.dtos.in.RegisterUserDto;
 import pl.datamatica.traccar.api.dtos.in.ResetPassReqDto;
 import pl.datamatica.traccar.api.dtos.out.ErrorDto;
 import pl.datamatica.traccar.api.dtos.out.UserDto;
+import pl.datamatica.traccar.api.dtos.out.UserSettingsDto;
 import pl.datamatica.traccar.api.providers.MailSender;
 import pl.datamatica.traccar.api.providers.ProviderException;
 import pl.datamatica.traccar.api.providers.ProviderRemovingException;
 import pl.datamatica.traccar.api.providers.UserProvider;
 import pl.datamatica.traccar.api.responses.HttpResponse;
 import pl.datamatica.traccar.model.User;
+import pl.datamatica.traccar.model.UserSettings;
 import spark.Request;
 import spark.Spark;
 
@@ -74,7 +77,7 @@ public class UsersController extends ControllerBase {
                 UsersController uc = createController(req);
                 EditUserDto dto = gson.fromJson(req.body(), EditUserDto.class);
                 return render(uc.put(Long.parseLong(req.params(":id")), dto), res);
-            });
+            }, gson::toJson);
             
             Spark.delete(rootUrl()+"/:id", (req, res) -> {
                 UsersController uc = createController(req);
@@ -102,6 +105,19 @@ public class UsersController extends ControllerBase {
                 ResetPassReqDto dto = gson.fromJson(req.body(), ResetPassReqDto.class);
                 return render(uc.resendLink(dto), res);
             });
+            
+            Spark.get(rootUrl()+"/:id/settings", (req, res) -> {
+                UsersController uc = createController(req);
+                long id = Long.parseLong(req.params(":id"));
+                return render(uc.getUserSettings(id), res);
+            }, gson::toJson);
+            
+            Spark.put(rootUrl()+"/:id/settings", (req, res) -> {
+                UsersController uc = createController(req);
+                long id = Long.parseLong(req.params(":id"));
+                UserSettingsDto dto = gson.fromJson(req.body(), UserSettingsDto.class);
+                return render(uc.updateUserSettings(id, dto), res);
+            }, gson::toJson);
         }
 
         private UsersController createController(Request req) {
@@ -249,6 +265,29 @@ public class UsersController extends ControllerBase {
         return "<html><head></head><body>"
                 + "<h1>Nowe hasło zostało wysłane na adres e-mail</h1>"
                 + "</body></html>";
+    }
+    
+    private HttpResponse getUserSettings(long id) throws ProviderException {
+        try {
+            UserSettings us = up.getUserSettings(id);
+            return ok(new UserSettingsDto.Builder().userSettings(us).build());
+        } catch(ProviderException e) {
+            return handle(e);
+        }
+    }
+    
+    public HttpResponse updateUserSettings(long id, EditUserSettingsDto dto) throws ProviderException {
+        if(id != requestContext.getUser().getId())
+            return forbidden();
+        List<ErrorDto> errors = EditUserSettingsDto.validate(dto);
+        if(!errors.isEmpty())
+            return badRequest(errors);
+        try {
+            up.updateUserSettings(id, dto);
+        } catch(ProviderException e) {
+            return handle(e);
+        }
+        return ok("");
     }
     
     private static String emailConfirmationContent(String url) {

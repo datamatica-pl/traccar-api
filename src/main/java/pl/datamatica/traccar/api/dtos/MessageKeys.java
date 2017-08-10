@@ -125,4 +125,17 @@ public class MessageKeys {
     public static final String ERR_POSITIONS_QUERY_SPEED_WRONG_FORMAT = "err_positions_query_speed_wrong_format";
     public static final String ERR_POSITIONS_QUERY_DATE_VALUE_NOT_PROVIDED = "err_positions_query_date_value_not_provided";
     public static final String ERR_POSITIONS_QUERY_DATE_WRONG_FORMAT = "err_positions_query_date_wrong_format";
+    
+    public static final String ERR_USERSETTINGS_CENTER_LATITUDE_NOT_PROVIDED = "err_usersettings_center_latitude_not_provided";
+    public static final String ERR_USERSETTINGS_CENTER_LONGITUDE_NOT_PROVIDED = "err_usersettings_center_longitude_not_provided";
+    public static final String ERR_USERSETTINGS_HIDE_DUPLICATES_NOT_PROVIDED = "err_usersettings_hide_duplicates_not_provided";
+    public static final String ERR_USERSETTINGS_HIDE_INVALID_LOCATIONS_NOT_PROVIDED = "err_usersettings_hide_invalid_locations_not_provided";
+    public static final String ERR_USERSETTINGS_HIDE_ZERO_COORDINATES_NOT_PROVIDED = "err_usersettings_hide_zero_coordinates_not_provided";
+    public static final String ERR_USERSETTINGS_MAP_TYPE_NOT_PROVIDED = "err_usersettings_map_type_not_provided";
+    public static final String ERR_USERSETTINGS_MAXIMIZE_OVERVIEW_MAP_NOT_PROVIDED = "err_usersettings_maximize_overview_map_not_provided";
+    public static final String ERR_USERSETTINGS_OVERLAYS_NOT_PROVIDED = "err_usersettings_overlays_not_provided";
+    public static final String ERR_TIME_PRINT_INTERVAL_NOT_PROVIDED = "err_time_print_interval_not_provided";
+    public static final String ERR_TIME_ZONE_ID_NOT_PROVIDED = "err_time_zone_id_not_provided";
+    public static final String ERR_ZOOM_LEVEL_NOT_PROVIDED = "err_zoom_level_not_provided";
+    public static final String ERR_USERSETTINGS_SPEED_UNIT_NOT_PROVIDED = "err_usersettings_speed_unit_not_provided";
 }

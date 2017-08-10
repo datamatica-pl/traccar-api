@@ -28,19 +28,21 @@ import javax.persistence.NoResultException;
 import javax.persistence.Query;
 import javax.persistence.TypedQuery;
 import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import pl.datamatica.traccar.api.auth.AuthenticationException;
 import pl.datamatica.traccar.api.dtos.MessageKeys;
 import pl.datamatica.traccar.api.dtos.in.AddUserDto;
 import pl.datamatica.traccar.api.dtos.in.EditUserDto;
+import pl.datamatica.traccar.api.dtos.in.EditUserSettingsDto;
 import pl.datamatica.traccar.api.providers.ProviderException.Type;
 import pl.datamatica.traccar.model.ApplicationSettings;
 import pl.datamatica.traccar.model.Device;
 import pl.datamatica.traccar.model.DeviceEventType;
+import pl.datamatica.traccar.model.PositionIconType;
 import pl.datamatica.traccar.model.GeoFence;
 import pl.datamatica.traccar.model.Group;
 import pl.datamatica.traccar.model.User;
 import pl.datamatica.traccar.model.UserSettings;
+import pl.datamatica.traccar.model.UserSettings.SpeedUnit;
 
 public class UserProvider extends ProviderBase {
     private User requestUser;
@@ -372,5 +374,39 @@ public class UserProvider extends ProviderBase {
             return true;
         
         return getAllAvailableUsers().anyMatch(u -> u.equals(other));
+    }
+
+    public void updateUserSettings(long id, EditUserSettingsDto dto) throws ProviderException {
+        if(id != requestUser.getId())
+            throw new ProviderException(Type.ACCESS_DENIED);
+        UserSettings us = requestUser.getUserSettings();
+        if(dto.getArchiveMarkerType() != null && ! dto.getArchiveMarkerType().isEmpty())
+            us.setArchiveMarkerType(PositionIconType.valueOf(dto.getArchiveMarkerType()));
+        else
+            us.setArchiveMarkerType(null);
+        us.setCenterLatitude(dto.getCenterLatitude());
+        us.setCenterLongitude(dto.getCenterLongitude());
+        us.setFollowedDeviceZoomLevel(dto.getFollowedDeviceZoomLevel());
+        us.setHideDuplicates(dto.isHideDuplicates());
+        us.setHideInvalidLocations(dto.isHideInvalidLocations());
+        us.setHideZeroCoordinates(dto.isHideZeroCoordinates());
+        us.setMapType(UserSettings.MapType.valueOf(dto.getMapType()));
+        us.setMaximizeOverviewMap(dto.isMaximizeOverviewMap());
+        us.setMinDistance(dto.getMinDistance());
+        us.setOverlays(dto.getOverlays());
+        us.setSpeedForFilter(dto.getSpeedForFilter());
+        us.setSpeedModifier(dto.getSpeedModifier());
+        if(dto.getSpeedUnit() != null && !dto.getSpeedUnit().isEmpty())
+            us.setSpeedUnit(SpeedUnit.valueOf(dto.getSpeedUnit()));
+        us.setTimePrintInterval(dto.getTimePrintInterval());
+        us.setTimeZoneId(dto.getTimeZoneId());
+        us.setTraceInterval(dto.getTraceInterval());
+        us.setZoomLevel(dto.getZoomLevel());
+    }
+
+    public UserSettings getUserSettings(long id) throws ProviderException {
+        if(id != requestUser.getId())
+            throw new ProviderException(Type.ACCESS_DENIED);
+        return requestUser.getUserSettings();
     }
 }
