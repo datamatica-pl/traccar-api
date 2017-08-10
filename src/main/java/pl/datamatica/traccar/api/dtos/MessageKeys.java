@@ -109,6 +109,7 @@ public class MessageKeys {
     public static final String ERR_USER_ADMIN_NOT_PROVIDED = "err_user_admin_not_provided";
     public static final String ERR_USER_ARCHIVE_NOT_PROVIDED = "err_user_archive_not_provided";
     public static final String ERR_USER_READONLY_NOT_PROVIDED = "err_user_readonly_not_provided";
+    public static final String ERR_USER_BLOCKED_NOT_PROVIDED = "err_user_blocked_not_provided";
     public static final String ERR_USER_PASSWORD_NOT_PROVIDED = "err_user_password_not_provided";
     public static final String ERR_USER_NOTIFICATION_EVENTS_NOT_PROVIDED = "err_user_notification_events_not_provided";
     public static final String ERR_USER_LOGIN_NOT_PROVIDED = "err_user_login_not_provided";

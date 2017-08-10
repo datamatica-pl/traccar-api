@@ -267,17 +267,23 @@ public class UserProvider extends ProviderBase {
     
     // REMOVING USER - END //
     
-    private void editUser(User user, EditUserDto dto) {
-        user.setAdmin(dto.isAdmin());
+    private void editUser(User user, EditUserDto dto) throws ProviderException {
+        if(!requestUser.getAdmin() && user.equals(requestUser.getManagedBy()))
+            throw new ProviderException(Type.ACCESS_DENIED);
+        if(requestUser.getAdmin())
+            user.setAdmin(dto.isAdmin());
         user.setArchive(dto.isArchive());
         user.setBlocked(dto.isBlocked());
         user.setCompanyName(dto.getCompanyName());
         user.setEmail(dto.getEmail());
-        user.setExpirationDate(dto.getExpirationDate());
         user.setFirstName(dto.getFirstName());
         user.setLastName(dto.getLastName());
-        user.setManager(dto.isManager());
-        user.setMaxNumOfDevices(dto.getMaxNumOfDevices());
+        if(requestUser.getManager() || requestUser.getAdmin())
+            user.setManager(dto.isManager());
+        if(requestUser.getAdmin() || !user.equals(requestUser)) {
+            user.setMaxNumOfDevices(dto.getMaxNumOfDevices());
+            user.setExpirationDate(dto.getExpirationDate());
+        }
         Set<DeviceEventType> notificationEvents = new HashSet<>();
         for(String ev : dto.getNotificationEvents()) {
             notificationEvents.add(DeviceEventType.valueOf(ev));
