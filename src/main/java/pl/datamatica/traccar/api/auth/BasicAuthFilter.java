@@ -27,7 +27,6 @@ import pl.datamatica.traccar.api.Application;
 import pl.datamatica.traccar.api.Context;
 import pl.datamatica.traccar.api.TraccarConfig;
 import spark.*;
-import static pl.datamatica.traccar.api.auth.AuthenticationException.*;
 import pl.datamatica.traccar.api.controllers.RequestContext;
 import pl.datamatica.traccar.api.dtos.MessageKeys;
 import pl.datamatica.traccar.api.dtos.out.ErrorDto;
@@ -55,8 +54,14 @@ public class BasicAuthFilter {
         this.req = request;
         RequestContext rc = request.attribute(Application.REQUEST_CONTEXT_KEY);
         
-        if(shouldAllowUnauthorized(request))
+        if(shouldAllowUnauthorized(request)) {
+            request.attribute(RequestContext.REQUEST_FIELD_IS_AUTH, true);
             return;
+        }
+        
+        // assuming that auth fails
+        request.attribute(RequestContext.REQUEST_FIELD_IS_AUTH, false);
+
         try {
             UserProvider up = rc.getUserProvider();
             ApplicationSettingsProvider asp = rc.getApplicationSettingsProvider();
@@ -67,9 +72,11 @@ public class BasicAuthFilter {
             else
                 user = beginSession(request, up);
             if(user.isBlocked()) {
-                unauthorized(response, new ErrorDto(MessageKeys.ERR_ACCOUNT_BLOCKED));
+                request.attribute(RequestContext.REQUEST_FIELD_ERROR_DTO, new ErrorDto(MessageKeys.ERR_ACCOUNT_BLOCKED));
+                return;
             } else if(user.isExpired()) {
-                unauthorized(response, new ErrorDto(MessageKeys.ERR_ACCOUNT_EXPIRED));
+                request.attribute(RequestContext.REQUEST_FIELD_IS_AUTH, new ErrorDto(MessageKeys.ERR_ACCOUNT_EXPIRED));
+                return;
             }
             
             if (rc.isRequestForImeiManager(request)) {
@@ -94,35 +101,46 @@ public class BasicAuthFilter {
                 // Allow only IMEI manager for request to DM IMEI Manager
                 if (!user.isImeiManager()) {
                     logger.error(String.format("User %s tried to access IMEI manager without permissions.", user.getLogin()));
-                    unauthorized(response, new ErrorDto(MessageKeys.ERR_ACCESS_DENIED));
+                    request.attribute(RequestContext.REQUEST_FIELD_ERROR_DTO, new ErrorDto(MessageKeys.ERR_ACCESS_DENIED));
+                    return;
                 }
                 
                 // Logout from IMEI manager
                 if (request.uri().equalsIgnoreCase("/imei_manager/logout")) {
                     request.session().removeAttribute(USER_ID_SESSION_KEY);
-                    unauthorized(response, new ErrorDto(MessageKeys.ERR_ACCESS_DENIED));
+                    request.attribute(RequestContext.REQUEST_FIELD_ERROR_DTO, new ErrorDto(MessageKeys.ERR_ACCESS_DENIED));
+                    return;
                 }
                 
                 if (!isIpAllowedToAddImei) {
                     logger.error("Attempt to reach IMEI manager from unauthorized IP: " + request.ip());
-                    unauthorized(response, new ErrorDto(MessageKeys.ERR_ACCESS_DENIED));
+                    request.attribute(RequestContext.REQUEST_FIELD_ERROR_DTO, new ErrorDto(MessageKeys.ERR_ACCESS_DENIED));
+                    return;
                 }
             }
             
             rc.setUser(user);
         } catch(ProviderException e) {
-            unauthorized(response, AuthenticationException.ErrorType.NO_SUCH_USER.getMessage());
+            request.attribute(RequestContext.REQUEST_FIELD_ERROR_DTO, new ErrorDto(MessageKeys.ERR_AUTH_NO_SUCH_USER));
+            return;
         } catch(AuthenticationException e) {
-            unauthorized(response, e.getMessage());
+            request.attribute(RequestContext.REQUEST_FIELD_ERROR_DTO, new ErrorDto(e.getMessage()));
+            return;
         } catch(IllegalArgumentException e) {
-            serverError(response, e.getMessage());
+            request.attribute(RequestContext.REQUEST_FIELD_ERROR_DTO, new ErrorDto(e.getMessage()));
+            return;
         }
+        // I got here that mean it's success
+        request.attribute(RequestContext.REQUEST_FIELD_IS_AUTH, true);
     }
 
-    private static boolean shouldAllowUnauthorized(Request request) {
+    public static boolean shouldPassErrorsToController(Request request) {
         return (request.pathInfo().matches("/v[0-9]+/users") 
-                && request.requestMethod().equalsIgnoreCase("post"))
-                || (request.pathInfo().matches("/v[0-9]+/users/activate/.*")
+                && request.requestMethod().equalsIgnoreCase("post"));
+    }
+    
+    private static boolean shouldAllowUnauthorized(Request request) {
+        return (request.pathInfo().matches("/v[0-9]+/users/activate/.*")
                 && request.requestMethod().equalsIgnoreCase("get"))
                 || (request.pathInfo().matches("/v[0-9]+/users/resetreq")
                 && request.requestMethod().equalsIgnoreCase("post"))
@@ -130,6 +148,8 @@ public class BasicAuthFilter {
                 && request.requestMethod().equalsIgnoreCase("get"))
                 || request.requestMethod().equalsIgnoreCase("options")
                 || (request.pathInfo().matches("/v[0-9]+/users/resend")
+                && request.requestMethod().equalsIgnoreCase("post"))
+                || (request.pathInfo().matches("/v[0-9]+/users/register")
                 && request.requestMethod().equalsIgnoreCase("post"));
     }
 
@@ -150,35 +170,35 @@ public class BasicAuthFilter {
             throws AuthenticationException {
         User user;
         if(credentials == null)
-            throw new IllegalArgumentException("Credentials can't be null");
+            throw new IllegalArgumentException(MessageKeys.ERR_AUTH_NO_CREDENTIALS);
         if(credentials.getPassword().isEmpty())
-            throw new AuthenticationException(ErrorType.NO_PASSWORD);
+            throw new AuthenticationException(MessageKeys.ERR_AUTH_NO_PASSWORD);
         user = up.authenticateUser(credentials.getLogin(), credentials.getPassword());
         if(user == null)
-            throw new AuthenticationException(ErrorType.NO_SUCH_USER);
+            throw new AuthenticationException(MessageKeys.ERR_AUTH_NO_SUCH_USER);
         return user;
     }
     
     public Credentials readCredentials(String header) throws IllegalArgumentException {
         if(header == null)
-            throw new AuthenticationException(ErrorType.NO_CREDENTIALS);
+            throw new AuthenticationException(MessageKeys.ERR_AUTH_NO_CREDENTIALS);
         
         String param = checkAndRemoveScheme(header);
         try {
             return decodeCredentials(param);
         }catch(IllegalArgumentException e) {
-            throw new AuthenticationException(ErrorType.PARAMETER_NOT_BASE64);
+            throw new AuthenticationException(MessageKeys.ERR_AUTH_PARAMETER_NOT_BASE64);
         }
     }
     
     private String checkAndRemoveScheme(String authInfo) throws IllegalArgumentException {
         if(authInfo == null)
-            throw new IllegalArgumentException("authInfo can't be null");
+            throw new IllegalArgumentException(MessageKeys.ERR_AUTH_NO_CREDENTIALS);
         String[] authInfoParts = authInfo.split(AUTH_INFO_SEPARATOR);
         if(authInfoParts.length != 2 || authInfoParts[1].isEmpty())
-            throw new AuthenticationException(ErrorType.HEADER_FORMAT);
+            throw new AuthenticationException(MessageKeys.ERR_AUTH_INVALID_HEADER_FORMAT);
         if(!authInfoParts[0].equalsIgnoreCase(SCHEME))
-            throw new AuthenticationException(ErrorType.INVALID_SCHEME);
+            throw new AuthenticationException(MessageKeys.ERR_AUTH_INVALID_SCHEME);
         return authInfoParts[1];
     }
     
@@ -186,7 +206,7 @@ public class BasicAuthFilter {
         return Credentials.fromBasic(credentials, CHARSET);
     }
 
-    private void unauthorized(Response response, ErrorDto error) {
+    public void unauthorized(Response response, ErrorDto error) {
         Gson gson = Context.getInstance().getGson();
         String message = gson.toJson(error);
         unauthorized(response, message);

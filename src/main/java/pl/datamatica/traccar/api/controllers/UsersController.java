@@ -16,11 +16,13 @@
  */
 package pl.datamatica.traccar.api.controllers;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 import pl.datamatica.traccar.api.Application;
 import static pl.datamatica.traccar.api.controllers.ControllerBase.render;
 import pl.datamatica.traccar.api.dtos.MessageKeys;
+import pl.datamatica.traccar.api.dtos.in.AddUserDto;
 import pl.datamatica.traccar.api.dtos.in.EditUserDto;
 import pl.datamatica.traccar.api.dtos.in.RegisterUserDto;
 import pl.datamatica.traccar.api.dtos.in.ResetPassReqDto;
@@ -28,6 +30,7 @@ import pl.datamatica.traccar.api.dtos.out.ErrorDto;
 import pl.datamatica.traccar.api.dtos.out.UserDto;
 import pl.datamatica.traccar.api.providers.MailSender;
 import pl.datamatica.traccar.api.providers.ProviderException;
+import pl.datamatica.traccar.api.providers.ProviderRemovingException;
 import pl.datamatica.traccar.api.providers.UserProvider;
 import pl.datamatica.traccar.api.responses.HttpResponse;
 import pl.datamatica.traccar.model.User;
@@ -52,8 +55,19 @@ public class UsersController extends ControllerBase {
             
             Spark.post(rootUrl(), (req, res) -> {
                 UsersController uc = createController(req);
+                if (req.attribute(RequestContext.REQUEST_FIELD_IS_AUTH) != null 
+                        && (Boolean)req.attribute(RequestContext.REQUEST_FIELD_IS_AUTH) == true) {
+                    AddUserDto addDto = gson.fromJson(req.body(), AddUserDto.class);
+                    return render(uc.post(addDto), res);
+                }
                 RegisterUserDto userDto = gson.fromJson(req.body(), RegisterUserDto.class);
-                return render(uc.post(userDto), res);
+                return render(uc.register(userDto), res);
+            }, gson::toJson);
+            
+            Spark.post(rootUrl()+"/register", (req, res) -> {
+                UsersController uc = createController(req);
+                RegisterUserDto userDto = gson.fromJson(req.body(), RegisterUserDto.class);
+                return render(uc.register(userDto), res);
             }, gson::toJson);
             
             Spark.put(rootUrl()+"/:id", (req, res) -> {
@@ -61,6 +75,11 @@ public class UsersController extends ControllerBase {
                 EditUserDto dto = gson.fromJson(req.body(), EditUserDto.class);
                 return render(uc.put(Long.parseLong(req.params(":id")), dto), res);
             });
+            
+            Spark.delete(rootUrl()+"/:id", (req, res) -> {
+                UsersController uc = createController(req);
+                return render(uc.delete(Long.parseLong(req.params(":id"))), res);
+            }, gson::toJson);
             
             Spark.get(rootUrl()+"/activate/:token", (req, res) -> {
                 UsersController uc = createController(req);
@@ -95,7 +114,6 @@ public class UsersController extends ControllerBase {
         public String rootUrl() {
             return super.rootUrl() + "/users";
         }
-
     }
     
     private UserProvider up;
@@ -122,36 +140,27 @@ public class UsersController extends ControllerBase {
             return handle(e);
         }
     }
-    
-    public HttpResponse resendLink(ResetPassReqDto dto) {
-        User user = up.getUserByLogin(dto.getLogin());
-        if(user == null)
-            return ok("");
-        if(!user.isBlocked() || user.isEmailValid())
-            return ok("");
-        sendActivationToken(user);
-        return ok("");
-    }
-    
-    public HttpResponse put(long id, EditUserDto dto) throws ProviderException {
-        List<ErrorDto> errors = EditUserDto.validate(dto);
+
+    public HttpResponse post(AddUserDto userDto) throws ProviderException {
+        List<ErrorDto> errors = AddUserDto.validate(userDto);
         if(!errors.isEmpty())
             return badRequest(errors);
+        
         try {
-            up.updateUser(id, dto);
-            return ok("");
-        } catch(ProviderException e) {
+            User user = up.createUser(userDto);
+            return created("users/"+user.getId(), new UserDto.Builder().user(user).build());
+        } catch (ProviderException e) {
             return handle(e);
         }
     }
-    
-    public HttpResponse post(RegisterUserDto userDto) throws ProviderException {
+
+    public HttpResponse register(RegisterUserDto userDto) throws ProviderException {
         List<ErrorDto> errors = RegisterUserDto.validate(userDto);
         if(!errors.isEmpty())
             return badRequest(errors);
         
         try {
-            User user = up.createUser(userDto.getEmail().trim(), 
+            User user = up.registerUser(userDto.getEmail().trim(), 
                     userDto.getPassword(), userDto.isCheckMarketing());
             requestContext.setUser(user);
             requestContext.getDeviceProvider().createDevice(userDto.getImei());
@@ -169,7 +178,47 @@ public class UsersController extends ControllerBase {
             throw ex;
         }
     }
-
+           
+    public HttpResponse put(long id, EditUserDto dto) throws ProviderException {
+        List<ErrorDto> errors = EditUserDto.validate(dto);
+        if(!errors.isEmpty())
+            return badRequest(errors);
+        
+        try {
+            up.updateUser(id, dto);
+            return ok("");
+        } catch(ProviderException e) {
+            return handle(e);
+        }
+    }
+    
+    public HttpResponse delete(long id) throws Exception {
+        
+        try  {
+            up.removeUser(id);
+            return ok("");
+            
+        } catch(ProviderRemovingException e) {
+            if (e.getType() == ProviderException.Type.DELETING_ITSELF) {
+                return badRequest(Collections.singletonList(new ErrorDto(MessageKeys.ERR_USER_DELETING_ITSELF)));
+            }
+            if (e.getType() == ProviderException.Type.ACCESS_DENIED || e.getType() == ProviderException.Type.NOT_FOUND) {
+                return handle(e);
+            }
+            throw e;
+        }
+    }
+    
+    public HttpResponse resendLink(ResetPassReqDto dto) {
+        User user = up.getUserByLogin(dto.getLogin());
+        if(user == null)
+            return ok("");
+        if(!user.isBlocked() || user.isEmailValid())
+            return ok("");
+        sendActivationToken(user);
+        return ok("");
+    }
+    
     private void sendActivationToken(User user) {
         String token = user.getEmailValidationToken();
         if(token != null) {

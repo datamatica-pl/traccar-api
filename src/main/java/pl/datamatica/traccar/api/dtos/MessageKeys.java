@@ -20,6 +20,15 @@ public class MessageKeys {
     public static final String ERR_ACCESS_DENIED = "err_access_denied";
     public static final String ERR_NOT_FOUND = "err_not_found";
     
+    public static final String ERR_AUTH_INVALID_HEADER_FORMAT = "err_auth_invalid_header_format";
+    public static final String ERR_AUTH_INVALID_SCHEME = "err_auth_invalid_scheme";
+    public static final String ERR_AUTH_PARAMETER_NOT_BASE64 = "err_auth_parameter_not_base64";
+    public static final String ERR_AUTH_NO_PASSWORD = "err_auth_no_password";
+    public static final String ERR_AUTH_NO_CREDENTIALS = "err_auth_no_credentials";
+    public static final String ERR_AUTH_NO_SUCH_USER = "err_auth_no_such_user";
+    public static final String ERR_AUTH_NO_COLON_IN_PARAMETER = "err_auth_no_colon_in_parameter";
+    
+    
     public static final String ERR_TOKEN_REJECTED = "err_token_rejected";
     
     public static final String ERR_DATA_NOT_PROVIDED = "err_data_not_provided";
@@ -100,8 +109,12 @@ public class MessageKeys {
     public static final String ERR_USER_ADMIN_NOT_PROVIDED = "err_user_admin_not_provided";
     public static final String ERR_USER_ARCHIVE_NOT_PROVIDED = "err_user_archive_not_provided";
     public static final String ERR_USER_READONLY_NOT_PROVIDED = "err_user_readonly_not_provided";
+    public static final String ERR_USER_BLOCKED_NOT_PROVIDED = "err_user_blocked_not_provided";
     public static final String ERR_USER_PASSWORD_NOT_PROVIDED = "err_user_password_not_provided";
     public static final String ERR_USER_NOTIFICATION_EVENTS_NOT_PROVIDED = "err_user_notification_events_not_provided";
+    public static final String ERR_USER_LOGIN_NOT_PROVIDED = "err_user_login_not_provided";
+    
+    public static final String ERR_USER_DELETING_ITSELF = "err_user_deleting_itself";
     
     public static final String ERR_DEVICE_GROUP_NAME_NOT_PROVIDED = "err_device_group_name_not_provided";
     public static final String ERR_DEVICE_GROUP_WOULD_CREATE_CYCLE = "err_device_group_would_create_cycle";

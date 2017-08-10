@@ -42,12 +42,15 @@ public class EditUserDto {
             errors.add(new ErrorDto(ERR_USER_ARCHIVE_NOT_PROVIDED));
         if(dto.readOnly == null)
             errors.add(new ErrorDto(ERR_USER_READONLY_NOT_PROVIDED));
+        if(dto.blocked == null)
+            errors.add(new ErrorDto(ERR_USER_BLOCKED_NOT_PROVIDED));
         if(dto.password == null || dto.password.isEmpty())
             errors.add(new ErrorDto(ERR_USER_PASSWORD_NOT_PROVIDED));
         if(dto.notificationEvents == null)
             errors.add(new ErrorDto(ERR_USER_NOTIFICATION_EVENTS_NOT_PROVIDED));
         return errors;
     }
+    
     protected final String email;
     protected final String companyName;
     protected final String firstName;

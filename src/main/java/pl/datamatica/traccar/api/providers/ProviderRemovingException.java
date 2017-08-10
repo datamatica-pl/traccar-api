@@ -14,13 +14,16 @@
  *  You should have received a copy of the GNU Affero General Public License
  *  along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-package pl.datamatica.traccar.api.auth;
+package pl.datamatica.traccar.api.providers;
 
-public class AuthenticationException extends IllegalArgumentException {
-
-    public AuthenticationException(String err) {
-        super(err);
-    }
+/**
+ *
+ * @author piotrkrzeszewski
+ */
+public class ProviderRemovingException extends ProviderException {
     
+    public ProviderRemovingException(Type type) {
+        super(type);
+    }
     
 }

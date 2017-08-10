@@ -24,6 +24,7 @@ import java.util.stream.Stream;
 import javax.persistence.EntityManager;
 import javax.persistence.Query;
 import pl.datamatica.traccar.api.dtos.in.AddDeviceGroupDto;
+import pl.datamatica.traccar.model.Device;
 import pl.datamatica.traccar.model.Group;
 import pl.datamatica.traccar.model.User;
 
@@ -112,6 +113,12 @@ public class DeviceGroupProvider extends ProviderBase {
         query.setParameter("id", group.getId());
         for (Group gr : (List<Group>) query.getResultList()) {
             gr.setParent(group.getParent());
+        }
+        
+        query = em.createQuery("SELECT d FROM Device d WHERE d.group.id = :id");
+        query.setParameter("id", group.getId());
+        for (Device dev : (List<Device>) query.getResultList()) {
+            dev.setGroup(group.getParent());
         }
         
         group.getUsers().clear();

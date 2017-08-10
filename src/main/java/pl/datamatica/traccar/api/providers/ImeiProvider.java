@@ -104,7 +104,8 @@ public class ImeiProvider {
             final MetadataValidator mdv = new MetadataValidator();
             
             if (!mdv.isImeiValid(imeiStr)) {
-                throw new IllegalArgumentException("Invalid IMEI, only digits are valid in IMEI.");
+                // "Invalid IMEI, only digits are valid in IMEI."
+                return false;
             }
             
             if (imeiExistenceCheckURL.equals("")) {

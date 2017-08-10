@@ -23,6 +23,7 @@ import pl.datamatica.traccar.model.User;
 import static org.junit.Assert.*;
 import org.mockito.Mockito;
 import static pl.datamatica.traccar.api.auth.AuthenticationException.*;
+import pl.datamatica.traccar.api.dtos.MessageKeys;
 import pl.datamatica.traccar.api.providers.UserProvider;
 
 public class BasicAuthFilterTest {
@@ -44,7 +45,7 @@ public class BasicAuthFilterTest {
         Mockito.when(users.authenticateUser(validCredentials.getLogin(), validCredentials.getPassword()))
                 .thenReturn(validUser);
         Mockito.when(users.authenticateUser(invalidCredentials.getLogin(), invalidCredentials.getPassword()))
-                .thenThrow(new AuthenticationException(ErrorType.NO_SUCH_USER));
+                .thenThrow(new AuthenticationException(MessageKeys.ERR_AUTH_NO_SUCH_USER));
     }
     
     @Before
@@ -63,7 +64,7 @@ public class BasicAuthFilterTest {
         try {
             filter.verifyCredentials(invalidCredentials, users);
         } catch(AuthenticationException e) {
-            assertEquals(e.type, ErrorType.NO_SUCH_USER);
+            assertEquals(e.getMessage(), MessageKeys.ERR_AUTH_NO_SUCH_USER);
             return;
         }
         fail();
@@ -79,7 +80,7 @@ public class BasicAuthFilterTest {
         try {
             filter.readCredentials(null);
         } catch(AuthenticationException e) {
-            assertEquals(e.type, ErrorType.NO_CREDENTIALS);
+            assertEquals(e.getMessage(), MessageKeys.ERR_AUTH_NO_CREDENTIALS);
             return;
         }
         fail();
@@ -90,7 +91,7 @@ public class BasicAuthFilterTest {
         try{
             filter.readCredentials("NotBasic "+ getValidHeaderParam());
         } catch(AuthenticationException e) {
-            assertEquals(e.type, ErrorType.INVALID_SCHEME);
+            assertEquals(e.getMessage(), MessageKeys.ERR_AUTH_INVALID_SCHEME);
         }
     }
     
@@ -105,7 +106,7 @@ public class BasicAuthFilterTest {
         try {
             filter.readCredentials("Basic "+getValidHeaderParam()+" asdfasdfasdf");
         } catch(AuthenticationException e) {
-            assertEquals(e.type, ErrorType.HEADER_FORMAT);
+            assertEquals(e.getMessage(), MessageKeys.ERR_AUTH_INVALID_HEADER_FORMAT);
             return;
         }
         fail();
@@ -116,7 +117,7 @@ public class BasicAuthFilterTest {
         try {
             filter.readCredentials("Basic");
         } catch(AuthenticationException e) {
-            assertEquals(e.type, ErrorType.HEADER_FORMAT);
+            assertEquals(e.getMessage(), MessageKeys.ERR_AUTH_INVALID_HEADER_FORMAT);
             return;
         }
         fail();
@@ -127,7 +128,7 @@ public class BasicAuthFilterTest {
         try {
             filter.readCredentials("Basic ");
         } catch(AuthenticationException e) {
-            assertEquals(e.type, ErrorType.HEADER_FORMAT);
+            assertEquals(e.getMessage(), MessageKeys.ERR_AUTH_INVALID_HEADER_FORMAT);
             return;
         }
         fail();
