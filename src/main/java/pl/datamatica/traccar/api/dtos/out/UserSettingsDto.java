@@ -18,6 +18,7 @@ package pl.datamatica.traccar.api.dtos.out;
 
 import pl.datamatica.traccar.api.dtos.in.EditUserSettingsDto;
 import pl.datamatica.traccar.model.UserSettings;
+import pl.datamatica.traccar.model.UserSettings.SpeedUnit;
 
 /**
  *
@@ -175,7 +176,10 @@ public class UserSettingsDto extends EditUserSettingsDto {
             this.overlays = us.getOverlays();
             this.speedForFilter = us.getSpeedForFilter();
             this.speedModifier = us.getSpeedModifier();
-            this.speedUnit = us.getSpeedUnit().name();
+            if(us.getSpeedUnit() == null)
+                this.speedUnit = SpeedUnit.kilometersPerHour.name();
+            else
+                this.speedUnit = us.getSpeedUnit().name();
             this.timePrintInterval = us.getTimePrintInterval();
             this.timeZoneId = us.getTimeZoneId();
             this.traceInterval = us.getTraceInterval();

@@ -41,6 +41,9 @@ public class DeviceModel extends UpdateTimestampedEntity implements Serializable
 
     @Column(nullable = false, length=100)
     private String modelName;
+    
+    @Column(nullable = false, length=100)
+    private String protocolName;
 
     @Column(length=500)
     private String imageUrl;
@@ -89,6 +92,10 @@ public class DeviceModel extends UpdateTimestampedEntity implements Serializable
 
     public void setModelName(String modelName) {
         this.modelName = modelName;
+    }
+    
+    public String getProtocolName() {
+        return protocolName;
     }
 
     public String getImageUrl() {
