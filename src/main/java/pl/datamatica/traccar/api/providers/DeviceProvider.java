@@ -40,7 +40,8 @@ import com.google.gson.JsonObject;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.util.logging.Level;
+import java.util.HashSet;
+import java.util.Set;
 import pl.datamatica.traccar.api.Application;
 import pl.datamatica.traccar.model.RegistrationMaintenance;
 
@@ -62,7 +63,13 @@ public class DeviceProvider extends ProviderBase {
     }
     
     public Device getDevice(long id) throws ProviderException {
-        return get(Device.class, id, this::isVisible);
+        Device d = new Device(get(Device.class, id, this::isVisible));
+        if(!requestUser.getAdmin()) {
+            Set<User> visibleUsers = new HashSet<>(requestUser.getManagedUsers());
+            visibleUsers.add(requestUser);
+            d.getUsers().retainAll(visibleUsers);
+        }
+        return d;
     }
     
     public Device getDeviceByImei(String imei) {
@@ -171,7 +178,7 @@ public class DeviceProvider extends ProviderBase {
         boolean shouldManageTransaction = !em.getTransaction().isActive();
         if(shouldManageTransaction)
             em.getTransaction().begin();
-        Device device = getDevice(id);
+        Device device = get(Device.class, id, this::isVisible);
         if(!isVisible(device))
             throw new ProviderException(Type.ACCESS_DENIED);
         if(device.isDeleted())
@@ -257,7 +264,7 @@ public class DeviceProvider extends ProviderBase {
     public static final Double NauticMilesToKilometersMultiplier = 0.54;
     
     public void updateDevice(long id, EditDeviceDto dto) throws ProviderException {
-        Device device = getDevice(id);
+        Device device = get(Device.class, id, this::isVisible);
         
         device.setName(dto.getDeviceName());
         device.setDeviceModelId(dto.getDeviceModelId());
@@ -282,7 +289,7 @@ public class DeviceProvider extends ProviderBase {
     }
 
     public void applyPatch(long id, JsonObject changes) throws ProviderException {
-        Device d = getDevice(id);
+        Device d = get(Device.class, id, this::isVisible);
         if(changes.has("deviceName"))
             d.setName(changes.get("deviceName").getAsString());
         if(changes.has("deviceModelId"))
@@ -440,5 +447,25 @@ public class DeviceProvider extends ProviderBase {
             d.setRegistrations(rms);
         }
         em.persist(d);
+    }
+    
+    public void updateDeviceShare(long id, List<Long> userIds) throws ProviderException {
+        Device d = get(Device.class, id, this::isVisible);
+        if(requestUser.getAdmin())
+            d.getUsers().clear();
+        else
+            d.getUsers().removeAll(requestUser.getManagedUsers());
+        Set<Long> ids = new HashSet<>(userIds);
+        List<User> users;
+        if(requestUser.getAdmin()) {
+            TypedQuery<User> tq = em.createQuery("from User u where u.id in :ids", User.class);
+            tq.setParameter("ids", userIds);
+            users = tq.getResultList();
+        } else {
+            users = new ArrayList<>(requestUser.getManagedUsers());
+            users.add(requestUser);
+            users.removeIf(u -> !userIds.contains(u.getId()));
+        }
+        d.getUsers().addAll(users);
     }
 }

@@ -19,6 +19,7 @@ package pl.datamatica.traccar.api.controllers;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import com.google.gson.reflect.TypeToken;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -51,6 +52,7 @@ import pl.datamatica.traccar.model.Picture;
 import pl.datamatica.traccar.model.Position;
 import pl.datamatica.traccar.model.User;
 import spark.Request;
+import spark.Response;
 import spark.Spark;
 
 public class DevicesController extends ControllerBase {
@@ -120,6 +122,20 @@ public class DevicesController extends ControllerBase {
                 JsonElement body = new JsonParser().parse(req.body());
                 return render(dc.patch(id, body), res);
             }, gson::toJson);
+            
+            Spark.get(rootUrl()+"/:id/share", (req, res) -> {
+                DevicesController dc = createController(req);
+                long id = Long.parseLong(req.params(":id"));
+                return render(dc.getDeviceShare(id), res);
+            });
+            
+            Spark.put(rootUrl()+"/:id/share", (Request req, Response res) -> {
+                DevicesController dc = createController(req);
+                long id = Long.parseLong(req.params(":id"));
+                List<Long> ids = gson.fromJson(req.body(), 
+                        new TypeToken<List<Long>>() {}.getType());
+                return render(dc.updateDeviceShare(id, ids), res);
+            });
         }
 
         private DevicesController createController(Request req) {
@@ -313,6 +329,27 @@ public class DevicesController extends ControllerBase {
             return handle(ex);
         }
     }
+    
+    public HttpResponse getDeviceShare(long id) throws ProviderException {
+        try {
+            Device d = dp.getDevice(id);
+            return ok(d.getUsers().stream()
+                    .map(u -> u.getId())
+                    .collect(Collectors.toList()));
+        } catch(ProviderException e) {
+            return handle(e);
+        }
+    }
+    
+    public HttpResponse updateDeviceShare(long id, List<Long> userIds) throws ProviderException {
+        try {
+            dp.updateDeviceShare(id, userIds);
+            return ok("");
+        } catch(ProviderException e) {
+            return handle(e);
+        }
+    }
+
     
     List<Position> filterPositions(List<Position> pos, PositionsQueryParams qp) {
         Stream<Position> filtered = pos.stream();
