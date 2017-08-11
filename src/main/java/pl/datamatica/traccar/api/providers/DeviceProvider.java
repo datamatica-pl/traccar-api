@@ -455,9 +455,17 @@ public class DeviceProvider extends ProviderBase {
             d.getUsers().clear();
         else
             d.getUsers().removeAll(requestUser.getManagedUsers());
-        TypedQuery<User> tq = em.createQuery("from User u where u.id in :ids", User.class);
-        tq.setParameter("ids", userIds);
-        List<User> users = tq.getResultList();
+        Set<Long> ids = new HashSet<>(userIds);
+        List<User> users;
+        if(requestUser.getAdmin()) {
+            TypedQuery<User> tq = em.createQuery("from User u where u.id in :ids", User.class);
+            tq.setParameter("ids", userIds);
+            users = tq.getResultList();
+        } else {
+            users = new ArrayList<>(requestUser.getManagedUsers());
+            users.add(requestUser);
+            users.removeIf(u -> !userIds.contains(u.getId()));
+        }
         d.getUsers().addAll(users);
     }
 }
