@@ -16,9 +16,11 @@
  */
 package pl.datamatica.traccar.api.providers;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -63,6 +65,11 @@ public class GeoFenceProvider extends ProviderBase{
     public GeoFence getGeoFence(long id) throws ProviderException {
         GeoFence geoFence = get(GeoFence.class, id, this::isVisible).clone();
         geoFence.getDevices().retainAll(requestUser.getAllAvailableDevices());
+        if(!requestUser.getAdmin()) {
+            HashSet<User> users = new HashSet<>(requestUser.getAllManagedUsers());
+            users.add(requestUser);
+            geoFence.getUsers().retainAll(users);
+        }
         return geoFence;
     }
 
@@ -119,6 +126,26 @@ public class GeoFenceProvider extends ProviderBase{
         em.persist(geoFence);
         logger.info("{} updated geofence {} (id={})",
                 requestUser.getLogin(), geoFence.getName(), geoFence.getId());
+    }
+    
+    public void updateGeofenceShare(long id, List<Long> uids) throws ProviderException{
+        GeoFence gf = get(GeoFence.class, id, this::isVisible);
+        if(requestUser.getAdmin())
+            gf.getUsers().clear();
+        else
+            gf.getUsers().removeAll(requestUser.getAllManagedUsers());
+        Set<Long> ids = new HashSet<>(uids);
+        List<User> users;
+        if(requestUser.getAdmin()) {
+            TypedQuery<User> tq = em.createQuery("from User u where u.id in :ids", User.class);
+            tq.setParameter("ids", uids);
+            users = tq.getResultList();
+        } else {
+            users = new ArrayList<>(requestUser.getManagedUsers());
+            users.add(requestUser);
+            users.removeIf(u -> !ids.contains(u.getId()));
+        }
+        gf.getUsers().addAll(users);
     }
 
     private Stream<GeoFence> getAllGeoFences() {
