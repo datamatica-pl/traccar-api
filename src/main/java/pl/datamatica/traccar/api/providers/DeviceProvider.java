@@ -454,7 +454,7 @@ public class DeviceProvider extends ProviderBase {
         if(requestUser.getAdmin())
             d.getUsers().clear();
         else
-            d.getUsers().removeAll(requestUser.getManagedUsers());
+            d.getUsers().removeAll(requestUser.getAllManagedUsers());
         Set<Long> ids = new HashSet<>(userIds);
         List<User> users;
         if(requestUser.getAdmin()) {
@@ -464,7 +464,7 @@ public class DeviceProvider extends ProviderBase {
         } else {
             users = new ArrayList<>(requestUser.getManagedUsers());
             users.add(requestUser);
-            users.removeIf(u -> !userIds.contains(u.getId()));
+            users.removeIf(u -> !ids.contains(u.getId()));
         }
         d.getUsers().addAll(users);
     }
