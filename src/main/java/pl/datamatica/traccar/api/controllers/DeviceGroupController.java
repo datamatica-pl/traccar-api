@@ -16,6 +16,7 @@
  */
 package pl.datamatica.traccar.api.controllers;
 
+import com.google.gson.reflect.TypeToken;
 import java.util.List;
 import java.util.stream.Collectors;
 import pl.datamatica.traccar.api.Application;
@@ -67,6 +68,20 @@ public class DeviceGroupController extends ControllerBase {
                 DeviceGroupController dgc = createController(req);
                 return render(dgc.delete(Long.parseLong(req.params(":id"))), res);
             }, gson::toJson);
+            
+            Spark.get(baseUrl()+"/:id/share", (req, res) -> {
+                DeviceGroupController dgc = createController(req);
+                long id = Long.parseLong(req.params(":id"));
+                return render(dgc.getGroupShare(id), res);
+            });
+            
+            Spark.put(baseUrl()+"/:id/share", (req, res) -> {
+                DeviceGroupController dgc = createController(req);
+                long id = Long.parseLong(req.params(":id"));
+                List<Long> ids = gson.fromJson(req.body(), 
+                        new TypeToken<List<Long>>() {}.getType());
+                return render(dgc.updateGroupShare(id, ids), res);
+            });
         }
 
         private DeviceGroupController createController(Request req) {
@@ -131,6 +146,26 @@ public class DeviceGroupController extends ControllerBase {
     public HttpResponse delete(long id) throws ProviderException {
         try {
             provider.deleteGroup(id);
+            return ok("");
+        } catch(ProviderException e) {
+            return handle(e);
+        }
+    }
+    
+    public HttpResponse getGroupShare(long id) throws ProviderException {
+        try {
+            Group g = provider.getGroup(id);
+            return ok(g.getUsers().stream()
+                    .map(u -> u.getId())
+                    .collect(Collectors.toList()));
+        } catch(ProviderException e) {
+            return handle(e);
+        }
+    }
+    
+    public HttpResponse updateGroupShare(long id, List<Long> uids) throws ProviderException {
+        try {
+            provider.updateGroupShare(id, uids);
             return ok("");
         } catch(ProviderException e) {
             return handle(e);
