@@ -16,13 +16,16 @@
  */
 package pl.datamatica.traccar.api.providers;
 
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import javax.persistence.EntityManager;
 import javax.persistence.Query;
+import javax.persistence.TypedQuery;
 import pl.datamatica.traccar.api.dtos.in.AddDeviceGroupDto;
 import pl.datamatica.traccar.model.Device;
 import pl.datamatica.traccar.model.Group;
@@ -42,9 +45,18 @@ public class DeviceGroupProvider extends ProviderBase {
         devicesProvider = devices;
     }
     
+    public Group getEditableGroup(long id) throws ProviderException {
+        return get(Group.class, id, this::isVisible);
+    }
+    
     public Group getGroup(long id) throws ProviderException {
-        return get(Group.class, id, 
-                g -> requestUser.getAdmin() || requestUser.getGroups().contains(g));
+        Group g = new Group(get(Group.class, id, this::isVisible));
+        if(!requestUser.getAdmin()) {
+            Set<User> u = new HashSet<>(requestUser.getAllManagedUsers());
+            u.add(requestUser);
+            g.getUsers().retainAll(u);
+        }
+        return g;
     }
     
     public Group getSingleGroup(long id)  throws ProviderException {
@@ -90,14 +102,14 @@ public class DeviceGroupProvider extends ProviderBase {
     }
     
     public void updateGroup(long id, AddDeviceGroupDto dto) throws ProviderException {
-        Group group = getGroup(id);
+        Group group = getEditableGroup(id);
         editGroupWithDto(group, dto);
         
         em.persist(group);
     }
     
     public void deleteGroup(long id) throws ProviderException {
-        Group group = getGroup(id);
+        Group group = getEditableGroup(id);
         
         hardRemoveGroup(group);
     }
@@ -127,5 +139,29 @@ public class DeviceGroupProvider extends ProviderBase {
         query = em.createQuery("DELETE FROM Group WHERE id = ?");
         query.setParameter(1, group.getId());
         query.executeUpdate();
+    }
+
+    public void updateGroupShare(long id, List<Long> uids) throws ProviderException {
+        Group g = get(Group.class, id, this::isVisible);
+        if(requestUser.getAdmin())
+            g.getUsers().clear();
+        else
+            g.getUsers().removeAll(requestUser.getAllManagedUsers());
+        Set<Long> ids = new HashSet<>(uids);
+        List<User> users;
+        if(requestUser.getAdmin()) {
+            TypedQuery<User> tq = em.createQuery("from User u where u.id in :ids", User.class);
+            tq.setParameter("ids", uids);
+            users = tq.getResultList();
+        } else {
+            users = new ArrayList<>(requestUser.getManagedUsers());
+            users.add(requestUser);
+            users.removeIf(u -> !ids.contains(u.getId()));
+        }
+        g.getUsers().addAll(users);
+    }
+    
+    private boolean isVisible(Group g) {
+        return requestUser.getAdmin() || requestUser.getGroups().contains(g);
     }
 }

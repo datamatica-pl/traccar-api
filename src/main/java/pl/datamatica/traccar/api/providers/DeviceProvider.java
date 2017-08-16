@@ -344,7 +344,7 @@ public class DeviceProvider extends ProviderBase {
             if(changes.get("groupId").isJsonNull())
                 d.setGroup(null);
             else
-                d.setGroup(groups.getGroup(changes.get("groupId").getAsLong()));
+                d.setGroup(groups.getEditableGroup(changes.get("groupId").getAsLong()));
         }
         if(changes.has("vehicleInfo")) {
             if(changes.get("vehicleInfo").isJsonNull())
