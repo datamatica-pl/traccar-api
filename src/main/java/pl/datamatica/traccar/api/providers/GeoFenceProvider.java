@@ -132,8 +132,10 @@ public class GeoFenceProvider extends ProviderBase{
         GeoFence gf = get(GeoFence.class, id, this::isVisible);
         if(requestUser.getAdmin())
             gf.getUsers().clear();
-        else
+        else {
             gf.getUsers().removeAll(requestUser.getAllManagedUsers());
+            gf.getUsers().remove(requestUser);
+        }
         Set<Long> ids = new HashSet<>(uids);
         List<User> users;
         if(requestUser.getAdmin()) {

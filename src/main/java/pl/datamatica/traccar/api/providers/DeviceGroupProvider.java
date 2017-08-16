@@ -145,8 +145,10 @@ public class DeviceGroupProvider extends ProviderBase {
         Group g = get(Group.class, id, this::isVisible);
         if(requestUser.getAdmin())
             g.getUsers().clear();
-        else
+        else {
             g.getUsers().removeAll(requestUser.getAllManagedUsers());
+            g.getUsers().remove(requestUser);
+        }
         Set<Long> ids = new HashSet<>(uids);
         List<User> users;
         if(requestUser.getAdmin()) {

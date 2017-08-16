@@ -453,8 +453,10 @@ public class DeviceProvider extends ProviderBase {
         Device d = get(Device.class, id, this::isVisible);
         if(requestUser.getAdmin())
             d.getUsers().clear();
-        else
+        else {
             d.getUsers().removeAll(requestUser.getAllManagedUsers());
+            d.getUsers().remove(requestUser);
+        }
         Set<Long> ids = new HashSet<>(userIds);
         List<User> users;
         if(requestUser.getAdmin()) {
