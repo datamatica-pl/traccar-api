@@ -42,6 +42,7 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.logging.Level;
 import pl.datamatica.traccar.api.Application;
 import pl.datamatica.traccar.model.RegistrationMaintenance;
 
@@ -445,6 +446,21 @@ public class DeviceProvider extends ProviderBase {
                 }
             }
             d.setRegistrations(rms);
+        }
+        if(changes.has("lastAlarmsCheck")) {
+            Date val;
+            try {
+                val = dateFormat.parse(changes.get("lastAlarmsCheck").getAsString());
+            } catch (ParseException ex) {
+                throw new IllegalArgumentException("Unparseable lastAlarmsCheck");
+            }
+            UserDeviceStatus.IdClass udsid = new UserDeviceStatus.IdClass(requestUser, d);
+            UserDeviceStatus status = em.find(UserDeviceStatus.class, udsid);
+            if(status == null)
+                status = new UserDeviceStatus(udsid);
+            status.setLastCheck(val);
+            status.setUnreadAlarms(false);
+            em.merge(status);
         }
         em.persist(d);
     }
