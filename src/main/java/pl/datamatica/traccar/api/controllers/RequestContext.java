@@ -32,6 +32,7 @@ import pl.datamatica.traccar.api.providers.DeviceModelProvider;
 import pl.datamatica.traccar.api.providers.DeviceProvider;
 import pl.datamatica.traccar.api.providers.FileProvider;
 import pl.datamatica.traccar.api.providers.GeoFenceProvider;
+import pl.datamatica.traccar.api.providers.DeviceGroupProvider;
 import pl.datamatica.traccar.api.providers.ImageProvider;
 import pl.datamatica.traccar.api.providers.ImeiProvider;
 import pl.datamatica.traccar.api.providers.MailSender;
@@ -47,6 +48,9 @@ import spark.Response;
 import spark.Session;
 
 public class RequestContext implements AutoCloseable {
+    
+    public static final String REQUEST_FIELD_IS_AUTH = "isAuthorized";
+    public static final String REQUEST_FIELD_ERROR_DTO = "errorDto";
     
     private static final String IF_MODIFIED_SINCE_HEADER = "If-Modified-Since";
     
@@ -65,6 +69,7 @@ public class RequestContext implements AutoCloseable {
     private PositionProvider positions;
     private NotificationSettingsProvider notificationSettings;
     private SessionProvider sessionProvider;
+    private DeviceGroupProvider deviceGroupProvider;
     
     private Image emptyMarker;
     
@@ -97,7 +102,7 @@ public class RequestContext implements AutoCloseable {
     
     public DeviceProvider getDeviceProvider() {
         if(devices == null)
-            devices = new DeviceProvider(em, user, getImeiProvider());
+            devices = new DeviceProvider(em, user, getImeiProvider(), getDeviceGroupProvider());
         return devices;
     }
     
@@ -180,6 +185,17 @@ public class RequestContext implements AutoCloseable {
     
     PicturesProvider getPicturesProvider() {
         return new PicturesProvider(em);
+    }
+    
+    public DeviceGroupProvider getDeviceGroupProvider() {
+        if (deviceGroupProvider == null) {
+            deviceGroupProvider = new DeviceGroupProvider(em, user);
+            if (devices == null) {
+                devices = new DeviceProvider(em, user, getImeiProvider(), deviceGroupProvider);
+            }
+            deviceGroupProvider.setDeviceProvider(devices);
+        }
+        return deviceGroupProvider;
     }
     
     public String getApiRoot() {

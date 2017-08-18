@@ -14,27 +14,16 @@
  *  You should have received a copy of the GNU Affero General Public License
  *  along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-package pl.datamatica.traccar.api.dtos.in;
+package pl.datamatica.traccar.api.providers;
 
-import java.util.Collections;
-import java.util.List;
-import pl.datamatica.traccar.api.dtos.MessageKeys;
-import pl.datamatica.traccar.api.dtos.out.ErrorDto;
-
-public class NotificationTokenDto {
-    private final String token;
+/**
+ *
+ * @author piotrkrzeszewski
+ */
+public class ProviderRemovingException extends ProviderException {
     
-    public NotificationTokenDto(String token) {
-        this.token = token;
-    }
-
-    public String getToken() {
-        return token;
+    public ProviderRemovingException(Type type) {
+        super(type);
     }
     
-    public static List<ErrorDto> validate(NotificationTokenDto tokenDto) {
-        if(tokenDto == null || tokenDto.getToken() == null)
-            return Collections.singletonList(new ErrorDto(MessageKeys.ERR_DATA_NOT_PROVIDED));
-        return Collections.EMPTY_LIST;
-    }
 }

@@ -40,5 +40,22 @@ public class CommandService {
         
         return result;
     }
+    
+    public Map<String, Object> sendCustomCommand(Object activeDevice, String msg) {
+        final Map<String, Object> result = new HashMap<>();
+        final Object awaiter = new Object();
+        
+        try {
+            Method sendCommand = activeDevice.getClass().getDeclaredMethod("write", Object.class,
+                                Object.class);
+            sendCommand.invoke(activeDevice, msg, new CommandHandler(result, awaiter));
+            synchronized(awaiter) {
+                awaiter.wait();
+            }
+        } catch(Exception e) {
+            return null;
+        }
+        return result;
+    }
 
 }

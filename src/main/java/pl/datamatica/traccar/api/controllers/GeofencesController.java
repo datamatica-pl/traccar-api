@@ -16,9 +16,11 @@
  */
 package pl.datamatica.traccar.api.controllers;
 
+import com.google.gson.reflect.TypeToken;
 import java.util.List;
 import java.util.stream.Collectors;
 import pl.datamatica.traccar.api.Application;
+import static pl.datamatica.traccar.api.controllers.ControllerBase.render;
 import pl.datamatica.traccar.api.dtos.in.AddGeoFenceDto;
 import pl.datamatica.traccar.api.dtos.out.ErrorDto;
 import pl.datamatica.traccar.api.dtos.out.GeoFenceDto;
@@ -59,6 +61,20 @@ public class GeofencesController extends ControllerBase{
             Spark.delete(rootUrl()+"/:id", (req, res) -> {
                 GeofencesController controller = createController(req);
                 return render(controller.delete(Long.parseLong(req.params(":id"))), res);
+            }, gson::toJson);
+            
+            Spark.get(rootUrl()+"/:id/share", (req, res) -> {
+                GeofencesController gc = createController(req);
+                long id = Long.parseLong(req.params(":id"));
+                return render(gc.getGeofenceShare(id), res);
+            }, gson::toJson);
+            
+            Spark.put(rootUrl()+"/:id/share", (req, res) -> {
+                GeofencesController gc = createController(req);
+                long id = Long.parseLong(req.params(":id"));
+                List<Long> ids = gson.fromJson(req.body(), 
+                        new TypeToken<List<Long>>() {}.getType());
+                return render(gc.updateGeofenceShare(id, ids), res);
             }, gson::toJson);
         }
         
@@ -121,6 +137,26 @@ public class GeofencesController extends ControllerBase{
     public HttpResponse delete(long id) throws ProviderException {
         try {
             provider.delete(id);
+            return ok("");
+        } catch(ProviderException e) {
+            return handle(e);
+        }
+    }
+    
+    public HttpResponse getGeofenceShare(long id) throws ProviderException {
+        try {
+            GeoFence gf = provider.getGeoFence(id);
+            return ok(gf.getUsers().stream()
+                    .map(u -> u.getId())
+                    .collect(Collectors.toList()));
+        } catch(ProviderException e) {
+            return handle(e);
+        }
+    }
+    
+    public HttpResponse updateGeofenceShare(long id, List<Long> uids) throws ProviderException {
+        try {
+            provider.updateGeofenceShare(id, uids);
             return ok("");
         } catch(ProviderException e) {
             return handle(e);

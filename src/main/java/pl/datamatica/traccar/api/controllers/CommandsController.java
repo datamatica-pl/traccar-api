@@ -68,6 +68,12 @@ public class CommandsController extends ControllerBase {
 
                 res.status(HttpStatuses.BAD_REQUEST);
                 res.type("application/json");
+                
+                if(("custom".equals(commandType) || "extendedCustom".equals(commandType))
+                        && !requestUser.getAdmin()) {
+                    res.status(HttpStatuses.FORBIDDEN);
+                    return getResponseError(MessageKeys.ERR_ACCESS_DENIED);
+                }
 
                 try {
                     device = context.getDeviceProvider().getDevice(deviceId);
@@ -95,36 +101,41 @@ public class CommandsController extends ControllerBase {
                     res.status(HttpStatuses.NOT_FOUND);
                     return getResponseError(MessageKeys.ERR_ACTIVE_DEVICE_NOT_FOUND);
                 }
-
-                BackendCommandProvider bcp = new BackendCommandProvider();
-                Object backendCommand = null;
-                try {
-                    backendCommand = bcp.getBackendCommand(deviceId, commandType);
-                } catch (Exception e) {
-                    return getResponseError(MessageKeys.ERR_CREATE_COMMAND_OBJECT_FAILED);
-                }
-
+                
                 CommandService cs = new CommandService();
-
-                if (commandParams.size() > 0) {
-                    // Change timezone parameter from hours to seconds
-                    if (commandParams.get("timezone") != null) {
-                        long timezoneHours = Long.valueOf(commandParams.get("timezone").toString());
-                        long timezoneSeconds = timezoneHours * 3600;
-                        commandParams.replace("timezone", timezoneSeconds);
-                    }
-
+                Map<String, Object> result;
+                
+                if("custom".equals(commandType)) {
+                    result = cs.sendCustomCommand(activeDevice, commandParams.get("command").toString());
+                } else {
+                    BackendCommandProvider bcp = new BackendCommandProvider();
+                    Object backendCommand = null;
                     try {
-                        backendCommand
-                            .getClass()
-                            .getMethod("setAttributes", Map.class)
-                            .invoke(backendCommand, commandParams);
+                        backendCommand = bcp.getBackendCommand(deviceId, commandType);
                     } catch (Exception e) {
-                        return getResponseError(MessageKeys.ERR_SET_COMMAND_ATTRIBUTES_FAILED);
+                        return getResponseError(MessageKeys.ERR_CREATE_COMMAND_OBJECT_FAILED);
                     }
-                }
 
-                Map<String, Object> result = cs.sendCommand(activeDevice, backendCommand);
+                    if (commandParams.size() > 0) {
+                        // Change timezone parameter from hours to seconds
+                        if (commandParams.get("timezone") != null) {
+                            long timezoneHours = Long.valueOf(commandParams.get("timezone").toString());
+                            long timezoneSeconds = timezoneHours * 3600;
+                            commandParams.replace("timezone", timezoneSeconds);
+                        }
+
+                        try {
+                            backendCommand
+                                .getClass()
+                                .getMethod("setAttributes", Map.class)
+                                .invoke(backendCommand, commandParams);
+                        } catch (Exception e) {
+                            return getResponseError(MessageKeys.ERR_SET_COMMAND_ATTRIBUTES_FAILED);
+                        }
+                    }
+
+                    result = cs.sendCommand(activeDevice, backendCommand);
+                }
 
                 if (result == null || result.get("success") == null) {
                     return getResponseError(MessageKeys.ERR_SEND_COMMAND_FAILED);

@@ -53,7 +53,7 @@ public class RegisterUserDto {
     
     public static List<ErrorDto> validate(RegisterUserDto userDto) {
         if(userDto == null)
-            return Collections.singletonList(new ErrorDto(MessageKeys.ERR_REGISTRATION_DATA_NOT_PROVIDED));
+            return Collections.singletonList(new ErrorDto(MessageKeys.ERR_DATA_NOT_PROVIDED));
         
         List<ErrorDto> errors = new ArrayList<>();
         if(userDto.email == null || userDto.email.isEmpty())

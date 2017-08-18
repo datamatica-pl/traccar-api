@@ -16,8 +16,6 @@
  */
 package pl.datamatica.traccar.api;
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
 import java.awt.Image;
 import java.io.File;
 import java.io.PrintWriter;
@@ -34,7 +32,6 @@ import spark.Spark;
 
 import pl.datamatica.traccar.api.controllers.*;
 import pl.datamatica.traccar.api.auth.BasicAuthFilter;
-import pl.datamatica.traccar.api.dtos.out.AppVersionsInfoDto;
 import pl.datamatica.traccar.api.controllers.RequestContext;
 import pl.datamatica.traccar.api.fcm.AlarmDaemon;
 import pl.datamatica.traccar.api.fcm.Daemon;
@@ -67,7 +64,9 @@ public class Application implements spark.servlet.SparkApplication {
             new NotificationSettingsController.Binder(),
             new ImeisController.Binder(),
             new MarkersController.Binder(),
-            new AppVersionsController.Binder()
+            new AppVersionsController.Binder(),
+            new ApplicationSettingsController.Binder(),
+            new DeviceGroupController.Binder()
         };
     
     private final Daemon[] DAEMONS = new Daemon[]{
@@ -101,6 +100,12 @@ public class Application implements spark.servlet.SparkApplication {
             }
             req.attribute(REQUEST_CONTEXT_KEY, rc);
             baf.handle(req, res);
+            if (!BasicAuthFilter.shouldPassErrorsToController(req)) {
+                if (req.attribute(RequestContext.REQUEST_FIELD_IS_AUTH) != null
+                        && (Boolean)req.attribute(RequestContext.REQUEST_FIELD_IS_AUTH) == false) {
+                    baf.unauthorized(res, req.attribute(RequestContext.REQUEST_FIELD_ERROR_DTO));
+                }
+            }
             //uncomment for debug
             //res.header("Access-Control-Allow-Origin", "http://127.0.0.1:8888");
             res.header("Cache-Control", "max-age=10");

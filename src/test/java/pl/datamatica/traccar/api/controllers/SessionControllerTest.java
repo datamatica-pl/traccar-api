@@ -30,6 +30,7 @@ import pl.datamatica.traccar.api.dtos.out.UserDto;
 import pl.datamatica.traccar.api.providers.SessionProvider;
 import pl.datamatica.traccar.api.responses.*;
 import pl.datamatica.traccar.model.User;
+import pl.datamatica.traccar.model.UserSettings;
 
 public class SessionControllerTest {
     
@@ -45,6 +46,7 @@ public class SessionControllerTest {
         sp = Mockito.mock(SessionProvider.class);
         requestUser = new User();
         requestUser.setLogin("test");
+        requestUser.setUserSettings(new UserSettings());
         RequestContext rc = Mockito.mock(RequestContext.class);
         Mockito.when(rc.getUser()).thenReturn(requestUser);
         Mockito.when(rc.getSessionProvider()).thenReturn(sp);
@@ -88,7 +90,7 @@ public class SessionControllerTest {
     
     @Test
     public void putNotificationToken_noToken() {
-        ErrorDto expectedError = new ErrorDto(MessageKeys.ERR_TOKEN_NOT_PROVIDED);
+        ErrorDto expectedError = new ErrorDto(MessageKeys.ERR_DATA_NOT_PROVIDED);
         
         HttpResponse response = controller.putNotificationToken(null);
         

@@ -22,10 +22,7 @@ import java.util.stream.Stream;
 import javax.persistence.*;
 import org.junit.*;
 import static org.junit.Assert.*;
-import pl.datamatica.traccar.api.dtos.out.ListDto;
-import pl.datamatica.traccar.api.dtos.out.PositionDto;
 import pl.datamatica.traccar.api.providers.ProviderException.*;
-import pl.datamatica.traccar.api.responses.OkCachedResponse;
 import pl.datamatica.traccar.model.Position;
 
 public class PositionProviderTest {
@@ -91,7 +88,7 @@ public class PositionProviderTest {
         position.setTime(new Date());
         position.setServerTime(new Date());
         position.setValid(true);
-        position.setValidStatus(position.VALID_STATUS_ALARM);
+        position.setValidStatus(Position.VALID_STATUS_ALARM);
         position.setDevice(database.managerDevice);
         
         Position position2 = new Position();
@@ -100,7 +97,7 @@ public class PositionProviderTest {
         position2.setTime(new Date());
         position2.setServerTime(new Date());
         position2.setValid(true);
-        position2.setValidStatus(position.VALID_STATUS_CORRECT_POSITION);
+        position2.setValidStatus(Position.VALID_STATUS_CORRECT_POSITION);
         position2.setDevice(database.managerDevice);
         
         em.persist(position);
@@ -109,7 +106,39 @@ public class PositionProviderTest {
         Calendar cal = Calendar.getInstance();
         cal.add(Calendar.DATE, -2);
         
-        Stream<Position> result = provider.getAllAvailablePositions(database.managerDevice, cal.getTime(), 100);
+        Stream<Position> result = provider.getAllAvailablePositions(database.managerDevice, cal.getTime(), null, 100);
+    
+        assertEquals(1, result.count());
+    }
+    
+    @Test
+    public void getAllAvailable_maxZero() {
+        provider = new PositionProvider(em, database.manager);
+        Calendar cal = Calendar.getInstance();
+        cal.add(Calendar.DATE, -2);
+        Stream<Position> result = provider.getAllAvailablePositions(database.managed2Device, cal.getTime(), null, 0);
+    
+        assertEquals(3, result.count());
+    }
+    
+    @Test
+    public void getAllAvailable_maxOne() {
+        provider = new PositionProvider(em, database.manager);
+        Calendar cal = Calendar.getInstance();
+        cal.add(Calendar.DATE, -2);
+        Stream<Position> result = provider.getAllAvailablePositions(database.managed2Device, cal.getTime(), null, 1);
+    
+        assertEquals(1, result.count());
+    }
+    
+    @Test
+    public void getAllAvailable_withEndTime() {
+        provider = new PositionProvider(em, database.manager);
+        Calendar startCal = Calendar.getInstance();
+        startCal.add(Calendar.DATE, -2);
+        Calendar endCal = Calendar.getInstance();
+        endCal.add(Calendar.MINUTE, -45);
+        Stream<Position> result = provider.getAllAvailablePositions(database.managed2Device, startCal.getTime(), endCal.getTime(), 100);
     
         assertEquals(1, result.count());
     }
