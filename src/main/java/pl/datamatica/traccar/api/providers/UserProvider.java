@@ -128,6 +128,7 @@ public class UserProvider extends ProviderBase {
         User user = new User(login, hashedPassword);
         user.setPasswordHashMethod(appSettings.getDefaultHashImplementation());
         user.setUserSettings(new UserSettings());
+        user.setUserGroup(appSettings.getDefaultGroup());
         return user;
     }
     

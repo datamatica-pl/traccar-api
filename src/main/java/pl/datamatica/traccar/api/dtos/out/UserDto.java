@@ -30,6 +30,7 @@ public class UserDto extends EditUserDto {
     private final String login;
     private final Long managedById;
     private final UserSettingsDto settings;
+    private final UserGroupDto userGroup;
     private final boolean premium;
 
     public static class Builder {
@@ -51,6 +52,7 @@ public class UserDto extends EditUserDto {
         private boolean readOnly;
         private List<String> notificationEvents = new ArrayList<>();
         private UserSettingsDto settings;
+        private UserGroupDto userGroup;
         private boolean premium;
 
         public Builder id(final long value) {
@@ -166,9 +168,10 @@ public class UserDto extends EditUserDto {
             return this;
         }
         
-        public Builder userWithSettings(final User user) {
+        public Builder sessionUser(final User user) {
             user(user);
             settings = new UserSettingsDto.Builder().userSettings(user.getUserSettings()).build();
+            userGroup = new UserGroupDto.Builder().userGroup(user.getUserGroup()).build();
             return this;
         }
 
@@ -176,7 +179,7 @@ public class UserDto extends EditUserDto {
             return new UserDto(id, login, email, companyName, firstName, lastName, 
                     phoneNumber, expirationDate, maxNumOfDevices, managedById, 
                     manager, admin, archive, blocked, notificationEvents, readOnly,
-                    settings, premium);
+                    settings, userGroup, premium);
         }
     }
     
@@ -197,6 +200,7 @@ public class UserDto extends EditUserDto {
             final List<String> notificationEvents,
             final boolean readOnly,
             final UserSettingsDto settings,
+            final UserGroupDto userGroup,
             final boolean premium) {
         super(email, companyName, firstName, lastName, phoneNumber,
                 expirationDate, maxNumOfDevices, manager, admin, archive,
@@ -205,6 +209,7 @@ public class UserDto extends EditUserDto {
         this.login = login;
         this.managedById = managedById;
         this.settings = settings;
+        this.userGroup = userGroup;
         this.premium = premium;
     }
     
