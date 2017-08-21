@@ -19,6 +19,8 @@ package pl.datamatica.traccar.api.controllers;
 import java.util.List;
 import java.util.stream.Collectors;
 import pl.datamatica.traccar.api.Application;
+import static pl.datamatica.traccar.api.controllers.ControllerBase.render;
+import pl.datamatica.traccar.api.dtos.out.UserDto;
 import pl.datamatica.traccar.api.dtos.out.UserGroupDto;
 import pl.datamatica.traccar.api.providers.ProviderException;
 import pl.datamatica.traccar.api.providers.UserGroupProvider;
@@ -63,6 +65,11 @@ public class UserGroupsController extends ControllerBase {
 //                DeviceGroupController dgc = createController(req);
 //                return render(dgc.delete(Long.parseLong(req.params(":id"))), res);
 //            }, gson::toJson);
+
+            Spark.get(baseUrl()+"/:id/users", (req, res) -> {
+                UserGroupsController dgc = createController(req);
+                return render(dgc.getAllUsers(Long.parseLong(req.params(":id"))), res);
+            }, gson::toJson);
         }
 
         private UserGroupsController createController(Request req) {
@@ -83,6 +90,14 @@ public class UserGroupsController extends ControllerBase {
         provider = rc.getUserGroupProvider();
     }
     
+    public HttpResponse get(long id) throws Exception {
+        try{
+            return (HttpResponse)ok(new UserGroupDto.Builder().userGroup(provider.getGroup(id)).build());
+        } catch(ProviderException e) {
+            return handle(e);
+        }
+    }
+    
     public HttpResponse get() throws Exception {
         try{
             List<UserGroupDto> dtos = provider.getAllAvailableGroups()
@@ -93,12 +108,15 @@ public class UserGroupsController extends ControllerBase {
             return handle(e);
         }
     }
-    
-    public HttpResponse get(long id) throws Exception {
+
+    public HttpResponse getAllUsers(long id) throws Exception {
         try{
-            return (HttpResponse)ok(new UserGroupDto.Builder().userGroup(provider.getGroup(id)).build());
+            List<Long> dtos = provider.getAllGroupUsers(id)
+                    .collect(Collectors.toList());     
+            return (HttpResponse)ok(dtos);
         } catch(ProviderException e) {
             return handle(e);
         }
-    }
+    } 
+    
 }

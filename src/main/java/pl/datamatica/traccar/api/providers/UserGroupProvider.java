@@ -17,11 +17,10 @@
 package pl.datamatica.traccar.api.providers;
 
 
-import java.util.Set;
-import java.util.stream.Collectors;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.stream.Stream;
 import javax.persistence.EntityManager;
-import pl.datamatica.traccar.model.Group;
 import pl.datamatica.traccar.model.User;
 import pl.datamatica.traccar.model.UserGroup;
 import pl.datamatica.traccar.model.UserPermission;
@@ -40,19 +39,32 @@ public class UserGroupProvider extends ProviderBase {
         this.requestUser = requestUser;
     }
     
+    public void setUserProvider(UserProvider up) {
+        this.userProvider = up;
+    }
+    
     public UserGroup getGroup(long id) throws ProviderException {
         return get(UserGroup.class, id, this::isVisible);
     }
     
     public Stream<UserGroup> getAllAvailableGroups() throws ProviderException {
-        if (!requestUser.hasPermission(UserPermission.GROUP_MANAGEMENT))
-            throw new ProviderException(ProviderException.Type.ACCESS_DENIED);
+        if (!requestUser.hasPermission(UserPermission.GROUP_MANAGEMENT)) {
+            List<UserGroup> groups = new ArrayList<>();
+            groups.add(requestUser.getUserGroup());
+            return groups.stream();
+        }
         
         Stream<UserGroup> stream = em.createQuery("SELECT g FROM UserGroup g").getResultList().stream();
         return stream;
     }
     
+    public Stream<Long> getAllGroupUsers(long id) throws ProviderException {
+        UserGroup group = getGroup(id);
+        
+        return userProvider.getAllAvailableUsers().filter(u -> u.getUserGroup() != null && u.getUserGroup().equals(group)).map(u -> u.getId());
+    }
+    
     private boolean isVisible(UserGroup g) {
-        return requestUser.hasPermission(UserPermission.GROUP_MANAGEMENT);
+        return requestUser.getUserGroup().equals(g) || requestUser.hasPermission(UserPermission.GROUP_MANAGEMENT);
     }
 }
