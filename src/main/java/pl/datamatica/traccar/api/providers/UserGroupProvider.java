@@ -18,9 +18,12 @@ package pl.datamatica.traccar.api.providers;
 
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import javax.persistence.EntityManager;
+import pl.datamatica.traccar.api.dtos.in.AddUserGroupDto;
 import pl.datamatica.traccar.model.User;
 import pl.datamatica.traccar.model.UserGroup;
 import pl.datamatica.traccar.model.UserPermission;
@@ -62,6 +65,26 @@ public class UserGroupProvider extends ProviderBase {
         UserGroup group = getGroup(id);
         
         return userProvider.getAllAvailableUsers().filter(u -> u.getUserGroup() != null && u.getUserGroup().equals(group)).map(u -> u.getId());
+    }
+    
+    public UserGroup createUserGroup(AddUserGroupDto dto) throws ProviderException {
+        if (!requestUser.hasPermission(UserPermission.GROUP_MANAGEMENT)) 
+            throw new ProviderException(ProviderException.Type.ACCESS_DENIED);
+        
+        //check if group with this name already exists
+        List<UserGroup> sameNameGroup = getAllAvailableGroups().filter(g -> g.getName().toLowerCase().equals(dto.getName().toLowerCase())).collect(Collectors.toList());
+        if (!sameNameGroup.isEmpty())
+            throw new ProviderException(ProviderException.Type.GROUP_ALREADY_EXISTS);
+       
+        UserGroup group = new UserGroup();
+        group.setName(dto.getName());
+        if (dto.getPermissions() != null)
+            group.setPermissions(dto.getPermissions());
+        else
+            group.setPermissions(Collections.EMPTY_SET);
+        
+        em.persist(group);
+        return group;
     }
     
     private boolean isVisible(UserGroup g) {
