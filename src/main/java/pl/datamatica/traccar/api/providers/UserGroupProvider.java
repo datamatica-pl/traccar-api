@@ -23,6 +23,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import javax.persistence.EntityManager;
+import javax.persistence.Query;
 import pl.datamatica.traccar.api.dtos.in.AddUserGroupDto;
 import pl.datamatica.traccar.model.User;
 import pl.datamatica.traccar.model.UserGroup;
@@ -36,6 +37,7 @@ public class UserGroupProvider extends ProviderBase {
     private final User requestUser;
     
     private UserProvider userProvider;
+    private ApplicationSettingsProvider applicationSettingsProvider;
     
     public UserGroupProvider(EntityManager em, User requestUser) {
         super(em);
@@ -44,6 +46,10 @@ public class UserGroupProvider extends ProviderBase {
     
     public void setUserProvider(UserProvider up) {
         this.userProvider = up;
+    }
+    
+    public void setApplicationSettingsProvider(ApplicationSettingsProvider asp) {
+        this.applicationSettingsProvider = asp;
     }
     
     public UserGroup getGroup(long id) throws ProviderException {
@@ -62,32 +68,73 @@ public class UserGroupProvider extends ProviderBase {
     }
     
     public Stream<Long> getAllGroupUsers(long id) throws ProviderException {
+        //throws exception if user doesn't have access to given group
         UserGroup group = getGroup(id);
         
         return userProvider.getAllAvailableUsers().filter(u -> u.getUserGroup() != null && u.getUserGroup().equals(group)).map(u -> u.getId());
     }
     
     public UserGroup createUserGroup(AddUserGroupDto dto) throws ProviderException {
-        if (!requestUser.hasPermission(UserPermission.GROUP_MANAGEMENT)) 
-            throw new ProviderException(ProviderException.Type.ACCESS_DENIED);
+        checkGroupManagementPermission();
         
         //check if group with this name already exists
-        List<UserGroup> sameNameGroup = getAllAvailableGroups().filter(g -> g.getName().toLowerCase().equals(dto.getName().toLowerCase())).collect(Collectors.toList());
-        if (!sameNameGroup.isEmpty())
+        if (getAllAvailableGroups().anyMatch(g -> g.getName().toLowerCase().equals(dto.getName().toLowerCase())))
             throw new ProviderException(ProviderException.Type.GROUP_ALREADY_EXISTS);
        
         UserGroup group = new UserGroup();
-        group.setName(dto.getName());
-        if (dto.getPermissions() != null)
-            group.setPermissions(dto.getPermissions());
-        else
-            group.setPermissions(Collections.EMPTY_SET);
+        editGroupWithDto(group, dto);
         
         em.persist(group);
         return group;
     }
     
+    public void updateUserGroup(long id, AddUserGroupDto dto) throws ProviderException {
+        checkGroupManagementPermission();
+        
+        UserGroup group = getGroup(id);
+        editGroupWithDto(group, dto);
+        
+        em.persist(group);
+    }
+    
+    public void deleteUserGroup(long id) throws ProviderException {
+        checkGroupManagementPermission();
+        
+        // throws if usergroup doesn't exist
+        UserGroup group = getGroup(id);
+        
+        UserGroup defaultGroup = applicationSettingsProvider.get().getDefaultGroup();
+        if (group.getId() == defaultGroup.getId())
+            throw new ProviderException(ProviderException.Type.DELETING_DEFAULT);
+        
+        group.setPermissions(Collections.EMPTY_SET);
+        em.persist(group);
+        
+        List<User> users = userProvider.getAllAvailableUsers().filter(u -> u.getUserGroup() != null && u.getUserGroup().equals(group)).collect(Collectors.toList());
+        users.forEach((user) -> {
+            user.setUserGroup(defaultGroup);
+        });
+        em.flush();
+        
+        Query query = em.createQuery("DELETE FROM UserGroup WHERE id = ?");
+        query.setParameter(1, id);
+        query.executeUpdate();
+    }
+    
+    private void editGroupWithDto(UserGroup group, AddUserGroupDto dto) {
+        group.setName(dto.getName());
+        if (dto.getPermissions() != null)
+            group.setPermissions(dto.getPermissions());
+        else
+            group.setPermissions(Collections.EMPTY_SET);
+    }
+    
     private boolean isVisible(UserGroup g) {
         return requestUser.getUserGroup().equals(g) || requestUser.hasPermission(UserPermission.GROUP_MANAGEMENT);
+    }
+    
+    private void checkGroupManagementPermission() throws ProviderException {
+        if (!requestUser.hasPermission(UserPermission.GROUP_MANAGEMENT)) 
+            throw new ProviderException(ProviderException.Type.ACCESS_DENIED);
     }
 }

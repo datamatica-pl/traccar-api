@@ -16,6 +16,7 @@
  */
 package pl.datamatica.traccar.api.controllers;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 import pl.datamatica.traccar.api.Application;
@@ -58,16 +59,16 @@ public class UserGroupsController extends ControllerBase {
                 return render(ugc.post(userGroupDto), res);
             }, gson::toJson);
             
-//            Spark.put(baseUrl()+"/:id", (req, res) -> {
-//                DeviceGroupController dgc = createController(req);
-//                AddDeviceGroupDto dto = gson.fromJson(req.body(), AddDeviceGroupDto.class);
-//                return render(dgc.put(Long.parseLong(req.params(":id")), dto), res);
-//            }, gson::toJson);
-//            
-//            Spark.delete(baseUrl()+"/:id", (req, res) -> {
-//                DeviceGroupController dgc = createController(req);
-//                return render(dgc.delete(Long.parseLong(req.params(":id"))), res);
-//            }, gson::toJson);
+            Spark.put(baseUrl()+"/:id", (req, res) -> {
+                UserGroupsController ugc = createController(req);
+                AddUserGroupDto dto = gson.fromJson(req.body(), AddUserGroupDto.class);
+                return render(ugc.put(Long.parseLong(req.params(":id")), dto), res);
+            }, gson::toJson);
+            
+            Spark.delete(baseUrl()+"/:id", (req, res) -> {
+                UserGroupsController ugc = createController(req);
+                return render(ugc.delete(Long.parseLong(req.params(":id"))), res);
+            }, gson::toJson);
 
             Spark.get(baseUrl()+"/:id/users", (req, res) -> {
                 UserGroupsController ugc = createController(req);
@@ -133,6 +134,30 @@ public class UserGroupsController extends ControllerBase {
         } catch(ProviderException e) {
             if (e.getType() == ProviderException.Type.GROUP_ALREADY_EXISTS)
                 return conflict(MessageKeys.ERR_USER_GROUP_ALREADY_EXISTS);
+            return handle(e);
+        }
+    }
+    
+    public HttpResponse put(long id, AddUserGroupDto dto) throws ProviderException {
+        try {
+            List<ErrorDto> validationErrors = AddUserGroupDto.validate(dto);
+            if (!validationErrors.isEmpty())
+                return badRequest(validationErrors);
+            
+            provider.updateUserGroup(id, dto);
+            return ok("");
+        } catch (ProviderException e) {
+            return handle(e);
+        }
+    }
+    
+    public HttpResponse delete(long id) throws ProviderException {
+        try {
+            provider.deleteUserGroup(id);
+            return ok("");
+        } catch (ProviderException e) {
+            if (e.getType() == ProviderException.Type.DELETING_DEFAULT)
+                return badRequest(Collections.singletonList(new ErrorDto(MessageKeys.ERR_USER_GROUP_DELETING_DEFAULT)));
             return handle(e);
         }
     }

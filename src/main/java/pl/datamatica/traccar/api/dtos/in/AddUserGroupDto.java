@@ -46,15 +46,10 @@ public class AddUserGroupDto {
         
         if (dto.name == null || dto.name.isEmpty())
             errors.add(new ErrorDto(MessageKeys.ERR_USER_GROUP_NAME_NOT_PROVIDED));
-
-        if (dto.permissions == null) {
+        if (dto.permissions == null) 
             errors.add(new ErrorDto(MessageKeys.ERR_USER_GROUP_PERMISSIONS_NOT_PROVIDED));
-        }
-        
-        if (dto.getPermissions().stream().anyMatch(d -> d == null))
+        if (dto.permissions != null && dto.permissions.stream().anyMatch(d -> d == null))
             errors.add(new ErrorDto(MessageKeys.ERR_USER_GROUP_INVALID_PERMISSION));
-        
-        
 
         return errors;
     }

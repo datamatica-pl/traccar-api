@@ -203,7 +203,8 @@ public class RequestContext implements AutoCloseable {
     public UserGroupProvider getUserGroupProvider() {
         if (userGroupProvider == null) {
             userGroupProvider = new UserGroupProvider(em, user);
-            userGroupProvider.setUserProvider(users);
+            userGroupProvider.setUserProvider(getUserProvider());
+            userGroupProvider.setApplicationSettingsProvider(getApplicationSettingsProvider());
         }
         return userGroupProvider;
     }

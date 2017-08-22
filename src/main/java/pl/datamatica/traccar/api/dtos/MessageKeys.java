@@ -138,8 +138,10 @@ public class MessageKeys {
     public static final String ERR_TIME_ZONE_ID_NOT_PROVIDED = "err_time_zone_id_not_provided";
     public static final String ERR_ZOOM_LEVEL_NOT_PROVIDED = "err_zoom_level_not_provided";
     public static final String ERR_USERSETTINGS_SPEED_UNIT_NOT_PROVIDED = "err_usersettings_speed_unit_not_provided";
+    
     public static final String ERR_USER_GROUP_NAME_NOT_PROVIDED = "err_user_group_name_not_provided";
     public static final String ERR_USER_GROUP_PERMISSIONS_NOT_PROVIDED = "err_user_group_permissions_not_provided";
     public static final String ERR_USER_GROUP_ALREADY_EXISTS = "err_user_group_already_exists";
     public static final String ERR_USER_GROUP_INVALID_PERMISSION = "err_user_group_invalid_permission";
+    public static final String ERR_USER_GROUP_DELETING_DEFAULT = "err_user_group_deleting_default";
 }

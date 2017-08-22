@@ -20,7 +20,7 @@ public class ProviderException extends Exception {
     public enum Type {
         NOT_FOUND, ACCESS_DENIED, ALREADY_DELETED,
         DEVICE_ALREADY_EXISTS, USER_ALREADY_EXISTS, GROUP_ALREADY_EXISTS, 
-        INVALID_IMEI, DELETING_ITSELF
+        INVALID_IMEI, DELETING_ITSELF, DELETING_DEFAULT
     }
     
     private final Type type;
