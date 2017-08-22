@@ -23,7 +23,6 @@ import java.util.List;
 import java.util.Set;
 import pl.datamatica.traccar.api.dtos.MessageKeys;
 import pl.datamatica.traccar.api.dtos.out.ErrorDto;
-import pl.datamatica.traccar.api.providers.ProviderException;
 import pl.datamatica.traccar.model.UserPermission;
 
 /**

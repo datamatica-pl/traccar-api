@@ -58,9 +58,7 @@ public class UserGroupProvider extends ProviderBase {
     
     public Stream<UserGroup> getAllAvailableGroups() throws ProviderException {
         if (!requestUser.hasPermission(UserPermission.GROUP_MANAGEMENT)) {
-            List<UserGroup> groups = new ArrayList<>();
-            groups.add(requestUser.getUserGroup());
-            return groups.stream();
+            return Stream.of(requestUser.getUserGroup());
         }
         
         Stream<UserGroup> stream = em.createQuery("SELECT g FROM UserGroup g").getResultList().stream();

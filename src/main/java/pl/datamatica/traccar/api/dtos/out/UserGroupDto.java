@@ -16,6 +16,7 @@
  */
 package pl.datamatica.traccar.api.dtos.out;
 
+import java.util.Collections;
 import java.util.EnumSet;
 import java.util.Set;
 import pl.datamatica.traccar.api.dtos.in.AddUserGroupDto;
@@ -63,6 +64,8 @@ public class UserGroupDto extends AddUserGroupDto {
             this.name = group.getName();
             if (group.getPermissions() != null && !group.getPermissions().isEmpty())
                 this.permissions = EnumSet.copyOf(group.getPermissions());
+            else 
+                this.permissions = Collections.EMPTY_SET;
             return this;
         }
         
