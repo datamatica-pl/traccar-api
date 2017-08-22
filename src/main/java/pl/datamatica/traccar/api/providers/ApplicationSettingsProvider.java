@@ -22,12 +22,15 @@ import javax.persistence.TypedQuery;
 import pl.datamatica.traccar.api.dtos.in.EditApplicationSettingsDto;
 import pl.datamatica.traccar.model.ApplicationSettings;
 import pl.datamatica.traccar.model.PasswordHashMethod;
+import pl.datamatica.traccar.model.UserGroup;
 
 public class ApplicationSettingsProvider{
     private final EntityManager em;
+    private UserGroupProvider userGroupProvider;
     
-    public ApplicationSettingsProvider(EntityManager em) {
+    public ApplicationSettingsProvider(EntityManager em, UserGroupProvider ugp) {
         this.em = em;
+        this.userGroupProvider = ugp;
     }
     
     public ApplicationSettings get() {
@@ -38,7 +41,7 @@ public class ApplicationSettingsProvider{
         return result.isEmpty() ? new ApplicationSettings() : tq.getSingleResult();
     }
     
-    public void updateApplicationSetting(EditApplicationSettingsDto updated) {
+    public void updateApplicationSetting(EditApplicationSettingsDto updated) throws ProviderException {
         ApplicationSettings as = get();
         
         as.setRegistrationEnabled(updated.isRegistrationEnabled());
@@ -51,6 +54,9 @@ public class ApplicationSettingsProvider{
         as.setBingMapsKey(updated.getBingMapsKey());
         as.setMatchServiceURL(updated.getMatchServiceURL());
         as.setAllowCommandsOnlyForAdmins(updated.isAllowCommandsOnlyForAdmins());
+        
+        UserGroup userGroup = userGroupProvider.getGroup(updated.getDefaultUserGroupId());
+        as.setDefaultGroup(userGroup);
         
         em.persist(as);
     }

@@ -132,7 +132,7 @@ public class UserGroupProviderTest {
     
     private void prepareProvider(User requestUser) throws ProviderException {
         provider = new UserGroupProvider(em, requestUser);
-        ApplicationSettingsProvider asp = new ApplicationSettingsProvider(em);
+        ApplicationSettingsProvider asp = new ApplicationSettingsProvider(em, provider);
         provider.setApplicationSettingsProvider(asp);
         UserProvider up = new UserProvider(em, asp.get());
         up.authenticateUser(requestUser.getId());

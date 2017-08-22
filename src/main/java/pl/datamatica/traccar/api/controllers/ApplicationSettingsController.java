@@ -83,7 +83,7 @@ public class ApplicationSettingsController extends ControllerBase {
         return (HttpResponse)ok(as);
     }
     
-    public HttpResponse put(EditApplicationSettingsDto updatedDto) {
+    public HttpResponse put(EditApplicationSettingsDto updatedDto) throws ProviderException {
         if (!requestContext.getUser().getAdmin()) {
             return forbidden();
         }
@@ -91,7 +91,11 @@ public class ApplicationSettingsController extends ControllerBase {
         List<ErrorDto> errors = EditApplicationSettingsDto.validate(updatedDto);
         if(!errors.isEmpty())
             return badRequest(errors);
-        provider.updateApplicationSetting(updatedDto);
-        return ok("");
+        try {
+            provider.updateApplicationSetting(updatedDto);
+            return ok("");
+        } catch (ProviderException e) {
+            return handle(e);
+        }
     }
 }

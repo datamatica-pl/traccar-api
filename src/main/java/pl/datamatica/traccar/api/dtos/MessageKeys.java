@@ -104,6 +104,8 @@ public class MessageKeys {
     public static final String ERR_APPSETTINGS_ALLOW_COMMANDS_ONLY_FOR_ADMINS_NOT_PROVIDED = "err_appsettings_allow_commands_only_for_admins_not_provided";
     public static final String ERR_APPSETTINGS_PASSWORD_HASH_METHOD_NOT_PROVIDED = "err_appsettings_password_hash_method_not_provided";
     public static final String ERR_APPSETTINGS_ILLEGAL_PASSWORD_HASH_METHOD = "err_appsettings_illegal_password_hash_method";
+    public static final String ERR_APPSETTINGS_DEFAULT_USER_GROUP_NOT_PROVIDED = "err_appsettings_default_user_group_not_provided";
+
     
     public static final String ERR_USER_MANAGER_NOT_PROVIDED = "err_user_manager_not_provided";
     public static final String ERR_USER_ADMIN_NOT_PROVIDED = "err_user_admin_not_provided";

@@ -38,6 +38,7 @@ public class EditApplicationSettingsDto {
     private final String bingMapsKey;
     private final String matchServiceURL;
     private final Boolean allowCommandsOnlyForAdmins;
+    private final Long defaultUserGroupId;
 
     protected EditApplicationSettingsDto(boolean registrationEnabled, 
             Short updateInterval, 
@@ -48,7 +49,8 @@ public class EditApplicationSettingsDto {
             String language, 
             String bingMapsKey, 
             String matchServiceURL, 
-            boolean allowCommandsOnlyForAdmins) {
+            boolean allowCommandsOnlyForAdmins,
+            long defaultUserGroupId) {
         this.registrationEnabled = registrationEnabled;
         this.updateInterval = updateInterval;
         this.defaultPasswordHash = defaultPasswordHash;
@@ -59,6 +61,7 @@ public class EditApplicationSettingsDto {
         this.bingMapsKey = bingMapsKey;
         this.matchServiceURL = matchServiceURL;
         this.allowCommandsOnlyForAdmins = allowCommandsOnlyForAdmins;
+        this.defaultUserGroupId = defaultUserGroupId;
     }
  
     public boolean isRegistrationEnabled() {
@@ -101,6 +104,10 @@ public class EditApplicationSettingsDto {
         return allowCommandsOnlyForAdmins;
     }
     
+    public long getDefaultUserGroupId() {
+        return defaultUserGroupId;
+    }
+    
     public static List<ErrorDto> validate(EditApplicationSettingsDto dto) {
         if(dto == null)
             return Collections.singletonList(new ErrorDto(MessageKeys.ERR_DATA_NOT_PROVIDED));
@@ -127,6 +134,9 @@ public class EditApplicationSettingsDto {
         if (dto.allowCommandsOnlyForAdmins == null) {
             errors.add(new ErrorDto(MessageKeys.ERR_APPSETTINGS_ALLOW_COMMANDS_ONLY_FOR_ADMINS_NOT_PROVIDED));
         }
+        if (dto.defaultUserGroupId == null) {
+            errors.add(new ErrorDto(MessageKeys.ERR_APPSETTINGS_DEFAULT_USER_GROUP_NOT_PROVIDED));
+        }
         if (dto.defaultPasswordHash == null || dto.defaultPasswordHash.isEmpty()) {
             errors.add(new ErrorDto(MessageKeys.ERR_APPSETTINGS_PASSWORD_HASH_METHOD_NOT_PROVIDED));
         }
@@ -150,6 +160,7 @@ public class EditApplicationSettingsDto {
         private String bingMapsKey;
         private String matchServiceURL;
         private boolean allowCommandsOnlyForAdmins;
+        private long defaultUserGroupId;
         
         public Builder() {
         }
@@ -204,6 +215,11 @@ public class EditApplicationSettingsDto {
             return this;
         }
         
+        public Builder defaultUserGroupId(final long value) {
+            this.defaultUserGroupId = value;
+            return this;
+        }
+        
         public EditApplicationSettingsDto build() {
             return new EditApplicationSettingsDto(registrationEnabled, 
                     updateInterval, 
@@ -214,7 +230,8 @@ public class EditApplicationSettingsDto {
                     language, 
                     bingMapsKey, 
                     matchServiceURL, 
-                    allowCommandsOnlyForAdmins);
+                    allowCommandsOnlyForAdmins,
+                    defaultUserGroupId);
         }
     }
 }
