@@ -31,10 +31,13 @@ import pl.datamatica.traccar.model.Group;
 import pl.datamatica.traccar.model.PasswordHashMethod;
 import pl.datamatica.traccar.model.Position;
 import pl.datamatica.traccar.model.User;
+import pl.datamatica.traccar.model.UserGroup;
+import pl.datamatica.traccar.model.UserPermission;
 
 public class TestDatabase {
     private final EntityManager em;
     private String salt;
+    ApplicationSettings applicationSettings;
     User admin;
     Device adminDevice;
     Position adminPosition;
@@ -50,6 +53,8 @@ public class TestDatabase {
     Group adminDeviceGroup;
     Group managedDeviceDeviceGroup;
     Group managed2DeviceGroup;
+    UserGroup usersGroup;
+    UserGroup adminsGroup;
     List<Position> managed2Positions;
     
     public TestDatabase(EntityManager em) {
@@ -66,6 +71,7 @@ public class TestDatabase {
         createManaged2();
         createManaged3();
         createDeviceGroups();
+        createUserGroups();
         createDevices();
         createPositions();
         createGeofences();
@@ -73,11 +79,10 @@ public class TestDatabase {
         em.getTransaction().commit();
     }
     
-    private ApplicationSettings createApplicationSettings() {
-        ApplicationSettings as = new ApplicationSettings();
-        as.setSalt(salt);
-        em.persist(as);
-        return as;
+    private void createApplicationSettings() {
+        applicationSettings = new ApplicationSettings();
+        applicationSettings.setSalt(salt);
+        em.persist(applicationSettings);
     }
     
     private void createAdmin() {
@@ -146,6 +151,28 @@ public class TestDatabase {
         admin.setGroups(Collections.singleton(adminDeviceGroup));
         managedUser.setGroups(Collections.singleton(managedDeviceDeviceGroup));
         managed2.setGroups(Stream.of(managedDeviceDeviceGroup, managed2DeviceGroup).collect(Collectors.toSet()));
+    }
+    
+    private void createUserGroups() {
+        usersGroup = new UserGroup();
+        usersGroup.setName("users");
+        usersGroup.setPermissions(Collections.singleton(UserPermission.DEVICE_READ));
+        em.persist(usersGroup);
+        
+        adminsGroup = new UserGroup();
+        adminsGroup.setName("admins");
+        adminsGroup.setPermissions(Collections.singleton(UserPermission.GROUP_MANAGEMENT));
+        em.persist(adminsGroup);
+        
+        applicationSettings.setDefaultGroup(usersGroup);
+        
+        admin.setUserGroup(adminsGroup);
+        manager.setUserGroup(usersGroup);
+        managedUser.setUserGroup(usersGroup);
+        managed2.setUserGroup(usersGroup);
+        managed3.setUserGroup(usersGroup);
+        
+        em.flush();
     }
     
     private void createDevices() {

@@ -133,7 +133,7 @@ public class DeviceGroupController extends ControllerBase {
     public HttpResponse put(long id, AddDeviceGroupDto dto) throws ProviderException {
         List<ErrorDto> validationErrors = AddDeviceGroupDto.validate(dto);
         if(!validationErrors.isEmpty())
-                return badRequest(validationErrors);
+            return badRequest(validationErrors);
         
         try {
             provider.updateGroup(id, dto);

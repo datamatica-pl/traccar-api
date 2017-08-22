@@ -16,8 +16,10 @@
  */
 package pl.datamatica.traccar.api.dtos.out;
 
+import java.util.Collections;
 import java.util.EnumSet;
 import java.util.Set;
+import pl.datamatica.traccar.api.dtos.in.AddUserGroupDto;
 import pl.datamatica.traccar.model.UserGroup;
 import pl.datamatica.traccar.model.UserPermission;
 
@@ -25,15 +27,13 @@ import pl.datamatica.traccar.model.UserPermission;
  *
  * @author ŁŁ
  */
-public class UserGroupDto {
+public class UserGroupDto extends AddUserGroupDto {
+
     private final long id;
-    private final String name;
-    private final Set<UserPermission> permissions;
     
     public UserGroupDto(long id, String name, Set<UserPermission> permissions) {
+        super(name, permissions);
         this.id = id;
-        this.name = name;
-        this.permissions = permissions;
     }
     
     public static class Builder {
@@ -52,7 +52,8 @@ public class UserGroupDto {
         }
         
         public Builder permissions(Set<UserPermission> permissions) {
-            this.permissions = EnumSet.copyOf(permissions);
+            if (permissions != null && !permissions.isEmpty())
+                this.permissions = EnumSet.copyOf(permissions);
             return this;
         }
         
@@ -61,7 +62,10 @@ public class UserGroupDto {
                 return this;
             this.id = group.getId();
             this.name = group.getName();
-            this.permissions = EnumSet.copyOf(group.getPermissions());
+            if (group.getPermissions() != null && !group.getPermissions().isEmpty())
+                this.permissions = EnumSet.copyOf(group.getPermissions());
+            else 
+                this.permissions = Collections.EMPTY_SET;
             return this;
         }
         
@@ -69,4 +73,10 @@ public class UserGroupDto {
             return new UserGroupDto(id, name, permissions);
         }
     }
+
+    public long getId() {
+        return id;
+    }
+    
+    
 }

@@ -40,6 +40,7 @@ import pl.datamatica.traccar.api.providers.NotificationSettingsProvider;
 import pl.datamatica.traccar.api.providers.PicturesProvider;
 import pl.datamatica.traccar.api.providers.PositionProvider;
 import pl.datamatica.traccar.api.providers.ReportsProvider;
+import pl.datamatica.traccar.api.providers.UserGroupProvider;
 import pl.datamatica.traccar.api.providers.UserProvider;
 import pl.datamatica.traccar.api.utils.DateUtil;
 import pl.datamatica.traccar.model.User;
@@ -70,7 +71,8 @@ public class RequestContext implements AutoCloseable {
     private NotificationSettingsProvider notificationSettings;
     private SessionProvider sessionProvider;
     private DeviceGroupProvider deviceGroupProvider;
-    
+    private UserGroupProvider userGroupProvider;
+
     private Image emptyMarker;
     
     public RequestContext(Request request, Response response) throws ParseException {
@@ -196,6 +198,15 @@ public class RequestContext implements AutoCloseable {
             deviceGroupProvider.setDeviceProvider(devices);
         }
         return deviceGroupProvider;
+    }
+    
+    public UserGroupProvider getUserGroupProvider() {
+        if (userGroupProvider == null) {
+            userGroupProvider = new UserGroupProvider(em, user);
+            userGroupProvider.setUserProvider(getUserProvider());
+            userGroupProvider.setApplicationSettingsProvider(getApplicationSettingsProvider());
+        }
+        return userGroupProvider;
     }
     
     public String getApiRoot() {
