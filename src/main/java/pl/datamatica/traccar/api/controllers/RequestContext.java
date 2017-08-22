@@ -116,10 +116,8 @@ public class RequestContext implements AutoCloseable {
     }
     
     public ApplicationSettingsProvider getApplicationSettingsProvider() {
-        if(appSettings == null) {
-            UserGroupProvider ugp = getUserGroupProvider();
-            //app settings is created while creating UserGroupProvider
-        }
+        if(appSettings == null)
+            appSettings = new ApplicationSettingsProvider(em);
         return appSettings;
     }
     
@@ -205,10 +203,8 @@ public class RequestContext implements AutoCloseable {
     public UserGroupProvider getUserGroupProvider() {
         if (userGroupProvider == null) {
             userGroupProvider = new UserGroupProvider(em, user);
-            if (appSettings == null)
-                appSettings = new ApplicationSettingsProvider(em, userGroupProvider);
             userGroupProvider.setUserProvider(getUserProvider());
-            userGroupProvider.setApplicationSettingsProvider(appSettings);
+            userGroupProvider.setApplicationSettingsProvider(getApplicationSettingsProvider());
         }
         return userGroupProvider;
     }

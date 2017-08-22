@@ -17,14 +17,13 @@
 package pl.datamatica.traccar.api.providers;
 
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import javax.persistence.EntityManager;
 import javax.persistence.Query;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import pl.datamatica.traccar.api.dtos.in.AddUserGroupDto;
 import pl.datamatica.traccar.model.User;
 import pl.datamatica.traccar.model.UserGroup;
@@ -36,7 +35,6 @@ import pl.datamatica.traccar.model.UserPermission;
  */
 public class UserGroupProvider extends ProviderBase {
     private final User requestUser;
-    private final Logger logger = LoggerFactory.getLogger(UserGroupProvider.class);
     
     private UserProvider userProvider;
     private ApplicationSettingsProvider applicationSettingsProvider;
@@ -128,7 +126,6 @@ public class UserGroupProvider extends ProviderBase {
     }
     
     private boolean isVisible(UserGroup g) {
-        logger.error(requestUser + "  " + g);
         return requestUser.getUserGroup().equals(g) || requestUser.hasPermission(UserPermission.GROUP_MANAGEMENT);
     }
     

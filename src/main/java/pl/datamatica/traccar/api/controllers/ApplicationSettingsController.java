@@ -20,7 +20,6 @@ import java.util.List;
 import pl.datamatica.traccar.api.responses.HttpResponse;
 import pl.datamatica.traccar.api.Application;
 import static pl.datamatica.traccar.api.controllers.ControllerBase.render;
-import pl.datamatica.traccar.api.dtos.in.AddGeoFenceDto;
 import pl.datamatica.traccar.api.dtos.in.EditApplicationSettingsDto;
 import pl.datamatica.traccar.api.dtos.out.ApplicationSettingsDto;
 import pl.datamatica.traccar.api.dtos.out.ErrorDto;
