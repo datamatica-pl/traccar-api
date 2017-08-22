@@ -147,6 +147,8 @@ public class UserGroupsController extends ControllerBase {
             provider.updateUserGroup(id, dto);
             return ok("");
         } catch (ProviderException e) {
+            if (e.getType() == ProviderException.Type.GROUP_ALREADY_EXISTS)
+                return conflict(MessageKeys.ERR_USER_GROUP_ALREADY_EXISTS);
             return handle(e);
         }
     }

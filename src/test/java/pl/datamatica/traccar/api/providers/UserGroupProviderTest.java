@@ -16,6 +16,7 @@
  */
 package pl.datamatica.traccar.api.providers;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 import javax.persistence.EntityManager;
@@ -24,14 +25,14 @@ import javax.persistence.Persistence;
 import org.junit.After;
 import org.junit.AfterClass;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import pl.datamatica.traccar.model.Group;
+import pl.datamatica.traccar.api.dtos.in.AddUserGroupDto;
 import pl.datamatica.traccar.model.User;
 import pl.datamatica.traccar.model.UserGroup;
+import pl.datamatica.traccar.model.UserPermission;
 
 /**
  *
@@ -75,6 +76,22 @@ public class UserGroupProviderTest {
     }
     
     @Test
+    public void update_sameName() throws ProviderException {
+        prepareProvider(database.admin);
+        
+        AddUserGroupDto dto = new AddUserGroupDto("users", Collections.singleton(UserPermission.GROUP_MANAGEMENT));
+        
+        try {
+            provider.updateUserGroup(database.adminsGroup.getId(), dto);
+        } catch(ProviderException e) {
+            if (e.getType() != ProviderException.Type.GROUP_ALREADY_EXISTS)
+                fail();
+            return;     
+        }
+        fail();
+    }
+    
+    @Test
     public void delete_success() throws ProviderException {
         prepareProvider(database.admin);
         
@@ -98,7 +115,9 @@ public class UserGroupProviderTest {
         } catch(ProviderException e) {
             if (e.getType() != ProviderException.Type.DELETING_DEFAULT)
                 fail();
+            return;
         }
+        fail();
     }
         
     @After
