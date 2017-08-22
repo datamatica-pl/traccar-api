@@ -74,11 +74,8 @@ public class UserGroupProvider extends ProviderBase {
     
     public UserGroup createUserGroup(AddUserGroupDto dto) throws ProviderException {
         checkGroupManagementPermission();
+        checkNameUniqueness(dto.getName(), null);
         
-        //check if group with this name already exists
-        if (getAllAvailableGroups().anyMatch(g -> g.getName().toLowerCase().equals(dto.getName().toLowerCase())))
-            throw new ProviderException(ProviderException.Type.GROUP_ALREADY_EXISTS);
-       
         UserGroup group = new UserGroup();
         editGroupWithDto(group, dto);
         
@@ -90,6 +87,7 @@ public class UserGroupProvider extends ProviderBase {
         checkGroupManagementPermission();
         
         UserGroup group = getGroup(id);
+        checkNameUniqueness(dto.getName(), group);
         editGroupWithDto(group, dto);
         
         em.persist(group);
@@ -129,6 +127,15 @@ public class UserGroupProvider extends ProviderBase {
     
     private boolean isVisible(UserGroup g) {
         return requestUser.getUserGroup().equals(g) || requestUser.hasPermission(UserPermission.GROUP_MANAGEMENT);
+    }
+    
+    private void checkNameUniqueness(String name, UserGroup group) throws ProviderException {
+        List<UserGroup> groups = getAllAvailableGroups()
+                .filter(g -> g.getName().toLowerCase().equals(name.toLowerCase()))
+                .filter(g -> group == null || g.getId() != group.getId())
+                .collect(Collectors.toList());
+        if (!groups.isEmpty())
+            throw new ProviderException(ProviderException.Type.GROUP_ALREADY_EXISTS);
     }
     
     private void checkGroupManagementPermission() throws ProviderException {
