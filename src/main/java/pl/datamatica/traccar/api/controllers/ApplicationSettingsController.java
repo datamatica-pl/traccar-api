@@ -68,6 +68,7 @@ public class ApplicationSettingsController extends ControllerBase {
     public ApplicationSettingsController(RequestContext rc) {
         super(rc);
         provider = rc.getApplicationSettingsProvider();
+        provider.setUserGroupsProvider(rc.getUserGroupProvider());
         requestContext = rc;
     }
     
