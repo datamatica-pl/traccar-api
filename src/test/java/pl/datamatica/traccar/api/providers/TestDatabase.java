@@ -158,12 +158,12 @@ public class TestDatabase {
     private void createUserGroups() {
         usersGroup = new UserGroup();
         usersGroup.setName("users");
-        usersGroup.setPermissions(Collections.singleton(UserPermission.DEVICE_READ));
+        usersGroup.setPermissions(UserPermission.getUsersPermissions());
         em.persist(usersGroup);
         
         adminsGroup = new UserGroup();
         adminsGroup.setName("admins");
-        adminsGroup.setPermissions(EnumSet.of(UserPermission.GROUP_MANAGEMENT, UserPermission.SERVER_MANAGEMENT));
+        adminsGroup.setPermissions(UserPermission.getAdminsPermissions());
         em.persist(adminsGroup);
         
         applicationSettings.setDefaultGroup(usersGroup);
