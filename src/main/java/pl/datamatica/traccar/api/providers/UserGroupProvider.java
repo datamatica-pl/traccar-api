@@ -20,6 +20,7 @@ package pl.datamatica.traccar.api.providers;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import javax.persistence.EntityManager;
@@ -70,6 +71,19 @@ public class UserGroupProvider extends ProviderBase {
         UserGroup group = getGroup(id);
         
         return userProvider.getAllAvailableUsers().filter(u -> u.getUserGroup() != null && u.getUserGroup().equals(group)).map(u -> u.getId());
+    }
+    
+    public void updateGroupUsers(final long id, final Set<Long> uids) throws ProviderException {
+        checkGroupManagementPermission();
+        final UserGroup group = getGroup(id);
+        final UserGroup defaultGroup = applicationSettingsProvider.get().getDefaultGroup();
+        
+        userProvider.getAllManagedUsers().forEach(u -> {
+            if(uids.contains(u.getId()))
+                u.setUserGroup(group);
+            else if(u.getUserGroup().getId() == id)
+                u.setUserGroup(defaultGroup);
+        });       
     }
     
     public UserGroup createUserGroup(AddUserGroupDto dto) throws ProviderException {

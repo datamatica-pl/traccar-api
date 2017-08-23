@@ -16,8 +16,10 @@
  */
 package pl.datamatica.traccar.api.controllers;
 
+import com.google.gson.reflect.TypeToken;
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 import pl.datamatica.traccar.api.Application;
 import static pl.datamatica.traccar.api.controllers.ControllerBase.render;
@@ -74,6 +76,14 @@ public class UserGroupsController extends ControllerBase {
                 UserGroupsController ugc = createController(req);
                 return render(ugc.getAllUsers(Long.parseLong(req.params(":id"))), res);
             }, gson::toJson);
+            
+            Spark.put(baseUrl()+"/:id/users", (req, res) -> {
+                UserGroupsController ugc = createController(req);
+                long id = Long.parseLong(req.params(":id"));
+                Set<Long> uids = gson.fromJson(req.body(), 
+                        new TypeToken<Set<Long>>() {}.getType());
+                return render(ugc.updateUsers(id, uids), res);
+            }, gson::toJson);
         }
 
         private UserGroupsController createController(Request req) {
@@ -118,6 +128,15 @@ public class UserGroupsController extends ControllerBase {
             List<Long> dtos = provider.getAllGroupUsers(id)
                     .collect(Collectors.toList());     
             return (HttpResponse)ok(dtos);
+        } catch(ProviderException e) {
+            return handle(e);
+        }
+    }
+    
+    public HttpResponse updateUsers(long id, Set<Long> uids) throws ProviderException {
+        try{
+            provider.updateGroupUsers(id, uids);
+            return ok("");
         } catch(ProviderException e) {
             return handle(e);
         }
