@@ -41,6 +41,7 @@ import pl.datamatica.traccar.model.PositionIconType;
 import pl.datamatica.traccar.model.GeoFence;
 import pl.datamatica.traccar.model.Group;
 import pl.datamatica.traccar.model.User;
+import pl.datamatica.traccar.model.UserPermission;
 import pl.datamatica.traccar.model.UserSettings;
 import pl.datamatica.traccar.model.UserSettings.SpeedUnit;
 
@@ -88,6 +89,13 @@ public class UserProvider extends ProviderBase {
                 requestUser.getManagedBy() == null ?
                         Stream.of(requestUser) :
                         Stream.of(requestUser, requestUser.getManagedBy()));
+    }
+    
+    public Stream<User> getAllManagedUsers() {
+        if(requestUser.hasPermission(UserPermission.ALL_USERS))
+            return getAllUsers();
+        return Stream.concat(requestUser.getAllManagedUsers().stream(),
+                Stream.of(requestUser));
     }
     
     public User getUser(long id) throws ProviderException {
