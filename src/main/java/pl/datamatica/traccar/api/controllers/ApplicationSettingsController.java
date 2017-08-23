@@ -20,7 +20,6 @@ import java.util.List;
 import pl.datamatica.traccar.api.responses.HttpResponse;
 import pl.datamatica.traccar.api.Application;
 import static pl.datamatica.traccar.api.controllers.ControllerBase.render;
-import pl.datamatica.traccar.api.dtos.in.AddGeoFenceDto;
 import pl.datamatica.traccar.api.dtos.in.EditApplicationSettingsDto;
 import pl.datamatica.traccar.api.dtos.out.ApplicationSettingsDto;
 import pl.datamatica.traccar.api.dtos.out.ErrorDto;
@@ -69,6 +68,8 @@ public class ApplicationSettingsController extends ControllerBase {
     public ApplicationSettingsController(RequestContext rc) {
         super(rc);
         provider = rc.getApplicationSettingsProvider();
+        provider.setUserGroupsProvider(rc.getUserGroupProvider());
+        provider.setRequestUser(rc.getUser());
         requestContext = rc;
     }
     
@@ -83,15 +84,15 @@ public class ApplicationSettingsController extends ControllerBase {
         return (HttpResponse)ok(as);
     }
     
-    public HttpResponse put(EditApplicationSettingsDto updatedDto) {
-        if (!requestContext.getUser().getAdmin()) {
-            return forbidden();
-        }
-        
+    public HttpResponse put(EditApplicationSettingsDto updatedDto) throws ProviderException {
         List<ErrorDto> errors = EditApplicationSettingsDto.validate(updatedDto);
         if(!errors.isEmpty())
             return badRequest(errors);
-        provider.updateApplicationSetting(updatedDto);
-        return ok("");
+        try {
+            provider.updateApplicationSetting(updatedDto);
+            return ok("");
+        } catch (ProviderException e) {
+            return handle(e);
+        }
     }
 }

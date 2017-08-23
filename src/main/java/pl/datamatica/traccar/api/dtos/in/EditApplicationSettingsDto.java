@@ -38,6 +38,7 @@ public class EditApplicationSettingsDto {
     private final String bingMapsKey;
     private final String matchServiceURL;
     private final Boolean allowCommandsOnlyForAdmins;
+    private final Long defaultUserGroupId;
 
     protected EditApplicationSettingsDto(boolean registrationEnabled, 
             Short updateInterval, 
@@ -48,7 +49,8 @@ public class EditApplicationSettingsDto {
             String language, 
             String bingMapsKey, 
             String matchServiceURL, 
-            boolean allowCommandsOnlyForAdmins) {
+            boolean allowCommandsOnlyForAdmins,
+            long defaultUserGroupId) {
         this.registrationEnabled = registrationEnabled;
         this.updateInterval = updateInterval;
         this.defaultPasswordHash = defaultPasswordHash;
@@ -59,6 +61,7 @@ public class EditApplicationSettingsDto {
         this.bingMapsKey = bingMapsKey;
         this.matchServiceURL = matchServiceURL;
         this.allowCommandsOnlyForAdmins = allowCommandsOnlyForAdmins;
+        this.defaultUserGroupId = defaultUserGroupId;
     }
  
     public boolean isRegistrationEnabled() {
@@ -99,6 +102,10 @@ public class EditApplicationSettingsDto {
 
     public boolean isAllowCommandsOnlyForAdmins() {
         return allowCommandsOnlyForAdmins;
+    }
+    
+    public Long getDefaultUserGroupId() {
+        return defaultUserGroupId;
     }
     
     public static List<ErrorDto> validate(EditApplicationSettingsDto dto) {
@@ -150,6 +157,7 @@ public class EditApplicationSettingsDto {
         private String bingMapsKey;
         private String matchServiceURL;
         private boolean allowCommandsOnlyForAdmins;
+        private long defaultUserGroupId;
         
         public Builder() {
         }
@@ -204,6 +212,11 @@ public class EditApplicationSettingsDto {
             return this;
         }
         
+        public Builder defaultUserGroupId(final long value) {
+            this.defaultUserGroupId = value;
+            return this;
+        }
+        
         public EditApplicationSettingsDto build() {
             return new EditApplicationSettingsDto(registrationEnabled, 
                     updateInterval, 
@@ -214,7 +227,8 @@ public class EditApplicationSettingsDto {
                     language, 
                     bingMapsKey, 
                     matchServiceURL, 
-                    allowCommandsOnlyForAdmins);
+                    allowCommandsOnlyForAdmins,
+                    defaultUserGroupId);
         }
     }
 }

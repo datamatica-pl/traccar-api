@@ -116,8 +116,9 @@ public class RequestContext implements AutoCloseable {
     }
     
     public ApplicationSettingsProvider getApplicationSettingsProvider() {
-        if(appSettings == null)
+        if(appSettings == null) {
             appSettings = new ApplicationSettingsProvider(em);
+        }
         return appSettings;
     }
     

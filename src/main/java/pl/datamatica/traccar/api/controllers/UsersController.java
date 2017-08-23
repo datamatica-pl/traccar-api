@@ -166,6 +166,8 @@ public class UsersController extends ControllerBase {
             User user = up.createUser(userDto);
             return created("users/"+user.getId(), new UserDto.Builder().user(user).build());
         } catch (ProviderException e) {
+            if (e.getType() == ProviderException.Type.USER_ALREADY_EXISTS)
+                return conflict(MessageKeys.ERR_USER_ALREADY_EXISTS);
             return handle(e);
         }
     }
