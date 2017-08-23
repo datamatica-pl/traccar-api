@@ -22,19 +22,25 @@ import javax.persistence.TypedQuery;
 import pl.datamatica.traccar.api.dtos.in.EditApplicationSettingsDto;
 import pl.datamatica.traccar.model.ApplicationSettings;
 import pl.datamatica.traccar.model.PasswordHashMethod;
+import pl.datamatica.traccar.model.User;
 import pl.datamatica.traccar.model.UserGroup;
+import pl.datamatica.traccar.model.UserPermission;
 
 public class ApplicationSettingsProvider{
     private final EntityManager em;
     private UserGroupProvider userGroupsProvider;
+    private User requestUser;
 
-    
     public ApplicationSettingsProvider(EntityManager em) {
         this.em = em;
     }
     
     public void setUserGroupsProvider(UserGroupProvider ugp) {
         this.userGroupsProvider = ugp;
+    }
+    
+    public void setRequestUser(User user) {
+        this.requestUser = user;
     }
     
     public ApplicationSettings get() {
@@ -46,8 +52,11 @@ public class ApplicationSettingsProvider{
     }
     
     public void updateApplicationSetting(EditApplicationSettingsDto dto) throws ProviderException {
-        ApplicationSettings as = get();
+        if (!requestUser.hasPermission(UserPermission.SERVER_MANAGEMENT))
+            throw new ProviderException(ProviderException.Type.ACCESS_DENIED);
         
+        ApplicationSettings as = get();
+
         as.setRegistrationEnabled(dto.isRegistrationEnabled());
         as.setUpdateInterval(dto.getUpdateInterval());
         as.setDefaultHashImplementation(PasswordHashMethod.fromString(dto.getDefaultPasswordHash()));
@@ -59,8 +68,10 @@ public class ApplicationSettingsProvider{
         as.setMatchServiceURL(dto.getMatchServiceURL());
         as.setAllowCommandsOnlyForAdmins(dto.isAllowCommandsOnlyForAdmins());
         
-        UserGroup group = userGroupsProvider.getGroup(dto.getDefaultUserGroupId());
-        as.setDefaultGroup(group);
+        if (requestUser.hasPermission(UserPermission.GROUP_MANAGEMENT) && dto.getDefaultUserGroupId() != null) {
+            UserGroup group = userGroupsProvider.getGroup(dto.getDefaultUserGroupId());
+            as.setDefaultGroup(group);
+        }
         
         em.persist(as);
     }

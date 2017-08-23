@@ -95,5 +95,6 @@ public class ApplicationSettingsProviderTest {
         up.authenticateUser(requestUser.getId());
         ugp.setUserProvider(up);
         provider.setUserGroupsProvider(ugp);
+        provider.setRequestUser(requestUser);
     }
 }

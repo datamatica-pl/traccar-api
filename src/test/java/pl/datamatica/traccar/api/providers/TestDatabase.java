@@ -19,7 +19,9 @@ package pl.datamatica.traccar.api.providers;
 import java.util.Calendar;
 import java.util.Collections;
 import java.util.Date;
+import java.util.EnumSet;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import javax.persistence.EntityManager;
@@ -161,7 +163,7 @@ public class TestDatabase {
         
         adminsGroup = new UserGroup();
         adminsGroup.setName("admins");
-        adminsGroup.setPermissions(Collections.singleton(UserPermission.GROUP_MANAGEMENT));
+        adminsGroup.setPermissions(EnumSet.of(UserPermission.GROUP_MANAGEMENT, UserPermission.SERVER_MANAGEMENT));
         em.persist(adminsGroup);
         
         applicationSettings.setDefaultGroup(usersGroup);

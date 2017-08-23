@@ -69,6 +69,7 @@ public class ApplicationSettingsController extends ControllerBase {
         super(rc);
         provider = rc.getApplicationSettingsProvider();
         provider.setUserGroupsProvider(rc.getUserGroupProvider());
+        provider.setRequestUser(rc.getUser());
         requestContext = rc;
     }
     
@@ -84,10 +85,6 @@ public class ApplicationSettingsController extends ControllerBase {
     }
     
     public HttpResponse put(EditApplicationSettingsDto updatedDto) throws ProviderException {
-        if (!requestContext.getUser().getAdmin()) {
-            return forbidden();
-        }
-        
         List<ErrorDto> errors = EditApplicationSettingsDto.validate(updatedDto);
         if(!errors.isEmpty())
             return badRequest(errors);

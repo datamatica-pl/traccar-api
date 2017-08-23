@@ -104,7 +104,7 @@ public class EditApplicationSettingsDto {
         return allowCommandsOnlyForAdmins;
     }
     
-    public long getDefaultUserGroupId() {
+    public Long getDefaultUserGroupId() {
         return defaultUserGroupId;
     }
     
@@ -133,9 +133,6 @@ public class EditApplicationSettingsDto {
         }
         if (dto.allowCommandsOnlyForAdmins == null) {
             errors.add(new ErrorDto(MessageKeys.ERR_APPSETTINGS_ALLOW_COMMANDS_ONLY_FOR_ADMINS_NOT_PROVIDED));
-        }
-        if (dto.defaultUserGroupId == null) {
-            errors.add(new ErrorDto(MessageKeys.ERR_APPSETTINGS_DEFAULT_USER_GROUP_NOT_PROVIDED));
         }
         if (dto.defaultPasswordHash == null || dto.defaultPasswordHash.isEmpty()) {
             errors.add(new ErrorDto(MessageKeys.ERR_APPSETTINGS_PASSWORD_HASH_METHOD_NOT_PROVIDED));
