@@ -55,7 +55,6 @@ public class Application implements spark.servlet.SparkApplication {
             new PositionsController.Binder(),
             new GeofencesController.Binder(),
             new SessionController.Binder(),
-            new ReportsController.Binder(),
             new DeviceModelsController.Binder(),
             new DeviceIconsController.Binder(),
             new CommandsController.Binder(),
