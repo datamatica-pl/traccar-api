@@ -56,7 +56,7 @@ public class UserGroupProvider extends ProviderBase {
     }
     
     public Stream<UserGroup> getAllAvailableGroups() throws ProviderException {
-        if (!requestUser.hasPermission(UserPermission.GROUP_MANAGEMENT)) {
+        if (!requestUser.hasPermission(UserPermission.USER_GROUP_MANAGEMENT)) {
             return Stream.of(requestUser.getUserGroup());
         }
         
@@ -138,7 +138,7 @@ public class UserGroupProvider extends ProviderBase {
     }
     
     private boolean isVisible(UserGroup g) {
-        return requestUser.getUserGroup().equals(g) || requestUser.hasPermission(UserPermission.GROUP_MANAGEMENT);
+        return requestUser.getUserGroup().equals(g) || requestUser.hasPermission(UserPermission.USER_GROUP_MANAGEMENT);
     }
     
     private void checkNameUniqueness(String name, UserGroup group) throws ProviderException {
@@ -151,7 +151,7 @@ public class UserGroupProvider extends ProviderBase {
     }
     
     private void checkGroupManagementPermission() throws ProviderException {
-        if (!requestUser.hasPermission(UserPermission.GROUP_MANAGEMENT)) 
+        if (!requestUser.hasPermission(UserPermission.USER_GROUP_MANAGEMENT)) 
             throw new ProviderException(ProviderException.Type.ACCESS_DENIED);
     }
 }

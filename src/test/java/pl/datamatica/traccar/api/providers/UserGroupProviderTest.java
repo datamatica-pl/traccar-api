@@ -79,7 +79,7 @@ public class UserGroupProviderTest {
     public void update_sameName() throws ProviderException {
         prepareProvider(database.admin);
         
-        AddUserGroupDto dto = new AddUserGroupDto("users", Collections.singleton(UserPermission.GROUP_MANAGEMENT));
+        AddUserGroupDto dto = new AddUserGroupDto("users", Collections.singleton(UserPermission.USER_GROUP_MANAGEMENT));
         
         try {
             provider.updateUserGroup(database.adminsGroup.getId(), dto);
