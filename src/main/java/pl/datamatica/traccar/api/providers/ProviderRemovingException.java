@@ -24,6 +24,5 @@ public class ProviderRemovingException extends ProviderException {
     
     public ProviderRemovingException(Type type) {
         super(type);
-    }
-    
+    }  
 }

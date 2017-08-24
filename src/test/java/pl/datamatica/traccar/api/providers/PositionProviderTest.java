@@ -79,7 +79,7 @@ public class PositionProviderTest {
     }
     
     @Test
-    public void getAllAvailablePositions_success() {
+    public void getAllAvailablePositions_success() throws ProviderException {
         provider = new PositionProvider(em, database.manager);
         
         Position position = new Position();
@@ -112,7 +112,7 @@ public class PositionProviderTest {
     }
     
     @Test
-    public void getAllAvailable_maxZero() {
+    public void getAllAvailable_maxZero() throws ProviderException {
         provider = new PositionProvider(em, database.manager);
         Calendar cal = Calendar.getInstance();
         cal.add(Calendar.DATE, -2);
@@ -122,7 +122,7 @@ public class PositionProviderTest {
     }
     
     @Test
-    public void getAllAvailable_maxOne() {
+    public void getAllAvailable_maxOne() throws ProviderException {
         provider = new PositionProvider(em, database.manager);
         Calendar cal = Calendar.getInstance();
         cal.add(Calendar.DATE, -2);
@@ -132,7 +132,7 @@ public class PositionProviderTest {
     }
     
     @Test
-    public void getAllAvailable_withEndTime() {
+    public void getAllAvailable_withEndTime() throws ProviderException {
         provider = new PositionProvider(em, database.manager);
         Calendar startCal = Calendar.getInstance();
         startCal.add(Calendar.DATE, -2);
