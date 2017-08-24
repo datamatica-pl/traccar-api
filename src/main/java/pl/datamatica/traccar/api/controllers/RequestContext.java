@@ -148,7 +148,6 @@ public class RequestContext implements AutoCloseable {
     public MailSender getMailSender() {
         return new MailSender(em);
     }
-
     
     public DeviceModelProvider getDeviceModelProvider() {
         DeviceModelProvider provider = new DeviceModelProvider(em, emMetadata);
