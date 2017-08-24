@@ -99,11 +99,8 @@ public class UserGroupProviderTest {
         em.flush();
         
         List<UserGroup> result = provider.getAllAvailableGroups().collect(Collectors.toList());
-        List<Long> usersGroupUsers = provider.getAllGroupUsers(database.usersGroup.getId()).collect(Collectors.toList());
-        
+
         assertEquals(1, result.size());
-        assertEquals(5, usersGroupUsers.size());
-        
     }
     
     @Test
@@ -133,6 +130,8 @@ public class UserGroupProviderTest {
     private void prepareProvider(User requestUser) throws ProviderException {
         provider = new UserGroupProvider(em, requestUser);
         ApplicationSettingsProvider asp = new ApplicationSettingsProvider(em);
+        asp.setRequestUser(requestUser);
+        asp.setUserGroupsProvider(provider);
         provider.setApplicationSettingsProvider(asp);
         UserProvider up = new UserProvider(em, asp.get());
         up.authenticateUser(requestUser.getId());
