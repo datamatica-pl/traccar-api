@@ -83,7 +83,7 @@ public class UserProvider extends ProviderBase {
     }
     
     public Stream<User> getAllAvailableUsers() {
-        if(requestUser.getAdmin()) 
+        if(requestUser.hasPermission(UserPermission.ALL_USERS)) 
             return getAllUsers();
         return Stream.concat(requestUser.getAllManagedUsers().stream(), 
                 requestUser.getManagedBy() == null ?
@@ -103,6 +103,8 @@ public class UserProvider extends ProviderBase {
     }
     
     public User createUser(AddUserDto dto) throws ProviderException {
+        checkUserManagementPermissions(requestUser);
+        
         User user = prepareNewUser(dto.getLogin(), dto.getPassword());
         
         editUser(user, dto);
@@ -141,6 +143,8 @@ public class UserProvider extends ProviderBase {
     }
     
     public void updateUser(long id, EditUserDto dto) throws ProviderException {
+        checkUserManagementPermissions(requestUser);
+        
         User u = getUser(id);
 
         editUser(u, dto);
@@ -163,6 +167,7 @@ public class UserProvider extends ProviderBase {
         
         User user;
         try {
+            checkUserManagementPermissions(requestUser);
             user = getUser(id);
         } catch (ProviderException pe) {
             if (pe.getType() == Type.ACCESS_DENIED)
@@ -279,9 +284,9 @@ public class UserProvider extends ProviderBase {
     // REMOVING USER - END //
     
     private void editUser(User user, EditUserDto dto) throws ProviderException {
-        if(!requestUser.getAdmin() && user.equals(requestUser.getManagedBy()))
+        if(!requestUser.hasPermission(UserPermission.ALL_USERS) && user.equals(requestUser.getManagedBy()))
             throw new ProviderException(Type.ACCESS_DENIED);
-        if(requestUser.getAdmin())
+        if(requestUser.getAdmin()) // it won't matter after full implementation of permissionsE
             user.setAdmin(dto.isAdmin());
         user.setArchive(dto.isArchive());
         user.setBlocked(dto.isBlocked());
@@ -289,9 +294,9 @@ public class UserProvider extends ProviderBase {
         user.setEmail(dto.getEmail());
         user.setFirstName(dto.getFirstName());
         user.setLastName(dto.getLastName());
-        if(requestUser.getManager() || requestUser.getAdmin())
+        if(requestUser.getManager() || requestUser.getAdmin()) //it won't matter after full implementation of permissions
             user.setManager(dto.isManager());
-        if(requestUser.getAdmin() || !user.equals(requestUser)) {
+        if(requestUser.hasPermission(UserPermission.ALL_USERS) || !user.equals(requestUser)) {
             user.setMaxNumOfDevices(dto.getMaxNumOfDevices());
             user.setExpirationDate(dto.getExpirationDate());
         }
@@ -302,6 +307,11 @@ public class UserProvider extends ProviderBase {
         user.setNotificationEvents(notificationEvents);
         user.setPhoneNumber(dto.getPhoneNumber());
         user.setReadOnly(dto.isReadOnly());
+    }
+    
+    private void checkUserManagementPermissions(User user) throws ProviderException {
+        if (!user.hasPermission(UserPermission.USER_MANAGEMENT))
+            throw new ProviderException(ProviderException.Type.ACCESS_DENIED);
     }
 
     private String generateToken(String colName) {
