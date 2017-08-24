@@ -51,7 +51,7 @@ public class GeofencesControllerTest {
     }
     
     @Test
-    public void getAll_ok() {
+    public void getAll_ok() throws ProviderException{
         Mockito.when(provider.getAllAvailableGeoFences()).thenReturn(Stream.of(new GeoFence()));
         
         HttpResponse response = controller.get();

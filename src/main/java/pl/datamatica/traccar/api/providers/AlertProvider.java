@@ -45,7 +45,7 @@ public class AlertProvider {
         geofences.setRequestUser(requestUser);
     }
     
-    public List<DeviceEvent> getAllAvailableAlerts() {
+    public List<DeviceEvent> getAllAvailableAlerts() throws ProviderException {
         List<Device> validDevices = devices.getAllAvailableDevices()
                 .filter(d -> !d.isBlocked() && !d.isDeleted())
                 .collect(Collectors.toList());

@@ -28,6 +28,7 @@ import pl.datamatica.traccar.api.providers.GeoFenceProvider;
 import pl.datamatica.traccar.api.providers.ProviderException;
 import pl.datamatica.traccar.api.responses.HttpResponse;
 import pl.datamatica.traccar.model.GeoFence;
+import pl.datamatica.traccar.model.UserPermission;
 import spark.Request;
 import spark.Spark;
 
@@ -96,11 +97,15 @@ public class GeofencesController extends ControllerBase{
         provider = rc.getGeoFencesProvider();
     }
     
-    public HttpResponse get() {
-        List<GeoFenceDto> gfs = provider.getAllAvailableGeoFences()
-                .map(gf -> new GeoFenceDto.Builder().geoFence(gf).build())
-                .collect(Collectors.toList());
-        return ok(gfs);
+    public HttpResponse get() throws ProviderException {
+        try {
+            List<GeoFenceDto> gfs = provider.getAllAvailableGeoFences()
+                    .map(gf -> new GeoFenceDto.Builder().geoFence(gf).build())
+                    .collect(Collectors.toList());
+            return ok(gfs);
+        } catch (ProviderException e) {
+            return handle(e);
+        }
     }
     
     public HttpResponse get(long id) throws ProviderException {
@@ -112,14 +117,17 @@ public class GeofencesController extends ControllerBase{
         }
     }
     
-    public HttpResponse post(AddGeoFenceDto geoFenceDto) {
+    public HttpResponse post(AddGeoFenceDto geoFenceDto) throws ProviderException {
         List<ErrorDto> errors = AddGeoFenceDto.validate(geoFenceDto);
         if(!errors.isEmpty())
             return badRequest(errors);
         
-        GeoFence gf = provider.createGeoFence(geoFenceDto);
-        
-        return created("geofences/"+gf.getId(), new GeoFenceDto.Builder().geoFence(gf).build());
+        try {
+            GeoFence gf = provider.createGeoFence(geoFenceDto);
+            return created("geofences/"+gf.getId(), new GeoFenceDto.Builder().geoFence(gf).build());
+        } catch (ProviderException e) {
+            return handle(e);
+        }
     }
     
     public HttpResponse put(long id, AddGeoFenceDto geoFenceDto) throws ProviderException {
@@ -145,6 +153,9 @@ public class GeofencesController extends ControllerBase{
     
     public HttpResponse getGeofenceShare(long id) throws ProviderException {
         try {
+            if (!requestContext.getUser().hasPermission(UserPermission.GEOFENCE_SHARE))
+                throw new ProviderException(ProviderException.Type.ACCESS_DENIED);
+            
             GeoFence gf = provider.getGeoFence(id);
             return ok(gf.getUsers().stream()
                     .map(u -> u.getId())
