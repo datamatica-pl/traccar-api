@@ -281,13 +281,15 @@ public class UserProvider extends ProviderBase {
         }
     }
     
-    // REMOVING USER - END //
+    // REMOVING USER - END // 
     
     private void editUser(User user, EditUserDto dto) throws ProviderException {
         if(!requestUser.hasPermission(UserPermission.ALL_USERS) && user.equals(requestUser.getManagedBy()))
             throw new ProviderException(Type.ACCESS_DENIED);
-        if(requestUser.getAdmin()) // it won't matter after full implementation of permissionsE
+        if(requestUser.getAdmin()) // it won't matter after full implementation of permissions
             user.setAdmin(dto.isAdmin());
+        else
+            user.setAdmin(false);
         user.setArchive(dto.isArchive());
         user.setBlocked(dto.isBlocked());
         user.setCompanyName(dto.getCompanyName());
