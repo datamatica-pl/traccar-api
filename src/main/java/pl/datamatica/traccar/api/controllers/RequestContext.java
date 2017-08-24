@@ -39,7 +39,6 @@ import pl.datamatica.traccar.api.providers.MailSender;
 import pl.datamatica.traccar.api.providers.NotificationSettingsProvider;
 import pl.datamatica.traccar.api.providers.PicturesProvider;
 import pl.datamatica.traccar.api.providers.PositionProvider;
-import pl.datamatica.traccar.api.providers.ReportsProvider;
 import pl.datamatica.traccar.api.providers.UserGroupProvider;
 import pl.datamatica.traccar.api.providers.UserProvider;
 import pl.datamatica.traccar.api.utils.DateUtil;
@@ -149,11 +148,7 @@ public class RequestContext implements AutoCloseable {
     public MailSender getMailSender() {
         return new MailSender(em);
     }
-    
-    public ReportsProvider getReportsProvider() {
-        ReportsProvider provider = new ReportsProvider(em, emMetadata);
-        return provider;
-    }
+
     
     public DeviceModelProvider getDeviceModelProvider() {
         DeviceModelProvider provider = new DeviceModelProvider(em, emMetadata);
