@@ -17,7 +17,6 @@
 package pl.datamatica.traccar.api.dtos.out;
 
 import pl.datamatica.traccar.api.dtos.in.AddGeoFenceDto;
-import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -25,7 +24,6 @@ import pl.datamatica.traccar.model.GeoFence;
 
 public class GeoFenceDto extends AddGeoFenceDto {
     private final long id;
-    private final Date lastUpdate;
 
     public static class Builder {
 
@@ -38,7 +36,6 @@ public class GeoFenceDto extends AddGeoFenceDto {
         private float radius;
         private String type;
         private long[] deviceIds;
-        private Date lastUpdate;
 
         public Builder geoFence(GeoFence geofence) {
             this.id = geofence.getId();
@@ -59,13 +56,12 @@ public class GeoFenceDto extends AddGeoFenceDto {
             else
                 this.deviceIds = geofence.getDevices().stream()
                         .mapToLong(d -> d.getId()).toArray();
-            this.lastUpdate = geofence.getLastUpdate();
             return this;
         }
 
         public GeoFenceDto build() {
             return new GeoFenceDto(id, geofenceName, description, allDevices, 
-                    color, points, radius, type, deviceIds, lastUpdate);
+                    color, points, radius, type, deviceIds);
         }
     }
 
@@ -77,11 +73,9 @@ public class GeoFenceDto extends AddGeoFenceDto {
             final List<PointDto> points, 
             final float radius, 
             final String type, 
-            final long[] deviceIds,
-            final Date lastUpdate) {
+            final long[] deviceIds) {
         super(geofenceName, description, allDevices, color, points, radius, type, deviceIds);
         this.id = id;
-        this.lastUpdate = lastUpdate;
     }
 
     public long getId() {
