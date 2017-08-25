@@ -23,6 +23,7 @@ import javax.persistence.TypedQuery;
 import pl.datamatica.traccar.model.Device;
 import pl.datamatica.traccar.model.Position;
 import pl.datamatica.traccar.model.User;
+import pl.datamatica.traccar.model.UserPermission;
 
 public class PositionProvider extends ProviderBase {
     
@@ -45,7 +46,10 @@ public class PositionProvider extends ProviderBase {
     
     // If maxCount == 0, then there is no upper limit for number of positions
     public Stream<Position> getAllAvailablePositions(Device device, Date minDate,
-            Date maxDate, int maxCount) {
+            Date maxDate, int maxCount) throws ProviderException {
+        if (!user.hasPermission(UserPermission.HISTORY_READ))
+            throw new ProviderException(ProviderException.Type.ACCESS_DENIED);
+        
         Date lastAvailPos = device.getLastAvailablePositionDate(new Date());
         
         if(minDate == null || minDate.before(lastAvailPos))
@@ -68,8 +72,11 @@ public class PositionProvider extends ProviderBase {
     }
     
     private boolean isVisible(Position p) {
-        if(user.getAdmin())
+        if(user.hasPermission(UserPermission.ALL_DEVICES))
             return true;
+        if(!user.hasPermission(UserPermission.HISTORY_READ))
+            return false;
+
         if(!user.getAllAvailableDevices().stream()
                 .anyMatch(d -> d.equals(p.getDevice())))
             return false;

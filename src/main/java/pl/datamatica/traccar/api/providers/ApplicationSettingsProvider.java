@@ -68,7 +68,7 @@ public class ApplicationSettingsProvider{
         as.setMatchServiceURL(dto.getMatchServiceURL());
         as.setAllowCommandsOnlyForAdmins(dto.isAllowCommandsOnlyForAdmins());
         
-        if (requestUser.hasPermission(UserPermission.GROUP_MANAGEMENT) && dto.getDefaultUserGroupId() != null) {
+        if (requestUser.hasPermission(UserPermission.USER_GROUP_MANAGEMENT) && dto.getDefaultUserGroupId() != null) {
             UserGroup group = userGroupsProvider.getGroup(dto.getDefaultUserGroupId());
             as.setDefaultGroup(group);
         }
