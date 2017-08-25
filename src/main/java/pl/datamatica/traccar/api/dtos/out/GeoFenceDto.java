@@ -23,7 +23,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import pl.datamatica.traccar.model.GeoFence;
 
-public class GeoFenceDto extends AddGeoFenceDto implements ICachedDto {
+public class GeoFenceDto extends AddGeoFenceDto {
     private final long id;
     private final Date lastUpdate;
 
@@ -86,10 +86,5 @@ public class GeoFenceDto extends AddGeoFenceDto implements ICachedDto {
 
     public long getId() {
         return id;
-    }
-    
-    @Override
-    public Date getModificationTime() {
-        return lastUpdate;
     }
 }
