@@ -34,6 +34,7 @@ import pl.datamatica.traccar.api.utils.JsonUtils;
 import pl.datamatica.traccar.api.providers.ProviderException;
 import pl.datamatica.traccar.model.Device;
 import pl.datamatica.traccar.model.User;
+import pl.datamatica.traccar.model.UserPermission;
 import spark.Request;
 import spark.Spark;
 
@@ -66,11 +67,16 @@ public class CommandsController extends ControllerBase {
                 Map<String, Object> commandParams = new HashMap<>();
                 Device device;
 
+                if (!requestUser.hasPermission(UserPermission.COMMAND_TCP)) {
+                    res.status(HttpStatuses.FORBIDDEN);
+                    return getResponseError(MessageKeys.ERR_ACCESS_DENIED);
+                }
+                
                 res.status(HttpStatuses.BAD_REQUEST);
                 res.type("application/json");
                 
                 if(("custom".equals(commandType) || "extendedCustom".equals(commandType))
-                        && !requestUser.getAdmin()) {
+                        && !requestUser.hasPermission(UserPermission.COMMAND_CUSTOM)) {
                     res.status(HttpStatuses.FORBIDDEN);
                     return getResponseError(MessageKeys.ERR_ACCESS_DENIED);
                 }
@@ -165,6 +171,11 @@ public class CommandsController extends ControllerBase {
                 res.status(HttpStatuses.BAD_REQUEST);
                 res.type("application/json");
 
+                if (!requestUser.hasPermission(UserPermission.COMMAND_TCP)) {
+                    res.status(HttpStatuses.FORBIDDEN);
+                    return getResponseError(MessageKeys.ERR_ACCESS_DENIED);
+                }
+                
                 try {
                     device = context.getDeviceProvider().getDevice(deviceId);
                 } catch (ProviderException e) {
@@ -219,7 +230,6 @@ public class CommandsController extends ControllerBase {
                 result.keySet().retainAll(Arrays.asList(VALID_PARAM_KEYS));
                 return result;
             }, gson::toJson);
-
         }
 
         private List<ErrorDto> getResponseError(String messageKey) {
@@ -240,5 +250,4 @@ public class CommandsController extends ControllerBase {
     public CommandsController(RequestContext rc) {
         super(rc);
     }
-
 }
