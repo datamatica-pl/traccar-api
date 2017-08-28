@@ -30,6 +30,7 @@ import pl.datamatica.traccar.api.dtos.in.AddDeviceGroupDto;
 import pl.datamatica.traccar.model.Device;
 import pl.datamatica.traccar.model.Group;
 import pl.datamatica.traccar.model.User;
+import pl.datamatica.traccar.model.UserPermission;
 
 public class DeviceGroupProvider extends ProviderBase {
     private final User requestUser;
@@ -51,7 +52,7 @@ public class DeviceGroupProvider extends ProviderBase {
     
     public Group getGroup(long id) throws ProviderException {
         Group g = new Group(get(Group.class, id, this::isVisible));
-        if(!requestUser.getAdmin()) {
+        if(!requestUser.hasPermission(UserPermission.ALL_USERS)) {
             Set<User> u = new HashSet<>(requestUser.getAllManagedUsers());
             u.add(requestUser);
             g.getUsers().retainAll(u);
@@ -81,7 +82,7 @@ public class DeviceGroupProvider extends ProviderBase {
                 .collect(Collectors.toSet());
         
         Stream<Group> stream;
-        if (requestUser.getAdmin()) {
+        if (requestUser.hasPermission(UserPermission.ALL_DEVICES)) {
             stream = em.createQuery("SELECT g FROM Group g").getResultList().stream();
         }
         else {
@@ -93,15 +94,20 @@ public class DeviceGroupProvider extends ProviderBase {
     }
           
     public Group createGroup(AddDeviceGroupDto dto) throws ProviderException {
+        checkDeviceGroupManagementPermission();
+        
         Group group = new Group();
         editGroupWithDto(group, dto);
         group.setUsers(Collections.singleton(requestUser));
         
         em.persist(group);
+        group.setOwned(true);
         return group;
     }
     
     public void updateGroup(long id, AddDeviceGroupDto dto) throws ProviderException {
+        checkDeviceGroupManagementPermission();
+        
         Group group = getEditableGroup(id);
         editGroupWithDto(group, dto);
         
@@ -109,6 +115,8 @@ public class DeviceGroupProvider extends ProviderBase {
     }
     
     public void deleteGroup(long id) throws ProviderException {
+        checkDeviceGroupManagementPermission();
+        
         Group group = getEditableGroup(id);
         
         hardRemoveGroup(group);
@@ -140,10 +148,21 @@ public class DeviceGroupProvider extends ProviderBase {
         query.setParameter(1, group.getId());
         query.executeUpdate();
     }
+    
+    public List<Long> getGroupShare(long id) throws ProviderException {
+        checkDeviceGroupManagementPermission();
+        
+        Group g = getGroup(id);
+        return g.getUsers().stream()
+                .map(u -> u.getId())
+                .collect(Collectors.toList());
+    }
 
     public void updateGroupShare(long id, List<Long> uids) throws ProviderException {
+        checkDeviceGroupManagementPermission();
+        
         Group g = get(Group.class, id, this::isVisible);
-        if(requestUser.getAdmin())
+        if(requestUser.hasPermission(UserPermission.ALL_USERS))
             g.getUsers().clear();
         else {
             g.getUsers().removeAll(requestUser.getAllManagedUsers());
@@ -151,7 +170,7 @@ public class DeviceGroupProvider extends ProviderBase {
         }
         Set<Long> ids = new HashSet<>(uids);
         List<User> users;
-        if(requestUser.getAdmin()) {
+        if(requestUser.hasPermission(UserPermission.ALL_USERS)) {
             TypedQuery<User> tq = em.createQuery("from User u where u.id in :ids", User.class);
             tq.setParameter("ids", uids);
             users = tq.getResultList();
@@ -164,6 +183,11 @@ public class DeviceGroupProvider extends ProviderBase {
     }
     
     private boolean isVisible(Group g) {
-        return requestUser.getAdmin() || requestUser.getGroups().contains(g);
+        return requestUser.hasPermission(UserPermission.ALL_DEVICES)|| requestUser.getGroups().contains(g);
+    }
+    
+    private void checkDeviceGroupManagementPermission() throws ProviderException {
+        if (!requestUser.hasPermission(UserPermission.DEVICE_GROUP_MANAGEMENT))
+            throw new ProviderException(ProviderException.Type.ACCESS_DENIED);
     }
 }

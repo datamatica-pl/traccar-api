@@ -17,7 +17,6 @@
 package pl.datamatica.traccar.api.controllers;
 
 import java.sql.Timestamp;
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import static java.util.stream.Collectors.toList;

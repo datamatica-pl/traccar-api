@@ -392,9 +392,9 @@ public class DeviceProvider extends ProviderBase {
             else
                 d.setCommandPassword(changes.get("commandPassword").getAsString());
         }
-        if(changes.has("historyLength") && requestUser.getAdmin())
+        if(changes.has("historyLength") && requestUser.hasPermission(UserPermission.ALL_DEVICES))
             d.setHistoryLength(changes.get("historyLength").getAsInt());
-        if(changes.has("validTo") && requestUser.getAdmin()) {
+        if(changes.has("validTo") && requestUser.hasPermission(UserPermission.ALL_DEVICES)) {
             if(changes.get("validTo").isJsonNull())
                 d.setValidTo(null);
             else
@@ -496,7 +496,7 @@ public class DeviceProvider extends ProviderBase {
         checkUserSharePermission();
         
         Device d = get(Device.class, id, this::isVisible);
-        if(requestUser.getAdmin())
+        if(requestUser. hasPermission(UserPermission.ALL_USERS))
             d.getUsers().clear();
         else {
             d.getUsers().removeAll(requestUser.getAllManagedUsers());
@@ -504,7 +504,7 @@ public class DeviceProvider extends ProviderBase {
         }
         Set<Long> ids = new HashSet<>(userIds);
         List<User> users;
-        if(requestUser.getAdmin()) {
+        if(requestUser.hasPermission(UserPermission.ALL_USERS)) {
             TypedQuery<User> tq = em.createQuery("from User u where u.id in :ids", User.class);
             tq.setParameter("ids", userIds);
             users = tq.getResultList();
