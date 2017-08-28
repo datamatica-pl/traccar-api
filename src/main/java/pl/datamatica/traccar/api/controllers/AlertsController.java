@@ -41,8 +41,6 @@ public class AlertsController extends ControllerBase {
         public String rootUrl() {
             return super.rootUrl() + "/alerts";
         }
-        
-        
     }
     
     private final RequestContext rc;
@@ -54,11 +52,11 @@ public class AlertsController extends ControllerBase {
     
     public HttpResponse get() throws ProviderException{
         try {
-        List<DeviceEvent> events = rc.getAlertProvider().getAllAvailableAlerts();
-        return okCached(events.stream()
-                .filter(e -> isModified(e.getTime()))
-                .map(e -> new AlertDto.Builder().event(e).build())
-                .collect(Collectors.toList()));
+            List<DeviceEvent> events = rc.getAlertProvider().getAllAvailableAlerts();
+            return okCached(events.stream()
+                    .filter(e -> isModified(e.getTime()))
+                    .map(e -> new AlertDto.Builder().event(e).build())
+                    .collect(Collectors.toList()));
         } catch(ProviderException e) {
             return handle(e);
         }
