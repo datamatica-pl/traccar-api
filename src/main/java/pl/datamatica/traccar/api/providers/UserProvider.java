@@ -143,7 +143,8 @@ public class UserProvider extends ProviderBase {
     }
     
     public void updateUser(long id, EditUserDto dto) throws ProviderException {
-        checkUserManagementPermissions(requestUser);
+        if (requestUser.getId() != id)
+            checkUserManagementPermissions(requestUser);
         
         User u = getUser(id);
 
@@ -290,8 +291,6 @@ public class UserProvider extends ProviderBase {
             user.setAdmin(dto.isAdmin());
         else
             user.setAdmin(false);
-        user.setArchive(dto.isArchive());
-        user.setBlocked(dto.isBlocked());
         user.setCompanyName(dto.getCompanyName());
         user.setEmail(dto.getEmail());
         user.setFirstName(dto.getFirstName());
@@ -308,7 +307,11 @@ public class UserProvider extends ProviderBase {
         }
         user.setNotificationEvents(notificationEvents);
         user.setPhoneNumber(dto.getPhoneNumber());
-        user.setReadOnly(dto.isReadOnly());
+        if (requestUser.getId() != user.getId()) { 
+            user.setReadOnly(dto.isReadOnly());
+            user.setArchive(dto.isArchive());
+            user.setBlocked(dto.isBlocked());
+        }
     }
     
     private void checkUserManagementPermissions(User user) throws ProviderException {

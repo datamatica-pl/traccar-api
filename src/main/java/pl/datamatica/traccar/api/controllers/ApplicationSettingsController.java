@@ -63,7 +63,6 @@ public class ApplicationSettingsController extends ControllerBase {
     }
     
     ApplicationSettingsProvider provider;
-    RequestContext requestContext;
     
     public ApplicationSettingsController(RequestContext rc) {
         super(rc);

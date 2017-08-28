@@ -51,6 +51,7 @@ import pl.datamatica.traccar.model.Device;
 import pl.datamatica.traccar.model.Picture;
 import pl.datamatica.traccar.model.Position;
 import pl.datamatica.traccar.model.User;
+import pl.datamatica.traccar.model.UserPermission;
 import spark.Request;
 import spark.Response;
 import spark.Spark;
@@ -127,7 +128,7 @@ public class DevicesController extends ControllerBase {
                 DevicesController dc = createController(req);
                 long id = Long.parseLong(req.params(":id"));
                 return render(dc.getDeviceShare(id), res);
-            });
+            }, gson::toJson);
             
             Spark.put(rootUrl()+"/:id/share", (Request req, Response res) -> {
                 DevicesController dc = createController(req);
@@ -135,7 +136,7 @@ public class DevicesController extends ControllerBase {
                 List<Long> ids = gson.fromJson(req.body(), 
                         new TypeToken<List<Long>>() {}.getType());
                 return render(dc.updateDeviceShare(id, ids), res);
-            });
+            }, gson::toJson);
         }
 
         private DevicesController createController(Request req) {
@@ -157,7 +158,8 @@ public class DevicesController extends ControllerBase {
     private final Date minDate;
     private final Set<Long> userIds;
     private final SimpleDateFormat dateFormat;
-
+    
+    
     public DevicesController(RequestContext requestContext) {
         super(requestContext);
         this.dp = requestContext.getDeviceProvider();
@@ -190,7 +192,8 @@ public class DevicesController extends ControllerBase {
 
     public HttpResponse get(long id) throws Exception {
         try{
-            return okCached(new DeviceDto.Builder().device(dp.getDevice(id), userIds).build());
+            Device dev = dp.getDevice(id);
+            return okCached(new DeviceDto.Builder().device(dev, userIds).build());
         } catch(ProviderException e) {
             return handle(e);
         }
@@ -210,7 +213,7 @@ public class DevicesController extends ControllerBase {
                 case DEVICE_ALREADY_EXISTS:
                     return badRequest(MessageKeys.ERR_INVALID_IMEI);
             }
-            throw e;
+            return handle(e);
         }
     }
     
@@ -302,6 +305,8 @@ public class DevicesController extends ControllerBase {
             dp.delete(id);
             return ok("");
         } catch(ProviderException e) {
+            if (e.getType() == ProviderException.Type.ALREADY_DELETED)
+                return badRequest(MessageKeys.ERR_ALREADY_DELETED); 
             return handle(e);
         }
     }
@@ -332,10 +337,7 @@ public class DevicesController extends ControllerBase {
     
     public HttpResponse getDeviceShare(long id) throws ProviderException {
         try {
-            Device d = dp.getDevice(id);
-            return ok(d.getUsers().stream()
-                    .map(u -> u.getId())
-                    .collect(Collectors.toList()));
+            return ok(dp.getDeviceShare(id));
         } catch(ProviderException e) {
             return handle(e);
         }
@@ -488,12 +490,19 @@ public class DevicesController extends ControllerBase {
     }
 
     private HttpResponse updateCustomIcon(long deviceId, byte[] data) throws ProviderException {
-        Device device = dp.getDevice(deviceId);
-        PicturesProvider pp = requestContext.getPicturesProvider();
-        if(device.getCustomIconId() != null)
-            pp.deletePictureIfExists(device.getCustomIconId());
-        Picture p = pp.createPicture(data);
-        device.setCustomIconId(p.getId());
-        return ok(p.getId());
+        try {
+            if (!requestContext.getUser().hasPermission(UserPermission.DEVICE_EDIT))
+                throw new ProviderException(ProviderException.Type.ACCESS_DENIED);
+            
+            Device device = dp.getDevice(deviceId);
+            PicturesProvider pp = requestContext.getPicturesProvider();
+            if(device.getCustomIconId() != null)
+                pp.deletePictureIfExists(device.getCustomIconId());
+            Picture p = pp.createPicture(data);
+            device.setCustomIconId(p.getId());
+            return ok(p.getId());
+        } catch (ProviderException e) {
+            return handle(e);
+        }
     }
 }

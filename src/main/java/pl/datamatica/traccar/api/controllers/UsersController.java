@@ -183,7 +183,7 @@ public class UsersController extends ControllerBase {
             requestContext.setUser(user);
             requestContext.getDeviceProvider().createDevice(userDto.getImei());
             sendActivationToken(user);
-            return created("user/"+user.getId(), "");
+            return created("users/"+user.getId(), "");
         } catch (ProviderException ex) {
             requestContext.rollbackTransaction();
             switch(ex.getType()) {

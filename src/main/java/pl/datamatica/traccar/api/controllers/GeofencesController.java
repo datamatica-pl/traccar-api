@@ -111,7 +111,7 @@ public class GeofencesController extends ControllerBase{
     public HttpResponse get(long id) throws ProviderException {
         try {
             GeoFenceDto gf = new GeoFenceDto.Builder().geoFence(provider.getGeoFence(id)).build();
-            return okCached(gf);
+            return ok(gf);
         } catch(ProviderException e) {
             return handle(e);
         }
