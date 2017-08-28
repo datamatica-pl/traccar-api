@@ -16,7 +16,6 @@
  */
 package pl.datamatica.traccar.api.controllers;
 
-import java.util.Date;
 import pl.datamatica.traccar.api.Application;
 import static pl.datamatica.traccar.api.controllers.ControllerBase.render;
 import pl.datamatica.traccar.api.dtos.out.AppVersionsInfoDto;
@@ -72,7 +71,6 @@ public class AppVersionsController extends ControllerBase {
                 return ok(getDefault());
             }
         }
-
         return ok(cached);
     }
     
