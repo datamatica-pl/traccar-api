@@ -35,6 +35,7 @@ public class MessageKeys {
     
     public static final String ERR_IMEI_NOT_PROVIDED = "err_imei_not_provided";
     public static final String ERR_INVALID_IMEI = "err_invalid_imei";
+    public static final String ERR_ALREADY_DELETED = "err_already_deleted";
     public static final String ERR_DEVICE_COLOR_NOT_PROVIDED = "err_device_color_not_provided";
     public static final String ERR_INVALID_DEVICE_COLOR_FORMAT = "err_invalid_device_color_format";
     public static final String ERR_DEVICE_MODEL_ID_NOT_PROVIDED = "err_device_model_id_not_provided";
