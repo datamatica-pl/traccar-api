@@ -17,6 +17,7 @@
 package pl.datamatica.traccar.api.providers;
 
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -94,7 +95,7 @@ public class UserGroupProvider extends ProviderBase {
         editGroupWithDto(group, dto);
         
         em.persist(group);
-        addAuditLogCreateUserGroup(group);
+        addAuditLogCreateRemoveUserGroup(group, false);
         return group;
     }
     
@@ -103,6 +104,7 @@ public class UserGroupProvider extends ProviderBase {
         
         UserGroup group = getGroup(id);
         checkNameUniqueness(dto.getName(), group);
+        generateAuditLogsForUpdate(group, dto);
         editGroupWithDto(group, dto);
         
         em.persist(group);
@@ -126,6 +128,8 @@ public class UserGroupProvider extends ProviderBase {
             user.setUserGroup(defaultGroup);
         });
         em.flush();
+        
+        addAuditLogCreateRemoveUserGroup(group, true);
         
         Query query = em.createQuery("DELETE FROM UserGroup WHERE id = ?");
         query.setParameter(1, id);
@@ -158,13 +162,57 @@ public class UserGroupProvider extends ProviderBase {
             throw new ProviderException(ProviderException.Type.ACCESS_DENIED);
     }
     
-    private void addAuditLogCreateUserGroup(UserGroup group) {
+    private void generateAuditLogsForUpdate(UserGroup group, AddUserGroupDto dto) {
+        if (!group.getName().equals(dto.getName())) {
+            AuditLog al = new AuditLog.Builder()
+                        .type(AuditLogType.CHANGED_USERGROUP_PROPERTY)
+                        .agentLogin(requestUser.getLogin())
+                        .targetUserGroupName(group.getName())
+                        .fieldName("name")
+                        .fieldNewValue(dto.getName())
+                        .build();
+            em.persist(al);
+        }
+        
+        Set<UserPermission> removed = new HashSet<>(group.getPermissions());
+        removed.removeAll(dto.getPermissions());
+        
+        Set<UserPermission> added = new HashSet<>(dto.getPermissions());
+        added.removeAll(group.getPermissions());
+        
+        for (UserPermission up : removed) {
+            AuditLog al = new AuditLog.Builder()
+                        .type(AuditLogType.REMOVED_USERGROUP_PERMISSION)
+                        .agentLogin(requestUser.getLogin())
+                        .targetUserGroupName(dto.getName())
+                        .permissionName(up.name())
+                        .build();
+            em.persist(al);
+        }
+        
+        for (UserPermission up : added) {
+            AuditLog al = new AuditLog.Builder()
+                        .type(AuditLogType.ADDED_USERGROUP_PERMISSION)
+                        .agentLogin(requestUser.getLogin())
+                        .targetUserGroupName(dto.getName())
+                        .permissionName(up.name())
+                        .build();
+            em.persist(al);
+        }
+        
+    }
+    
+    private void addAuditLogCreateRemoveUserGroup(UserGroup group, boolean remove) {
         AuditLog al = new AuditLog.Builder()
-                        .type(AuditLogType.CREATED_USERGROUP)
+                        .type(remove ? AuditLogType.REMOVED_USERGROUP : AuditLogType.CREATED_USERGROUP)
                         .agentLogin(requestUser.getLogin())
                         .targetUserGroupName(group.getName())
                         .build();
         
         em.persist(al);
+    }
+    
+    private void addAuditLogEditPropertyUserGroup(UserGroup group, String fieldName, String newValue) {
+
     }
 }

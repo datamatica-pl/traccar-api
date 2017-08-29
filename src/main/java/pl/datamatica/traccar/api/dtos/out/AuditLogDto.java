@@ -76,7 +76,7 @@ public class AuditLogDto {
             this.agentLogin = value.getAgentLogin();
             this.time = value.getTime();
             this.type = value.getType();
-            this.note = value.getType() + "  " + value.getAgentLogin() + "  " + value.getTargetUserGroupName();
+            this.note = AuditLogDto.generateNoteFromAuditLog(value);
             return this;
         }
         
@@ -85,4 +85,29 @@ public class AuditLogDto {
         }
     }
     
+    public static String generateNoteFromAuditLog(AuditLog log) {
+        switch(log.getType()) {
+            case CHANGED_SERVER_SETTING:
+                return "Changed server setting '" + log.getFieldName() + "' to value: " + log.getFieldNewValue();
+            case CHANGED_USER:
+                return "Changed user " + log.getTargetUserLogin() + " '" + log.getFieldName() + "' to value: " + log.getFieldNewValue();
+            case ADDED_USERGROUP_PERMISSION:
+                return "Added " + log.getPermissionName() + " permission to usergroup " + log.getTargetUserGroupName();
+            case REMOVED_USERGROUP_PERMISSION: 
+                return "Removed " + log.getPermissionName() + " permission from usergroup " + log.getTargetUserGroupName();
+            case CHANGED_USERGROUP_PROPERTY:
+                return "Changed usergroup " + log.getTargetUserGroupName()+ " '" + log.getFieldName() + "' to value: " + log.getFieldNewValue();
+            case CHANGED_USER_USERGROUP:
+                return "Moved user " + log.getTargetUserLogin()+ " to usergroup: " + log.getTargetUserGroupName();
+            case CREATED_USERGROUP:
+                return "Created usergroup " + log.getTargetUserGroupName();
+            case REMOVED_USERGROUP:
+                return "Removed usergroup " + log.getTargetUserGroupName();
+            case CREATED_USER:
+                return "Created user " + log.getTargetUserLogin();
+            case REMOVED_USER:
+                return "Removed user " + log.getTargetUserLogin();
+        }
+        return "Enexpected event";
+    }
 }
