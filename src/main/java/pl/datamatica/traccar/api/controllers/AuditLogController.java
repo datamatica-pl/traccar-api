@@ -23,8 +23,6 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import pl.datamatica.traccar.api.Application;
-import pl.datamatica.traccar.api.dtos.MessageKeys;
-import pl.datamatica.traccar.api.dtos.out.ErrorDto;
 import pl.datamatica.traccar.api.providers.AuditLogProvider;
 import pl.datamatica.traccar.api.providers.ProviderException;
 import pl.datamatica.traccar.api.responses.HttpResponse;
@@ -68,7 +66,7 @@ public class AuditLogController extends ControllerBase {
     
     public AuditLogController(RequestContext requestContext) {
         super(requestContext);
-        requestContext.getAuditLogProvider();
+        provider = requestContext.getAuditLogProvider();
     }
     
     public HttpResponse get(Map<String, String[]> params) throws ProviderException {

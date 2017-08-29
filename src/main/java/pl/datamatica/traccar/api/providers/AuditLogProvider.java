@@ -54,7 +54,7 @@ public class AuditLogProvider extends ProviderBase {
         if (toDate == null)
             toDate = new Date();
         
-        Query query = em.createQuery("SELECT ag FROM AuditLog WHERE ag.time >= :minDate AND ag.time <= :maxDate ORDER BY time");
+        Query query = em.createQuery("FROM AuditLog ag WHERE ag.time >= :minDate AND ag.time <= :maxDate ORDER BY time", AuditLog.class);
         query.setParameter("minDate", fromDate);
         query.setParameter("maxDate", toDate);
         List<AuditLog> result = query.getResultList();
