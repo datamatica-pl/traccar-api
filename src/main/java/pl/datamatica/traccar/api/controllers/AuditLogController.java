@@ -21,8 +21,11 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 import pl.datamatica.traccar.api.Application;
+import pl.datamatica.traccar.api.dtos.out.AuditLogDto;
 import pl.datamatica.traccar.api.providers.AuditLogProvider;
 import pl.datamatica.traccar.api.providers.ProviderException;
 import pl.datamatica.traccar.api.responses.HttpResponse;
@@ -63,7 +66,7 @@ public class AuditLogController extends ControllerBase {
     }
 
     AuditLogProvider provider;
-    
+        
     public AuditLogController(RequestContext requestContext) {
         super(requestContext);
         provider = requestContext.getAuditLogProvider();
@@ -72,9 +75,13 @@ public class AuditLogController extends ControllerBase {
     public HttpResponse get(Map<String, String[]> params) throws ProviderException {
         try {
             Map<String, Date> parsed = parseGetParams(params);
-
-            return ok(provider.get(parsed.containsKey("fromDate") ? parsed.get("fromDate") : null,
-                                   parsed.containsKey("fromDate") ? parsed.get("fromDate") : null));
+            
+            List<AuditLogDto> result = provider.get(parsed.containsKey("fromDate") ? parsed.get("fromDate") : null,
+                                   parsed.containsKey("toDate") ? parsed.get("toDate") : null)
+                            .map(l -> new AuditLogDto.Builder().auditLog(l).build())
+                            .collect(Collectors.toList());
+            
+            return ok(result);
         } catch (ProviderException e) {
             return handle(e);
         }
@@ -82,8 +89,7 @@ public class AuditLogController extends ControllerBase {
     
     public HttpResponse get(long id) throws ProviderException {
         try {
-            // TODO: Add some DTO
-            return ok(provider.get(id)); 
+            return ok(new AuditLogDto.Builder().auditLog(provider.get(id)).build()); 
         } catch (ProviderException e) {
             return handle(e);
         }
@@ -100,7 +106,9 @@ public class AuditLogController extends ControllerBase {
             try {
                 result.put("fromDate", df.parse(params.get("fromDate")[0]));
             }
-            catch(ArrayIndexOutOfBoundsException | ParseException pe) { }
+            catch(ArrayIndexOutOfBoundsException | ParseException e) { 
+                //ignore it
+            }
         }
         
         if (params.containsKey("toDate")) {
@@ -108,7 +116,9 @@ public class AuditLogController extends ControllerBase {
             try {
                 result.put("toDate", df.parse(params.get("toDate")[0]));
             }
-            catch(ArrayIndexOutOfBoundsException | ParseException pe) { }
+            catch(ArrayIndexOutOfBoundsException | ParseException e) { 
+                //ignore it
+            }
         }
         
         return result;

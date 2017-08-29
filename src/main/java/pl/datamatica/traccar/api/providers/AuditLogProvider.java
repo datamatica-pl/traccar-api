@@ -17,7 +17,7 @@
 package pl.datamatica.traccar.api.providers;
 
 import java.util.Date;
-import java.util.List;
+import java.util.stream.Stream;
 import javax.persistence.EntityManager;
 import javax.persistence.Query;
 import pl.datamatica.traccar.model.AuditLog;
@@ -44,7 +44,7 @@ public class AuditLogProvider extends ProviderBase {
         return get(AuditLog.class, id, ag -> true);
     }
     
-    public List<AuditLog> get(Date fromDate, Date toDate) throws ProviderException {
+    public Stream<AuditLog> get(Date fromDate, Date toDate) throws ProviderException {
         checkAuditAccessPermission();
         
         if (fromDate == null) {
@@ -57,9 +57,7 @@ public class AuditLogProvider extends ProviderBase {
         Query query = em.createQuery("FROM AuditLog ag WHERE ag.time >= :minDate AND ag.time <= :maxDate ORDER BY time", AuditLog.class);
         query.setParameter("minDate", fromDate);
         query.setParameter("maxDate", toDate);
-        List<AuditLog> result = query.getResultList();
-        
-        return result;
+        return query.getResultList().stream();
     }
     
     private void checkAuditAccessPermission() throws ProviderException {

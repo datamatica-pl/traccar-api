@@ -24,6 +24,8 @@ import java.util.stream.Stream;
 import javax.persistence.EntityManager;
 import javax.persistence.Query;
 import pl.datamatica.traccar.api.dtos.in.AddUserGroupDto;
+import pl.datamatica.traccar.model.AuditLog;
+import pl.datamatica.traccar.model.AuditLogType;
 import pl.datamatica.traccar.model.User;
 import pl.datamatica.traccar.model.UserGroup;
 import pl.datamatica.traccar.model.UserPermission;
@@ -92,6 +94,7 @@ public class UserGroupProvider extends ProviderBase {
         editGroupWithDto(group, dto);
         
         em.persist(group);
+        addAuditLogCreateUserGroup(group);
         return group;
     }
     
@@ -153,5 +156,15 @@ public class UserGroupProvider extends ProviderBase {
     private void checkGroupManagementPermission() throws ProviderException {
         if (!requestUser.hasPermission(UserPermission.USER_GROUP_MANAGEMENT)) 
             throw new ProviderException(ProviderException.Type.ACCESS_DENIED);
+    }
+    
+    private void addAuditLogCreateUserGroup(UserGroup group) {
+        AuditLog al = new AuditLog.Builder()
+                        .type(AuditLogType.CREATED_USERGROUP)
+                        .agentLogin(requestUser.getLogin())
+                        .targetUserGroupName(group.getName())
+                        .build();
+        
+        em.persist(al);
     }
 }
