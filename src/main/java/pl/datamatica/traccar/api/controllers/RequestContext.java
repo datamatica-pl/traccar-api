@@ -253,14 +253,14 @@ public class RequestContext implements AutoCloseable {
 
     public void commitTransaction() {
         EntityTransaction et = em.getTransaction();
-        if (et.isActive()) {
+        if (et != null && et.isActive()) {
             et.commit();
         }
     }
     
     public void rollbackTransaction() {
         EntityTransaction et = em.getTransaction();
-        if (et.isActive()) {
+        if (et != null && et.isActive()) {
             et.rollback();
         }
     }
@@ -274,7 +274,7 @@ public class RequestContext implements AutoCloseable {
     public void commitMetadataTransaction() {
         if (emMetadata != null) {
             EntityTransaction et = emMetadata.getTransaction();
-            if (et.isActive()) {
+            if (et != null && et.isActive()) {
                 et.commit();
             }
         }
@@ -283,7 +283,7 @@ public class RequestContext implements AutoCloseable {
     public void rollbackMetadataTransaction() {
         if (emMetadata != null) {
             EntityTransaction et = emMetadata.getTransaction();
-            if (et.isActive()) {
+            if (et != null && et.isActive()) {
                 et.rollback();
             }
         }
