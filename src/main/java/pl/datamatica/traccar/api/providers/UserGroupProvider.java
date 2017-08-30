@@ -19,6 +19,7 @@ package pl.datamatica.traccar.api.providers;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -80,10 +81,14 @@ public class UserGroupProvider extends ProviderBase {
         final UserGroup defaultGroup = applicationSettingsProvider.get().getDefaultGroup();
         
         userProvider.getAllManagedUsers().forEach(u -> {
-            if(uids.contains(u.getId()))
+            if(uids.contains(u.getId())) {
                 u.setUserGroup(group);
-            else if(u.getUserGroup().getId() == id)
+                generateAudtiLogForMovedUser(u, group);
+            }
+            else if(u.getUserGroup().getId() == id) {
                 u.setUserGroup(defaultGroup);
+                generateAudtiLogForMovedUser(u, defaultGroup);
+            }
         });       
     }
     
@@ -163,7 +168,7 @@ public class UserGroupProvider extends ProviderBase {
     }
     
     private void generateAuditLogsForUpdate(UserGroup group, AddUserGroupDto dto) {
-        if (!group.getName().equals(dto.getName())) {
+        if (!Objects.equals(group.getName(), dto.getName())) {
             AuditLog al = new AuditLog.Builder()
                         .type(AuditLogType.CHANGED_USERGROUP_PROPERTY)
                         .agentLogin(requestUser.getLogin())
@@ -212,7 +217,14 @@ public class UserGroupProvider extends ProviderBase {
         em.persist(al);
     }
     
-    private void addAuditLogEditPropertyUserGroup(UserGroup group, String fieldName, String newValue) {
-
+    private void generateAudtiLogForMovedUser(User user, UserGroup group) {
+        AuditLog al = new AuditLog.Builder()
+                        .type(AuditLogType.CHANGED_USER_USERGROUP)
+                        .agentLogin(requestUser.getLogin())
+                        .targetUserLogin(user.getLogin())
+                        .targetUserGroupName(group.getName())
+                        .build();
+        
+        em.persist(al);
     }
 }

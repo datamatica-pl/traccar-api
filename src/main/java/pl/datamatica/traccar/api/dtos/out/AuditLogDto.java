@@ -98,7 +98,7 @@ public class AuditLogDto {
             case CHANGED_USERGROUP_PROPERTY:
                 return "Changed usergroup " + log.getTargetUserGroupName()+ " '" + log.getFieldName() + "' to value: " + log.getFieldNewValue();
             case CHANGED_USER_USERGROUP:
-                return "Moved user " + log.getTargetUserLogin()+ " to usergroup: " + log.getTargetUserGroupName();
+                return "Moved user " + log.getTargetUserLogin()+ " to usergroup " + log.getTargetUserGroupName();
             case CREATED_USERGROUP:
                 return "Created usergroup " + log.getTargetUserGroupName();
             case REMOVED_USERGROUP:

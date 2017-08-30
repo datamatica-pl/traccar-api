@@ -32,7 +32,7 @@ public class EditApplicationSettingsDto {
     private final Short updateInterval;
     private final String defaultPasswordHash;
     private final Boolean disallowDeviceManagementByUsers;
-    private final Boolean evantRecordingEnabled;
+    private final Boolean eventRecordingEnabled;
     private final Integer notificationExpirationPeriod;
     private final String language;
     private final String bingMapsKey;
@@ -55,7 +55,7 @@ public class EditApplicationSettingsDto {
         this.updateInterval = updateInterval;
         this.defaultPasswordHash = defaultPasswordHash;
         this.disallowDeviceManagementByUsers = disallowDeviceManagementByUsers;
-        this.evantRecordingEnabled = evantRecordingEnabled;
+        this.eventRecordingEnabled = evantRecordingEnabled;
         this.notificationExpirationPeriod = notificationExpirationPeriod;
         this.language = language;
         this.bingMapsKey = bingMapsKey;
@@ -80,8 +80,8 @@ public class EditApplicationSettingsDto {
         return disallowDeviceManagementByUsers;
     }
 
-    public boolean isEvantRecordingEnabled() {
-        return evantRecordingEnabled;
+    public boolean isEventRecordingEnabled() {
+        return eventRecordingEnabled;
     }
 
     public int getNotificationExpirationPeriod() {
@@ -122,7 +122,7 @@ public class EditApplicationSettingsDto {
         if (dto.disallowDeviceManagementByUsers == null) {
             errors.add(new ErrorDto(MessageKeys.ERR_APPSETTINGS_DISALLOW_DEVICE_MANAGEMENT_NOT_PROVIDED));
         }
-        if (dto.evantRecordingEnabled == null) {
+        if (dto.eventRecordingEnabled == null) {
             errors.add(new ErrorDto(MessageKeys.ERR_APPSETTINGS_EVENT_RECORDING_NOT_PROVIDED));
         }
         if (dto.notificationExpirationPeriod == null) {
@@ -151,7 +151,7 @@ public class EditApplicationSettingsDto {
         private Short updateInterval;
         private String defaultPasswordHash;
         private boolean disallowDeviceManagementByUsers;
-        private boolean evantRecordingEnabled;
+        private boolean eventRecordingEnabled;
         private int notificationExpirationPeriod;
         private String language;
         private String bingMapsKey;
@@ -182,8 +182,8 @@ public class EditApplicationSettingsDto {
             return this;
         }
         
-        public Builder evantRecordingEnabled(final boolean value) {
-            this.evantRecordingEnabled = value;
+        public Builder eventRecordingEnabled(final boolean value) {
+            this.eventRecordingEnabled = value;
             return this;
         }
         
@@ -222,7 +222,7 @@ public class EditApplicationSettingsDto {
                     updateInterval, 
                     defaultPasswordHash, 
                     disallowDeviceManagementByUsers, 
-                    evantRecordingEnabled, 
+                    eventRecordingEnabled, 
                     notificationExpirationPeriod, 
                     language, 
                     bingMapsKey, 
