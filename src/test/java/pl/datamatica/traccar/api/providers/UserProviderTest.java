@@ -39,10 +39,11 @@ public class UserProviderTest {
     }
     
     @Before
-    public void testInit() {
+    public void testInit() throws ProviderException {
         em.getTransaction().begin();
         appSettings = new ApplicationSettings();
         provider = new UserProvider(em, appSettings);
+        provider.authenticateUser(database.admin.getId());
     }
     
     @Test
