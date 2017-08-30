@@ -16,6 +16,7 @@
  */
 package pl.datamatica.traccar.api.providers;
 
+import java.util.Calendar;
 import java.util.Date;
 import java.util.stream.Stream;
 import javax.persistence.EntityManager;
@@ -30,9 +31,7 @@ import pl.datamatica.traccar.model.UserPermission;
  */
 public class AuditLogProvider extends ProviderBase {
     private final User requestUser;
-    
-    private long WEEK_TIME = 1000 * 60 * 60 * 24 * 7;
-    
+     
     public AuditLogProvider(EntityManager em, User requestUser) {
         super(em);
         this.requestUser = requestUser;
@@ -49,7 +48,13 @@ public class AuditLogProvider extends ProviderBase {
         
         if (fromDate == null) {
             fromDate = new Date();
-            fromDate.setTime(new Date().getTime() - WEEK_TIME);
+            Calendar cal = Calendar.getInstance();
+            cal.setTime(fromDate);
+            cal.add(Calendar.DATE, -7);
+            cal.set(Calendar.HOUR, 0);
+            cal.set(Calendar.MINUTE, 0);
+            cal.set(Calendar.SECOND, 0);
+            fromDate = cal.getTime();
         }
         if (toDate == null)
             toDate = new Date();
