@@ -31,9 +31,7 @@ import pl.datamatica.traccar.model.UserPermission;
  */
 public class AuditLogProvider extends ProviderBase {
     private final User requestUser;
-    
-    private long WEEK_TIME = 1000 * 60 * 60 * 24 * 7;
-    
+     
     public AuditLogProvider(EntityManager em, User requestUser) {
         super(em);
         this.requestUser = requestUser;
