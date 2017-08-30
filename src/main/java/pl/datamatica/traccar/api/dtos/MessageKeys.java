@@ -147,4 +147,5 @@ public class MessageKeys {
     public static final String ERR_USER_GROUP_ALREADY_EXISTS = "err_user_group_already_exists";
     public static final String ERR_USER_GROUP_INVALID_PERMISSION = "err_user_group_invalid_permission";
     public static final String ERR_USER_GROUP_DELETING_DEFAULT = "err_user_group_deleting_default";
+    public static final String ERR_USER_GROUP_LACKING_BASE_PERMISSIONS = "err_user_group_lacking_base_permissions";
 }

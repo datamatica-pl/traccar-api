@@ -20,6 +20,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import pl.datamatica.traccar.api.dtos.MessageKeys;
 import pl.datamatica.traccar.api.dtos.out.ErrorDto;
@@ -49,8 +50,21 @@ public class AddUserGroupDto {
             errors.add(new ErrorDto(MessageKeys.ERR_USER_GROUP_PERMISSIONS_NOT_PROVIDED));
         if (dto.permissions != null && dto.permissions.stream().anyMatch(d -> d == null))
             errors.add(new ErrorDto(MessageKeys.ERR_USER_GROUP_INVALID_PERMISSION));
-
+        //All permission have to correct to chech requirements
+        if (errors.isEmpty() && !validateRequiredPermissions(dto))
+            errors.add(new ErrorDto(MessageKeys.ERR_USER_GROUP_LACKING_BASE_PERMISSIONS));
+        
         return errors;
+    }
+    
+    public static boolean validateRequiredPermissions(AddUserGroupDto dto) {
+        Map<UserPermission, Set<UserPermission>> required = UserPermission.getRequiredPermissions();
+
+        for (UserPermission up : dto.permissions) {
+            if (!dto.permissions.containsAll(required.get(up)))
+                return false;
+        }
+        return true;
     }
     
     public static class Builder {
