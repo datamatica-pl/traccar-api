@@ -36,6 +36,7 @@ import pl.datamatica.traccar.api.providers.ProviderRemovingException;
 import pl.datamatica.traccar.api.providers.UserProvider;
 import pl.datamatica.traccar.api.responses.HttpResponse;
 import pl.datamatica.traccar.model.User;
+import pl.datamatica.traccar.model.UserPermission;
 import pl.datamatica.traccar.model.UserSettings;
 import spark.Request;
 import spark.Spark;
@@ -143,7 +144,13 @@ public class UsersController extends ControllerBase {
     
     public HttpResponse get() throws Exception {
         List<UserDto> users = up.getAllAvailableUsers()
-                .map(user -> new UserDto.Builder().user(user).build())
+                .map(user ->  {
+                    UserDto.Builder builder = new UserDto.Builder().user(user);
+                    if(requestContext.getUser().hasPermission(UserPermission.USER_GROUP_MANAGEMENT)
+                            && user.getUserGroup() != null)
+                        builder.userGroupName(user.getUserGroup().getName());
+                    return builder.build();
+                        })
                 .collect(Collectors.toList());
         return ok(users);
     }

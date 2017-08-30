@@ -32,6 +32,7 @@ public class UserDto extends EditUserDto {
     private final UserSettingsDto settings;
     private final UserGroupDto userGroup;
     private final boolean premium;
+    private final String userGroupName;
 
     public static class Builder {
 
@@ -54,6 +55,7 @@ public class UserDto extends EditUserDto {
         private UserSettingsDto settings;
         private UserGroupDto userGroup;
         private boolean premium;
+        private String userGroupName;
 
         public Builder id(final long value) {
             this.id = value;
@@ -174,12 +176,17 @@ public class UserDto extends EditUserDto {
             userGroup = new UserGroupDto.Builder().userGroup(user.getUserGroup()).build();
             return this;
         }
+        
+        public Builder userGroupName(final String name) {
+            this.userGroupName = name;
+            return this;
+        }
 
         public UserDto build() {
             return new UserDto(id, login, email, companyName, firstName, lastName, 
                     phoneNumber, expirationDate, maxNumOfDevices, managedById, 
                     manager, admin, archive, blocked, notificationEvents, readOnly,
-                    settings, userGroup, premium);
+                    settings, userGroup, premium, userGroupName);
         }
     }
     
@@ -201,7 +208,8 @@ public class UserDto extends EditUserDto {
             final boolean readOnly,
             final UserSettingsDto settings,
             final UserGroupDto userGroup,
-            final boolean premium) {
+            final boolean premium,
+            final String userGroupName) {
         super(email, companyName, firstName, lastName, phoneNumber,
                 expirationDate, maxNumOfDevices, manager, admin, archive,
                 blocked, PASSWORD_PLACEHOLDER, notificationEvents, readOnly);
@@ -211,6 +219,7 @@ public class UserDto extends EditUserDto {
         this.settings = settings;
         this.userGroup = userGroup;
         this.premium = premium;
+        this.userGroupName = userGroupName;
     }
     
     public long getId() {
@@ -228,6 +237,10 @@ public class UserDto extends EditUserDto {
     
     public boolean isPremium() {
         return premium;
+    }
+    
+    public String getUserGroupName() {
+        return userGroupName;
     }
 
 }
