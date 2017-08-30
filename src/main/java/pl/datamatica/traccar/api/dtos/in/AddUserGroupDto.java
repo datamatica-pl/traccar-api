@@ -50,7 +50,7 @@ public class AddUserGroupDto {
             errors.add(new ErrorDto(MessageKeys.ERR_USER_GROUP_PERMISSIONS_NOT_PROVIDED));
         if (dto.permissions != null && dto.permissions.stream().anyMatch(d -> d == null))
             errors.add(new ErrorDto(MessageKeys.ERR_USER_GROUP_INVALID_PERMISSION));
-        //All permission have to correct to chech requirements
+        //All permission have to be correct to check requirements
         if (errors.isEmpty() && !validateRequiredPermissions(dto))
             errors.add(new ErrorDto(MessageKeys.ERR_USER_GROUP_LACKING_BASE_PERMISSIONS));
         
