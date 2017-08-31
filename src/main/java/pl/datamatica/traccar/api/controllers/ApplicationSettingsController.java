@@ -25,6 +25,7 @@ import pl.datamatica.traccar.api.dtos.out.ApplicationSettingsDto;
 import pl.datamatica.traccar.api.dtos.out.ErrorDto;
 import pl.datamatica.traccar.api.providers.ApplicationSettingsProvider;
 import pl.datamatica.traccar.api.providers.ProviderException;
+import pl.datamatica.traccar.model.UserPermission;
 import spark.Request;
 import spark.Spark;
 
@@ -75,7 +76,7 @@ public class ApplicationSettingsController extends ControllerBase {
     public HttpResponse get() {
         ApplicationSettingsDto.Builder builder = new ApplicationSettingsDto.Builder().applicationSettings(provider.get());
         
-        if (!requestContext.getUser().getAdmin()) {
+        if (!requestContext.getUser().hasPermission(UserPermission.SERVER_MANAGEMENT)) {
             // Some fields should be passed only to admin
             builder = builder.purgeConfidentialData();
         }
