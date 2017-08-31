@@ -298,16 +298,12 @@ public class UserProvider extends ProviderBase {
         
         generateAuditLogEditUser(user, dto);
         
-        if(requestUser.getAdmin()) // it won't matter after full implementation of permissions
-            user.setAdmin(dto.isAdmin());
-        else
-            user.setAdmin(false);
+        user.setAdmin(false);
         user.setCompanyName(dto.getCompanyName());
         user.setEmail(dto.getEmail());
         user.setFirstName(dto.getFirstName());
         user.setLastName(dto.getLastName());
-        if(requestUser.getManager() || requestUser.getAdmin()) //it won't matter after full implementation of permissions
-            user.setManager(dto.isManager());
+        user.setManager(true);
         if(requestUser.hasPermission(UserPermission.ALL_USERS) || !user.equals(requestUser)) {
             user.setMaxNumOfDevices(dto.getMaxNumOfDevices());
             user.setExpirationDate(dto.getExpirationDate());
@@ -319,8 +315,8 @@ public class UserProvider extends ProviderBase {
         user.setNotificationEvents(notificationEvents);
         user.setPhoneNumber(dto.getPhoneNumber());
         if (requestUser.getId() != user.getId()) { 
-            user.setReadOnly(dto.isReadOnly());
-            user.setArchive(dto.isArchive());
+            user.setReadOnly(false);
+            user.setArchive(true);
             user.setBlocked(dto.isBlocked());
         }
     }
@@ -405,7 +401,7 @@ public class UserProvider extends ProviderBase {
     private boolean isVisible(User other) {
         if(requestUser == null)
             return false;
-        if(requestUser.getAdmin())
+        if(requestUser.hasPermission(UserPermission.ALL_USERS))
             return true;
         
         return getAllAvailableUsers().anyMatch(u -> u.equals(other));

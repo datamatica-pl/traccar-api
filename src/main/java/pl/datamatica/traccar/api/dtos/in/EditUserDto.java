@@ -34,14 +34,6 @@ public class EditUserDto {
         List<ErrorDto> errors = new ArrayList<>();
         if (dto == null)
             return Collections.singletonList(new ErrorDto(ERR_DATA_NOT_PROVIDED));
-        if(dto.manager == null)
-            errors.add(new ErrorDto(ERR_USER_MANAGER_NOT_PROVIDED));
-        if(dto.admin == null)
-            errors.add(new ErrorDto(ERR_USER_ADMIN_NOT_PROVIDED));
-        if(dto.archive == null)
-            errors.add(new ErrorDto(ERR_USER_ARCHIVE_NOT_PROVIDED));
-        if(dto.readOnly == null)
-            errors.add(new ErrorDto(ERR_USER_READONLY_NOT_PROVIDED));
         if(dto.blocked == null)
             errors.add(new ErrorDto(ERR_USER_BLOCKED_NOT_PROVIDED));
         if(dto.password == null || dto.password.isEmpty())

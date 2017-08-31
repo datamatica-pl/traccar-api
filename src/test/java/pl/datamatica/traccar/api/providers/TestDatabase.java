@@ -102,7 +102,7 @@ public class TestDatabase {
         manager.setLogin("manager@test.pl");
         manager.setEmail("manager@test.pl");
         manager.setPassword(PasswordHashMethod.MD5.doHash("Test11!", salt));
-        manager.setManager(true);
+
         em.persist(manager);
     }
 
@@ -113,7 +113,7 @@ public class TestDatabase {
         managedUser.setPassword("user_1");
         managedUser.setPasswordHashMethod(PasswordHashMethod.PLAIN);
         managedUser.setManagedBy(manager);
-        managedUser.setManager(true);
+
         manager.setManagedUsers(Collections.singleton(managedUser));
         em.persist(managedUser);
     }

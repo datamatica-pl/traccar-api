@@ -155,11 +155,11 @@ public class UserDto extends EditUserDto {
         
             if(user.getManagedBy() != null)
                 this.managedById = user.getManagedBy().getId();
-            this.manager = user.getManager();
-            this.admin = user.getAdmin();
-            this.archive = user.isArchive();
+            this.manager = true;
+            this.admin = false;
+            this.archive = true;
             this.blocked = user.isBlocked();
-            this.readOnly = user.getReadOnly();
+            this.readOnly = false;
             
             this.premium = false;
             for(Device d : user.getDevices())

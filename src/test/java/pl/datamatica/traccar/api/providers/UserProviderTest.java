@@ -66,7 +66,6 @@ public class UserProviderTest {
         assertEquals(expectedPassword, user.getPassword());
         assertEquals(marketing, user.getMarketingCheck());
         assertEquals(passHash, user.getPasswordHashMethod());
-        assertTrue(user.getManager());
     }
     
     @Test
