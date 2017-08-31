@@ -114,10 +114,9 @@ public class GeofencesControllerTest {
     
     @Test
     public void post_invalidData() throws Exception {
-        //invalid color format, all devices not provided
+        //invalid color format, name not provided
         AddGeoFenceDto invalidGeofence = new AddGeoFenceDto.Builder()
                 .color("03AbCf")
-                .geofenceName("test")
                 .points(Collections.singletonList(new PointDto(21, 52)))
                 .radius(50)
                 .type("CIRCLE")
@@ -153,7 +152,7 @@ public class GeofencesControllerTest {
     
     @Test
     public void put_invalidData() throws ProviderException {
-        //invalid color format, all devices not provided, not device ids
+        //invalid color format, not device ids
         AddGeoFenceDto invalidGeofence = new AddGeoFenceDto.Builder()
                 .color("03AbCf")
                 .geofenceName("test")
@@ -167,6 +166,6 @@ public class GeofencesControllerTest {
         assertTrue(response instanceof ErrorResponse);
         assertEquals(400, response.getHttpStatus());
         List<ErrorDto> errors = (List<ErrorDto>)response.getContent();
-        assertEquals(3, errors.size());
+        assertEquals(2, errors.size());
     }
 }

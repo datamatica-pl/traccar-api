@@ -56,7 +56,7 @@ public class PositionProvider extends ProviderBase {
             minDate = lastAvailPos;
         if(maxDate == null || maxDate.after(new Date()))
             maxDate = new Date();
-        if(!user.getAdmin() 
+        if(!user.hasPermission(UserPermission.ALL_DEVICES)
            && !user.getAllAvailableDevices().stream()
                 .anyMatch(d -> d.equals(device)))
             return Stream.empty();
