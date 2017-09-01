@@ -24,27 +24,23 @@ import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
 import javax.persistence.EntityManager;
 import pl.datamatica.traccar.model.NotificationSettings;
-import pl.datamatica.traccar.model.UserPermission;
 
 public class MailSender {
     private NotificationSettings settings;
     
-    public MailSender(EntityManager em) {        
+    public MailSender(EntityManager em) {
+        //https://hibernate.atlassian.net/browse/HHH-5159
+        // I think it IS legitimate bug in ORM 4
         List<NotificationSettings> allSettings = em.createQuery("SELECT s FROM NotificationSettings s "
+                + "WHERE :serverManagement IN ELEMENTS(s.user.userGroup.permissions) "
                 + "ORDER BY s.user.id ASC", 
                 NotificationSettings.class)
+                .setParameter("serverManagement", "SERVER_MANAGEMENT")
                 .getResultList();
         
-        for (NotificationSettings ns : allSettings) {
-            if (ns.getUser().hasPermission(UserPermission.SERVER_MANAGEMENT)) {
-                settings = ns;
-                break;
-            }
-        }
-        
-        if (settings == null) {
+        if(allSettings.isEmpty())
             throw new IllegalStateException("NotificationSetting unavailable");
-        }
+        settings = allSettings.get(0);
     }
     
     public boolean sendMessage(String address, String subject, String message) {
