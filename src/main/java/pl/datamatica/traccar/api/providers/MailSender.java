@@ -17,22 +17,34 @@
 package pl.datamatica.traccar.api.providers;
 
 import java.util.Date;
+import java.util.List;
 import java.util.Properties;
 import javax.mail.*;
 import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
 import javax.persistence.EntityManager;
 import pl.datamatica.traccar.model.NotificationSettings;
+import pl.datamatica.traccar.model.UserPermission;
 
 public class MailSender {
-    private final NotificationSettings settings;
+    private NotificationSettings settings;
     
-    public MailSender(EntityManager em) {
-        settings = em.createQuery("SELECT s FROM NotificationSettings s "
-                + "WHERE s.user.admin=:true ORDER BY s.user.id ASC", 
+    public MailSender(EntityManager em) {        
+        List<NotificationSettings> allSettings = em.createQuery("SELECT s FROM NotificationSettings s "
+                + "ORDER BY s.user.id ASC", 
                 NotificationSettings.class)
-                .setParameter("true", true)
-                .getSingleResult();
+                .getResultList();
+        
+        for (NotificationSettings ns : allSettings) {
+            if (ns.getUser().hasPermission(UserPermission.SERVER_MANAGEMENT)) {
+                settings = ns;
+                break;
+            }
+        }
+        
+        if (settings == null) {
+            throw new IllegalStateException("NotificationSetting unavailable");
+        }
     }
     
     public boolean sendMessage(String address, String subject, String message) {
