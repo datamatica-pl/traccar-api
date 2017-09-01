@@ -445,7 +445,7 @@ public class UserProvider extends ProviderBase {
     
     private void generateAuditLogForCreateRemoveUser(String userLogin, boolean remove) {
         AuditLog al = new AuditLog.Builder()
-                .agentLogin(requestUser.getLogin())
+                .agentLogin(requestUser != null ? requestUser.getLogin() : "REGISTRATION")
                 .type(remove ? AuditLogType.REMOVED_USER : AuditLogType.CREATED_USER)
                 .targetUserLogin(userLogin)
                 .build();
