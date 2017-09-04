@@ -75,7 +75,7 @@ public class BasicAuthFilter {
                 request.attribute(RequestContext.REQUEST_FIELD_ERROR_DTO, new ErrorDto(MessageKeys.ERR_ACCOUNT_BLOCKED));
                 return;
             } else if(user.isExpired()) {
-                request.attribute(RequestContext.REQUEST_FIELD_IS_AUTH, new ErrorDto(MessageKeys.ERR_ACCOUNT_EXPIRED));
+                request.attribute(RequestContext.REQUEST_FIELD_ERROR_DTO, new ErrorDto(MessageKeys.ERR_ACCOUNT_EXPIRED));
                 return;
             }
             
