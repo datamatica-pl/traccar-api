@@ -77,7 +77,7 @@ public class BasicAuthFilter {
                 request.attribute(RequestContext.REQUEST_FIELD_ERROR_DTO, new ErrorDto(MessageKeys.ERR_ACCOUNT_EXPIRED));
             }
             
-            if (req.attribute(RequestContext.REQUEST_FIELD_ERROR_DTO) != null && rc.isRequestForImeiManager(request)) {
+            if (req.attribute(RequestContext.REQUEST_FIELD_ERROR_DTO) == null && rc.isRequestForImeiManager(request)) {
                 // Check whether IP is allowed to manage IMEI's
                 boolean isIpAllowedToAddImei = false;
                 boolean isImeiManagerEnabled = false;
