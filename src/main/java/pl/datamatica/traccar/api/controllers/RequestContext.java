@@ -16,6 +16,7 @@
  */
 package pl.datamatica.traccar.api.controllers;
 
+import java.awt.Image;
 import pl.datamatica.traccar.api.providers.SessionProvider;
 import java.text.ParseException;
 import java.util.Date;
@@ -26,18 +27,20 @@ import pl.datamatica.traccar.api.Application;
 import pl.datamatica.traccar.api.Context;
 import pl.datamatica.traccar.api.providers.AlertProvider;
 import pl.datamatica.traccar.api.providers.ApplicationSettingsProvider;
+import pl.datamatica.traccar.api.providers.AuditLogProvider;
 import pl.datamatica.traccar.api.providers.DeviceIconProvider;
 import pl.datamatica.traccar.api.providers.DeviceModelProvider;
 import pl.datamatica.traccar.api.providers.DeviceProvider;
 import pl.datamatica.traccar.api.providers.FileProvider;
 import pl.datamatica.traccar.api.providers.GeoFenceProvider;
+import pl.datamatica.traccar.api.providers.DeviceGroupProvider;
 import pl.datamatica.traccar.api.providers.ImageProvider;
 import pl.datamatica.traccar.api.providers.ImeiProvider;
 import pl.datamatica.traccar.api.providers.MailSender;
 import pl.datamatica.traccar.api.providers.NotificationSettingsProvider;
 import pl.datamatica.traccar.api.providers.PicturesProvider;
 import pl.datamatica.traccar.api.providers.PositionProvider;
-import pl.datamatica.traccar.api.providers.ReportsProvider;
+import pl.datamatica.traccar.api.providers.UserGroupProvider;
 import pl.datamatica.traccar.api.providers.UserProvider;
 import pl.datamatica.traccar.api.utils.DateUtil;
 import pl.datamatica.traccar.model.User;
@@ -46,6 +49,9 @@ import spark.Response;
 import spark.Session;
 
 public class RequestContext implements AutoCloseable {
+    
+    public static final String REQUEST_FIELD_IS_AUTH = "isAuthorized";
+    public static final String REQUEST_FIELD_ERROR_DTO = "errorDto";
     
     private static final String IF_MODIFIED_SINCE_HEADER = "If-Modified-Since";
     
@@ -64,6 +70,11 @@ public class RequestContext implements AutoCloseable {
     private PositionProvider positions;
     private NotificationSettingsProvider notificationSettings;
     private SessionProvider sessionProvider;
+    private DeviceGroupProvider deviceGroupProvider;
+    private UserGroupProvider userGroupProvider;
+    private AuditLogProvider auditLogProvider;
+
+    private Image emptyMarker;
     
     public RequestContext(Request request, Response response) throws ParseException {
         if(request.headers(IF_MODIFIED_SINCE_HEADER) != null)
@@ -71,6 +82,9 @@ public class RequestContext implements AutoCloseable {
         this.em = Context.getInstance().createEntityManager();
         if (this.isRequestForMetadata(request)) {
             this.emMetadata = Context.getInstance().createMetadataEntityManager();
+            if (this.isRequestForImeiManager(request)) {
+                enableSoftDeleteForMetadata();
+            }
         } else {
             this.emMetadata = null;
         }
@@ -91,7 +105,7 @@ public class RequestContext implements AutoCloseable {
     
     public DeviceProvider getDeviceProvider() {
         if(devices == null)
-            devices = new DeviceProvider(em, user, getImeiProvider());
+            devices = new DeviceProvider(em, user, getImeiProvider(), getDeviceGroupProvider());
         return devices;
     }
     
@@ -103,8 +117,9 @@ public class RequestContext implements AutoCloseable {
     }
     
     public ApplicationSettingsProvider getApplicationSettingsProvider() {
-        if(appSettings == null)
+        if(appSettings == null) {
             appSettings = new ApplicationSettingsProvider(em);
+        }
         return appSettings;
     }
     
@@ -116,7 +131,7 @@ public class RequestContext implements AutoCloseable {
     
     public ImageProvider getImageProvider() throws Exception {
         if(images == null) 
-            images = new ImageProvider(Application.getImagesDir());
+            images = new ImageProvider(Application.getImagesDir(), em);
         return images;
     }
     
@@ -134,11 +149,6 @@ public class RequestContext implements AutoCloseable {
     
     public MailSender getMailSender() {
         return new MailSender(em);
-    }
-    
-    public ReportsProvider getReportsProvider() {
-        ReportsProvider provider = new ReportsProvider(em, emMetadata);
-        return provider;
     }
     
     public DeviceModelProvider getDeviceModelProvider() {
@@ -176,6 +186,33 @@ public class RequestContext implements AutoCloseable {
         return new PicturesProvider(em);
     }
     
+    public DeviceGroupProvider getDeviceGroupProvider() {
+        if (deviceGroupProvider == null) {
+            deviceGroupProvider = new DeviceGroupProvider(em, user);
+            if (devices == null) {
+                devices = new DeviceProvider(em, user, getImeiProvider(), deviceGroupProvider);
+            }
+            deviceGroupProvider.setDeviceProvider(devices);
+        }
+        return deviceGroupProvider;
+    }
+    
+    public UserGroupProvider getUserGroupProvider() {
+        if (userGroupProvider == null) {
+            userGroupProvider = new UserGroupProvider(em, user);
+            userGroupProvider.setUserProvider(getUserProvider());
+            userGroupProvider.setApplicationSettingsProvider(getApplicationSettingsProvider());
+        }
+        return userGroupProvider;
+    }
+    
+    public AuditLogProvider getAuditLogProvider() {
+        if (auditLogProvider == null) {
+            auditLogProvider = new AuditLogProvider(em, user);
+        }
+        return auditLogProvider;
+    }
+    
     public String getApiRoot() {
         if(request == null)
             return "";
@@ -198,7 +235,15 @@ public class RequestContext implements AutoCloseable {
         // TODO: We need to talk whether we want to add calls to devices here or just remove it
         // and always add metadata EntityManager and open transaction on it. Temporary return true
         // to get IMEI list on devices.
+        // Important: If we ever use is this method again, lets make sure, that request for imei_manager
+        // are also included, as they have different url. IMEI's are metadata, and must have access to
+        // its EntityManager
         return true;
+    }
+    
+    public final boolean isRequestForImeiManager(Request request) {
+        final String manager_uri_pattern = "^/imei_manager.*";
+        return request.uri().matches(manager_uri_pattern);
     }
 
     @Override
@@ -212,6 +257,10 @@ public class RequestContext implements AutoCloseable {
     public Session session() {
         return request.session();
     }
+    
+    public void setEmptyMarkerImage(Image img) {
+        this.emptyMarker = img;
+    }
 
     public void beginTransaction() {
         em.getTransaction().begin();
@@ -219,14 +268,14 @@ public class RequestContext implements AutoCloseable {
 
     public void commitTransaction() {
         EntityTransaction et = em.getTransaction();
-        if (et.isActive()) {
+        if (et != null && et.isActive()) {
             et.commit();
         }
     }
     
     public void rollbackTransaction() {
         EntityTransaction et = em.getTransaction();
-        if (et.isActive()) {
+        if (et != null && et.isActive()) {
             et.rollback();
         }
     }
@@ -240,7 +289,7 @@ public class RequestContext implements AutoCloseable {
     public void commitMetadataTransaction() {
         if (emMetadata != null) {
             EntityTransaction et = emMetadata.getTransaction();
-            if (et.isActive()) {
+            if (et != null && et.isActive()) {
                 et.commit();
             }
         }
@@ -249,9 +298,17 @@ public class RequestContext implements AutoCloseable {
     public void rollbackMetadataTransaction() {
         if (emMetadata != null) {
             EntityTransaction et = emMetadata.getTransaction();
-            if (et.isActive()) {
+            if (et != null && et.isActive()) {
                 et.rollback();
             }
         }
+    }
+    
+    public final void disableSoftDeleteForMetadata() {
+        this.emMetadata.unwrap(org.hibernate.Session.class).disableFilter("softDelete");
+    }
+    
+    public final void enableSoftDeleteForMetadata() {
+        this.emMetadata.unwrap(org.hibernate.Session.class).enableFilter("softDelete");
     }
 }

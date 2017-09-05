@@ -17,11 +17,13 @@
 package pl.datamatica.traccar.api;
 
 import com.google.gson.*;
+import java.awt.Image;
 import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
+import javax.imageio.ImageIO;
 import javax.persistence.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

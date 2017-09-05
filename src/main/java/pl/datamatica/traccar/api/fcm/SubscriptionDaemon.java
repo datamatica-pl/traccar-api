@@ -75,6 +75,7 @@ public class SubscriptionDaemon extends Daemon {
     }
 
     private void sendNotification(EntityManager em, User user, List<Device> devices) {
+        clearInactiveSessions(em, user);
         for(UserSession session : user.getSessions()) {
             FcmNotificationDto dto = FcmNotificationDto.subsciption(
                     devices,

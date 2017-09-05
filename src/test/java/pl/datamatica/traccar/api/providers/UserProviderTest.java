@@ -39,10 +39,11 @@ public class UserProviderTest {
     }
     
     @Before
-    public void testInit() {
+    public void testInit() throws ProviderException {
         em.getTransaction().begin();
         appSettings = new ApplicationSettings();
         provider = new UserProvider(em, appSettings);
+        provider.authenticateUser(database.admin.getId());
     }
     
     @Test
@@ -56,7 +57,7 @@ public class UserProviderTest {
         
         appSettings.setSalt(salt);
         appSettings.setDefaultHashImplementation(PasswordHashMethod.MD5);
-        User user = provider.createUser(email, password, marketing);
+        User user = provider.registerUser(email, password, marketing);
         em.flush();
         em.refresh(user);
         
@@ -65,7 +66,6 @@ public class UserProviderTest {
         assertEquals(expectedPassword, user.getPassword());
         assertEquals(marketing, user.getMarketingCheck());
         assertEquals(passHash, user.getPasswordHashMethod());
-        assertTrue(user.getManager());
     }
     
     @Test
@@ -73,9 +73,29 @@ public class UserProviderTest {
         appSettings.setSalt("asdf");
         appSettings.setDefaultHashImplementation(PasswordHashMethod.MD5);
         try {
-            provider.createUser("admin@admin.pl", "qwe85", true);
+            provider.registerUser("admin@admin.pl", "qwe85", true);
         } catch(ProviderException e) {
             assertEquals(Type.USER_ALREADY_EXISTS, e.getType());
+            return;
+        }
+        fail();
+    }
+    
+    @Test 
+    public void removeUser_success() throws Exception {
+
+        long removedId = database.managed2.getId();
+        
+        provider.authenticateUser(database.admin.getId());
+        provider.removeUser(database.managed2.getId());
+
+        em.flush();
+        
+        UserProvider provider2 = new UserProvider(em, appSettings);
+        try {
+            User user1 = provider2.getUser(removedId);
+        } catch (ProviderException pe) {
+            //success
             return;
         }
         fail();

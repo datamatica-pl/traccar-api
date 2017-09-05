@@ -16,9 +16,11 @@
  */
 package pl.datamatica.traccar.api.providers;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -32,6 +34,7 @@ import pl.datamatica.traccar.model.Device;
 import pl.datamatica.traccar.model.GeoFence;
 import pl.datamatica.traccar.model.GeoFenceType;
 import pl.datamatica.traccar.model.User;
+import pl.datamatica.traccar.model.UserPermission;
 
 public class GeoFenceProvider extends ProviderBase{
     private User requestUser;
@@ -46,33 +49,56 @@ public class GeoFenceProvider extends ProviderBase{
         this.requestUser = user;
     }
     
-    public Stream<GeoFence> getAllAvailableGeoFences() {
+    public Stream<GeoFence> getAllAvailableGeoFences() throws ProviderException {
+        if (!requestUser.hasPermission(UserPermission.GEOFENCE_READ))
+            throw new ProviderException(Type.ACCESS_DENIED);
+        
+        return getAvailableGeoFences();
+    }
+    
+    private  Stream<GeoFence> getAvailableGeoFences() {
         Stream<GeoFence> visible;
-        if(requestUser.getAdmin())
+        if(requestUser.hasPermission(UserPermission.ALL_GEOFENCES))
             visible = getAllGeoFences();
-        else
+        else if (requestUser.hasPermission(UserPermission.GEOFENCE_READ))
             visible = requestUser.getAllAvailableGeoFences().stream()
                     .map(gf -> {
                         GeoFence geo = gf.clone();
                         geo.getDevices().retainAll(requestUser.getAllAvailableDevices());
                         return geo;
                     });
+        else
+            return Collections.EMPTY_LIST.stream();
+            
         return visible.filter(gf -> !gf.isDeleted());
     }
     
     public GeoFence getGeoFence(long id) throws ProviderException {
+        if (!requestUser.hasPermission(UserPermission.GEOFENCE_READ))
+            throw new ProviderException(Type.ACCESS_DENIED);
+        
         GeoFence geoFence = get(GeoFence.class, id, this::isVisible).clone();
         geoFence.getDevices().retainAll(requestUser.getAllAvailableDevices());
+        if(!requestUser.hasPermission(UserPermission.ALL_USERS)) {
+            HashSet<User> users = new HashSet<>(requestUser.getAllManagedUsers());
+            users.add(requestUser);
+            geoFence.getUsers().retainAll(users);
+        }
         return geoFence;
     }
 
     private boolean isVisible(GeoFence gf) {
-        if(requestUser.getAdmin())
+        if(requestUser.hasPermission(UserPermission.ALL_GEOFENCES))
             return true;
-        return getAllAvailableGeoFences().anyMatch(geo -> geo.equals(gf));
+        if (!requestUser.hasPermission(UserPermission.GEOFENCE_READ))
+            return false;
+        return getAvailableGeoFences().anyMatch(geo -> geo.equals(gf));
     }
 
-    public GeoFence createGeoFence(IGeoFenceInfo geoFenceDto) {
+    public GeoFence createGeoFence(IGeoFenceInfo geoFenceDto) throws ProviderException {
+        if (!requestUser.hasPermission(UserPermission.GEOFENCE_EDIT))
+            throw new ProviderException(Type.ACCESS_DENIED);
+        
         GeoFence gf = new GeoFence();
         gf.setName(geoFenceDto.getGeofenceName());
         gf.setDescription(geoFenceDto.getDescription());
@@ -85,7 +111,7 @@ public class GeoFenceProvider extends ProviderBase{
         Set<Device> devices = Arrays.stream(geoFenceDto.getDeviceIds())
                 .mapToObj(id -> em.find(Device.class, id))
                 .collect(Collectors.toSet());
-        if(!requestUser.getAdmin())
+        if(!requestUser.hasPermission(UserPermission.ALL_DEVICES))
             devices.retainAll(requestUser.getDevices());
         gf.setDevices(devices);
         em.persist(gf);
@@ -96,6 +122,9 @@ public class GeoFenceProvider extends ProviderBase{
     }
 
     public void updateGeoFence(long id, AddGeoFenceDto geoFenceDto) throws ProviderException {
+        if (!requestUser.hasPermission(UserPermission.GEOFENCE_EDIT))
+            throw new ProviderException(Type.ACCESS_DENIED);
+        
         GeoFence geoFence = get(GeoFence.class, id, this::isVisible);
         
         geoFence.setColor(geoFenceDto.getColor());
@@ -104,7 +133,7 @@ public class GeoFenceProvider extends ProviderBase{
         Set<Device> devices = Arrays.stream(geoFenceDto.getDeviceIds())
                 .mapToObj(i -> em.find(Device.class, i))
                 .collect(Collectors.toSet());
-        if(requestUser.getAdmin())
+        if(requestUser.hasPermission(UserPermission.ALL_DEVICES))
             geoFence.getDevices().clear();
         else
             geoFence.getDevices().removeAll(requestUser.getAllAvailableDevices());
@@ -120,6 +149,31 @@ public class GeoFenceProvider extends ProviderBase{
         logger.info("{} updated geofence {} (id={})",
                 requestUser.getLogin(), geoFence.getName(), geoFence.getId());
     }
+    
+    public void updateGeofenceShare(long id, List<Long> uids) throws ProviderException {
+        if (!requestUser.hasPermission(UserPermission.GEOFENCE_SHARE))
+            throw new ProviderException(Type.ACCESS_DENIED);
+        
+        GeoFence gf = get(GeoFence.class, id, this::isVisible);
+        if(requestUser.hasPermission(UserPermission.ALL_USERS))
+            gf.getUsers().clear();
+        else {
+            gf.getUsers().removeAll(requestUser.getAllManagedUsers());
+            gf.getUsers().remove(requestUser);
+        }
+        Set<Long> ids = new HashSet<>(uids);
+        List<User> users;
+        if(requestUser.hasPermission(UserPermission.ALL_USERS)) {
+            TypedQuery<User> tq = em.createQuery("from User u where u.id in :ids", User.class);
+            tq.setParameter("ids", uids);
+            users = tq.getResultList();
+        } else {
+            users = new ArrayList<>(requestUser.getManagedUsers());
+            users.add(requestUser);
+            users.removeIf(u -> !ids.contains(u.getId()));
+        }
+        gf.getUsers().addAll(users);
+    }
 
     private Stream<GeoFence> getAllGeoFences() {
         TypedQuery<GeoFence> tq = em.createQuery("Select x from GeoFence x", GeoFence.class);
@@ -127,6 +181,9 @@ public class GeoFenceProvider extends ProviderBase{
     }
     
     public void delete(long id) throws ProviderException {
+        if (!requestUser.hasPermission(UserPermission.GEOFENCE_READ))
+            throw new ProviderException(Type.ACCESS_DENIED);
+        
         boolean shouldManageTransaction = !em.getTransaction().isActive();
         if(shouldManageTransaction)
             em.getTransaction().begin();

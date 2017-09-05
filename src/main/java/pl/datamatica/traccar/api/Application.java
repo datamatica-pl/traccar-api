@@ -16,13 +16,15 @@
  */
 package pl.datamatica.traccar.api;
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
+import java.awt.Image;
+import java.io.File;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.Date;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.logging.Level;
 import java.util.regex.Pattern;
+import javax.imageio.ImageIO;
 import javax.naming.InitialContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -30,11 +32,11 @@ import spark.Spark;
 
 import pl.datamatica.traccar.api.controllers.*;
 import pl.datamatica.traccar.api.auth.BasicAuthFilter;
-import pl.datamatica.traccar.api.dtos.out.AppVersionsInfoDto;
 import pl.datamatica.traccar.api.controllers.RequestContext;
 import pl.datamatica.traccar.api.fcm.AlarmDaemon;
 import pl.datamatica.traccar.api.fcm.Daemon;
 import pl.datamatica.traccar.api.fcm.SubscriptionDaemon;
+import pl.datamatica.traccar.api.providers.ImageProvider;
 
 
 public class Application implements spark.servlet.SparkApplication {
@@ -53,13 +55,19 @@ public class Application implements spark.servlet.SparkApplication {
             new PositionsController.Binder(),
             new GeofencesController.Binder(),
             new SessionController.Binder(),
-            new ReportsController.Binder(),
             new DeviceModelsController.Binder(),
             new DeviceIconsController.Binder(),
             new CommandsController.Binder(),
             new ImagesController.Binder(),
             new AlertsController.Binder(),
-            new NotificationSettingsController.Binder()
+            new NotificationSettingsController.Binder(),
+            new ImeisController.Binder(),
+            new MarkersController.Binder(),
+            new AppVersionsController.Binder(),
+            new ApplicationSettingsController.Binder(),
+            new DeviceGroupController.Binder(),
+            new UserGroupsController.Binder(),
+            new AuditLogController.Binder()
         };
     
     private final Daemon[] DAEMONS = new Daemon[]{
@@ -70,6 +78,17 @@ public class Application implements spark.servlet.SparkApplication {
     @Override
     public void init() {
         BasicAuthFilter baf = new BasicAuthFilter();
+        try {
+            File f = new File(getImagesDir(), "empty_marker.png");
+            Image emptyMarker = ImageIO.read(f);
+            ImageProvider.setEmptyMarker(emptyMarker);
+        } catch (Exception ex) {
+            java.util.logging.Logger.getLogger(Application.class.getName())
+                    .log(Level.SEVERE, null, ex);
+        }
+        
+        // Set static files. Root is 'src/main/resources', so put files in 'src/main/resources/public'
+        Spark.staticFiles.location("/public");
 
         Spark.before((req, res) -> {
             RequestContext rc = new RequestContext(req, res);
@@ -77,30 +96,31 @@ public class Application implements spark.servlet.SparkApplication {
             if (rc.isRequestForMetadata(req)) {
                 rc.beginMetadataTransaction();
             }
+            if (rc.isRequestForImeiManager(req)) {
+                String test = "abc";
+            }
             req.attribute(REQUEST_CONTEXT_KEY, rc);
             baf.handle(req, res);
+            if (!BasicAuthFilter.shouldPassErrorsToController(req)) {
+                if (req.attribute(RequestContext.REQUEST_FIELD_IS_AUTH) != null
+                        && (Boolean)req.attribute(RequestContext.REQUEST_FIELD_IS_AUTH) == false) {
+                    baf.unauthorized(res, req.attribute(RequestContext.REQUEST_FIELD_ERROR_DTO));
+                }
+            }
+            //uncomment for debug
+            //res.header("Access-Control-Allow-Origin", "http://127.0.0.1:8888");
+            res.header("Cache-Control", "max-age=10");
         });
-
-        Spark.get("v1/appversions", (req, res) -> {
-            AppVersionsInfoDto appVer = new AppVersionsInfoDto();
-            appVer.setAndroidVersion("0.1.0");
-            appVer.setAndroidRequired("0.1.0");
-            appVer.setIosVersion("0.3.0");
-            appVer.setIosRequired("0.2.0");
-            //appVer.setMessageKey("msg");
-            //appVer.setLocalizedMessage("msg");
-            //appVer.setMessageUrl("msg");
-            GsonBuilder builder = new GsonBuilder();
-            Gson gson = builder
-                            .setPrettyPrinting()
-                            .create();
-
-            res.status(200);
-            res.type("application/json");
-            res.body(gson.toJson(appVer));
-
-            return(res);
-        });
+        
+        //uncomment for debug
+//        Spark.options("/*", (req, res) -> {
+//            res.header("Access-Control-Allow-Methods", "GET, POST");
+//            res.header("Access-Control-Allow-Headers", "Content-Type,"
+//                    + "x-http-method-override,Authorization");
+//            res.header("Access-Control-Max-Age", "86400");
+//            res.body("");
+//            return res;
+//        });
 
         Spark.after((req, res)-> {
             RequestContext rc = (RequestContext)req.attribute(REQUEST_CONTEXT_KEY);
@@ -142,12 +162,15 @@ public class Application implements spark.servlet.SparkApplication {
     }
 
     public static String getStringsDir() throws Exception {
-        InitialContext context = new InitialContext();
-        return (String)context.lookup(STRINGS_DIR_NAME);
+        return getConfigRecord(STRINGS_DIR_NAME);
     }
 
     public static String getImagesDir() throws Exception {
-        InitialContext context = new InitialContext();
-        return (String)context.lookup(IMAGES_DIR_NAME);
+        return getConfigRecord(IMAGES_DIR_NAME);
     }
-}
+    
+    public static String getConfigRecord(String key) throws Exception {
+        InitialContext context = new InitialContext();
+        return (String)context.lookup(key);
+    }
+}   

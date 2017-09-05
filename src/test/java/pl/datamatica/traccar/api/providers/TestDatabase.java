@@ -16,19 +16,30 @@
  */
 package pl.datamatica.traccar.api.providers;
 
+import java.util.Calendar;
 import java.util.Collections;
+import java.util.Date;
+import java.util.EnumSet;
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import javax.persistence.EntityManager;
 import pl.datamatica.traccar.model.ApplicationSettings;
 import pl.datamatica.traccar.model.Device;
 import pl.datamatica.traccar.model.GeoFence;
 import pl.datamatica.traccar.model.GeoFenceType;
+import pl.datamatica.traccar.model.Group;
 import pl.datamatica.traccar.model.PasswordHashMethod;
 import pl.datamatica.traccar.model.Position;
 import pl.datamatica.traccar.model.User;
+import pl.datamatica.traccar.model.UserGroup;
+import pl.datamatica.traccar.model.UserPermission;
 
 public class TestDatabase {
     private final EntityManager em;
     private String salt;
+    ApplicationSettings applicationSettings;
     User admin;
     Device adminDevice;
     Position adminPosition;
@@ -37,8 +48,16 @@ public class TestDatabase {
     User managedUser;
     Device managedDevice;
     User managed2;
+    User managed3;
     Device managed2Device;
     GeoFence adminGeofence;
+    GeoFence managedUserGeofence;
+    Group adminDeviceGroup;
+    Group managedDeviceDeviceGroup;
+    Group managed2DeviceGroup;
+    UserGroup usersGroup;
+    UserGroup adminsGroup;
+    List<Position> managed2Positions;
     
     public TestDatabase(EntityManager em) {
         this.em = em;
@@ -52,17 +71,20 @@ public class TestDatabase {
         createManager();
         createManagedUser();
         createManaged2();
+        createManaged3();
+        createDeviceGroups();
+        createUserGroups();
         createDevices();
         createPositions();
         createGeofences();
+        createPositionsManaged2Device();
         em.getTransaction().commit();
     }
     
-    private ApplicationSettings createApplicationSettings() {
-        ApplicationSettings as = new ApplicationSettings();
-        as.setSalt(salt);
-        em.persist(as);
-        return as;
+    private void createApplicationSettings() {
+        applicationSettings = new ApplicationSettings();
+        applicationSettings.setSalt(salt);
+        em.persist(applicationSettings);
     }
     
     private void createAdmin() {
@@ -80,7 +102,7 @@ public class TestDatabase {
         manager.setLogin("manager@test.pl");
         manager.setEmail("manager@test.pl");
         manager.setPassword(PasswordHashMethod.MD5.doHash("Test11!", salt));
-        manager.setManager(true);
+
         em.persist(manager);
     }
 
@@ -91,7 +113,7 @@ public class TestDatabase {
         managedUser.setPassword("user_1");
         managedUser.setPasswordHashMethod(PasswordHashMethod.PLAIN);
         managedUser.setManagedBy(manager);
-        managedUser.setManager(true);
+
         manager.setManagedUsers(Collections.singleton(managedUser));
         em.persist(managedUser);
     }
@@ -105,7 +127,56 @@ public class TestDatabase {
         managedUser.setManagedUsers(Collections.singleton(managed2));
         em.persist(managed2);
     }
+    
+    //this user will have access to adminDevice - to check if he'll get proper groups
+    private void createManaged3() {
+        managed3 = new User();
+        managed3.setLogin("managed3@test.pl");
+        managed3.setEmail("managed3@test.pl");
+        managed3.setPassword(PasswordHashMethod.MD5.doHash("managed_3", salt));
+        em.persist(managed3);
+    }
 
+    private void createDeviceGroups() {
+        adminDeviceGroup = new Group();
+        adminDeviceGroup.setName("Admins group");
+        em.persist(adminDeviceGroup);
+        
+        managedDeviceDeviceGroup = new Group();
+        managedDeviceDeviceGroup.setName("ManagedDevice's Group, shared with managed2");
+        em.persist(managedDeviceDeviceGroup);
+        
+        managed2DeviceGroup = new Group();
+        managed2DeviceGroup.setName("Managed2Users, not shared");
+        em.persist(managed2DeviceGroup);
+        
+        admin.setGroups(Collections.singleton(adminDeviceGroup));
+        managedUser.setGroups(Collections.singleton(managedDeviceDeviceGroup));
+        managed2.setGroups(Stream.of(managedDeviceDeviceGroup, managed2DeviceGroup).collect(Collectors.toSet()));
+    }
+    
+    private void createUserGroups() {
+        usersGroup = new UserGroup();
+        usersGroup.setName("users");
+        usersGroup.setPermissions(UserPermission.getUsersPermissions());
+        em.persist(usersGroup);
+        
+        adminsGroup = new UserGroup();
+        adminsGroup.setName("admins");
+        adminsGroup.setPermissions(UserPermission.getAdminsPermissions());
+        em.persist(adminsGroup);
+        
+        applicationSettings.setDefaultGroup(usersGroup);
+        
+        admin.setUserGroup(adminsGroup);
+        manager.setUserGroup(usersGroup);
+        managedUser.setUserGroup(usersGroup);
+        managed2.setUserGroup(usersGroup);
+        managed3.setUserGroup(usersGroup);
+        
+        em.flush();
+    }
+    
     private void createDevices() {
         managerDevice = new Device();
         managerDevice.setUniqueId("20");
@@ -117,20 +188,25 @@ public class TestDatabase {
         managedDevice.setUniqueId("10");
         managedDevice.setOwner(managedUser);
         managedDevice.setDeleted(true);
+        managedDevice.setGroup(managedDeviceDeviceGroup);
         managedUser.setDevices(Collections.singleton(managedDevice));
         em.persist(managedDevice);
         
         adminDevice = new Device();
         adminDevice.setUniqueId("30");
         adminDevice.setOwner(admin);
+        adminDevice.setGroup(adminDeviceGroup);
         admin.setDevices(Collections.singleton(adminDevice));
         em.persist(adminDevice);
         
         managed2Device = new Device();
         managed2Device.setUniqueId("5");
         managed2Device.setOwner(managed2);
+        managed2Device.setGroup(managed2DeviceGroup);
         managed2.setDevices(Collections.singleton(managed2Device));
         em.persist(managed2Device);
+        
+        managed3.setDevices(Collections.singleton(adminDevice));
     }
 
     private void createPositions() {
@@ -141,12 +217,41 @@ public class TestDatabase {
         em.persist(adminPosition);
     }
     
+    // Creates positions for managed2device. This device shouldn't gen any more positions. 
+    // This data will be used in device/<id>/positions filter tests
+    private void createPositionsManaged2Device() {
+        final long MINUTE = 60000;//millisecs
+        
+        Calendar date = Calendar.getInstance();
+        long baseTime = date.getTimeInMillis() - 60 * MINUTE;
+
+        em.persist(preparePosition(51., 21., managed2Device, new Date(baseTime + 10 * MINUTE)));
+        em.persist(preparePosition(52., 21., managed2Device, new Date(baseTime + 20 * MINUTE)));
+        em.persist(preparePosition(53., 21., managed2Device, new Date(baseTime + 30 * MINUTE)));
+    }
+    
+    private Position preparePosition(double lat, double lon, Device dev, Date date) {
+        Position pos = new Position();
+        pos.setLatitude(lat);
+        pos.setLongitude(lon);
+        pos.setDevice(dev);
+        pos.setTime(date);
+        pos.setServerTime(date);
+        return pos;
+    }
+    
     private void createGeofences() {
         adminGeofence = new GeoFence();
         adminGeofence.setType(GeoFenceType.CIRCLE);
         adminGeofence.setName("Zażółć gęślą jaźń");
         adminGeofence.setUsers(Collections.singleton(admin));
         em.persist(adminGeofence);
+        
+        managedUserGeofence = new GeoFence();
+        managedUserGeofence.setType(GeoFenceType.LINE);
+        managedUserGeofence.setName("ManagedUser's geofence");
+        managedUserGeofence.setUsers(Collections.singleton(managedUser));
+        em.persist(managedUser);
     }
 
     public void prepareEm(EntityManager newEm) {

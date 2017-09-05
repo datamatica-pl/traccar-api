@@ -19,10 +19,13 @@ package pl.datamatica.traccar.api.dtos.out;
 import com.google.gson.Gson;
 import java.util.Date;
 import java.util.Map;
+import pl.datamatica.traccar.api.dtos.JsonIgnore;
 import pl.datamatica.traccar.model.Position;
 
 public class PositionDto implements ICachedDto {
     private static final String IGNITION_KEY="ignition";
+    private static final String FUEL_LEVEL_KEY="io84";
+    private static final String FUEL_USED_KEY="io83";
     
     private final long id;
     private final Double altitude;
@@ -34,6 +37,12 @@ public class PositionDto implements ICachedDto {
     private final Boolean ignition;
     private final boolean isValid;
     private final long deviceId;
+    private final Double fuelLevel;
+    private final Double fuelUsed;
+    private final String other;
+	
+    @JsonIgnore
+    private final Date serverTime;
 
     public static class Builder {
 
@@ -47,6 +56,11 @@ public class PositionDto implements ICachedDto {
         private Boolean ignition;
         private boolean isValid;
         private long deviceId;
+        private Double fuelLevel;
+        private Double fuelUsed;
+        private String other;
+        
+        private Date serverTime;
 
         public Builder id(final long value) {
             this.id = value;
@@ -98,6 +112,16 @@ public class PositionDto implements ICachedDto {
             return this;
         }
         
+        public Builder serverTime(final Date value) {
+            this.serverTime = value;
+			return this;
+		}
+		
+        public Builder other(final String value) {
+            this.other = value;
+            return this;
+        }
+        
         public Builder position(final Position position) {
             Gson gson = new Gson();
             Map<String, Object> other = gson.fromJson(position.getOther(), Map.class);
@@ -113,12 +137,20 @@ public class PositionDto implements ICachedDto {
             this.deviceId = position.getDevice().getId();
             if(other != null) {
                 this.ignition = (Boolean)other.get(IGNITION_KEY);
+                this.fuelLevel = (Double)other.get(FUEL_LEVEL_KEY);
+                this.fuelUsed = (Double)other.get(FUEL_USED_KEY);
+                if(fuelUsed != null)
+                    fuelUsed *= 0.1;
             }
+			this.other = position.getOther();
+            this.serverTime = position.getServerTime();
             return this;
         }
 
         public PositionDto build() {
-            return new PositionDto(id, altitude, course, speed, latitude, longitude, deviceTime, ignition, isValid, deviceId);
+            return new PositionDto(id, altitude, course, speed, 		latitude, longitude, 
+                    deviceTime, ignition, isValid, deviceId, fuelLevel, fuelUsed, other,
+                    serverTime);
         }
     }
 
@@ -131,7 +163,11 @@ public class PositionDto implements ICachedDto {
             final Date deviceTime, 
             final Boolean ignition, 
             final boolean isValid, 
-            final long deviceId) {
+            final long deviceId,
+            final Double fuelLevel,
+            final Double fuelUsed,
+			final String other,
+            final Date serverTime) {
         this.id = id;
         this.altitude = altitude;
         this.course = course;
@@ -142,6 +178,10 @@ public class PositionDto implements ICachedDto {
         this.ignition = ignition;
         this.isValid = isValid;
         this.deviceId = deviceId;
+        this.fuelLevel = fuelLevel;
+        this.fuelUsed = fuelUsed;
+		this.other = other;
+        this.serverTime = serverTime;
     }
 
     public double getLatitude() {
@@ -183,9 +223,13 @@ public class PositionDto implements ICachedDto {
     public long getDeviceId() {
         return deviceId;
     }
+    
+    public String getOther(){
+        return other;
+    }
 
     @Override
     public Date getModificationTime() {
-        return getDeviceTime();
+        return serverTime;
     }
 }

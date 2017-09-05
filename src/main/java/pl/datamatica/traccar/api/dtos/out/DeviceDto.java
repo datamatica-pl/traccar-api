@@ -16,10 +16,12 @@
  */
 package pl.datamatica.traccar.api.dtos.out;
 
-import java.time.LocalDate;
-import java.time.ZoneId;
+import java.util.Collections;
 import java.util.Date;
+import java.util.List;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 import pl.datamatica.traccar.api.dtos.JsonIgnore;
 import pl.datamatica.traccar.api.dtos.in.EditDeviceDto;
 import pl.datamatica.traccar.model.Device;
@@ -31,8 +33,6 @@ public class DeviceDto extends EditDeviceDto implements ICachedDto {
     private final String uniqueId;
     private final PositionDto lastPosition;
     private final long accountId;
-    private final Date validTo;
-    private final Integer historyLength;
     private final boolean blocked;
     private final Integer batteryLevel;
     private final Date batteryTime;
@@ -41,6 +41,10 @@ public class DeviceDto extends EditDeviceDto implements ICachedDto {
     private final Date ignitionTime;
     private final Integer positionFrequency;
     private final Boolean autoArm;
+    
+    private final Date lastAlarmsCheck;
+    private final boolean unreadAlarms;
+    private final Set<Long> userIds;
     
     @JsonIgnore
     private final Date modificationTime;
@@ -72,6 +76,30 @@ public class DeviceDto extends EditDeviceDto implements ICachedDto {
         private Date ignitionTime;
         private Integer positionFrequency;
         private Boolean autoArm;
+        private Double fuelCapacity;
+        private Double idleSpeedThreshold;
+        private Integer minIdleTime;
+        //web
+        private Long groupId;
+        private Date lastAlarmsCheck;
+        private boolean unreadAlarms;
+        private Set<Long> userIds;
+        private List<MaintenanceDto> maintenances;
+        private List<MaintenanceDto> registrations;
+        private String vehicleInfo;
+        private boolean autoUpdateOdometer;
+        private int timeout;
+        private int timeZoneOffset;
+        private String commandPassword;
+        private boolean showOdometer;
+        private boolean showProtocol;
+        //
+        private boolean showName;
+        private Double arrowRadius;
+        private String arrowMovingColor;
+        private String arrowStoppedColor;
+        private String arrowPausedColor;
+        private String arrowOfflineColor;
 
         public Builder id(final long value) {
             this.id = value;
@@ -178,9 +206,14 @@ public class DeviceDto extends EditDeviceDto implements ICachedDto {
             return this;
         }
         
+       public Builder fuelCapacity(final double capacity) {
+            this.fuelCapacity = capacity;
+            return this;
+        }
+        
         private static final Double KilometersToNauticMilesMultiplier = 1.852;
 
-        public Builder device(final Device device) {
+        public Builder device(final Device device, Set<Long> availableUserIds) {
             this.id = device.getId();
             this.deviceName = device.getName();
             this.deviceModelId = device.getDeviceModelId();
@@ -212,6 +245,42 @@ public class DeviceDto extends EditDeviceDto implements ICachedDto {
             this.ignitionTime = device.getIgnitionTime();
             this.positionFrequency = device.getPositionFreq();
             this.autoArm = device.isAutoArmed();
+            this.idleSpeedThreshold = device.getIdleSpeedThreshold() * KilometersToNauticMilesMultiplier;
+            this.minIdleTime = device.getMinIdleTime();
+            if(device.getGroup() != null)
+                this.groupId = device.getGroup().getId();
+            this.fuelCapacity = device.getFuelCapacity();
+            this.lastAlarmsCheck = device.getLastAlarmsCheck();
+            this.unreadAlarms = device.hasUnreadAlarms();
+            this.userIds = device.getUsers().stream().map(u-> u.getId())
+                    .filter(id->availableUserIds.contains(id))
+                    .collect(Collectors.toSet());
+            if(device.getMaintenances() == null)
+                this.maintenances = Collections.EMPTY_LIST;
+            else
+                this.maintenances = device.getMaintenances().stream()
+                        .map(m -> new MaintenanceDto.Builder().technicalMaintenance(m).build())
+                        .collect(Collectors.toList());
+            if(device.getRegistrations() == null)
+                this.registrations = Collections.EMPTY_LIST;
+            else
+                this.registrations = device.getRegistrations().stream()
+                        .map(m -> new MaintenanceDto.Builder().registrationMaintenance(m).build())
+                        .collect(Collectors.toList());
+            this.vehicleInfo = device.getVehicleInfo();
+            this.autoUpdateOdometer = device.isAutoUpdateOdometer();
+            this.timeout = device.getTimeout();
+            this.timeZoneOffset = device.getTimezoneOffset();
+            this.commandPassword = device.getCommandPassword();
+            this.showOdometer = device.isShowOdometer();
+            this.showProtocol = device.isShowProtocol();
+            //
+            this.showName = device.isShowName();
+            this.arrowRadius = device.getIconArrowRadius();
+            this.arrowMovingColor = device.getIconArrowMovingColor();
+            this.arrowStoppedColor = device.getIconArrowStoppedColor();
+            this.arrowPausedColor = device.getIconArrowPausedColor();
+            this.arrowOfflineColor = device.getIconArrowOfflineColor();
             return this;
         }
 
@@ -240,7 +309,18 @@ public class DeviceDto extends EditDeviceDto implements ICachedDto {
                     ignition,
                     ignitionTime,
                     positionFrequency,
-                    autoArm);
+                    autoArm,
+                    idleSpeedThreshold,
+                    minIdleTime,
+                    groupId,
+                    fuelCapacity,
+                    lastAlarmsCheck,
+                    unreadAlarms,
+                    userIds,
+                    maintenances, registrations,
+                    vehicleInfo, autoUpdateOdometer, timeout, timeZoneOffset,commandPassword,
+                    showOdometer, showProtocol, showName, arrowRadius, arrowMovingColor,
+                    arrowStoppedColor, arrowPausedColor, arrowOfflineColor);
         }
     }
 
@@ -268,16 +348,41 @@ public class DeviceDto extends EditDeviceDto implements ICachedDto {
             final Boolean ignition,
             final Date ignitionTime,
             final Integer positionFrequency,
-            final Boolean autoArm) {
+            final Boolean autoArm,
+            final Double idleSpeedThreshold,
+            final Integer minIdleTime,
+            final Long groupId,
+            final Double fuelCapacity,
+            final Date lastAlarmsCheck,
+            final boolean unreadAlarms,
+            final Set<Long> userIds,
+            final List<MaintenanceDto> maintenances,
+            final List<MaintenanceDto> registrations,
+            final String vehicleInfo,
+            final boolean autoUpdateOdometer,
+            final int timeout,
+            final int timeZoneOffset,
+            final String commandPassword,
+            final boolean showOdometer,
+            final boolean showProtocol,
+            final boolean showName,
+            final Double arrowRadius,
+            final String arrowMovingColor,
+            final String arrowStoppedColor,
+            final String arrowPausedColor,
+            final String arrowOfflineColor) {
         super(deviceName, deviceModelId, iconId, customIconId, color, phoneNumber, 
-                plateNumber, description, speedLimit);
+                plateNumber, description, speedLimit, fuelCapacity,
+                groupId, minIdleTime, idleSpeedThreshold, historyLength, validTo,
+                vehicleInfo, autoUpdateOdometer, timeout, timeZoneOffset,commandPassword,
+                showOdometer, showProtocol, showName, arrowRadius, arrowMovingColor,
+                arrowStoppedColor, arrowPausedColor, arrowOfflineColor, maintenances,
+                registrations);
         this.id = id;
         this.status = status;
         this.uniqueId = uniqueId;
         this.lastPosition = lastPosition;
         this.accountId = accountId;
-        this.validTo = validTo;
-        this.historyLength = historyLength;
         this.modificationTime = modificationTime;
         this.blocked = blocked;
         this.batteryLevel = batteryLevel;
@@ -287,6 +392,9 @@ public class DeviceDto extends EditDeviceDto implements ICachedDto {
         this.ignitionTime = ignitionTime;
         this.positionFrequency = positionFrequency;
         this.autoArm = autoArm;
+        this.lastAlarmsCheck = lastAlarmsCheck;
+        this.unreadAlarms = unreadAlarms;
+        this.userIds = userIds;
     }
     
     public long getId() {
@@ -315,14 +423,6 @@ public class DeviceDto extends EditDeviceDto implements ICachedDto {
 
     public PositionDto getLastPosition() {
         return lastPosition;
-    }
-
-    public Date getValidTo() {
-        return validTo;
-    }
-
-    public int getHistoryLength() {
-        return historyLength;
     }
     
     @Override

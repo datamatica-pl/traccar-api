@@ -34,7 +34,7 @@ public class NotificationTokenDto {
     
     public static List<ErrorDto> validate(NotificationTokenDto tokenDto) {
         if(tokenDto == null || tokenDto.getToken() == null)
-            return Collections.singletonList(new ErrorDto(MessageKeys.ERR_TOKEN_NOT_PROVIDED));
+            return Collections.singletonList(new ErrorDto(MessageKeys.ERR_DATA_NOT_PROVIDED));
         return Collections.EMPTY_LIST;
     }
 }

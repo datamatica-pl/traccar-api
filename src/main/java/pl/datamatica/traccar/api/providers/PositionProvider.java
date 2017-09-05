@@ -23,6 +23,7 @@ import javax.persistence.TypedQuery;
 import pl.datamatica.traccar.model.Device;
 import pl.datamatica.traccar.model.Position;
 import pl.datamatica.traccar.model.User;
+import pl.datamatica.traccar.model.UserPermission;
 
 public class PositionProvider extends ProviderBase {
     
@@ -34,34 +35,48 @@ public class PositionProvider extends ProviderBase {
         this.user = user;
         
         positionListQuery = em.createQuery("from Position p "
-                + "where p.device = :device and p.time >= :minDate "
-                + "order by p.time", Position.class);
+                + "where p.device = :device and p.serverTime >= :minDate and p.serverTime <= :maxDate "
+                +   "and (validStatus is null or validStatus = :valid) "
+                + "order by p.serverTime", Position.class);
     }
     
     public Position get(long id) throws ProviderException {
         return get(Position.class, id, this::isVisible);
     }
     
+    // If maxCount == 0, then there is no upper limit for number of positions
     public Stream<Position> getAllAvailablePositions(Device device, Date minDate,
-            int maxCount) {
+            Date maxDate, int maxCount) throws ProviderException {
+        if (!user.hasPermission(UserPermission.HISTORY_READ))
+            throw new ProviderException(ProviderException.Type.ACCESS_DENIED);
+        
         Date lastAvailPos = device.getLastAvailablePositionDate(new Date());
+        
         if(minDate == null || minDate.before(lastAvailPos))
             minDate = lastAvailPos;
-        if(!user.getAdmin() 
+        if(maxDate == null || maxDate.after(new Date()))
+            maxDate = new Date();
+        if(!user.hasPermission(UserPermission.ALL_DEVICES)
            && !user.getAllAvailableDevices().stream()
                 .anyMatch(d -> d.equals(device)))
             return Stream.empty();
         
         positionListQuery.setParameter("device", device);
         positionListQuery.setParameter("minDate", minDate);
-        positionListQuery.setMaxResults(maxCount);            
+        positionListQuery.setParameter("maxDate", maxDate);
+        positionListQuery.setParameter("valid", Position.VALID_STATUS_CORRECT_POSITION);
+        if(maxCount != 0)
+            positionListQuery.setMaxResults(maxCount);            
         
         return positionListQuery.getResultList().stream();
     }
     
     private boolean isVisible(Position p) {
-        if(user.getAdmin())
+        if(user.hasPermission(UserPermission.ALL_DEVICES))
             return true;
+        if(!user.hasPermission(UserPermission.HISTORY_READ))
+            return false;
+
         if(!user.getAllAvailableDevices().stream()
                 .anyMatch(d -> d.equals(p.getDevice())))
             return false;

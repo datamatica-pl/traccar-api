@@ -20,14 +20,13 @@ import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import java.io.IOException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.persistence.EntityManager;
-import org.apache.http.Header;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import pl.datamatica.traccar.api.Context;
 import org.apache.http.client.methods.HttpPost;
@@ -36,6 +35,7 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.util.EntityUtils;
 import pl.datamatica.traccar.model.NotificationStatus;
+import pl.datamatica.traccar.model.User;
 
 public abstract class Daemon {
     private final Runnable runnable;
@@ -110,5 +110,12 @@ public abstract class Daemon {
                 Logger.getLogger(Daemon.class.getName()).log(Level.SEVERE, null, ex);
             }
         }
+    }
+
+    public void clearInactiveSessions(EntityManager em, User user) {
+        Set<String> activeSessions = new HashSet<>(em
+                .createNativeQuery("SELECT sessionId from JettySessions")
+                .getResultList());
+        user.getSessions().retainAll(activeSessions);
     }
 }

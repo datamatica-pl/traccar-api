@@ -160,11 +160,9 @@ public class AddGeoFenceDto implements IGeoFenceInfo {
     
     public static List<ErrorDto> validate(AddGeoFenceDto geoFenceDto) {
         if(geoFenceDto == null)
-            return Collections.singletonList(new ErrorDto(MessageKeys.ERR_GEOFENCE_DATA_NOT_PROVIDED));
+            return Collections.singletonList(new ErrorDto(MessageKeys.ERR_DATA_NOT_PROVIDED));
         
         List<ErrorDto> errors = new ArrayList<>();
-        if(geoFenceDto.allDevices == null)
-            errors.add(new ErrorDto(MessageKeys.ERR_GEOFENCE_ALL_DEVICES_NOT_PROVIDED));
         if(geoFenceDto.color == null || geoFenceDto.color.isEmpty())
             errors.add(new ErrorDto(MessageKeys.ERR_GEOFENCE_COLOR_NOT_PROVIDED));
         else {

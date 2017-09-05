@@ -25,6 +25,7 @@ public class HttpStatuses {
     public static int BAD_REQUEST = 400;
     public static int FORBIDDEN = 403;
     public static int NOT_FOUND = 404;
+    public static int NOT_ACCEPTABLE = 406;
     public static int TIMED_OUT = 408;
     public static int CONFLICT = 409;
 }

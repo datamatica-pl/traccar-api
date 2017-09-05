@@ -30,6 +30,7 @@ import pl.datamatica.traccar.model.DeviceEvent;
 import pl.datamatica.traccar.model.DeviceEventType;
 import pl.datamatica.traccar.model.GeoFence;
 import pl.datamatica.traccar.model.User;
+import pl.datamatica.traccar.model.UserPermission;
 
 public class AlertProvider {
     private final EntityManager em;
@@ -40,12 +41,15 @@ public class AlertProvider {
     public AlertProvider(EntityManager em, User requestUser) {
         this.em = em;
         this.requestUser = requestUser;
-        this.devices = new DeviceProvider(em, requestUser, null);
+        this.devices = new DeviceProvider(em, requestUser, null, null);
         this.geofences = new GeoFenceProvider(em);
         geofences.setRequestUser(requestUser);
     }
     
-    public List<DeviceEvent> getAllAvailableAlerts() {
+    public List<DeviceEvent> getAllAvailableAlerts() throws ProviderException {
+        if (!requestUser.hasPermission(UserPermission.ALERTS_READ))
+            throw new ProviderException(ProviderException.Type.ACCESS_DENIED);
+        
         List<Device> validDevices = devices.getAllAvailableDevices()
                 .filter(d -> !d.isBlocked() && !d.isDeleted())
                 .collect(Collectors.toList());

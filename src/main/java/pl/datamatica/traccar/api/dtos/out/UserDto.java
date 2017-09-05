@@ -16,24 +16,23 @@
  */
 package pl.datamatica.traccar.api.dtos.out;
 
+import java.util.ArrayList;
+import pl.datamatica.traccar.api.dtos.in.EditUserDto;
+import java.util.Collection;
 import java.util.Date;
+import java.util.List;
+import pl.datamatica.traccar.model.Device;
+import pl.datamatica.traccar.model.DeviceEventType;
 import pl.datamatica.traccar.model.User;
 
-public class UserDto {
-    private final long id;
+public class UserDto extends EditUserDto {
+    private final Long id;
     private final String login;
-    private final String email;
-    private final String companyName;
-    private final String firstName;
-    private final String lastName;
-    private final String phoneNumber;
-    private final Date expirationDate;
-    private final Integer maxNumOfDevices;
     private final Long managedById;
-    private final boolean manager;
-    private final boolean admin;
-    private final boolean archive;
-    private final boolean blocked;
+    private final UserSettingsDto settings;
+    private final UserGroupDto userGroup;
+    private final boolean premium;
+    private final String userGroupName;
 
     public static class Builder {
 
@@ -51,6 +50,12 @@ public class UserDto {
         private boolean admin;
         private boolean archive;
         private boolean blocked;
+        private boolean readOnly;
+        private List<String> notificationEvents = new ArrayList<>();
+        private UserSettingsDto settings;
+        private UserGroupDto userGroup;
+        private boolean premium;
+        private String userGroupName;
 
         public Builder id(final long value) {
             this.id = value;
@@ -122,6 +127,20 @@ public class UserDto {
             return this;
         }
         
+        public Builder readOnly(final boolean value) {
+            this.readOnly = value;
+            return this;
+        }
+        
+        public Builder notificationEvents(final Collection<DeviceEventType> value) {
+            notificationEvents.clear();
+            if(value == null)
+                return this;
+            for(DeviceEventType det : value)
+                notificationEvents.add(det.name());
+            return this;
+        }
+        
         public Builder user(final User user) {
             this.id = user.getId();
             this.login = user.getLogin();
@@ -132,21 +151,45 @@ public class UserDto {
             this.phoneNumber = user.getPhoneNumber();
             this.expirationDate = user.getExpirationDate();
             this.maxNumOfDevices = user.getMaxNumOfDevices();
+            notificationEvents(user.getNotificationEvents());
         
             if(user.getManagedBy() != null)
                 this.managedById = user.getManagedBy().getId();
-            this.manager = user.getManager();
-            this.admin = user.getAdmin();
-            this.archive = user.isArchive();
+            this.manager = true;
+            this.admin = false;
+            this.archive = true;
             this.blocked = user.isBlocked();
+            this.readOnly = false;
+            
+            this.premium = false;
+            for(Device d : user.getDevices())
+                if(d.isValid(new Date())) {
+                    this.premium = true;
+                    break;
+                }
+            return this;
+        }
+        
+        public Builder sessionUser(final User user) {
+            user(user);
+            settings = new UserSettingsDto.Builder().userSettings(user.getUserSettings()).build();
+            userGroup = new UserGroupDto.Builder().userGroup(user.getUserGroup()).build();
+            return this;
+        }
+        
+        public Builder userGroupName(final String name) {
+            this.userGroupName = name;
             return this;
         }
 
         public UserDto build() {
-            return new UserDto(id, login, email, companyName, firstName, lastName, phoneNumber, expirationDate, maxNumOfDevices, managedById, manager, admin, archive, blocked);
+            return new UserDto(id, login, email, companyName, firstName, lastName, 
+                    phoneNumber, expirationDate, maxNumOfDevices, managedById, 
+                    manager, admin, archive, blocked, notificationEvents, readOnly,
+                    settings, userGroup, premium, userGroupName);
         }
     }
-
+    
     private UserDto(final long id, 
             final String login, 
             final String email, 
@@ -160,21 +203,23 @@ public class UserDto {
             final boolean manager, 
             final boolean admin, 
             final boolean archive, 
-            final boolean blocked) {
+            final boolean blocked,
+            final List<String> notificationEvents,
+            final boolean readOnly,
+            final UserSettingsDto settings,
+            final UserGroupDto userGroup,
+            final boolean premium,
+            final String userGroupName) {
+        super(email, companyName, firstName, lastName, phoneNumber,
+                expirationDate, maxNumOfDevices, manager, admin, archive,
+                blocked, PASSWORD_PLACEHOLDER, notificationEvents, readOnly);
         this.id = id;
         this.login = login;
-        this.email = email;
-        this.companyName = companyName;
-        this.firstName = firstName;
-        this.lastName = lastName;
-        this.phoneNumber = phoneNumber;
-        this.expirationDate = expirationDate;
-        this.maxNumOfDevices = maxNumOfDevices;
         this.managedById = managedById;
-        this.manager = manager;
-        this.admin = admin;
-        this.archive = archive;
-        this.blocked = blocked;
+        this.settings = settings;
+        this.userGroup = userGroup;
+        this.premium = premium;
+        this.userGroupName = userGroupName;
     }
     
     public long getId() {
@@ -185,51 +230,17 @@ public class UserDto {
         return login;
     }
 
-    public String getEmail() {
-        return email;
-    }
-
-    public String getCompanyName() {
-        return companyName;
-    }
-
-    public String getFirstName() {
-        return firstName;
-    }
-
-    public String getLastName() {
-        return lastName;
-    }
-
-    public String getPhoneNumber() {
-        return phoneNumber;
-    }
-
-    public Date getExpirationDate() {
-        return expirationDate;
-    }
-
-    public Integer getMaxNumOfDevices() {
-        return maxNumOfDevices;
-    }
 
     public Long getManagedById() {
         return managedById;
     }
-
-    public boolean isManager() {
-        return manager;
+    
+    public boolean isPremium() {
+        return premium;
+    }
+    
+    public String getUserGroupName() {
+        return userGroupName;
     }
 
-    public boolean isAdmin() {
-        return admin;
-    }
-
-    public boolean isArchive() {
-        return archive;
-    }
-
-    public boolean isBlocked() {
-        return blocked;
-    }
 }

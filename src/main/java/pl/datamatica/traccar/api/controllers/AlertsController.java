@@ -21,6 +21,7 @@ import java.util.stream.Collectors;
 import pl.datamatica.traccar.api.Application;
 import static pl.datamatica.traccar.api.controllers.ControllerBase.render;
 import pl.datamatica.traccar.api.dtos.out.AlertDto;
+import pl.datamatica.traccar.api.providers.ProviderException;
 import pl.datamatica.traccar.api.responses.HttpResponse;
 import pl.datamatica.traccar.model.DeviceEvent;
 import spark.Spark;
@@ -40,8 +41,6 @@ public class AlertsController extends ControllerBase {
         public String rootUrl() {
             return super.rootUrl() + "/alerts";
         }
-        
-        
     }
     
     private final RequestContext rc;
@@ -51,11 +50,15 @@ public class AlertsController extends ControllerBase {
         rc = context;
     }
     
-    public HttpResponse get() {
-        List<DeviceEvent> events = rc.getAlertProvider().getAllAvailableAlerts();
-        return okCached(events.stream()
-                .filter(e -> isModified(e.getTime()))
-                .map(e -> new AlertDto.Builder().event(e).build())
-                .collect(Collectors.toList()));
+    public HttpResponse get() throws ProviderException{
+        try {
+            List<DeviceEvent> events = rc.getAlertProvider().getAllAvailableAlerts();
+            return okCached(events.stream()
+                    .filter(e -> isModified(e.getTime()))
+                    .map(e -> new AlertDto.Builder().event(e).build())
+                    .collect(Collectors.toList()));
+        } catch(ProviderException e) {
+            return handle(e);
+        }
     }
 }

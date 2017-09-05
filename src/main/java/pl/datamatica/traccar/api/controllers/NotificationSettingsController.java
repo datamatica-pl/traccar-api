@@ -21,10 +21,9 @@ import pl.datamatica.traccar.api.Application;
 import static pl.datamatica.traccar.api.controllers.ControllerBase.render;
 import pl.datamatica.traccar.api.dtos.out.ErrorDto;
 import pl.datamatica.traccar.api.dtos.out.NotificationSettingsDto;
+import pl.datamatica.traccar.api.providers.ProviderException;
 import pl.datamatica.traccar.api.responses.HttpResponse;
-import pl.datamatica.traccar.model.MobNotificationMode;
-import pl.datamatica.traccar.model.MobNotificationType;
-import pl.datamatica.traccar.model.User;
+import pl.datamatica.traccar.model.UserPermission;
 import spark.Request;
 import spark.Spark;
 
@@ -62,15 +61,23 @@ public class NotificationSettingsController extends ControllerBase {
         super(requestContext);
     }
     
-    public HttpResponse get() {
+    public HttpResponse get() throws ProviderException {
+        
+        if (!requestContext.getUser().hasPermission(UserPermission.NOTIFICATIONS))
+            return handle(new ProviderException(ProviderException.Type.ACCESS_DENIED));
+        
         return ok(new NotificationSettingsDto(requestContext.getUser().getMobileNotificationSettings()));
     }
     
-    public HttpResponse put(NotificationSettingsDto dto) {
+    public HttpResponse put(NotificationSettingsDto dto) throws ProviderException {
         List<ErrorDto> validationErrors = NotificationSettingsDto.validate(dto);
         if(!validationErrors.isEmpty())
             return badRequest(validationErrors);
-        requestContext.getNotificationSettingsProvider().updateNotificationSettings(dto);
-        return ok("");
+        try {
+            requestContext.getNotificationSettingsProvider().updateNotificationSettings(dto);
+            return ok("");
+        } catch(ProviderException e) {
+            return handle(e);
+        }
     }
 }
