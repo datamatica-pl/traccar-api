@@ -42,9 +42,10 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
-import java.util.logging.Level;
+import java.util.stream.Collectors;
 import pl.datamatica.traccar.api.Application;
 import pl.datamatica.traccar.model.RegistrationMaintenance;
+import pl.datamatica.traccar.model.UserPermission;
 
 public class DeviceProvider extends ProviderBase {
     private User requestUser;
@@ -65,7 +66,7 @@ public class DeviceProvider extends ProviderBase {
     
     public Device getDevice(long id) throws ProviderException {
         Device d = new Device(get(Device.class, id, this::isVisible));
-        if(!requestUser.getAdmin()) {
+        if(!requestUser.hasPermission(UserPermission.ALL_USERS)) {
             Set<User> visibleUsers = new HashSet<>(requestUser.getManagedUsers());
             visibleUsers.add(requestUser);
             d.getUsers().retainAll(visibleUsers);
@@ -73,7 +74,7 @@ public class DeviceProvider extends ProviderBase {
         return d;
     }
     
-    public Device getDeviceByImei(String imei) {
+    private Device getDeviceByImei(String imei) {
         TypedQuery<Device> tq = em.createQuery("Select x from Device x where x.uniqueId = :imei", Device.class);
         tq.setParameter("imei", imei);
         List<Device> devices = tq.getResultList();
@@ -83,8 +84,8 @@ public class DeviceProvider extends ProviderBase {
     }
     
     public Stream<Device> getAllAvailableDevices() {
-        List<Device> devices = null;
-        if(requestUser.getAdmin())
+        List<Device> devices;
+        if(requestUser.hasPermission(UserPermission.ALL_DEVICES))
             devices = getAllDevices();
         else
             devices = new ArrayList<>(requestUser.getAllAvailableDevices());
@@ -145,6 +146,8 @@ public class DeviceProvider extends ProviderBase {
     }
 
     public Device createDevice(String imei) throws ProviderException {
+        checkUserEditPermission();
+        
         if(!isImeiValid(imei))
             throw new ProviderException(Type.INVALID_IMEI);
         
@@ -169,11 +172,12 @@ public class DeviceProvider extends ProviderBase {
         return device;
     }
 
+    private static final String GPS_NAME_PREFIX = "gps-";
+
     private static String createGpsName() {
         Random random = new Random();
         return GPS_NAME_PREFIX+(random.nextInt(99)+1);
     }
-    private static final String GPS_NAME_PREFIX = "gps-";
     
     public void delete(long id) throws ProviderException {
         boolean shouldManageTransaction = !em.getTransaction().isActive();
@@ -199,13 +203,23 @@ public class DeviceProvider extends ProviderBase {
     }
 
     private boolean representsOwner(Device device) {
-        return requestUser.getAdmin() 
+        return requestUser.hasPermission(UserPermission.ALL_DEVICES)
                || requestUser.equals(device.getOwner())
                || requestUser.getAllManagedUsers().contains(device.getOwner());
     }
     
+    private void checkUserEditPermission() throws ProviderException {
+        if (!requestUser.hasPermission(UserPermission.DEVICE_EDIT))
+            throw new ProviderException(Type.ACCESS_DENIED);
+    }
+    
+    private void checkUserSharePermission() throws ProviderException {
+        if (!requestUser.hasPermission(UserPermission.DEVICE_SHARE))
+            throw new ProviderException(Type.ACCESS_DENIED);
+    }
+    
     private boolean isVisible(Device device) {
-        if(requestUser.getAdmin())
+        if(requestUser.hasPermission(UserPermission.ALL_DEVICES))
             return true;
         return getAllAvailableDevices().anyMatch(d -> d.equals(device));
     }
@@ -265,6 +279,8 @@ public class DeviceProvider extends ProviderBase {
     public static final Double NauticMilesToKilometersMultiplier = 0.54;
     
     public void updateDevice(long id, EditDeviceDto dto) throws ProviderException {
+        checkUserEditPermission();
+        
         Device device = get(Device.class, id, this::isVisible);
         
         device.setName(dto.getDeviceName());
@@ -290,6 +306,8 @@ public class DeviceProvider extends ProviderBase {
     }
 
     public void applyPatch(long id, JsonObject changes) throws ProviderException {
+        checkUserEditPermission();
+        
         Device d = get(Device.class, id, this::isVisible);
         if(changes.has("deviceName"))
             d.setName(changes.get("deviceName").getAsString());
@@ -374,9 +392,9 @@ public class DeviceProvider extends ProviderBase {
             else
                 d.setCommandPassword(changes.get("commandPassword").getAsString());
         }
-        if(changes.has("historyLength") && requestUser.getAdmin())
+        if(changes.has("historyLength") && requestUser.hasPermission(UserPermission.ALL_DEVICES))
             d.setHistoryLength(changes.get("historyLength").getAsInt());
-        if(changes.has("validTo") && requestUser.getAdmin()) {
+        if(changes.has("validTo") && requestUser.hasPermission(UserPermission.ALL_DEVICES)) {
             if(changes.get("validTo").isJsonNull())
                 d.setValidTo(null);
             else
@@ -465,9 +483,20 @@ public class DeviceProvider extends ProviderBase {
         em.persist(d);
     }
     
+    public List<Long> getDeviceShare(long id) throws ProviderException {
+        checkUserSharePermission();
+        
+        Device device = getDevice(id);
+        return device.getUsers().stream()
+                    .map(u -> u.getId())
+                    .collect(Collectors.toList());
+    }
+    
     public void updateDeviceShare(long id, List<Long> userIds) throws ProviderException {
+        checkUserSharePermission();
+        
         Device d = get(Device.class, id, this::isVisible);
-        if(requestUser.getAdmin())
+        if(requestUser. hasPermission(UserPermission.ALL_USERS))
             d.getUsers().clear();
         else {
             d.getUsers().removeAll(requestUser.getAllManagedUsers());
@@ -475,7 +504,7 @@ public class DeviceProvider extends ProviderBase {
         }
         Set<Long> ids = new HashSet<>(userIds);
         List<User> users;
-        if(requestUser.getAdmin()) {
+        if(requestUser.hasPermission(UserPermission.ALL_USERS)) {
             TypedQuery<User> tq = em.createQuery("from User u where u.id in :ids", User.class);
             tq.setParameter("ids", userIds);
             users = tq.getResultList();

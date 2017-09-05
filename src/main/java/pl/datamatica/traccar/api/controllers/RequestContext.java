@@ -27,6 +27,7 @@ import pl.datamatica.traccar.api.Application;
 import pl.datamatica.traccar.api.Context;
 import pl.datamatica.traccar.api.providers.AlertProvider;
 import pl.datamatica.traccar.api.providers.ApplicationSettingsProvider;
+import pl.datamatica.traccar.api.providers.AuditLogProvider;
 import pl.datamatica.traccar.api.providers.DeviceIconProvider;
 import pl.datamatica.traccar.api.providers.DeviceModelProvider;
 import pl.datamatica.traccar.api.providers.DeviceProvider;
@@ -39,7 +40,7 @@ import pl.datamatica.traccar.api.providers.MailSender;
 import pl.datamatica.traccar.api.providers.NotificationSettingsProvider;
 import pl.datamatica.traccar.api.providers.PicturesProvider;
 import pl.datamatica.traccar.api.providers.PositionProvider;
-import pl.datamatica.traccar.api.providers.ReportsProvider;
+import pl.datamatica.traccar.api.providers.UserGroupProvider;
 import pl.datamatica.traccar.api.providers.UserProvider;
 import pl.datamatica.traccar.api.utils.DateUtil;
 import pl.datamatica.traccar.model.User;
@@ -70,7 +71,9 @@ public class RequestContext implements AutoCloseable {
     private NotificationSettingsProvider notificationSettings;
     private SessionProvider sessionProvider;
     private DeviceGroupProvider deviceGroupProvider;
-    
+    private UserGroupProvider userGroupProvider;
+    private AuditLogProvider auditLogProvider;
+
     private Image emptyMarker;
     
     public RequestContext(Request request, Response response) throws ParseException {
@@ -114,8 +117,9 @@ public class RequestContext implements AutoCloseable {
     }
     
     public ApplicationSettingsProvider getApplicationSettingsProvider() {
-        if(appSettings == null)
+        if(appSettings == null) {
             appSettings = new ApplicationSettingsProvider(em);
+        }
         return appSettings;
     }
     
@@ -145,11 +149,6 @@ public class RequestContext implements AutoCloseable {
     
     public MailSender getMailSender() {
         return new MailSender(em);
-    }
-    
-    public ReportsProvider getReportsProvider() {
-        ReportsProvider provider = new ReportsProvider(em, emMetadata);
-        return provider;
     }
     
     public DeviceModelProvider getDeviceModelProvider() {
@@ -196,6 +195,22 @@ public class RequestContext implements AutoCloseable {
             deviceGroupProvider.setDeviceProvider(devices);
         }
         return deviceGroupProvider;
+    }
+    
+    public UserGroupProvider getUserGroupProvider() {
+        if (userGroupProvider == null) {
+            userGroupProvider = new UserGroupProvider(em, user);
+            userGroupProvider.setUserProvider(getUserProvider());
+            userGroupProvider.setApplicationSettingsProvider(getApplicationSettingsProvider());
+        }
+        return userGroupProvider;
+    }
+    
+    public AuditLogProvider getAuditLogProvider() {
+        if (auditLogProvider == null) {
+            auditLogProvider = new AuditLogProvider(em, user);
+        }
+        return auditLogProvider;
     }
     
     public String getApiRoot() {

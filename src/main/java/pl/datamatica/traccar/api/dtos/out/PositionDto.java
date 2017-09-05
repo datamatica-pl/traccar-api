@@ -58,7 +58,7 @@ public class PositionDto implements ICachedDto {
         private long deviceId;
         private Double fuelLevel;
         private Double fuelUsed;
-		private String other;
+        private String other;
         
         private Date serverTime;
 

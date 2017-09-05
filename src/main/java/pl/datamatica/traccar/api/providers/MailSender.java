@@ -17,6 +17,7 @@
 package pl.datamatica.traccar.api.providers;
 
 import java.util.Date;
+import java.util.List;
 import java.util.Properties;
 import javax.mail.*;
 import javax.mail.internet.InternetAddress;
@@ -25,14 +26,21 @@ import javax.persistence.EntityManager;
 import pl.datamatica.traccar.model.NotificationSettings;
 
 public class MailSender {
-    private final NotificationSettings settings;
+    private NotificationSettings settings;
     
     public MailSender(EntityManager em) {
-        settings = em.createQuery("SELECT s FROM NotificationSettings s "
-                + "WHERE s.user.admin=:true ORDER BY s.user.id ASC", 
+        //https://hibernate.atlassian.net/browse/HHH-5159
+        // I think it IS legitimate bug in ORM 4
+        List<NotificationSettings> allSettings = em.createQuery("SELECT s FROM NotificationSettings s "
+                + "WHERE :serverManagement IN ELEMENTS(s.user.userGroup.permissions) "
+                + "ORDER BY s.user.id ASC", 
                 NotificationSettings.class)
-                .setParameter("true", true)
-                .getSingleResult();
+                .setParameter("serverManagement", "SERVER_MANAGEMENT")
+                .getResultList();
+        
+        if(allSettings.isEmpty())
+            throw new IllegalStateException("NotificationSetting unavailable");
+        settings = allSettings.get(0);
     }
     
     public boolean sendMessage(String address, String subject, String message) {

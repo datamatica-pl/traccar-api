@@ -19,6 +19,7 @@ package pl.datamatica.traccar.api.providers;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Objects;
 import java.util.Random;
 import java.util.Set;
 import java.util.UUID;
@@ -35,12 +36,15 @@ import pl.datamatica.traccar.api.dtos.in.EditUserDto;
 import pl.datamatica.traccar.api.dtos.in.EditUserSettingsDto;
 import pl.datamatica.traccar.api.providers.ProviderException.Type;
 import pl.datamatica.traccar.model.ApplicationSettings;
+import pl.datamatica.traccar.model.AuditLog;
+import pl.datamatica.traccar.model.AuditLogType;
 import pl.datamatica.traccar.model.Device;
 import pl.datamatica.traccar.model.DeviceEventType;
 import pl.datamatica.traccar.model.PositionIconType;
 import pl.datamatica.traccar.model.GeoFence;
 import pl.datamatica.traccar.model.Group;
 import pl.datamatica.traccar.model.User;
+import pl.datamatica.traccar.model.UserPermission;
 import pl.datamatica.traccar.model.UserSettings;
 import pl.datamatica.traccar.model.UserSettings.SpeedUnit;
 
@@ -82,7 +86,7 @@ public class UserProvider extends ProviderBase {
     }
     
     public Stream<User> getAllAvailableUsers() {
-        if(requestUser.getAdmin()) 
+        if(requestUser.hasPermission(UserPermission.ALL_USERS)) 
             return getAllUsers();
         return Stream.concat(requestUser.getAllManagedUsers().stream(), 
                 requestUser.getManagedBy() == null ?
@@ -90,11 +94,20 @@ public class UserProvider extends ProviderBase {
                         Stream.of(requestUser, requestUser.getManagedBy()));
     }
     
+    public Stream<User> getAllManagedUsers() {
+        if(requestUser.hasPermission(UserPermission.ALL_USERS))
+            return getAllUsers();
+        return Stream.concat(requestUser.getAllManagedUsers().stream(),
+                Stream.of(requestUser));
+    }
+    
     public User getUser(long id) throws ProviderException {
         return get(User.class, id, this::isVisible);
     }
     
     public User createUser(AddUserDto dto) throws ProviderException {
+        checkUserManagementPermissions(requestUser);
+        
         User user = prepareNewUser(dto.getLogin(), dto.getPassword());
         
         editUser(user, dto);
@@ -128,17 +141,25 @@ public class UserProvider extends ProviderBase {
         User user = new User(login, hashedPassword);
         user.setPasswordHashMethod(appSettings.getDefaultHashImplementation());
         user.setUserSettings(new UserSettings());
+        user.setUserGroup(appSettings.getDefaultGroup());
+        
+        generateAuditLogForCreateRemoveUser(user.getLogin(), false);
         return user;
     }
     
     public void updateUser(long id, EditUserDto dto) throws ProviderException {
+        if (requestUser.getId() != id)
+            checkUserManagementPermissions(requestUser);
+        
         User u = getUser(id);
 
         editUser(u, dto);
         
-        if(!EditUserDto.PASSWORD_PLACEHOLDER.equals(dto.getPassword()))
+        if(!EditUserDto.PASSWORD_PLACEHOLDER.equals(dto.getPassword())) {
             u.setPassword(u.getPasswordHashMethod()
                     .doHash(dto.getPassword(), appSettings.getSalt()));
+            addSingleEditUserAuditLog(u.getLogin(), "password", null);
+        }
         em.persist(u);
         
         logger.info("{} updated user {}", requestUser.getLogin(), u.getLogin());
@@ -154,6 +175,7 @@ public class UserProvider extends ProviderBase {
         
         User user;
         try {
+            checkUserManagementPermissions(requestUser);
             user = getUser(id);
         } catch (ProviderException pe) {
             if (pe.getType() == Type.ACCESS_DENIED)
@@ -179,6 +201,7 @@ public class UserProvider extends ProviderBase {
         }
         
         em.flush();
+        generateAuditLogForCreateRemoveUser(removedLogin, false);
         logger.info("{} removed {} account", requestUser.getLogin(), removedLogin);
     }
     
@@ -267,22 +290,21 @@ public class UserProvider extends ProviderBase {
         }
     }
     
-    // REMOVING USER - END //
+    // REMOVING USER - END // 
     
     private void editUser(User user, EditUserDto dto) throws ProviderException {
-        if(!requestUser.getAdmin() && user.equals(requestUser.getManagedBy()))
+        if(!requestUser.hasPermission(UserPermission.ALL_USERS) && user.equals(requestUser.getManagedBy()))
             throw new ProviderException(Type.ACCESS_DENIED);
-        if(requestUser.getAdmin())
-            user.setAdmin(dto.isAdmin());
-        user.setArchive(dto.isArchive());
-        user.setBlocked(dto.isBlocked());
+        
+        generateAuditLogEditUser(user, dto);
+        
+        user.setAdmin(false);
         user.setCompanyName(dto.getCompanyName());
         user.setEmail(dto.getEmail());
         user.setFirstName(dto.getFirstName());
         user.setLastName(dto.getLastName());
-        if(requestUser.getManager() || requestUser.getAdmin())
-            user.setManager(dto.isManager());
-        if(requestUser.getAdmin() || !user.equals(requestUser)) {
+        user.setManager(true);
+        if(requestUser.hasPermission(UserPermission.ALL_USERS) || !user.equals(requestUser)) {
             user.setMaxNumOfDevices(dto.getMaxNumOfDevices());
             user.setExpirationDate(dto.getExpirationDate());
         }
@@ -292,7 +314,16 @@ public class UserProvider extends ProviderBase {
         }
         user.setNotificationEvents(notificationEvents);
         user.setPhoneNumber(dto.getPhoneNumber());
-        user.setReadOnly(dto.isReadOnly());
+        if (requestUser.getId() != user.getId()) { 
+            user.setReadOnly(false);
+            user.setArchive(true);
+            user.setBlocked(dto.isBlocked());
+        }
+    }
+    
+    private void checkUserManagementPermissions(User user) throws ProviderException {
+        if (!user.hasPermission(UserPermission.USER_MANAGEMENT))
+            throw new ProviderException(ProviderException.Type.ACCESS_DENIED);
     }
 
     private String generateToken(String colName) {
@@ -370,7 +401,7 @@ public class UserProvider extends ProviderBase {
     private boolean isVisible(User other) {
         if(requestUser == null)
             return false;
-        if(requestUser.getAdmin())
+        if(requestUser.hasPermission(UserPermission.ALL_USERS))
             return true;
         
         return getAllAvailableUsers().anyMatch(u -> u.equals(other));
@@ -408,5 +439,44 @@ public class UserProvider extends ProviderBase {
         if(id != requestUser.getId())
             throw new ProviderException(Type.ACCESS_DENIED);
         return requestUser.getUserSettings();
+    }
+    
+    // AuditLog methods
+    
+    private void generateAuditLogForCreateRemoveUser(String userLogin, boolean remove) {
+        AuditLog al = new AuditLog.Builder()
+                .agentLogin(requestUser != null ? requestUser.getLogin() : "REGISTRATION")
+                .type(remove ? AuditLogType.REMOVED_USER : AuditLogType.CREATED_USER)
+                .targetUserLogin(userLogin)
+                .build();
+        
+        em.persist(al);
+    }
+    
+    private void generateAuditLogEditUser(User user, EditUserDto dto) {
+        if (!Objects.equals(user.getEmail(), dto.getEmail()))
+            addSingleEditUserAuditLog(user.getLogin(), "email", dto.getEmail());
+        if (!Objects.equals(user.getFirstName(), dto.getFirstName()))
+            addSingleEditUserAuditLog(user.getLogin(), "firstName", dto.getFirstName());
+        if (!Objects.equals(user.getLastName(), dto.getLastName()))
+            addSingleEditUserAuditLog(user.getLogin(), "lastName", dto.getLastName());
+        if (!Objects.equals(user.getMaxNumOfDevices(), dto.getMaxNumOfDevices()))
+            addSingleEditUserAuditLog(user.getLogin(), "maxNumOfDevices", dto.getMaxNumOfDevices().toString());
+        if (!Objects.equals(user.getExpirationDate(), dto.getExpirationDate()))
+            addSingleEditUserAuditLog(user.getLogin(), "expirationDate", dto.getExpirationDate().toString());
+        if (!Objects.equals(user.isBlocked(), dto.isBlocked()))
+            addSingleEditUserAuditLog(user.getLogin(), "blocked", dto.isBlocked() ? "true" : "false");  
+    }
+    
+    private void addSingleEditUserAuditLog(String userLogin, String fieldName, String fieldNewValue) {
+        AuditLog al = new AuditLog.Builder()
+                .agentLogin(requestUser.getLogin())
+                .type(AuditLogType.CHANGED_USER)
+                .targetUserLogin(userLogin)
+                .fieldName(fieldName)
+                .fieldNewValue(fieldNewValue)
+                .build();
+        
+        em.persist(al);
     }
 }

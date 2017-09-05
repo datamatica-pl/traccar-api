@@ -19,7 +19,9 @@ package pl.datamatica.traccar.api.providers;
 import java.util.Calendar;
 import java.util.Collections;
 import java.util.Date;
+import java.util.EnumSet;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import javax.persistence.EntityManager;
@@ -31,10 +33,13 @@ import pl.datamatica.traccar.model.Group;
 import pl.datamatica.traccar.model.PasswordHashMethod;
 import pl.datamatica.traccar.model.Position;
 import pl.datamatica.traccar.model.User;
+import pl.datamatica.traccar.model.UserGroup;
+import pl.datamatica.traccar.model.UserPermission;
 
 public class TestDatabase {
     private final EntityManager em;
     private String salt;
+    ApplicationSettings applicationSettings;
     User admin;
     Device adminDevice;
     Position adminPosition;
@@ -50,6 +55,8 @@ public class TestDatabase {
     Group adminDeviceGroup;
     Group managedDeviceDeviceGroup;
     Group managed2DeviceGroup;
+    UserGroup usersGroup;
+    UserGroup adminsGroup;
     List<Position> managed2Positions;
     
     public TestDatabase(EntityManager em) {
@@ -66,6 +73,7 @@ public class TestDatabase {
         createManaged2();
         createManaged3();
         createDeviceGroups();
+        createUserGroups();
         createDevices();
         createPositions();
         createGeofences();
@@ -73,11 +81,10 @@ public class TestDatabase {
         em.getTransaction().commit();
     }
     
-    private ApplicationSettings createApplicationSettings() {
-        ApplicationSettings as = new ApplicationSettings();
-        as.setSalt(salt);
-        em.persist(as);
-        return as;
+    private void createApplicationSettings() {
+        applicationSettings = new ApplicationSettings();
+        applicationSettings.setSalt(salt);
+        em.persist(applicationSettings);
     }
     
     private void createAdmin() {
@@ -95,7 +102,7 @@ public class TestDatabase {
         manager.setLogin("manager@test.pl");
         manager.setEmail("manager@test.pl");
         manager.setPassword(PasswordHashMethod.MD5.doHash("Test11!", salt));
-        manager.setManager(true);
+
         em.persist(manager);
     }
 
@@ -106,7 +113,7 @@ public class TestDatabase {
         managedUser.setPassword("user_1");
         managedUser.setPasswordHashMethod(PasswordHashMethod.PLAIN);
         managedUser.setManagedBy(manager);
-        managedUser.setManager(true);
+
         manager.setManagedUsers(Collections.singleton(managedUser));
         em.persist(managedUser);
     }
@@ -146,6 +153,28 @@ public class TestDatabase {
         admin.setGroups(Collections.singleton(adminDeviceGroup));
         managedUser.setGroups(Collections.singleton(managedDeviceDeviceGroup));
         managed2.setGroups(Stream.of(managedDeviceDeviceGroup, managed2DeviceGroup).collect(Collectors.toSet()));
+    }
+    
+    private void createUserGroups() {
+        usersGroup = new UserGroup();
+        usersGroup.setName("users");
+        usersGroup.setPermissions(UserPermission.getUsersPermissions());
+        em.persist(usersGroup);
+        
+        adminsGroup = new UserGroup();
+        adminsGroup.setName("admins");
+        adminsGroup.setPermissions(UserPermission.getAdminsPermissions());
+        em.persist(adminsGroup);
+        
+        applicationSettings.setDefaultGroup(usersGroup);
+        
+        admin.setUserGroup(adminsGroup);
+        manager.setUserGroup(usersGroup);
+        managedUser.setUserGroup(usersGroup);
+        managed2.setUserGroup(usersGroup);
+        managed3.setUserGroup(usersGroup);
+        
+        em.flush();
     }
     
     private void createDevices() {

@@ -28,6 +28,7 @@ import pl.datamatica.traccar.api.providers.DeviceGroupProvider;
 import pl.datamatica.traccar.api.providers.ProviderException;
 import pl.datamatica.traccar.api.responses.HttpResponse;
 import pl.datamatica.traccar.model.Group;
+import pl.datamatica.traccar.model.UserPermission;
 import spark.Request;
 import spark.Spark;
 
@@ -126,14 +127,18 @@ public class DeviceGroupController extends ControllerBase {
         if(!validationErrors.isEmpty())
             return badRequest(validationErrors);
         
-        Group newGroup = provider.createGroup(dto);
-        return created("devicegroups/"+newGroup.getId(), new DeviceGroupDto.Builder().deviceGroup(newGroup).build());
+        try {
+            Group newGroup = provider.createGroup(dto);
+            return created("devicegroups/"+newGroup.getId(), new DeviceGroupDto.Builder().deviceGroup(newGroup).build());
+        } catch(ProviderException e) {
+            return handle(e);
+        }
     }
     
     public HttpResponse put(long id, AddDeviceGroupDto dto) throws ProviderException {
         List<ErrorDto> validationErrors = AddDeviceGroupDto.validate(dto);
         if(!validationErrors.isEmpty())
-                return badRequest(validationErrors);
+            return badRequest(validationErrors);
         
         try {
             provider.updateGroup(id, dto);
@@ -154,10 +159,8 @@ public class DeviceGroupController extends ControllerBase {
     
     public HttpResponse getGroupShare(long id) throws ProviderException {
         try {
-            Group g = provider.getGroup(id);
-            return ok(g.getUsers().stream()
-                    .map(u -> u.getId())
-                    .collect(Collectors.toList()));
+            List<Long> shares = provider.getGroupShare(id);
+            return ok(shares);
         } catch(ProviderException e) {
             return handle(e);
         }

@@ -30,7 +30,9 @@ public class UserDto extends EditUserDto {
     private final String login;
     private final Long managedById;
     private final UserSettingsDto settings;
+    private final UserGroupDto userGroup;
     private final boolean premium;
+    private final String userGroupName;
 
     public static class Builder {
 
@@ -51,7 +53,9 @@ public class UserDto extends EditUserDto {
         private boolean readOnly;
         private List<String> notificationEvents = new ArrayList<>();
         private UserSettingsDto settings;
+        private UserGroupDto userGroup;
         private boolean premium;
+        private String userGroupName;
 
         public Builder id(final long value) {
             this.id = value;
@@ -151,11 +155,11 @@ public class UserDto extends EditUserDto {
         
             if(user.getManagedBy() != null)
                 this.managedById = user.getManagedBy().getId();
-            this.manager = user.getManager();
-            this.admin = user.getAdmin();
-            this.archive = user.isArchive();
+            this.manager = true;
+            this.admin = false;
+            this.archive = true;
             this.blocked = user.isBlocked();
-            this.readOnly = user.getReadOnly();
+            this.readOnly = false;
             
             this.premium = false;
             for(Device d : user.getDevices())
@@ -166,9 +170,15 @@ public class UserDto extends EditUserDto {
             return this;
         }
         
-        public Builder userWithSettings(final User user) {
+        public Builder sessionUser(final User user) {
             user(user);
             settings = new UserSettingsDto.Builder().userSettings(user.getUserSettings()).build();
+            userGroup = new UserGroupDto.Builder().userGroup(user.getUserGroup()).build();
+            return this;
+        }
+        
+        public Builder userGroupName(final String name) {
+            this.userGroupName = name;
             return this;
         }
 
@@ -176,7 +186,7 @@ public class UserDto extends EditUserDto {
             return new UserDto(id, login, email, companyName, firstName, lastName, 
                     phoneNumber, expirationDate, maxNumOfDevices, managedById, 
                     manager, admin, archive, blocked, notificationEvents, readOnly,
-                    settings, premium);
+                    settings, userGroup, premium, userGroupName);
         }
     }
     
@@ -197,7 +207,9 @@ public class UserDto extends EditUserDto {
             final List<String> notificationEvents,
             final boolean readOnly,
             final UserSettingsDto settings,
-            final boolean premium) {
+            final UserGroupDto userGroup,
+            final boolean premium,
+            final String userGroupName) {
         super(email, companyName, firstName, lastName, phoneNumber,
                 expirationDate, maxNumOfDevices, manager, admin, archive,
                 blocked, PASSWORD_PLACEHOLDER, notificationEvents, readOnly);
@@ -205,7 +217,9 @@ public class UserDto extends EditUserDto {
         this.login = login;
         this.managedById = managedById;
         this.settings = settings;
+        this.userGroup = userGroup;
         this.premium = premium;
+        this.userGroupName = userGroupName;
     }
     
     public long getId() {
@@ -223,6 +237,10 @@ public class UserDto extends EditUserDto {
     
     public boolean isPremium() {
         return premium;
+    }
+    
+    public String getUserGroupName() {
+        return userGroupName;
     }
 
 }

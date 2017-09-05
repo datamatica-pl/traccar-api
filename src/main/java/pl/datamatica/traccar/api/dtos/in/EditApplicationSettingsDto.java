@@ -32,12 +32,13 @@ public class EditApplicationSettingsDto {
     private final Short updateInterval;
     private final String defaultPasswordHash;
     private final Boolean disallowDeviceManagementByUsers;
-    private final Boolean evantRecordingEnabled;
+    private final Boolean eventRecordingEnabled;
     private final Integer notificationExpirationPeriod;
     private final String language;
     private final String bingMapsKey;
     private final String matchServiceURL;
     private final Boolean allowCommandsOnlyForAdmins;
+    private final Long defaultUserGroupId;
 
     protected EditApplicationSettingsDto(boolean registrationEnabled, 
             Short updateInterval, 
@@ -48,17 +49,19 @@ public class EditApplicationSettingsDto {
             String language, 
             String bingMapsKey, 
             String matchServiceURL, 
-            boolean allowCommandsOnlyForAdmins) {
+            boolean allowCommandsOnlyForAdmins,
+            long defaultUserGroupId) {
         this.registrationEnabled = registrationEnabled;
         this.updateInterval = updateInterval;
         this.defaultPasswordHash = defaultPasswordHash;
         this.disallowDeviceManagementByUsers = disallowDeviceManagementByUsers;
-        this.evantRecordingEnabled = evantRecordingEnabled;
+        this.eventRecordingEnabled = evantRecordingEnabled;
         this.notificationExpirationPeriod = notificationExpirationPeriod;
         this.language = language;
         this.bingMapsKey = bingMapsKey;
         this.matchServiceURL = matchServiceURL;
         this.allowCommandsOnlyForAdmins = allowCommandsOnlyForAdmins;
+        this.defaultUserGroupId = defaultUserGroupId;
     }
  
     public boolean isRegistrationEnabled() {
@@ -77,8 +80,8 @@ public class EditApplicationSettingsDto {
         return disallowDeviceManagementByUsers;
     }
 
-    public boolean isEvantRecordingEnabled() {
-        return evantRecordingEnabled;
+    public boolean isEventRecordingEnabled() {
+        return eventRecordingEnabled;
     }
 
     public int getNotificationExpirationPeriod() {
@@ -101,6 +104,10 @@ public class EditApplicationSettingsDto {
         return allowCommandsOnlyForAdmins;
     }
     
+    public Long getDefaultUserGroupId() {
+        return defaultUserGroupId;
+    }
+    
     public static List<ErrorDto> validate(EditApplicationSettingsDto dto) {
         if(dto == null)
             return Collections.singletonList(new ErrorDto(MessageKeys.ERR_DATA_NOT_PROVIDED));
@@ -115,7 +122,7 @@ public class EditApplicationSettingsDto {
         if (dto.disallowDeviceManagementByUsers == null) {
             errors.add(new ErrorDto(MessageKeys.ERR_APPSETTINGS_DISALLOW_DEVICE_MANAGEMENT_NOT_PROVIDED));
         }
-        if (dto.evantRecordingEnabled == null) {
+        if (dto.eventRecordingEnabled == null) {
             errors.add(new ErrorDto(MessageKeys.ERR_APPSETTINGS_EVENT_RECORDING_NOT_PROVIDED));
         }
         if (dto.notificationExpirationPeriod == null) {
@@ -144,12 +151,13 @@ public class EditApplicationSettingsDto {
         private Short updateInterval;
         private String defaultPasswordHash;
         private boolean disallowDeviceManagementByUsers;
-        private boolean evantRecordingEnabled;
+        private boolean eventRecordingEnabled;
         private int notificationExpirationPeriod;
         private String language;
         private String bingMapsKey;
         private String matchServiceURL;
         private boolean allowCommandsOnlyForAdmins;
+        private long defaultUserGroupId;
         
         public Builder() {
         }
@@ -174,8 +182,8 @@ public class EditApplicationSettingsDto {
             return this;
         }
         
-        public Builder evantRecordingEnabled(final boolean value) {
-            this.evantRecordingEnabled = value;
+        public Builder eventRecordingEnabled(final boolean value) {
+            this.eventRecordingEnabled = value;
             return this;
         }
         
@@ -204,17 +212,23 @@ public class EditApplicationSettingsDto {
             return this;
         }
         
+        public Builder defaultUserGroupId(final long value) {
+            this.defaultUserGroupId = value;
+            return this;
+        }
+        
         public EditApplicationSettingsDto build() {
             return new EditApplicationSettingsDto(registrationEnabled, 
                     updateInterval, 
                     defaultPasswordHash, 
                     disallowDeviceManagementByUsers, 
-                    evantRecordingEnabled, 
+                    eventRecordingEnabled, 
                     notificationExpirationPeriod, 
                     language, 
                     bingMapsKey, 
                     matchServiceURL, 
-                    allowCommandsOnlyForAdmins);
+                    allowCommandsOnlyForAdmins,
+                    defaultUserGroupId);
         }
     }
 }

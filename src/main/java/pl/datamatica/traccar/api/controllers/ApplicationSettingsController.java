@@ -20,12 +20,12 @@ import java.util.List;
 import pl.datamatica.traccar.api.responses.HttpResponse;
 import pl.datamatica.traccar.api.Application;
 import static pl.datamatica.traccar.api.controllers.ControllerBase.render;
-import pl.datamatica.traccar.api.dtos.in.AddGeoFenceDto;
 import pl.datamatica.traccar.api.dtos.in.EditApplicationSettingsDto;
 import pl.datamatica.traccar.api.dtos.out.ApplicationSettingsDto;
 import pl.datamatica.traccar.api.dtos.out.ErrorDto;
 import pl.datamatica.traccar.api.providers.ApplicationSettingsProvider;
 import pl.datamatica.traccar.api.providers.ProviderException;
+import pl.datamatica.traccar.model.UserPermission;
 import spark.Request;
 import spark.Spark;
 
@@ -64,18 +64,19 @@ public class ApplicationSettingsController extends ControllerBase {
     }
     
     ApplicationSettingsProvider provider;
-    RequestContext requestContext;
     
     public ApplicationSettingsController(RequestContext rc) {
         super(rc);
         provider = rc.getApplicationSettingsProvider();
+        provider.setUserGroupsProvider(rc.getUserGroupProvider());
+        provider.setRequestUser(rc.getUser());
         requestContext = rc;
     }
     
     public HttpResponse get() {
         ApplicationSettingsDto.Builder builder = new ApplicationSettingsDto.Builder().applicationSettings(provider.get());
         
-        if (!requestContext.getUser().getAdmin()) {
+        if (!requestContext.getUser().hasPermission(UserPermission.SERVER_MANAGEMENT)) {
             // Some fields should be passed only to admin
             builder = builder.purgeConfidentialData();
         }
@@ -83,15 +84,15 @@ public class ApplicationSettingsController extends ControllerBase {
         return (HttpResponse)ok(as);
     }
     
-    public HttpResponse put(EditApplicationSettingsDto updatedDto) {
-        if (!requestContext.getUser().getAdmin()) {
-            return forbidden();
-        }
-        
+    public HttpResponse put(EditApplicationSettingsDto updatedDto) throws ProviderException {
         List<ErrorDto> errors = EditApplicationSettingsDto.validate(updatedDto);
         if(!errors.isEmpty())
             return badRequest(errors);
-        provider.updateApplicationSetting(updatedDto);
-        return ok("");
+        try {
+            provider.updateApplicationSetting(updatedDto);
+            return ok("");
+        } catch (ProviderException e) {
+            return handle(e);
+        }
     }
 }

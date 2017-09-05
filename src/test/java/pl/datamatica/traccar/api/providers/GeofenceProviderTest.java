@@ -86,7 +86,7 @@ public class GeofenceProviderTest {
     }
     
     @Test
-    public void getAllGeoFences() {
+    public void getAllGeoFences() throws ProviderException {
         provider.setRequestUser(database.admin);
         List<GeoFence> geofences = provider.getAllAvailableGeoFences()
                 .collect(Collectors.toList());
@@ -96,7 +96,7 @@ public class GeofenceProviderTest {
     }
     
     @Test
-    public void createGeoFence_ok() {
+    public void createGeoFence_ok() throws ProviderException {
         List<PointDto> points = Stream.of(new PointDto(20, 52), new PointDto(21, 52), new PointDto(20, 51))
                 .collect(Collectors.toList());
         

@@ -16,7 +16,6 @@
  */
 package pl.datamatica.traccar.api.dtos.out;
 
-import java.util.Date;
 import pl.datamatica.traccar.api.dtos.in.EditApplicationSettingsDto;
 import pl.datamatica.traccar.model.ApplicationSettings;
 
@@ -37,7 +36,8 @@ public class ApplicationSettingsDto extends EditApplicationSettingsDto {
             String language, 
             String bingMapsKey, 
             String matchServiceURL, 
-            boolean allowCommandsOnlyForAdmins) {
+            boolean allowCommandsOnlyForAdmins,
+            long defaultUserGroupId) {
         super(registrationEnabled, 
                     updateInterval, 
                     defaultPasswordHash, 
@@ -47,7 +47,8 @@ public class ApplicationSettingsDto extends EditApplicationSettingsDto {
                     language, 
                     bingMapsKey, 
                     matchServiceURL, 
-                    allowCommandsOnlyForAdmins);
+                    allowCommandsOnlyForAdmins,
+                    defaultUserGroupId);
         this.id = id;
     }
     
@@ -63,6 +64,7 @@ public class ApplicationSettingsDto extends EditApplicationSettingsDto {
         private String bingMapsKey;
         private String matchServiceURL;
         private boolean allowCommandsOnlyForAdmins;
+        private long defaultUserGroupId;
         
         public Builder() {
         }
@@ -122,6 +124,11 @@ public class ApplicationSettingsDto extends EditApplicationSettingsDto {
             return this;
         }
         
+        public Builder defaultUserGroupId(final long value) {
+            this.defaultUserGroupId = value;
+            return this;
+        }
+        
         public Builder purgeConfidentialData() {
             this.bingMapsKey = null;
             this.matchServiceURL = null;
@@ -140,6 +147,7 @@ public class ApplicationSettingsDto extends EditApplicationSettingsDto {
             this.bingMapsKey = as.getBingMapsKey();
             this.matchServiceURL = as.getMatchServiceURL();
             this.allowCommandsOnlyForAdmins = as.isAllowCommandsOnlyForAdmins();
+            this.defaultUserGroupId = as.getDefaultGroup().getId();
             return this;
         }
         
@@ -154,7 +162,8 @@ public class ApplicationSettingsDto extends EditApplicationSettingsDto {
                     language, 
                     bingMapsKey, 
                     matchServiceURL, 
-                    allowCommandsOnlyForAdmins);
+                    allowCommandsOnlyForAdmins,
+                    defaultUserGroupId);
         }
     }
 }

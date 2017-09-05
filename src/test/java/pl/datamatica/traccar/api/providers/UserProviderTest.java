@@ -39,10 +39,11 @@ public class UserProviderTest {
     }
     
     @Before
-    public void testInit() {
+    public void testInit() throws ProviderException {
         em.getTransaction().begin();
         appSettings = new ApplicationSettings();
         provider = new UserProvider(em, appSettings);
+        provider.authenticateUser(database.admin.getId());
     }
     
     @Test
@@ -65,7 +66,6 @@ public class UserProviderTest {
         assertEquals(expectedPassword, user.getPassword());
         assertEquals(marketing, user.getMarketingCheck());
         assertEquals(passHash, user.getPasswordHashMethod());
-        assertTrue(user.getManager());
     }
     
     @Test

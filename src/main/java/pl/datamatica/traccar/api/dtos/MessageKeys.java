@@ -35,6 +35,7 @@ public class MessageKeys {
     
     public static final String ERR_IMEI_NOT_PROVIDED = "err_imei_not_provided";
     public static final String ERR_INVALID_IMEI = "err_invalid_imei";
+    public static final String ERR_ALREADY_DELETED = "err_already_deleted";
     public static final String ERR_DEVICE_COLOR_NOT_PROVIDED = "err_device_color_not_provided";
     public static final String ERR_INVALID_DEVICE_COLOR_FORMAT = "err_invalid_device_color_format";
     public static final String ERR_DEVICE_MODEL_ID_NOT_PROVIDED = "err_device_model_id_not_provided";
@@ -104,6 +105,8 @@ public class MessageKeys {
     public static final String ERR_APPSETTINGS_ALLOW_COMMANDS_ONLY_FOR_ADMINS_NOT_PROVIDED = "err_appsettings_allow_commands_only_for_admins_not_provided";
     public static final String ERR_APPSETTINGS_PASSWORD_HASH_METHOD_NOT_PROVIDED = "err_appsettings_password_hash_method_not_provided";
     public static final String ERR_APPSETTINGS_ILLEGAL_PASSWORD_HASH_METHOD = "err_appsettings_illegal_password_hash_method";
+    public static final String ERR_APPSETTINGS_DEFAULT_USER_GROUP_NOT_PROVIDED = "err_appsettings_default_user_group_not_provided";
+
     
     public static final String ERR_USER_MANAGER_NOT_PROVIDED = "err_user_manager_not_provided";
     public static final String ERR_USER_ADMIN_NOT_PROVIDED = "err_user_admin_not_provided";
@@ -138,4 +141,11 @@ public class MessageKeys {
     public static final String ERR_TIME_ZONE_ID_NOT_PROVIDED = "err_time_zone_id_not_provided";
     public static final String ERR_ZOOM_LEVEL_NOT_PROVIDED = "err_zoom_level_not_provided";
     public static final String ERR_USERSETTINGS_SPEED_UNIT_NOT_PROVIDED = "err_usersettings_speed_unit_not_provided";
+    
+    public static final String ERR_USER_GROUP_NAME_NOT_PROVIDED = "err_user_group_name_not_provided";
+    public static final String ERR_USER_GROUP_PERMISSIONS_NOT_PROVIDED = "err_user_group_permissions_not_provided";
+    public static final String ERR_USER_GROUP_ALREADY_EXISTS = "err_user_group_already_exists";
+    public static final String ERR_USER_GROUP_INVALID_PERMISSION = "err_user_group_invalid_permission";
+    public static final String ERR_USER_GROUP_DELETING_DEFAULT = "err_user_group_deleting_default";
+    public static final String ERR_USER_GROUP_LACKING_BASE_PERMISSIONS = "err_user_group_lacking_base_permissions";
 }
