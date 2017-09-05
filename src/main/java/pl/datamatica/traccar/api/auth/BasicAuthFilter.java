@@ -73,13 +73,11 @@ public class BasicAuthFilter {
                 user = beginSession(request, up);
             if(user.isBlocked()) {
                 request.attribute(RequestContext.REQUEST_FIELD_ERROR_DTO, new ErrorDto(MessageKeys.ERR_ACCOUNT_BLOCKED));
-                return;
             } else if(user.isExpired()) {
                 request.attribute(RequestContext.REQUEST_FIELD_ERROR_DTO, new ErrorDto(MessageKeys.ERR_ACCOUNT_EXPIRED));
-                return;
             }
             
-            if (rc.isRequestForImeiManager(request)) {
+            if (req.attribute(RequestContext.REQUEST_FIELD_ERROR_DTO) == null && rc.isRequestForImeiManager(request)) {
                 // Check whether IP is allowed to manage IMEI's
                 boolean isIpAllowedToAddImei = false;
                 boolean isImeiManagerEnabled = false;
@@ -130,13 +128,18 @@ public class BasicAuthFilter {
             request.attribute(RequestContext.REQUEST_FIELD_ERROR_DTO, new ErrorDto(e.getMessage()));
             return;
         }
-        // I got here that mean it's success
-        request.attribute(RequestContext.REQUEST_FIELD_IS_AUTH, true);
+        
+        if (req.attribute(RequestContext.REQUEST_FIELD_ERROR_DTO) == null) {
+            // I got here that mean it's success
+            request.attribute(RequestContext.REQUEST_FIELD_IS_AUTH, true);
+        }
     }
 
     public static boolean shouldPassErrorsToController(Request request) {
         return (request.pathInfo().matches("/v[0-9]+/users") 
-                && request.requestMethod().equalsIgnoreCase("post"));
+                && request.requestMethod().equalsIgnoreCase("post")
+                || (request.pathInfo().matches("/v[0-9]+/session")
+                && request.requestMethod().equalsIgnoreCase("delete")));
     }
     
     private static boolean shouldAllowUnauthorized(Request request) {

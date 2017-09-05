@@ -27,6 +27,7 @@ import pl.datamatica.traccar.api.dtos.MessageKeys;
 import pl.datamatica.traccar.api.dtos.in.NotificationTokenDto;
 import pl.datamatica.traccar.api.dtos.out.ErrorDto;
 import pl.datamatica.traccar.api.dtos.out.UserDto;
+import pl.datamatica.traccar.api.providers.ProviderException;
 import pl.datamatica.traccar.api.providers.SessionProvider;
 import pl.datamatica.traccar.api.responses.*;
 import pl.datamatica.traccar.model.User;
@@ -102,7 +103,7 @@ public class SessionControllerTest {
     }
     
     @Test
-    public void delete() {
+    public void delete() throws ProviderException {
         HttpResponse response = controller.delete();
         
         Mockito.verify(session, Mockito.times(1)).invalidate();

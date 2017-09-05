@@ -23,6 +23,7 @@ import pl.datamatica.traccar.api.dtos.MessageKeys;
 import pl.datamatica.traccar.api.dtos.in.NotificationTokenDto;
 import pl.datamatica.traccar.api.dtos.out.ErrorDto;
 import pl.datamatica.traccar.api.dtos.out.UserDto;
+import pl.datamatica.traccar.api.providers.ProviderException;
 import pl.datamatica.traccar.api.providers.SessionProvider;
 import pl.datamatica.traccar.api.responses.HttpResponse;
 import spark.Spark;
@@ -87,7 +88,10 @@ public class SessionController extends ControllerBase {
         return badRequest(MessageKeys.ERR_TOKEN_REJECTED);
     }
     
-    public HttpResponse delete() {
+    public HttpResponse delete() throws ProviderException {   
+        if (requestContext.getUser() == null) 
+            return handle(new ProviderException(ProviderException.Type.ACCESS_DENIED));
+        
         SessionProvider sp = requestContext.getSessionProvider();
         sp.deleteSession(requestContext.session().id());
         requestContext.session().removeAttribute(BasicAuthFilter.USER_ID_SESSION_KEY);
