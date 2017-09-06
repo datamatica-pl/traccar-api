@@ -137,6 +137,8 @@ public class Application implements spark.servlet.SparkApplication {
         ScheduledExecutorService scheduler = Context.getInstance().getDaemonExecutor();
         for(Daemon daemon : DAEMONS) 
             daemon.start(scheduler);
+        EventDaemon eDaemon = new EventDaemon();
+        eDaemon.start(scheduler);
 
         if(Context.getInstance().isInDevMode()) {
             Spark.exception(Exception.class, (exception, request, response) -> {
