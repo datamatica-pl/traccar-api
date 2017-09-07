@@ -31,36 +31,30 @@ public class EditApplicationSettingsDto {
     private final Boolean registrationEnabled;
     private final Short updateInterval;
     private final String defaultPasswordHash;
-    private final Boolean disallowDeviceManagementByUsers;
     private final Boolean eventRecordingEnabled;
     private final Integer notificationExpirationPeriod;
     private final String language;
     private final String bingMapsKey;
     private final String matchServiceURL;
-    private final Boolean allowCommandsOnlyForAdmins;
     private final Long defaultUserGroupId;
 
     protected EditApplicationSettingsDto(boolean registrationEnabled, 
             Short updateInterval, 
             String defaultPasswordHash, 
-            boolean disallowDeviceManagementByUsers, 
             boolean evantRecordingEnabled, 
             int notificationExpirationPeriod, 
             String language, 
             String bingMapsKey, 
             String matchServiceURL, 
-            boolean allowCommandsOnlyForAdmins,
             long defaultUserGroupId) {
         this.registrationEnabled = registrationEnabled;
         this.updateInterval = updateInterval;
         this.defaultPasswordHash = defaultPasswordHash;
-        this.disallowDeviceManagementByUsers = disallowDeviceManagementByUsers;
         this.eventRecordingEnabled = evantRecordingEnabled;
         this.notificationExpirationPeriod = notificationExpirationPeriod;
         this.language = language;
         this.bingMapsKey = bingMapsKey;
         this.matchServiceURL = matchServiceURL;
-        this.allowCommandsOnlyForAdmins = allowCommandsOnlyForAdmins;
         this.defaultUserGroupId = defaultUserGroupId;
     }
  
@@ -74,10 +68,6 @@ public class EditApplicationSettingsDto {
 
     public String getDefaultPasswordHash() {
         return defaultPasswordHash;
-    }
-
-    public boolean isDisallowDeviceManagementByUsers() {
-        return disallowDeviceManagementByUsers;
     }
 
     public boolean isEventRecordingEnabled() {
@@ -100,10 +90,6 @@ public class EditApplicationSettingsDto {
         return matchServiceURL;
     }
 
-    public boolean isAllowCommandsOnlyForAdmins() {
-        return allowCommandsOnlyForAdmins;
-    }
-    
     public Long getDefaultUserGroupId() {
         return defaultUserGroupId;
     }
@@ -117,10 +103,10 @@ public class EditApplicationSettingsDto {
             errors.add(new ErrorDto(MessageKeys.ERR_APPSETTINGS_REGISTRATION_ENABLED_NOT_PROVIDED));
         }
         if (dto.updateInterval == null) {
-            errors.add(new ErrorDto(MessageKeys.ERR_APPSETTINGS_UPDATED_INTERVAL_NOT_PROVIDED));
+            errors.add(new ErrorDto(MessageKeys.ERR_APPSETTINGS_UPDATE_INTERVAL_NOT_PROVIDED));
         }
-        if (dto.disallowDeviceManagementByUsers == null) {
-            errors.add(new ErrorDto(MessageKeys.ERR_APPSETTINGS_DISALLOW_DEVICE_MANAGEMENT_NOT_PROVIDED));
+        if (dto.updateInterval < 0) {
+            errors.add(new ErrorDto(MessageKeys.ERR_APPSETTINGS_UPDATE_INTERVAL_NEGATIVE));
         }
         if (dto.eventRecordingEnabled == null) {
             errors.add(new ErrorDto(MessageKeys.ERR_APPSETTINGS_EVENT_RECORDING_NOT_PROVIDED));
@@ -128,11 +114,11 @@ public class EditApplicationSettingsDto {
         if (dto.notificationExpirationPeriod == null) {
             errors.add(new ErrorDto(MessageKeys.ERR_APPSETTINGS_NOTIFICATION_EXPIRATION_PERIOD_NOT_PROVIDED));
         }
+        if (dto.notificationExpirationPeriod < 0) {
+            errors.add(new ErrorDto(MessageKeys.ERR_APPSETTINGS_NOTIFICATION_EXPIRATION_PERIOD_NEGATIVE));
+        }
         if (dto.language == null || dto.language.isEmpty()) {
             errors.add(new ErrorDto(MessageKeys.ERR_APPSETTINGS_LANGUAGE_NOT_PROVIDED));
-        }
-        if (dto.allowCommandsOnlyForAdmins == null) {
-            errors.add(new ErrorDto(MessageKeys.ERR_APPSETTINGS_ALLOW_COMMANDS_ONLY_FOR_ADMINS_NOT_PROVIDED));
         }
         if (dto.defaultPasswordHash == null || dto.defaultPasswordHash.isEmpty()) {
             errors.add(new ErrorDto(MessageKeys.ERR_APPSETTINGS_PASSWORD_HASH_METHOD_NOT_PROVIDED));
@@ -150,13 +136,11 @@ public class EditApplicationSettingsDto {
         private boolean registrationEnabled;
         private Short updateInterval;
         private String defaultPasswordHash;
-        private boolean disallowDeviceManagementByUsers;
         private boolean eventRecordingEnabled;
         private int notificationExpirationPeriod;
         private String language;
         private String bingMapsKey;
         private String matchServiceURL;
-        private boolean allowCommandsOnlyForAdmins;
         private long defaultUserGroupId;
         
         public Builder() {
@@ -174,11 +158,6 @@ public class EditApplicationSettingsDto {
         
         public Builder defaultPasswordHash(final String value) {
             this.defaultPasswordHash = value;
-            return this;
-        }
-        
-        public Builder disallowDeviceManagementByUsers(final boolean value) {
-            this.disallowDeviceManagementByUsers = value;
             return this;
         }
         
@@ -207,11 +186,6 @@ public class EditApplicationSettingsDto {
             return this;
         }
         
-        public Builder allowCommandsOnlyForAdmins(final boolean value) {
-            this.allowCommandsOnlyForAdmins = value;
-            return this;
-        }
-        
         public Builder defaultUserGroupId(final long value) {
             this.defaultUserGroupId = value;
             return this;
@@ -221,13 +195,11 @@ public class EditApplicationSettingsDto {
             return new EditApplicationSettingsDto(registrationEnabled, 
                     updateInterval, 
                     defaultPasswordHash, 
-                    disallowDeviceManagementByUsers, 
                     eventRecordingEnabled, 
                     notificationExpirationPeriod, 
                     language, 
                     bingMapsKey, 
                     matchServiceURL, 
-                    allowCommandsOnlyForAdmins,
                     defaultUserGroupId);
         }
     }
