@@ -19,6 +19,8 @@ package pl.datamatica.traccar.api.controllers;
 import java.util.List;
 import pl.datamatica.traccar.api.responses.HttpResponse;
 import pl.datamatica.traccar.api.Application;
+import pl.datamatica.traccar.api.Context;
+import pl.datamatica.traccar.api.EventDaemon;
 import static pl.datamatica.traccar.api.controllers.ControllerBase.render;
 import pl.datamatica.traccar.api.dtos.in.EditApplicationSettingsDto;
 import pl.datamatica.traccar.api.dtos.out.ApplicationSettingsDto;
@@ -89,7 +91,12 @@ public class ApplicationSettingsController extends ControllerBase {
         if(!errors.isEmpty())
             return badRequest(errors);
         try {
+            boolean wasRecEnabled = provider.get().isEventRecordingEnabled();
             provider.updateApplicationSetting(updatedDto);
+            if(wasRecEnabled && !provider.get().isEventRecordingEnabled())
+                EventDaemon.getInstance().stop();
+            else if(!wasRecEnabled && provider.get().isEventRecordingEnabled())
+                EventDaemon.getInstance().start(Context.getInstance().getDaemonExecutor());
             return ok("");
         } catch (ProviderException e) {
             return handle(e);
