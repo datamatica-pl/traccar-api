@@ -88,10 +88,7 @@ public class UserProvider extends ProviderBase {
     public Stream<User> getAllAvailableUsers() {
         if(requestUser.hasPermission(UserPermission.ALL_USERS)) 
             return getAllUsers();
-        return Stream.concat(requestUser.getAllManagedUsers().stream(), 
-                requestUser.getManagedBy() == null ?
-                        Stream.of(requestUser) :
-                        Stream.of(requestUser, requestUser.getManagedBy()));
+        return Stream.concat(requestUser.getAllManagedUsers().stream(), Stream.of(requestUser));
     }
     
     public Stream<User> getAllManagedUsers() {

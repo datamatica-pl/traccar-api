@@ -72,7 +72,7 @@ public class ImeisController extends ControllerBase {
                     imp.saveImeiNumber(imei);
                     
                     dbLogger.info(getLogMsgBegin(imei.getImei()) + " has been softly deleted.");
-                    return imei.getImei() + " zastał poprawnie usunięty.";
+                    return imei.getImei() + " został poprawnie usunięty.";
                 } else {
                     res.status(HttpStatuses.NOT_FOUND);
                     return "IMEI nie został znaleziony";
