@@ -98,7 +98,7 @@ public class MessageKeys {
 
     public static final String ERR_APPSETTINGS_REGISTRATION_ENABLED_NOT_PROVIDED = "err_appsettings_registration_enabled_not_provided";
     public static final String ERR_APPSETTINGS_UPDATE_INTERVAL_NOT_PROVIDED = "err_appsettings_update_interval_not_provided";
-    public static final String ERR_APPSETTINGS_UPDATE_INTERVAL_NEGATIVE = "err_appsettings_update_interval_negative";
+    public static final String ERR_APPSETTINGS_UPDATE_INTERVAL_INVALID_VALUE = "err_appsettings_update_interval_invalid_value";
     public static final String ERR_APPSETTINGS_EVENT_RECORDING_NOT_PROVIDED = "err_appsettings_event_recording_not_provided";
     public static final String ERR_APPSETTINGS_NOTIFICATION_EXPIRATION_PERIOD_NOT_PROVIDED = "err_appsettings_notification_expiration_period_not_provided";
     public static final String ERR_APPSETTINGS_NOTIFICATION_EXPIRATION_PERIOD_NEGATIVE = "err_appsettings_notification_expiration_period_negative";

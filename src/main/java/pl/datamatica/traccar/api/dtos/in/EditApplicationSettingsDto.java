@@ -21,6 +21,7 @@ import java.util.Collections;
 import java.util.List;
 import pl.datamatica.traccar.api.dtos.MessageKeys;
 import pl.datamatica.traccar.api.dtos.out.ErrorDto;
+import pl.datamatica.traccar.model.ApplicationSettings;
 import pl.datamatica.traccar.model.PasswordHashMethod;
 
 /**
@@ -105,8 +106,8 @@ public class EditApplicationSettingsDto {
         if (dto.updateInterval == null) {
             errors.add(new ErrorDto(MessageKeys.ERR_APPSETTINGS_UPDATE_INTERVAL_NOT_PROVIDED));
         }
-        if (dto.updateInterval < 0) {
-            errors.add(new ErrorDto(MessageKeys.ERR_APPSETTINGS_UPDATE_INTERVAL_NEGATIVE));
+        if (dto.updateInterval < ApplicationSettings.UPDATE_INTERVAL_MIN || dto.updateInterval > ApplicationSettings.UPDATE_INTERVAL_MAX) {
+            errors.add(new ErrorDto(MessageKeys.ERR_APPSETTINGS_UPDATE_INTERVAL_INVALID_VALUE));
         }
         if (dto.eventRecordingEnabled == null) {
             errors.add(new ErrorDto(MessageKeys.ERR_APPSETTINGS_EVENT_RECORDING_NOT_PROVIDED));
