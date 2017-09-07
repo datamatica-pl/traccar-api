@@ -40,6 +40,14 @@ import pl.datamatica.traccar.model.UserDeviceStatus;
 
 public class EventDaemon {
     
+    private static EventDaemon instance;
+    
+    public static EventDaemon getInstance() {
+        if(instance == null)
+            instance = new EventDaemon();
+        return instance;
+    }
+    
     static class DeviceState {
         Long latestPositionId;
     }
@@ -171,7 +179,13 @@ public class EventDaemon {
             entityManager.getTransaction().begin();
             positionProvider.setEntityManager(entityManager);
             
-            // Load positions
+            run(entityManager);
+            
+            entityManager.getTransaction().commit();
+        }
+        
+        void run(EntityManager entityManager) {
+             // Load positions
             List<Position> positions = positionProvider.getPositions();
 
             // init event producers
@@ -239,8 +253,6 @@ public class EventDaemon {
                     }
                 }
             }
-            entityManager.getTransaction().commit();
-            
         }
     }
 
@@ -528,27 +540,26 @@ public class EventDaemon {
         stopMoveDetector = new StopMoveDetector();
         positionScanner = new PositionScanner();
         routesDetector = new RoutesDetector();
-    }
-
-    public void start(ScheduledExecutorService scheduler) {
+        
         positionScanner.eventProducers.add(geoFenceDetector);
         positionScanner.eventProducers.add(odometerUpdater);
         positionScanner.eventProducers.add(overspeedDetector);
         positionScanner.eventProducers.add(stopMoveDetector);
         positionScanner.eventProducers.add(routesDetector);
+    }
 
-        EntityManager em = Context.getInstance().createEntityManager();
-        ApplicationSettings as = em.createQuery("from ApplicationSettings", ApplicationSettings.class)
-                .setMaxResults(1).getSingleResult();
-        if (as.isEventRecordingEnabled()) {
-            startTasks(scheduler);
-        }
+    public void start(ScheduledExecutorService scheduler) {
+        startTasks(scheduler);
     }
 
     private synchronized void startTasks(ScheduledExecutorService scheduler) {
         for (Runnable task : new Runnable[] { offlineDetector, positionScanner }) {
             futures.put(task.getClass(), scheduler.scheduleWithFixedDelay(task, 0, 1, TimeUnit.MINUTES));
         }
+    }
+    
+    public void stop() {
+        stopTasks();
     }
 
     private synchronized void stopTasks() {

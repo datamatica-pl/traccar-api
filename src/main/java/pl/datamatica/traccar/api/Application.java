@@ -26,6 +26,7 @@ import java.util.logging.Level;
 import java.util.regex.Pattern;
 import javax.imageio.ImageIO;
 import javax.naming.InitialContext;
+import javax.persistence.EntityManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import spark.Spark;
@@ -36,7 +37,9 @@ import pl.datamatica.traccar.api.controllers.RequestContext;
 import pl.datamatica.traccar.api.fcm.AlarmDaemon;
 import pl.datamatica.traccar.api.fcm.Daemon;
 import pl.datamatica.traccar.api.fcm.SubscriptionDaemon;
+import pl.datamatica.traccar.api.providers.ApplicationSettingsProvider;
 import pl.datamatica.traccar.api.providers.ImageProvider;
+import pl.datamatica.traccar.model.ApplicationSettings;
 
 
 public class Application implements spark.servlet.SparkApplication {
@@ -96,9 +99,6 @@ public class Application implements spark.servlet.SparkApplication {
             if (rc.isRequestForMetadata(req)) {
                 rc.beginMetadataTransaction();
             }
-            if (rc.isRequestForImeiManager(req)) {
-                String test = "abc";
-            }
             req.attribute(REQUEST_CONTEXT_KEY, rc);
             baf.handle(req, res);
             if (!BasicAuthFilter.shouldPassErrorsToController(req)) {
@@ -137,8 +137,11 @@ public class Application implements spark.servlet.SparkApplication {
         ScheduledExecutorService scheduler = Context.getInstance().getDaemonExecutor();
         for(Daemon daemon : DAEMONS) 
             daemon.start(scheduler);
-        EventDaemon eDaemon = new EventDaemon();
-        eDaemon.start(scheduler);
+        
+        EntityManager em = Context.getInstance().createEntityManager();
+        ApplicationSettingsProvider asp = new ApplicationSettingsProvider(em);
+        if(asp.get().isEventRecordingEnabled())
+            EventDaemon.getInstance().start(scheduler);
 
         if(Context.getInstance().isInDevMode()) {
             Spark.exception(Exception.class, (exception, request, response) -> {
