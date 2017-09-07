@@ -224,6 +224,10 @@ public class UserProvider extends ProviderBase {
         query = em.createQuery("DELETE FROM UserDeviceStatus uds WHERE uds.id.user = ?");
         query.setParameter(1, user);
         query.executeUpdate();
+        
+        query = em.createQuery("DELETE FROM UserSession us WHERE us.userId = ?");
+        query.setParameter(1, user.getId());
+        query.executeUpdate();
     }
     
     private void removeUserResources(User user) throws Exception {
