@@ -41,6 +41,12 @@ public class SessionController extends ControllerBase {
                 return render(controller.getUser(), res);
             }, gson::toJson);
             
+            Spark.get(rootUrl()+"/user/web", (req, res) -> {
+                SessionController controller = createController(req);
+                
+                return render(controller.getUser(), res);
+            }, gson::toJson);
+            
             Spark.put(rootUrl()+"/notificationtoken", (req, res) -> {
                 SessionController controller = createController(req);
                 NotificationTokenDto tokenDto = gson.fromJson(req.body(), NotificationTokenDto.class);

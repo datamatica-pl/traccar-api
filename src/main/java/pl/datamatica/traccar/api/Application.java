@@ -39,7 +39,6 @@ import pl.datamatica.traccar.api.fcm.Daemon;
 import pl.datamatica.traccar.api.fcm.SubscriptionDaemon;
 import pl.datamatica.traccar.api.providers.ApplicationSettingsProvider;
 import pl.datamatica.traccar.api.providers.ImageProvider;
-import pl.datamatica.traccar.model.ApplicationSettings;
 
 
 public class Application implements spark.servlet.SparkApplication {
