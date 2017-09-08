@@ -22,16 +22,19 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import pl.datamatica.traccar.api.Application;
+import static pl.datamatica.traccar.api.controllers.ControllerBase.render;
 import pl.datamatica.traccar.api.dtos.MessageKeys;
 import pl.datamatica.traccar.api.dtos.out.CommandResponseDto;
 import pl.datamatica.traccar.api.dtos.out.ErrorDto;
 import pl.datamatica.traccar.api.metadata.model.DeviceModel;
 import pl.datamatica.traccar.api.providers.ActiveDeviceProvider;
 import pl.datamatica.traccar.api.providers.BackendCommandProvider;
+import pl.datamatica.traccar.api.providers.CommandsProvider;
 import pl.datamatica.traccar.api.responses.HttpStatuses;
 import pl.datamatica.traccar.api.services.CommandService;
 import pl.datamatica.traccar.api.utils.JsonUtils;
 import pl.datamatica.traccar.api.providers.ProviderException;
+import pl.datamatica.traccar.api.responses.HttpResponse;
 import pl.datamatica.traccar.model.Device;
 import pl.datamatica.traccar.model.User;
 import pl.datamatica.traccar.model.UserPermission;
@@ -162,40 +165,39 @@ public class CommandsController extends ControllerBase {
             }, gson::toJson);
             
             Spark.get(rootUrl()+"/devices/:deviceId/superstatus", (req, res) -> {
-                final RequestContext context = req.attribute(Application.REQUEST_CONTEXT_KEY);
-                final User requestUser = context.getUser();
-                final Long deviceId = Long.valueOf(req.params(":deviceId"));
-                Device device;
-                DeviceModel model;
-
-                res.status(HttpStatuses.BAD_REQUEST);
-                res.type("application/json");
-
-                if (!requestUser.hasPermission(UserPermission.COMMAND_TCP)) {
-                    res.status(HttpStatuses.FORBIDDEN);
-                    return getResponseError(MessageKeys.ERR_ACCESS_DENIED);
-                }
                 
-                try {
-                    device = context.getDeviceProvider().getDevice(deviceId);
-                } catch (ProviderException e) {
-                     device = null;
-                }
+                CommandsController cc = createController(req);
+                return render(cc.superstatus(Long.parseLong(req.params(":id"))), res);
+            }, gson::toJson);
+        }
 
-                if (device == null || !requestUser.hasAccessTo(device)) {
-                    res.status(HttpStatuses.NOT_FOUND);
-                    return getResponseError(MessageKeys.ERR_DEVICE_NOT_FOUND_OR_NO_PRIVILEGES);
-                }
-                
-                model = context.getDeviceModelProvider().getDeviceModel(device.getDeviceModelId());
+        private List<ErrorDto> getResponseError(String messageKey) {
+            return Collections.singletonList(new ErrorDto(messageKey));
+        }
 
-                ActiveDeviceProvider adp = new ActiveDeviceProvider();
-                Object activeDevice = adp.getActiveDevice(deviceId);
-                if (activeDevice == null) {
-                    res.status(HttpStatuses.NOT_FOUND);
-                    return getResponseError(MessageKeys.ERR_ACTIVE_DEVICE_NOT_FOUND);
-                }
-                
+        private CommandsController createController(Request req) {
+            RequestContext context = req.attribute(Application.REQUEST_CONTEXT_KEY);
+            CommandsController cc = new CommandsController(context);
+            return cc;
+        }
+
+        public String baseUrl() {
+            return resourcesUrl() + "/sendCommand";
+        }
+    }
+
+    private CommandsProvider provider;
+    private User requestUser;
+    
+
+    public CommandsController(RequestContext rc) {
+        super(rc);
+        requestUser = rc.getUser();
+        
+    }
+    
+    public HttpResponse superstatus(long deviceId) throws ProviderException {
+          
                 res.status(HttpStatuses.OK);
                 Map<String, Object> result = new HashMap<>();
                 for(String type : model.getSuperStatusCommands()) {
@@ -229,25 +231,5 @@ public class CommandsController extends ControllerBase {
                 }
                 result.keySet().retainAll(Arrays.asList(VALID_PARAM_KEYS));
                 return result;
-            }, gson::toJson);
-        }
-
-        private List<ErrorDto> getResponseError(String messageKey) {
-            return Collections.singletonList(new ErrorDto(messageKey));
-        }
-
-        private CommandsController createController(Request req) {
-            RequestContext context = req.attribute(Application.REQUEST_CONTEXT_KEY);
-            CommandsController cc = new CommandsController(context);
-            return cc;
-        }
-
-        public String baseUrl() {
-            return resourcesUrl() + "/sendCommand";
-        }
-    }
-
-    public CommandsController(RequestContext rc) {
-        super(rc);
     }
 }

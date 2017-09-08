@@ -28,6 +28,7 @@ import pl.datamatica.traccar.api.Context;
 import pl.datamatica.traccar.api.providers.AlertProvider;
 import pl.datamatica.traccar.api.providers.ApplicationSettingsProvider;
 import pl.datamatica.traccar.api.providers.AuditLogProvider;
+import pl.datamatica.traccar.api.providers.CommandsProvider;
 import pl.datamatica.traccar.api.providers.DeviceIconProvider;
 import pl.datamatica.traccar.api.providers.DeviceModelProvider;
 import pl.datamatica.traccar.api.providers.DeviceProvider;
@@ -73,6 +74,7 @@ public class RequestContext implements AutoCloseable {
     private DeviceGroupProvider deviceGroupProvider;
     private UserGroupProvider userGroupProvider;
     private AuditLogProvider auditLogProvider;
+    private CommandsProvider commandsProvider;
 
     private Image emptyMarker;
     
@@ -211,6 +213,13 @@ public class RequestContext implements AutoCloseable {
             auditLogProvider = new AuditLogProvider(em, user);
         }
         return auditLogProvider;
+    }
+    
+    public CommandsProvider getCommandsProvider() {
+        if (commandsProvider == null) {
+            commandsProvider = new CommandsProvider(em, user, getDeviceProvider(), getDeviceModelProvider());
+        }
+        return commandsProvider;
     }
     
     public String getApiRoot() {

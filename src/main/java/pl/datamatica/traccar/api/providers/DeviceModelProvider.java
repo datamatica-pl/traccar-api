@@ -18,6 +18,7 @@ package pl.datamatica.traccar.api.providers;
 
 import java.util.List;
 import javax.persistence.EntityManager;
+import javax.persistence.NoResultException;
 import javax.persistence.TypedQuery;
 import pl.datamatica.traccar.api.metadata.model.DeviceModel;
 
@@ -40,10 +41,14 @@ public class DeviceModelProvider extends ProviderBase {
         return query.getResultList();
     }
     
-    public DeviceModel getDeviceModel(long id) {
+    public DeviceModel getDeviceModel(long id) throws ProviderException {
         TypedQuery<DeviceModel> query = emMetadata.createQuery(
                 "from DeviceModel d where d.id = :id", DeviceModel.class)
                 .setParameter("id", id);
-        return query.getSingleResult();
+        try {
+            return query.getSingleResult();
+        } catch (NoResultException e) {
+            throw new ProviderException(ProviderException.Type.NOT_FOUND);
+        }
     }
 }
