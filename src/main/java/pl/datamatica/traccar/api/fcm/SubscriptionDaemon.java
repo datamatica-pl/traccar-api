@@ -37,7 +37,7 @@ public class SubscriptionDaemon extends Daemon {
     @Override
     public void start(ScheduledExecutorService scheduler) {
         Calendar calendar = Calendar.getInstance();
-        if(calendar.get(Calendar.HOUR_OF_DAY) > CHECK_HOUR)
+        if(calendar.get(Calendar.HOUR_OF_DAY) >= CHECK_HOUR)
             calendar.add(Calendar.DATE, 1);
         calendar.set(Calendar.HOUR_OF_DAY, CHECK_HOUR);
         calendar.set(Calendar.MINUTE, 0);
