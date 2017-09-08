@@ -253,13 +253,18 @@ public class UsersController extends ControllerBase {
         }
     }
     
-    public HttpResponse requestPasswordReset(ResetPassReqDto dto) {
+    public HttpResponse requestPasswordReset(ResetPassReqDto dto) throws ProviderException{
         if(dto == null || dto.getLogin() == null)
             return badRequest();
-        String token = up.requestPasswordReset(dto.getLogin());
-        sender.sendMessage(dto.getLogin(), "Resetowanie hasła", 
-                passResetReqContent(requestContext.getApiRoot()+"/users/reset/"+token));
-        return ok("");
+        
+        try {
+            String token = up.requestPasswordReset(dto.getLogin());
+            sender.sendMessage(dto.getLogin(), "Resetowanie hasła", 
+                    passResetReqContent(requestContext.getApiRoot()+"/users/reset/"+token));
+            return ok("");
+        } catch (ProviderException p) {
+            return handle(p);
+        }
     }
     
     public String resetPassword(String token) throws ProviderException {
