@@ -218,9 +218,9 @@ public class BasicAuthFilter {
     private void unauthorized(Response response, String errorMessage) {
         if(req.pathInfo().matches("/v[0-9]+/session/user") 
                 && req.requestMethod().equalsIgnoreCase("get"))
-            response.header("WWW-Authenticate", "xBasic realm=\"traccar-api\"");
-        else
             response.header("WWW-Authenticate", SCHEME + " " + "realm=\"" + REALM + "\"");
+        else
+            response.header("WWW-Authenticate", "xBasic realm=\""+REALM+"\"");
         closeConnections();
         Spark.halt(401, errorMessage);
     }
