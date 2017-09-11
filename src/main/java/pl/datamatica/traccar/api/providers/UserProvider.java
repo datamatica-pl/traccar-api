@@ -350,8 +350,11 @@ public class UserProvider extends ProviderBase {
         logger.info("{} activated his account", user.getLogin());
     }
     
-    public String requestPasswordReset(String login) {
+    public String requestPasswordReset(String login) throws ProviderException {
         User u = getUserByLogin(login);
+        if (u == null) 
+            throw new ProviderException(Type.NOT_FOUND);
+        
         u.setPassResetToken(generateToken("passResetToken"));
         em.persist(u);
         return u.getPassResetToken();
