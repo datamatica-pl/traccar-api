@@ -16,12 +16,14 @@
  */
 package pl.datamatica.traccar.api.controllers;
 
+import com.google.gson.Gson;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import pl.datamatica.traccar.api.Application;
+import pl.datamatica.traccar.api.Context;
 import static pl.datamatica.traccar.api.controllers.ControllerBase.render;
 import pl.datamatica.traccar.api.dtos.MessageKeys;
 import pl.datamatica.traccar.api.dtos.out.CommandResponseDto;
@@ -46,17 +48,8 @@ import spark.Spark;
  * @author Jan Usarek
  */
 public class CommandsController extends ControllerBase {
+    
     public static class Binder extends ControllerBinder {
-        
-        public static final String[] VALID_PARAM_KEYS= {
-            "cmd_param_battery", "cmd_param_gprs", "cmd_param_gsm", "cmd_param_power", "cmd_param_gps", 
-            "cmd_param_acc", "cmd_param_oil", "cmd_param_position_t", "cmd_param_number_a", "cmd_param_number_b", 
-            "cmd_param_number_c", "cmd_param_time_zone", "cmd_param_overspeed_threshold", 
-            "cmd_param_movement_alarm", "cmd_param_vibration_alarm", "cmd_param_defense", 
-            "cmd_param_defense_time", "cmd_param_sends", "cmd_param_sensorset", "cmd_param_position_d", 
-            "cmd_param_imei", "cmd_param_data_link", "cmd_param_roaming", "cmd_param_init_time",
-            "cmd_param_rtc_time"
-        };
 
         @Override
         public void bind() {
@@ -167,7 +160,7 @@ public class CommandsController extends ControllerBase {
             Spark.get(rootUrl()+"/devices/:deviceId/superstatus", (req, res) -> {
                 
                 CommandsController cc = createController(req);
-                return render(cc.superstatus(Long.parseLong(req.params(":id"))), res);
+                return render(cc.superstatus(Long.parseLong(req.params(":deviceId"))), res);
             }, gson::toJson);
         }
 
@@ -188,48 +181,30 @@ public class CommandsController extends ControllerBase {
 
     private CommandsProvider provider;
     private User requestUser;
-    
+    private Gson gson;
 
     public CommandsController(RequestContext rc) {
         super(rc);
         requestUser = rc.getUser();
-        
+        provider = rc.getCommandsProvider();
+        gson = Context.getInstance().getGson();
     }
     
     public HttpResponse superstatus(long deviceId) throws ProviderException {
           
-                res.status(HttpStatuses.OK);
-                Map<String, Object> result = new HashMap<>();
-                for(String type : model.getSuperStatusCommands()) {
-                    if(type == null || type.isEmpty())
-                        continue;
-                    type = type.trim();
-                    BackendCommandProvider bcp = new BackendCommandProvider();
-                    Object backendCommand = null;
-                    try {
-                        backendCommand = bcp.getBackendCommand(deviceId, type);
-                    } catch (Exception e) {
-                        result.put(type, MessageKeys.ERR_CREATE_COMMAND_OBJECT_FAILED);
-                        continue;
-                    }
-
-                    CommandService cs = new CommandService();
-
-                    Map<String, Object> tmp = cs.sendCommand(activeDevice, backendCommand);
-                    
-                    if (tmp == null || tmp.get("success") == null) {
-                        result.put(type, "FAILED");
-                    } else if ((boolean) tmp.get("success")) {
-                        result.putAll(gson.fromJson(tmp.get("response").toString(), Map.class));
-                    } else {
-                        if (tmp.get("reason") == "timeout") {
-                            result.put(type, "TIMEOUT");
-                        } else {
-                            result.put(type, "FAILED");
-                        }
-                    }
-                }
-                result.keySet().retainAll(Arrays.asList(VALID_PARAM_KEYS));
-                return result;
+        try {
+            Map<String, Object> commandResponses = provider.superstatus(deviceId);
+            Map<String, Object> result = new HashMap<>();
+            
+            commandResponses.entrySet().forEach((entry) -> {
+                result.putAll(gson.fromJson((String)entry.getValue(), Map.class));
+            });
+            result.keySet().retainAll(Arrays.asList(CommandsProvider.VALID_PARAM_KEYS));
+            return ok(result);
+            
+        } catch (ProviderException p) {
+            return handle(p);
+        }
+        
     }
 }
