@@ -36,6 +36,13 @@ public class ReportsController extends ControllerBase {
                 String lang = req.queryParams("lang");
                 return rc.generateReport(report, lang, res);
             });
+            
+            Spark.post(rootUrl(), (req, res)-> {
+                ReportsController rc = createController(req);
+                Report report = gson.fromJson(req.queryParams("report"), Report.class);
+                String lang = req.queryParams("lang");
+                return rc.generateReport(report, lang, res);
+            });
         }
 
         @Override
