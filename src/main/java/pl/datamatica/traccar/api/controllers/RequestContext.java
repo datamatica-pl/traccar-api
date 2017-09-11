@@ -37,12 +37,17 @@ import pl.datamatica.traccar.api.providers.DeviceGroupProvider;
 import pl.datamatica.traccar.api.providers.ImageProvider;
 import pl.datamatica.traccar.api.providers.ImeiProvider;
 import pl.datamatica.traccar.api.providers.MailSender;
+import pl.datamatica.traccar.api.providers.MessageProvider;
 import pl.datamatica.traccar.api.providers.NotificationSettingsProvider;
 import pl.datamatica.traccar.api.providers.PicturesProvider;
 import pl.datamatica.traccar.api.providers.PositionProvider;
 import pl.datamatica.traccar.api.providers.UserGroupProvider;
 import pl.datamatica.traccar.api.providers.UserProvider;
+import pl.datamatica.traccar.api.reports.ReportGenerator;
+import pl.datamatica.traccar.api.reports.ReportGeneratorFactory;
 import pl.datamatica.traccar.api.utils.DateUtil;
+import pl.datamatica.traccar.model.ApplicationSettings;
+import pl.datamatica.traccar.model.ReportType;
 import pl.datamatica.traccar.model.User;
 import spark.Request;
 import spark.Response;
@@ -211,6 +216,29 @@ public class RequestContext implements AutoCloseable {
             auditLogProvider = new AuditLogProvider(em, user);
         }
         return auditLogProvider;
+    }
+    
+    public MessageProvider getMessageProvider(String lang) throws Exception {
+        return new MessageProvider(em, Application.getStringsDir(), lang);
+    }
+    
+    public ReportGenerator getReportGenerator(ReportType type, String lang) throws Exception {
+        ReportGeneratorFactory factory = new ReportGeneratorFactory();
+        ReportGenerator generator = factory.getGenerator(type);
+        ApplicationSettings as = getApplicationSettingsProvider().get();
+        if(lang == null)
+            lang = as.getLanguage();
+        
+        generator.setEntityManager(em);
+        generator.setCurrentUser(user);
+        generator.setDeviceProvider(getDeviceProvider());
+        generator.setPositionProvider(getPositionProvider());
+        generator.setGfProvider(getGeoFencesProvider());
+        generator.setIconsProvider(getDeviceIconProvider());
+        generator.setMsgProvider(getMessageProvider(lang));
+        generator.setApplicationSettings(as);
+        
+        return generator;
     }
     
     public String getApiRoot() {

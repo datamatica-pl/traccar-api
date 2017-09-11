@@ -16,10 +16,15 @@
  */
 package pl.datamatica.traccar.api.providers;
 
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import javax.persistence.EntityManager;
 import javax.persistence.TypedQuery;
+import pl.datamatica.traccar.api.dtos.out.ErrorDto;
+import pl.datamatica.traccar.api.utils.GeoUtils;
 import pl.datamatica.traccar.model.Device;
 import pl.datamatica.traccar.model.Position;
 import pl.datamatica.traccar.model.User;
@@ -83,5 +88,68 @@ public class PositionProvider extends ProviderBase {
         
         Date lastAvailPos = p.getDevice().getLastAvailablePositionDate(new Date());
         return lastAvailPos.before(p.getTime());
+    }
+    
+    public static List<Position> filterPositions(List<Position> pos, PositionsQueryParams qp) {
+        Stream<Position> filtered = pos.stream();
+             
+        if (qp.hideZero)
+            filtered = filtered.filter(p -> p.getLatitude() != 0 || p.getLongitude() != 0);
+        if (qp.hideInvalid)
+            filtered = filtered.filter(p -> p.getValid() != null && p.getValid());
+        if (qp.speedValue != null) {
+            filtered = filtered.filter(p -> p.getSpeed() != null);
+            switch (qp.speedComp) {
+                case LESS: filtered = filtered.filter(p -> p.getSpeed() < qp.speedValue); break;
+                case LESSEQUAL: filtered = filtered.filter(p -> p.getSpeed() <= qp.speedValue); break;
+                case EQUAL: filtered = filtered.filter(p -> p.getSpeed() == qp.speedValue.doubleValue()); break;
+                case GREATEREQUAL: filtered = filtered.filter(p -> p.getSpeed() >= qp.speedValue); break;
+                case GREATER: filtered = filtered.filter(p -> p.getSpeed() > qp.speedValue); break;
+            }
+        }
+        
+        List<Position> posList = filtered.collect(Collectors.toList());
+        if (posList.isEmpty())
+            return posList;
+        
+        List<Position> resList = new ArrayList<>();
+        Position last = posList.get(0);
+        resList.add(last);
+        for (int i = 1; i < posList.size(); i++) {
+            boolean add = true;
+            Position current = posList.get(i);
+            
+            if (qp.hideDuplicates && last.getTime().equals(current.getTime()))
+                add = false;
+            if (qp.minDistance > 0)
+                if (GeoUtils.getDistance(last.getLongitude(), last.getLatitude(), current.getLongitude(), current.getLatitude()) * 1000.0 < qp.minDistance)
+                    add = false;
+            
+            if (add) {
+                resList.add(current);
+                last = current;
+            }
+        }
+        return resList;
+    }
+    
+    public enum PositionSpeedOperator {
+        LESS, LESSEQUAL, EQUAL, GREATEREQUAL, GREATER
+    }
+    
+    public static class PositionsQueryParams {
+        public Date minDate = null;
+        public Date maxDate = null;
+        public Boolean hideZero = false;
+        public Boolean hideInvalid = false;
+        public Boolean hideDuplicates = false;
+        public Integer minDistance = 0;
+        public PositionSpeedOperator speedComp;
+        public Integer speedValue = null;
+        public Boolean getAll = false;
+        
+        public List<ErrorDto> errors = new ArrayList<>();
+        
+        public PositionsQueryParams() {}
     }
 }
