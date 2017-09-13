@@ -141,7 +141,7 @@ public class Application implements spark.servlet.SparkApplication {
         EntityManager em = Context.getInstance().createEntityManager();
         ApplicationSettingsProvider asp = new ApplicationSettingsProvider(em);
         if(asp.get().isEventRecordingEnabled())
-            EventDaemon.getInstance().start(scheduler);
+            EventDaemon.getInstance().start();
 
         if(Context.getInstance().isInDevMode()) {
             Spark.exception(Exception.class, (exception, request, response) -> {

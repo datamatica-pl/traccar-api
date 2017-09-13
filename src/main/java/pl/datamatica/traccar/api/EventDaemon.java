@@ -25,10 +25,12 @@ import pl.datamatica.traccar.model.Device;
 
 import javax.persistence.EntityManager;
 import java.util.*;
+import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 import javax.persistence.TypedQuery;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import pl.datamatica.traccar.api.utils.GeoFenceCalculator;
 import pl.datamatica.traccar.api.utils.GeoUtils;
 import pl.datamatica.traccar.model.DbRoute;
@@ -60,41 +62,45 @@ public class EventDaemon {
 
         public void run() {
             EntityManager entityManager = Context.getInstance().createEntityManager();
-            entityManager.getTransaction().begin();
-            
-            Date currentTime = new Date();
+            try {
+                entityManager.getTransaction().begin();
 
-            for (Device device : entityManager.createQuery("SELECT d FROM Device d INNER JOIN FETCH d.latestPosition", Device.class).getResultList()) {
-                Position position = device.getLatestPosition();
-                // check that device is offline
-                long timeout = (long) device.getTimeout() * 1000;
-                if (currentTime.getTime() - position.getTime().getTime() >= timeout
-                        && (position.getServerTime() == null
-                            || currentTime.getTime() - position.getServerTime().getTime() >= timeout)) {
-                    Long latestOfflinePositionId = latestOfflineEvents.get(device.getId());
-                    if (latestOfflinePositionId == null) {
-                        List<DeviceEvent> offlineEvents = entityManager.createQuery("SELECT e FROM DeviceEvent e WHERE e.position=:position AND e.type=:offline", DeviceEvent.class)
-                                .setParameter("position", position)
-                                .setParameter("offline", DeviceEventType.OFFLINE)
-                                .getResultList();
-                        if (!offlineEvents.isEmpty()) {
+                Date currentTime = new Date();
+
+                for (Device device : entityManager.createQuery("SELECT d FROM Device d INNER JOIN FETCH d.latestPosition", Device.class).getResultList()) {
+                    Position position = device.getLatestPosition();
+                    // check that device is offline
+                    long timeout = (long) device.getTimeout() * 1000;
+                    if (currentTime.getTime() - position.getTime().getTime() >= timeout
+                            && (position.getServerTime() == null
+                                || currentTime.getTime() - position.getServerTime().getTime() >= timeout)) {
+                        Long latestOfflinePositionId = latestOfflineEvents.get(device.getId());
+                        if (latestOfflinePositionId == null) {
+                            List<DeviceEvent> offlineEvents = entityManager.createQuery("SELECT e FROM DeviceEvent e WHERE e.position=:position AND e.type=:offline", DeviceEvent.class)
+                                    .setParameter("position", position)
+                                    .setParameter("offline", DeviceEventType.OFFLINE)
+                                    .getResultList();
+                            if (!offlineEvents.isEmpty()) {
+                                latestOfflineEvents.put(device.getId(), position.getId());
+                                latestOfflinePositionId = position.getId();
+                            }
+                        }
+
+                        if (latestOfflinePositionId == null || latestOfflinePositionId.longValue() != position.getId()) {
+                            DeviceEvent offlineEvent = new DeviceEvent();
+                            offlineEvent.setTime(currentTime);
+                            offlineEvent.setDevice(device);
+                            offlineEvent.setType(DeviceEventType.OFFLINE);
+                            offlineEvent.setPosition(device.getLatestPosition());
+                            entityManager.persist(offlineEvent);
                             latestOfflineEvents.put(device.getId(), position.getId());
-                            latestOfflinePositionId = position.getId();
                         }
                     }
-
-                    if (latestOfflinePositionId == null || latestOfflinePositionId.longValue() != position.getId()) {
-                        DeviceEvent offlineEvent = new DeviceEvent();
-                        offlineEvent.setTime(currentTime);
-                        offlineEvent.setDevice(device);
-                        offlineEvent.setType(DeviceEventType.OFFLINE);
-                        offlineEvent.setPosition(device.getLatestPosition());
-                        entityManager.persist(offlineEvent);
-                        latestOfflineEvents.put(device.getId(), position.getId());
-                    }
                 }
+                entityManager.getTransaction().commit();
+            } finally {
+                entityManager.close();
             }
-            entityManager.getTransaction().commit();
         }
     }
 
@@ -176,12 +182,16 @@ public class EventDaemon {
         
         public void run() {
             EntityManager entityManager = Context.getInstance().createEntityManager();
-            entityManager.getTransaction().begin();
-            positionProvider.setEntityManager(entityManager);
-            
-            run(entityManager);
-            
-            entityManager.getTransaction().commit();
+            try {
+                entityManager.getTransaction().begin();
+                positionProvider.setEntityManager(entityManager);
+
+                run(entityManager);
+
+                entityManager.getTransaction().commit();
+            } finally {
+                entityManager.close();
+            }
         }
         
         void run(EntityManager entityManager) {
@@ -528,11 +538,11 @@ public class EventDaemon {
     private PositionScanner positionScanner;
     private RoutesDetector routesDetector;
 
-    private Map<Class<?>, ScheduledFuture<?>> futures = new HashMap<>();
+    private ScheduledExecutorService executor;
     
     private ApplicationSettings applicationSettings;
     
-    public EventDaemon() {
+    public EventDaemon() {        
         offlineDetector = new OfflineDetector();
         geoFenceDetector = new GeoFenceDetector();
         odometerUpdater = new OdometerUpdater();
@@ -548,24 +558,29 @@ public class EventDaemon {
         positionScanner.eventProducers.add(routesDetector);
     }
 
-    public void start(ScheduledExecutorService scheduler) {
-        startTasks(scheduler);
+    public void start() {
+        executor = Executors.newScheduledThreadPool(1);
+        startTasks();
     }
 
-    private synchronized void startTasks(ScheduledExecutorService scheduler) {
-        for (Runnable task : new Runnable[] { offlineDetector, positionScanner }) {
-            futures.put(task.getClass(), scheduler.scheduleWithFixedDelay(task, 0, 1, TimeUnit.MINUTES));
+    private synchronized void startTasks() {
+        for (final Runnable task : new Runnable[] { offlineDetector, positionScanner }) {
+            executor.scheduleWithFixedDelay(new Runnable() {
+                @Override
+                public void run() {
+                    try {
+                        task.run();
+                    } catch(Exception e) {
+                        Logger logger = LoggerFactory.getLogger(Application.class);
+                        logger.error("EventDaemon:", e);
+                    }
+                }
+            }, 0, 1, TimeUnit.MINUTES);
         }
     }
     
     public void stop() {
-        stopTasks();
-    }
-
-    private synchronized void stopTasks() {
-        for (ScheduledFuture<?> future : futures.values()) {
-            future.cancel(true);
-        }
-        futures.clear();
+        executor.shutdown();
+        executor = null;
     }
 }
