@@ -96,7 +96,7 @@ public class ApplicationSettingsController extends ControllerBase {
             if(wasRecEnabled && !provider.get().isEventRecordingEnabled())
                 EventDaemon.getInstance().stop();
             else if(!wasRecEnabled && provider.get().isEventRecordingEnabled())
-                EventDaemon.getInstance().start(Context.getInstance().getDaemonExecutor());
+                EventDaemon.getInstance().start();
             return ok("");
         } catch (ProviderException e) {
             return handle(e);
