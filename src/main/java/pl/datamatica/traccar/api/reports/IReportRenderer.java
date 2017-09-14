@@ -6,6 +6,7 @@
 package pl.datamatica.traccar.api.reports;
 
 import java.io.IOException;
+import pl.datamatica.traccar.api.dtos.out.ReportDto;
 import pl.datamatica.traccar.model.Report;
 
 public interface IReportRenderer {
@@ -78,9 +79,9 @@ public interface IReportRenderer {
 
     void bold(String text);
 
-    void end(Report report) throws IOException;
+    void end(ReportDto report) throws IOException;
 
-    String getFilename(Report report);
+    String getFilename(ReportDto report);
 
     void h1(String text);
 
@@ -108,7 +109,7 @@ public interface IReportRenderer {
 
     void paragraphStart();
 
-    void start(Report report) throws IOException;
+    void start(ReportDto report) throws IOException;
 
     void tableBodyEnd();
 

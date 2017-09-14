@@ -74,6 +74,10 @@ public class DeviceProvider extends ProviderBase {
         return d;
     }
     
+    Device getEditableDevice(long id) throws ProviderException {
+        return get(Device.class, id, this::isVisible);
+    }
+    
     private Device getDeviceByImei(String imei) {
         TypedQuery<Device> tq = em.createQuery("Select x from Device x where x.uniqueId = :imei", Device.class);
         tq.setParameter("imei", imei);

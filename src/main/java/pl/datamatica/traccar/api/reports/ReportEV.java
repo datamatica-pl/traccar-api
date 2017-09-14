@@ -15,7 +15,6 @@
  */
 package pl.datamatica.traccar.api.reports;
 
-import pl.datamatica.traccar.model.Report;
 import pl.datamatica.traccar.model.Maintenance;
 import pl.datamatica.traccar.model.GeoFence;
 import pl.datamatica.traccar.model.DeviceEvent;
@@ -26,6 +25,7 @@ import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import pl.datamatica.traccar.api.dtos.out.ReportDto;
 import pl.datamatica.traccar.api.providers.ProviderException;
 import pl.datamatica.traccar.api.reports.MapBuilder.MarkerStyle;
 import pl.datamatica.traccar.model.DeviceEventType;
@@ -33,7 +33,7 @@ import static pl.datamatica.traccar.model.DeviceEventType.*;
 
 public class ReportEV extends ReportGenerator {
     @Override
-    void generateImpl(Report report) throws IOException, ProviderException {
+    void generateImpl(ReportDto report) throws IOException, ProviderException {
         h2(report.getName());
 
         for (Device device : getDevices(report)) {
