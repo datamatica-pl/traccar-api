@@ -15,13 +15,12 @@
  */
 package pl.datamatica.traccar.api.reports;
 
-import org.apache.commons.io.IOUtils;
-import pl.datamatica.traccar.model.Report;
 
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.text.SimpleDateFormat;
+import pl.datamatica.traccar.api.dtos.out.ReportDto;
 import pl.datamatica.traccar.model.ReportType;
 
 public class HtmlReportRenderer implements IReportRenderer {
@@ -35,7 +34,7 @@ public class HtmlReportRenderer implements IReportRenderer {
     }
 
     @Override
-    public String getFilename(Report report) {
+    public String getFilename(ReportDto report) {
         SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy_MM_dd_hh_mm_ss");
         return report.getName() +
                 "_" +
@@ -46,7 +45,7 @@ public class HtmlReportRenderer implements IReportRenderer {
     }
 
     @Override
-    public void start(Report report) throws IOException {
+    public void start(ReportDto report) throws IOException {
         response.setContentType("text/html;charset=UTF-8");
         if (!report.isPreview()) {
             response.setHeader("Content-Disposition", "attachment; filename=" + getFilename(report));
@@ -60,11 +59,11 @@ public class HtmlReportRenderer implements IReportRenderer {
         // include bootstrap CSS
         line("<link rel=\"stylesheet\" href=\"https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css\" type=\"text/css\">");
         // include OpenLayers 3 css and javascript if report intends to include map
-        if (report.isIncludeMap() && report.getType().supportsMapDisplay()) {
+        if (report.isIncludeMap() && ReportType.valueOf(report.getReportType()).supportsMapDisplay()) {
             line("<link rel=\"stylesheet\" href=\"https://cdnjs.cloudflare.com/ajax/libs/ol3/3.11.1/ol.min.js\" type=\"text/css\">");
             line("<script src=\"https://cdnjs.cloudflare.com/ajax/libs/ol3/3.11.1/ol.min.js\" type=\"text/javascript\"></script>");
         }
-        if(report.getType() == ReportType.FUEL_CONSUMPTION) {
+        if(ReportType.valueOf(report.getReportType()) == ReportType.FUEL_CONSUMPTION) {
             line("<script src=\"https://d3js.org/d3.v4.min.js\" type=\"text/javascript\"></script>");
         }
         
@@ -72,7 +71,7 @@ public class HtmlReportRenderer implements IReportRenderer {
     }
 
     @Override
-    public void end(Report report) throws IOException {
+    public void end(ReportDto report) throws IOException {
         line("</div>").line("</body>").line("</html>");
     }
 

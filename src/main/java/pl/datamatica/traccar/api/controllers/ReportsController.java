@@ -15,7 +15,6 @@
  */
 package pl.datamatica.traccar.api.controllers;
 
-import java.util.HashSet;
 import java.util.List;
 import java.util.stream.Collectors;
 import pl.datamatica.traccar.api.reports.ReportGenerator;
@@ -29,8 +28,7 @@ import pl.datamatica.traccar.api.dtos.out.ReportDto;
 import pl.datamatica.traccar.api.providers.ProviderException;
 import pl.datamatica.traccar.api.providers.ReportProvider;
 import pl.datamatica.traccar.api.responses.HttpResponse;
-import pl.datamatica.traccar.model.Device;
-import pl.datamatica.traccar.model.GeoFence;
+import pl.datamatica.traccar.model.ReportType;
 import spark.Request;
 import spark.Response;
 import spark.Spark;
@@ -43,14 +41,14 @@ public class ReportsController extends ControllerBase {
         public void bind() {
             Spark.post(rootUrl()+"/generate/*", (req, res) -> {
                 ReportsController rc = createController(req);
-                Report report = gson.fromJson(req.queryParams("report"), Report.class);
+                ReportDto report = gson.fromJson(req.queryParams("report"), ReportDto.class);
                 String lang = req.queryParams("lang");
                 return rc.generateReport(report, lang, res);
             });
             
             Spark.post(rootUrl()+"/generate", (req, res)-> {
                 ReportsController rc = createController(req);
-                Report report = gson.fromJson(req.queryParams("report"), Report.class);
+                ReportDto report = gson.fromJson(req.queryParams("report"), ReportDto.class);
                 String lang = req.queryParams("lang");
                 return rc.generateReport(report, lang, res);
             });
@@ -98,8 +96,9 @@ public class ReportsController extends ControllerBase {
         super(requestContext);
     }
 
-    public String generateReport(Report report, String lang, Response res) throws Exception {
-        ReportGenerator generator = requestContext.getReportGenerator(report.getType(), 
+    public String generateReport(ReportDto report, String lang, Response res) throws Exception {
+        ReportGenerator generator = requestContext.getReportGenerator(
+                ReportType.valueOf(report.getReportType()), 
                 lang);
         if (generator == null) {
             render(notFound(), res);

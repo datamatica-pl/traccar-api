@@ -21,16 +21,16 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 import pl.datamatica.traccar.api.Context;
+import pl.datamatica.traccar.api.dtos.out.ReportDto;
 import static pl.datamatica.traccar.api.reports.ReportGenerator.DEFAULT_TABLE_HEIGHT;
 import pl.datamatica.traccar.api.providers.ProviderException;
 import pl.datamatica.traccar.model.Device;
 import pl.datamatica.traccar.model.Position;
-import pl.datamatica.traccar.model.Report;
 
 public class ReportFuel extends ReportGenerator {
     
     @Override
-    void generateImpl(Report report) throws IOException, ProviderException {
+    void generateImpl(ReportDto report) throws IOException, ProviderException {
         h2(report.getName());
 
         for (Device device : getDevices(report)) {

@@ -243,7 +243,9 @@ public class RequestContext implements AutoCloseable {
     }
     
      public ReportProvider getReportProvider() {
-        return new ReportProvider(em, user);
+        DeviceProvider dp = getDeviceProvider();
+        GeoFenceProvider gfp = getGeoFencesProvider();
+        return new ReportProvider(em, user, dp, gfp);
     }
     
     public String getApiRoot() {

@@ -36,6 +36,7 @@ import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import pl.datamatica.traccar.api.dtos.out.ReportDto;
 import pl.datamatica.traccar.api.metadata.model.DeviceIcon;
 import pl.datamatica.traccar.api.providers.DeviceIconProvider;
 import pl.datamatica.traccar.api.providers.DeviceProvider;
@@ -64,11 +65,11 @@ public abstract class ReportGenerator {
     private DeviceIconProvider iconsProvider;
     private Map<Long, String> icons;
     
-    abstract void generateImpl(Report report) throws IOException, ProviderException;
+    abstract void generateImpl(ReportDto report) throws IOException, ProviderException;
 
-    public final String generate(Report report, HttpServletResponse response, String lang) throws IOException, ProviderException {
+    public final String generate(ReportDto report, HttpServletResponse response, String lang) throws IOException, ProviderException {
         StringWriter writer = new StringWriter();
-        if(report.getFormat() == ReportFormat.CSV)
+        if(ReportFormat.valueOf(report.getFormat()) == ReportFormat.CSV)
             renderer = new CSVReportRenderer(response, new PrintWriter(writer));
         else
             renderer = new HtmlReportRenderer(response, new PrintWriter(writer));
@@ -387,26 +388,26 @@ public abstract class ReportGenerator {
         return new HtmlReportRenderer.CellStyle().rowspan(rowspan);
     }
 
-    List<Device> getDevices(Report report) throws ProviderException {
-        if (report.getDevices().isEmpty()) {
+    List<Device> getDevices(ReportDto report) throws ProviderException {
+        if (report.getDeviceIds().isEmpty()) {
             return deviceProvider.getAllAvailableDevices().collect(Collectors.toList());
         } else {
-            List<Device> devices = new ArrayList<>(report.getDevices().size());
-            for (Device reportDevice : report.getDevices()) {
-                devices.add(deviceProvider.getDevice(reportDevice.getId()));
+            List<Device> devices = new ArrayList<>(report.getDeviceIds().size());
+            for (long id : report.getDeviceIds()) {
+                devices.add(deviceProvider.getDevice(id));
             }
             return devices;
         }
     }
 
-    List<GeoFence> getGeoFences(Report report, Device device) throws ProviderException {
+    List<GeoFence> getGeoFences(ReportDto report, Device device) throws ProviderException {
         List<GeoFence> geoFences;
-        if (report.getGeoFences().isEmpty()) {
+        if (report.getGeofenceIds().isEmpty()) {
             geoFences = gfProvider.getAllAvailableGeoFences().collect(Collectors.toList());
         } else {
-            geoFences = new ArrayList<>(report.getGeoFences().size());
-            for (GeoFence reportGeoFence : report.getGeoFences()) {
-                geoFences.add(gfProvider.getGeoFence(reportGeoFence.getId()));
+            geoFences = new ArrayList<>(report.getGeofenceIds().size());
+            for (long id : report.getGeofenceIds()) {
+                geoFences.add(gfProvider.getGeoFence(id));
             }
         }
         // filter device-specific geo-fences that are not assigned to device from method arguments

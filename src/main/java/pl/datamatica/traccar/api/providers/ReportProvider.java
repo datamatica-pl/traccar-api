@@ -41,9 +41,12 @@ public class ReportProvider extends ProviderBase {
     private DeviceProvider dp;
     private GeoFenceProvider gfp;
     
-    public ReportProvider(EntityManager em, User requestUser) {
+    public ReportProvider(EntityManager em, User requestUser, DeviceProvider dp,
+            GeoFenceProvider gfp) {
         super(em);
         this.requestUser = requestUser;
+        this.dp = dp;
+        this.gfp = gfp;
     }
     
     public Stream<Report> getReports() throws ProviderException {

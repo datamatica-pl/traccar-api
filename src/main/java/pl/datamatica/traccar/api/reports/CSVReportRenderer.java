@@ -20,6 +20,7 @@ import java.io.PrintWriter;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import javax.servlet.http.HttpServletResponse;
+import pl.datamatica.traccar.api.dtos.out.ReportDto;
 import pl.datamatica.traccar.model.Report;
 
 public class CSVReportRenderer implements IReportRenderer {
@@ -66,7 +67,7 @@ public class CSVReportRenderer implements IReportRenderer {
     }
     
     @Override
-    public String getFilename(Report report) {
+    public String getFilename(ReportDto report) {
         SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy_MM_dd_hh_mm_ss");
         return report.getName() +
                 "_" +
@@ -77,7 +78,7 @@ public class CSVReportRenderer implements IReportRenderer {
     }
     
     @Override
-    public void start(Report report) throws IOException {
+    public void start(ReportDto report) throws IOException {
         response.setContentType("text/csv;charset=UTF-8");
         writer.write(new String(new byte[]{(byte)0xEF, (byte)0xBB, (byte)0xBF}, "UTF-8"));
         if (!report.isPreview()) {
@@ -189,7 +190,7 @@ public class CSVReportRenderer implements IReportRenderer {
     }
     
     @Override
-    public void end(Report report) throws IOException {
+    public void end(ReportDto report) throws IOException {
         System.out.println("Document ended");
         System.out.println("ContentType: "+response.getContentType());
     }

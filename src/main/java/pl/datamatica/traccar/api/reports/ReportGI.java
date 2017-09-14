@@ -17,18 +17,18 @@ package pl.datamatica.traccar.api.reports;
 
 import pl.datamatica.traccar.model.Device;
 import pl.datamatica.traccar.model.Position;
-import pl.datamatica.traccar.model.Report;
 
 import java.io.IOException;
 import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
+import pl.datamatica.traccar.api.dtos.out.ReportDto;
 import pl.datamatica.traccar.api.providers.ProviderException;
 import pl.datamatica.traccar.api.reports.MapBuilder.MarkerStyle;
 
 public class ReportGI extends ReportGenerator {
     @Override
-    void generateImpl(Report report) throws IOException, ProviderException {
+    void generateImpl(ReportDto report) throws IOException, ProviderException {
         h2(report.getName());
 
         for (Device device : getDevices(report)) {

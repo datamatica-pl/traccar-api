@@ -27,6 +27,8 @@ import pl.datamatica.traccar.model.Report;
  */
 public class ReportDto extends EditReportDto {
     private long id;
+    private String format;
+    private boolean preview;
 
     public static class Builder extends EditReportDto.Builder{
 
@@ -58,4 +60,12 @@ public class ReportDto extends EditReportDto {
         super(name, reportType, deviceIds, geofenceIds, fromDate, toDate, includeMap, disableFilter);
         this.id = id;
     }    
+    
+    public String getFormat() {
+        return format;
+    }
+    
+    public boolean isPreview() {
+        return preview;
+    }
 }
