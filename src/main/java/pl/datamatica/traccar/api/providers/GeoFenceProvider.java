@@ -86,6 +86,12 @@ public class GeoFenceProvider extends ProviderBase{
         }
         return geoFence;
     }
+    
+    GeoFence getEditableGeofence(long id) throws ProviderException {
+        if(!requestUser.hasPermission(UserPermission.GEOFENCE_READ))
+            throw new ProviderException(Type.ACCESS_DENIED);
+        return get(GeoFence.class, id, this::isVisible);
+    }
 
     private boolean isVisible(GeoFence gf) {
         if(requestUser.hasPermission(UserPermission.ALL_GEOFENCES))

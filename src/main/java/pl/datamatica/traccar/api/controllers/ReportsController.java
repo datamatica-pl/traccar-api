@@ -24,6 +24,8 @@ import pl.datamatica.traccar.model.Report;
 
 import pl.datamatica.traccar.api.Application;
 import static pl.datamatica.traccar.api.controllers.ControllerBase.render;
+import pl.datamatica.traccar.api.dtos.in.EditReportDto;
+import pl.datamatica.traccar.api.dtos.out.ReportDto;
 import pl.datamatica.traccar.api.providers.ProviderException;
 import pl.datamatica.traccar.api.providers.ReportProvider;
 import pl.datamatica.traccar.api.responses.HttpResponse;
@@ -60,13 +62,13 @@ public class ReportsController extends ControllerBase {
             
             Spark.post(rootUrl(), (req, res) -> {
                 ReportsController rc = createController(req);
-                Report report = gson.fromJson(req.body(), Report.class);
+                EditReportDto report = gson.fromJson(req.body(), EditReportDto.class);
                 return render(rc.createReport(report), res);
             }, gson::toJson);
             
             Spark.put(rootUrl()+"/:id", (req, res) -> {
                 ReportsController rc = createController(req);
-                Report report = gson.fromJson(req.body(), Report.class);
+                EditReportDto report = gson.fromJson(req.body(), EditReportDto.class);
                 long id = Long.parseLong(req.params(":id"));
                 return render(rc.updateReport(id, report), res);
             }, gson::toJson);
@@ -110,38 +112,26 @@ public class ReportsController extends ControllerBase {
     public HttpResponse getAllReports() throws ProviderException {
         ReportProvider rp = requestContext.getReportProvider();
         try {
-            List<Report> reports = rp.getReports().map(r -> unproxy(r)).collect(Collectors.toList());
+            List<ReportDto> reports = rp.getReports().map(r -> new ReportDto.Builder().report(r).build())
+                    .collect(Collectors.toList());
             return ok(reports);
         } catch(ProviderException e) {
             return handle(e);
         }
     }
     
-    private Report unproxy(Report report) {
-        Report result = new Report().copyFrom(report);
-        result.setDevices(new HashSet<Device>(report.getDevices().size()));
-        for (Device device : report.getDevices()) {
-            result.getDevices().add(new Device(device));
-        }
-        result.setGeoFences(new HashSet<GeoFence>(report.getGeoFences().size()));
-        for (GeoFence geoFence : report.getGeoFences()) {
-            result.getGeoFences().add(new GeoFence().copyFrom(geoFence));
-        }
-        return result;
-    }
-    
-    public HttpResponse createReport(Report report) throws ProviderException {
+    public HttpResponse createReport(EditReportDto report) throws ProviderException {
         ReportProvider rp = requestContext.getReportProvider();
         try {
             Report r = rp.createReport(report);
-            r = unproxy(r);
-            return created("reports/"+r.getId(), r);
+            ReportDto dto = new ReportDto.Builder().report(r).build();
+            return created("reports/"+r.getId(), dto);
         } catch(ProviderException e) {
             return handle(e);
         }
     }
     
-    public HttpResponse updateReport(long id, Report report) throws ProviderException {
+    public HttpResponse updateReport(long id, EditReportDto report) throws ProviderException {
         ReportProvider rp = requestContext.getReportProvider();
         try {
             rp.updateReport(id, report);

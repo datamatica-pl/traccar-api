@@ -22,10 +22,12 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.stream.Stream;
 import javax.persistence.EntityManager;
+import pl.datamatica.traccar.api.dtos.in.EditReportDto;
 import pl.datamatica.traccar.api.providers.ProviderException.Type;
 import pl.datamatica.traccar.model.Device;
 import pl.datamatica.traccar.model.GeoFence;
 import pl.datamatica.traccar.model.Report;
+import pl.datamatica.traccar.model.ReportType;
 import pl.datamatica.traccar.model.User;
 import pl.datamatica.traccar.model.UserPermission;
 
@@ -36,6 +38,8 @@ import pl.datamatica.traccar.model.UserPermission;
 public class ReportProvider extends ProviderBase {
     
     private User requestUser;
+    private DeviceProvider dp;
+    private GeoFenceProvider gfp;
     
     public ReportProvider(EntityManager em, User requestUser) {
         super(em);
@@ -53,58 +57,50 @@ public class ReportProvider extends ProviderBase {
         }
     }
     
-    public Report createReport(Report report) throws ProviderException {
+    public Report createReport(EditReportDto dto) throws ProviderException {
         if(!requestUser.hasPermission(UserPermission.REPORTS))
             throw new ProviderException(Type.ACCESS_DENIED);
-            
-        Report toSave = new Report().copyFrom(report);
-
-        toSave.setDevices(new HashSet<Device>(report.getDevices().size()));
-        for(Device d : report.getDevices())
-            toSave.getDevices().add(new Device(d));
-        toSave.setGeoFences(new HashSet<GeoFence>(report.getGeoFences().size()));
-        for(GeoFence gf : report.getGeoFences())
-            toSave.getGeoFences().add(new GeoFence().copyFrom(gf));
-        toSave.setUsers(new HashSet<User>(1));
+        
+        Report toSave = new Report();
+        toSave.setDevices(new HashSet<>());
+        toSave.setGeoFences(new HashSet<>());
+        editReport(toSave, dto);
+        toSave.setUsers(new HashSet<>(1));
         toSave.getUsers().add(requestUser);
         em.persist(toSave);
         
         return toSave;
     }
     
-    public void updateReport(long id, Report report) throws ProviderException {
+    public void updateReport(long id, EditReportDto dto) throws ProviderException {
         if(!requestUser.hasPermission(UserPermission.REPORTS))
             throw new ProviderException(Type.ACCESS_DENIED);
         
         Report toSave = em.find(Report.class, id);
-
-        toSave.copyFrom(report);
-        processDevicesAndGeoFences(report, toSave);
+        editReport(toSave, dto);
     }
     
-    private void processDevicesAndGeoFences(Report report, Report toSave) {
-        for (Device device : report.getDevices()) {
-            if (!toSave.getDevices().contains(device)) {
-                toSave.getDevices().add(em.find(Device.class, device.getId()));
-            }
-        }
-        for (Iterator<Device> it = toSave.getDevices().iterator(); it.hasNext(); ) {
-            if (!report.getDevices().contains(it.next())) {
-                it.remove();
-            }
-        }
-
-        for (GeoFence geoFence : report.getGeoFences()) {
-            if (!toSave.getGeoFences().contains(geoFence)) {
-                toSave.getGeoFences().add(em.find(GeoFence.class, geoFence.getId()));
-            }
-        }
-        for (Iterator<GeoFence> it = toSave.getGeoFences().iterator(); it.hasNext(); ) {
-            if (!report.getGeoFences().contains(it.next())) {
-                it.remove();
-            }
-        }
+    private void editReport(Report report, EditReportDto dto) throws ProviderException {
+        report.setName(dto.getName());
+        report.setType(ReportType.valueOf(dto.getReportType()));
+        report.setFromDate(dto.getFromDate());
+        report.setToDate(dto.getToDate());
+        report.setDisableFilter(dto.isDisableFilter());
+        report.setIncludeMap(dto.isIncludeMap());
+        if(requestUser.hasPermission(UserPermission.ALL_DEVICES))
+            report.getDevices().clear();
+        else
+            report.getDevices().removeAll(requestUser.getAllAvailableDevices());
+        for(long did : dto.getDeviceIds())
+            report.getDevices().add(dp.getEditableDevice(did));
+        if(requestUser.hasPermission(UserPermission.ALL_GEOFENCES))
+            report.getGeoFences().clear();
+        else
+            report.getGeoFences().removeAll(requestUser.getAllAvailableGeoFences());
+        for(long gid : dto.getGeofenceIds())
+            report.getGeoFences().add(gfp.getEditableGeofence(gid));
     }
+        
     
     public void removeReport(long id) throws ProviderException {
         if(!requestUser.hasPermission(UserPermission.REPORTS))
