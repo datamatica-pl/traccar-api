@@ -120,9 +120,12 @@ public class ReportGFIO extends ReportGenerator {
         tableHeadStart();
         tableRowStart();
 
-        for (String header : new String[] {"geoFenceIn", "geoFenceOut", "duration", "geoFenceName", "geoFencePosition"}) {
+        String[] GFIO_report_headers = new String[]{"report_header_geofence_in", "report_header_geofence_out",
+            "report_header_duration", "report_header_geofence_name", "report_header_geofence_position"};
+
+        for (String report_header : GFIO_report_headers) {
             tableHeadCellStart();
-            text(message(header));
+            text(message(report_header));
             tableHeadCellEnd();
         }
 

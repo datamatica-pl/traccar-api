@@ -198,5 +198,10 @@
 	"report_second": "s",
 	"report_date": "Date",
 	"report_total_mileage": "Total mileage",
-	"report_overspeed_position": "Overspeed position"
+	"report_overspeed_position": "Overspeed position",
+	"report_header_duration": "Duration",
+	"report_header_geofence_in": "Geo-fence in",
+	"report_header_geofence_out": "Geo-fence out",
+	"report_header_geofence_name": "Geo-fence name",
+	"report_header_geofence_position": "Geo-fence position"
 }

@@ -198,5 +198,10 @@
 	"report_second": "s",
 	"report_date": "Data",
 	"report_total_mileage": "Razem przebieg",
-	"report_overspeed_position": "Przekroczenie prędkości"
+	"report_overspeed_position": "Przekroczenie prędkości",
+	"report_header_duration": "Czas trwania",
+	"report_header_geofence_in": "Geo-strefa wejście",
+	"report_header_geofence_out": "Geo-strefa wyjście",
+	"report_header_geofence_name": "Geo-strefa nazwa",
+	"report_header_geofence_position": "Geo-strefa pozycja"
 }
