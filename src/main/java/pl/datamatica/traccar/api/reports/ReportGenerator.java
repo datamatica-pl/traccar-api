@@ -350,7 +350,7 @@ public abstract class ReportGenerator {
             tableBodyStart();
 
             if (isNotEmpty(device.getDescription())) {
-                dataRow(message("report_description"), device.getDescription());
+                dataRow(message("report_device_description"), device.getDescription());
             }
 
             if (isNotEmpty(device.getPlateNumber())) {

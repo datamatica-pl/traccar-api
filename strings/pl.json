@@ -189,7 +189,7 @@
 	"report_route_start": "Początek trasy",
 	"report_route_end": "Koniec trasy",
 	"report_overspeed_count": "Przekroczenia prędkości",
-	"report_description": "Opis",
+	"report_device_description": "Opis urządzenia",
 	"report_plate_number": "Numer rejestracyjny",
 	"report_vehicle_brand_model_color": "Marka pojazdu / model / kolor",
 	"report_day": "d",

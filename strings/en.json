@@ -189,7 +189,7 @@
 	"report_route_start": "Route start",
 	"report_route_end": "Route end",
 	"report_overspeed_count": "Overspeed count",
-	"report_description": "Description",
+	"report_device_description": "Device description",
 	"report_plate_number": "Plate number",
 	"report_vehicle_brand_model_color": "Vehicle brand / model / color",
 	"report_day": "d",
