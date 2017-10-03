@@ -56,6 +56,8 @@ public class MessageProvider extends ProviderBase {
     }
     
     public String getMessage(String key) {
-        return i18n.get(key);
+        if(i18n.containsKey(key))
+            return i18n.get(key);
+        return "@@@"+key+"@@@";
     }
 }
