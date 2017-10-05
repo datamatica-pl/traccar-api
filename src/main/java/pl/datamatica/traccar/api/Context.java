@@ -104,6 +104,14 @@ public class Context {
             if (password != null) {
                 properties.put("hibernate.connection.password", password);
             }
+            
+            properties.put("hibernate.connection.provider_class", "org.hibernate.c3p0.internal.C3P0ConnectionProvider");
+            properties.put("hibernate.c3p0.testConnectionOnCheckin", "true"); // In case of problems try to first remove that
+                                                                              // first test on server were without this
+            properties.put("hibernate.c3p0.idle_test_period", "600");
+            
+            // We can also try hibernate.c3p0.testConnectionOnCheckout to true, but it will affects performance significantly.
+            
         } catch (Exception e) {
             String errMsg = String.format("Unable to get connection to API's metadata DB from config file"
                     + " (can't load %s nor %s): %s", PRODUCTION_TRACCAR_CONFIG_FILE,
