@@ -59,8 +59,11 @@ var imeiManager = {
         return [
             "",
             "MT200",
+            "GV20",
             "ET17",
             "ET20",
+            "CCTR-800+",
+            "CCTR-623",
             "GT03A",
             "GT710",
             "GT100",
@@ -76,6 +79,7 @@ var imeiManager = {
             "Seria LK",
             "Seria GT",
             "Seria ET",
+            "Seria CCTR",
             "Seria Teltonika"
         ];
     },
