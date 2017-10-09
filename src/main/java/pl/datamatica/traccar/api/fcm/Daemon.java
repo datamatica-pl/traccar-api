@@ -20,7 +20,9 @@ import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -36,6 +38,7 @@ import org.apache.http.impl.client.HttpClients;
 import org.apache.http.util.EntityUtils;
 import pl.datamatica.traccar.model.NotificationStatus;
 import pl.datamatica.traccar.model.User;
+import pl.datamatica.traccar.model.UserSession;
 
 public abstract class Daemon {
     private final Runnable runnable;
@@ -116,6 +119,11 @@ public abstract class Daemon {
         Set<String> activeSessions = new HashSet<>(em
                 .createNativeQuery("SELECT sessionId from JettySessions")
                 .getResultList());
-        user.getSessions().retainAll(activeSessions);
+        List<UserSession> validSessions = new ArrayList<>();
+        for(UserSession s : user.getSessions()) {
+            if(activeSessions.contains(s.getSessionId()))
+                validSessions.add(s);
+        }
+        user.setSessions(validSessions);
     }
 }
