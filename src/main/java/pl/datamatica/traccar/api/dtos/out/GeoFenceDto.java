@@ -24,6 +24,7 @@ import pl.datamatica.traccar.model.GeoFence;
 
 public class GeoFenceDto extends AddGeoFenceDto {
     private final long id;
+    private final String address;
 
     public static class Builder {
 
@@ -36,6 +37,7 @@ public class GeoFenceDto extends AddGeoFenceDto {
         private float radius;
         private String type;
         private long[] deviceIds;
+        private String address;
 
         public Builder geoFence(GeoFence geofence) {
             this.id = geofence.getId();
@@ -56,12 +58,13 @@ public class GeoFenceDto extends AddGeoFenceDto {
             else
                 this.deviceIds = geofence.getDevices().stream()
                         .mapToLong(d -> d.getId()).toArray();
+            this.address = geofence.getAddress();
             return this;
         }
 
         public GeoFenceDto build() {
             return new GeoFenceDto(id, geofenceName, description, allDevices, 
-                    color, points, radius, type, deviceIds);
+                    color, points, radius, type, deviceIds, address);
         }
     }
 
@@ -73,9 +76,11 @@ public class GeoFenceDto extends AddGeoFenceDto {
             final List<PointDto> points, 
             final float radius, 
             final String type, 
-            final long[] deviceIds) {
+            final long[] deviceIds,
+            final String address) {
         super(geofenceName, description, allDevices, color, points, radius, type, deviceIds);
         this.id = id;
+        this.address = address;
     }
 
     public long getId() {
