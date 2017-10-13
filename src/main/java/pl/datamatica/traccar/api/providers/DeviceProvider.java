@@ -383,7 +383,8 @@ public class DeviceProvider extends ProviderBase {
         if(changes.has("minIdleTime"))
             d.setMinIdleTime(changes.get("minIdleTime").getAsInt());
         if(changes.has("idleSpeedThreshold"))
-            d.setIdleSpeedThreshold(changes.get("idleSpeedThreshold").getAsDouble());
+            d.setIdleSpeedThreshold(changes.get("idleSpeedThreshold").getAsDouble() *
+                        DeviceProvider.NauticMilesToKilometersMultiplier);
         if(changes.has("timeZoneOffset")) {
             if(changes.get("timeZoneOffset").isJsonNull())
                 d.setTimezoneOffset(null);
