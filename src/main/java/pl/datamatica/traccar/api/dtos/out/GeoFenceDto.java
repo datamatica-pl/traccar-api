@@ -36,6 +36,7 @@ public class GeoFenceDto extends AddGeoFenceDto {
         private float radius;
         private String type;
         private long[] deviceIds;
+        private String address;
 
         public Builder geoFence(GeoFence geofence) {
             this.id = geofence.getId();
@@ -56,12 +57,13 @@ public class GeoFenceDto extends AddGeoFenceDto {
             else
                 this.deviceIds = geofence.getDevices().stream()
                         .mapToLong(d -> d.getId()).toArray();
+            this.address = geofence.getAddress();
             return this;
         }
 
         public GeoFenceDto build() {
             return new GeoFenceDto(id, geofenceName, description, allDevices, 
-                    color, points, radius, type, deviceIds);
+                    color, points, radius, type, deviceIds, address);
         }
     }
 
@@ -73,8 +75,10 @@ public class GeoFenceDto extends AddGeoFenceDto {
             final List<PointDto> points, 
             final float radius, 
             final String type, 
-            final long[] deviceIds) {
-        super(geofenceName, description, allDevices, color, points, radius, type, deviceIds);
+            final long[] deviceIds,
+            final String address) {
+        super(geofenceName, description, allDevices, color, points, radius, type, 
+                deviceIds, address);
         this.id = id;
     }
 

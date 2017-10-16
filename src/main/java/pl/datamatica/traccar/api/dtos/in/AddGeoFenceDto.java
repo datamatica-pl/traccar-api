@@ -37,6 +37,7 @@ public class AddGeoFenceDto implements IGeoFenceInfo {
     private final Float radius;
     private final String type;
     private final long[] deviceIds;
+    private final String address;
 
     public static class Builder {
 
@@ -48,6 +49,7 @@ public class AddGeoFenceDto implements IGeoFenceInfo {
         private Float radius;
         private String type;
         private long[] deviceIds;
+        private String address;
 
         public Builder geofenceName(final String value) {
             this.geofenceName = value;
@@ -88,9 +90,15 @@ public class AddGeoFenceDto implements IGeoFenceInfo {
             this.deviceIds = value;
             return this;
         }
+        
+        public Builder address(final String address) {
+            this.address = address;
+            return this;
+        }
 
         public AddGeoFenceDto build() {
-            return new AddGeoFenceDto(geofenceName, description, allDevices, color, points, radius, type, deviceIds);
+            return new AddGeoFenceDto(geofenceName, description, allDevices, color, points, radius, type, deviceIds,
+                    address);
         }
     }
 
@@ -101,7 +109,8 @@ public class AddGeoFenceDto implements IGeoFenceInfo {
             final List<PointDto> points, 
             final Float radius, 
             final String type,
-            final long[] deviceIds) {
+            final long[] deviceIds,
+            final String address) {
         this.geofenceName = geofenceName;
         this.description = description;
         this.allDevices = allDevices;
@@ -110,6 +119,7 @@ public class AddGeoFenceDto implements IGeoFenceInfo {
         this.radius = radius;
         this.type = type;
         this.deviceIds = deviceIds;
+        this.address = address;
     }
 
     @Override
@@ -156,6 +166,10 @@ public class AddGeoFenceDto implements IGeoFenceInfo {
     @Override
     public long[] getDeviceIds() {
         return deviceIds;
+    }
+    
+    public String getAddress() {
+        return address;
     }
     
     public static List<ErrorDto> validate(AddGeoFenceDto geoFenceDto) {
