@@ -464,10 +464,16 @@ public class UserProvider extends ProviderBase {
             addSingleEditUserAuditLog(user.getLogin(), "firstName", dto.getFirstName());
         if (!Objects.equals(user.getLastName(), dto.getLastName()))
             addSingleEditUserAuditLog(user.getLogin(), "lastName", dto.getLastName());
-        if (!Objects.equals(user.getMaxNumOfDevices(), dto.getMaxNumOfDevices()))
-            addSingleEditUserAuditLog(user.getLogin(), "maxNumOfDevices", dto.getMaxNumOfDevices().toString());
-        if (!Objects.equals(user.getExpirationDate(), dto.getExpirationDate()))
-            addSingleEditUserAuditLog(user.getLogin(), "expirationDate", dto.getExpirationDate().toString());
+        if (!Objects.equals(user.getMaxNumOfDevices(), dto.getMaxNumOfDevices())) {
+            String maxDevStr = dto.getMaxNumOfDevices() == null ? 
+                    "null" : dto.getMaxNumOfDevices().toString();
+            addSingleEditUserAuditLog(user.getLogin(), "maxNumOfDevices", maxDevStr);
+        }
+        if (!Objects.equals(user.getExpirationDate(), dto.getExpirationDate())) {
+            String dateStr = dto.getExpirationDate() == null ? 
+                    "null" : dto.getExpirationDate().toString();
+            addSingleEditUserAuditLog(user.getLogin(), "expirationDate", dateStr);
+        }
         if (!Objects.equals(user.isBlocked(), dto.isBlocked()))
             addSingleEditUserAuditLog(user.getLogin(), "blocked", dto.isBlocked() ? "true" : "false");  
     }
