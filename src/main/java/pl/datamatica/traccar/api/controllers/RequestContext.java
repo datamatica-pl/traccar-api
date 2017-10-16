@@ -229,6 +229,8 @@ public class RequestContext implements AutoCloseable {
         ApplicationSettings as = getApplicationSettingsProvider().get();
         if(lang == null)
             lang = as.getLanguage();
+        else if("default".equalsIgnoreCase(lang))
+            lang = "en";
         
         generator.setEntityManager(em);
         generator.setCurrentUser(user);
