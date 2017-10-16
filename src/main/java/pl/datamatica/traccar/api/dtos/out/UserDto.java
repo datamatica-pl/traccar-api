@@ -162,7 +162,7 @@ public class UserDto extends EditUserDto {
             this.readOnly = false;
             
             this.premium = false;
-            for(Device d : user.getDevices())
+            for(Device d : user.getAllAvailableDevices())
                 if(d.isValid(new Date())) {
                     this.premium = true;
                     break;
