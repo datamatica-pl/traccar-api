@@ -26,6 +26,7 @@ import pl.datamatica.traccar.api.dtos.JsonIgnore;
 import pl.datamatica.traccar.api.dtos.in.EditDeviceDto;
 import pl.datamatica.traccar.model.Device;
 import pl.datamatica.traccar.model.Position;
+import pl.datamatica.traccar.model.SpeedUnitMultipier;
 
 public class DeviceDto extends EditDeviceDto implements ICachedDto {
     private final long id;
@@ -210,8 +211,6 @@ public class DeviceDto extends EditDeviceDto implements ICachedDto {
             this.fuelCapacity = capacity;
             return this;
         }
-        
-        private static final Double KilometersToNauticMilesMultiplier = 1.852;
 
         public Builder device(final Device device, Set<Long> availableUserIds) {
             this.id = device.getId();
@@ -237,7 +236,8 @@ public class DeviceDto extends EditDeviceDto implements ICachedDto {
             this.modificationTime = device.getLastUpdate();
             this.blocked = device.isBlocked();
             if(device.getSpeedLimit() != null)
-                this.speedLimit = device.getSpeedLimit() * KilometersToNauticMilesMultiplier;
+                this.speedLimit = device.getSpeedLimit() * SpeedUnitMultipier.KNOTS_TO_KM_MULTIPIER;
+            
             this.batteryLevel = device.getBatteryLevel();
             this.batteryTime = device.getBatteryTime();
             this.batteryTimeout = device.getBatteryTimeout();
@@ -245,7 +245,7 @@ public class DeviceDto extends EditDeviceDto implements ICachedDto {
             this.ignitionTime = device.getIgnitionTime();
             this.positionFrequency = device.getPositionFreq();
             this.autoArm = device.isAutoArmed();
-            this.idleSpeedThreshold = device.getIdleSpeedThreshold() * KilometersToNauticMilesMultiplier;
+            this.idleSpeedThreshold = device.getIdleSpeedThreshold() * SpeedUnitMultipier.KNOTS_TO_KM_MULTIPIER;
             this.minIdleTime = device.getMinIdleTime();
             if(device.getGroup() != null)
                 this.groupId = device.getGroup().getId();
