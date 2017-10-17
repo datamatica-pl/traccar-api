@@ -46,6 +46,7 @@ import pl.datamatica.traccar.api.providers.PositionProvider;
 import pl.datamatica.traccar.api.providers.PositionProvider.PositionSpeedOperator;
 import pl.datamatica.traccar.api.providers.PositionProvider.PositionsQueryParams;
 import pl.datamatica.traccar.api.providers.ProviderException;
+import pl.datamatica.traccar.api.utils.GeoUtils;
 
 public abstract class ReportGenerator {
     public static final int DEFAULT_TABLE_HEIGHT = 150;
@@ -100,8 +101,10 @@ public abstract class ReportGenerator {
     }
     
     protected List<Position> getPositions(Device d, Date from, Date to, boolean disableFilter) throws ProviderException {
-        Stream<Position> positions = positionProvider.getAllAvailablePositions(d, 
-                    from, to, 0);
+        List<Position> positions = positionProvider.getAllAvailablePositions(d, 
+                    from, to, 0)
+                .sorted((p1, p2) -> p1.getTime().compareTo(p2.getTime()))
+                .collect(Collectors.toList());
         if(!disableFilter) {
             UserSettings us = currentUser.getUserSettings();
             PositionsQueryParams qp = new PositionsQueryParams();
@@ -111,9 +114,16 @@ public abstract class ReportGenerator {
             if(us.getSpeedForFilter() != null) {
                 qp.speedValue = us.getSpeedForFilter().intValue();
                 qp.speedComp = speedOpFromSpeedModifier(us.getSpeedModifier());
-            }            
+            }
+            PositionProvider.filterPositions(positions, qp);
         }
-        return positions.collect(Collectors.toList());
+        for(int i=1;i<positions.size();++i) {
+            Position current=positions.get(i),
+                    previous = positions.get(i-1);
+            current.setDistance(GeoUtils.getDistance(previous.getLongitude(), 
+                    previous.getLatitude(), current.getLongitude(), current.getLatitude()));
+        }
+        return positions;
     }
     
     private PositionSpeedOperator speedOpFromSpeedModifier(String modifier) {

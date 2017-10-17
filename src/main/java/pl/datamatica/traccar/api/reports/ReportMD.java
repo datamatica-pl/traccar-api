@@ -20,10 +20,8 @@ import pl.datamatica.traccar.model.Position;
 
 import java.io.IOException;
 import java.util.*;
-import java.util.stream.Collectors;
 import pl.datamatica.traccar.api.dtos.out.ReportDto;
 import pl.datamatica.traccar.api.providers.ProviderException;
-import pl.datamatica.traccar.api.utils.GeoUtils;
 
 public class ReportMD extends ReportGenerator {
     @Override
@@ -31,16 +29,9 @@ public class ReportMD extends ReportGenerator {
         h2(report.getName());
 
         for (Device device : getDevices(report)) {
-            List<Position> positions = positionProvider.getAllAvailablePositions(
-                    device, report.getFromDate(), report.getToDate(), 0)
-                    .collect(Collectors.toList());
-            for(int i=1;i<positions.size();++i) {
-                Position prev = positions.get(i-1),
-                        cur = positions.get(i);
-                cur.setDistance(GeoUtils.getDistance(prev.getLongitude(), 
-                        prev.getLatitude(), cur.getLongitude(), cur.getLatitude()));
-            }
-
+            List<Position> positions = getPositions(
+                    device, report.getFromDate(), report.getToDate(), report.isDisableFilter());
+            
             panelStart();
 
             // heading
