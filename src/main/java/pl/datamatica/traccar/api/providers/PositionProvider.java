@@ -34,6 +34,7 @@ public class PositionProvider extends ProviderBase {
     
     private final User user;
     private final TypedQuery<Position> positionListQuery;
+    private final TypedQuery<Position> historyQuery;
     
     public PositionProvider(EntityManager em, User user) {
         super(em);
@@ -43,6 +44,11 @@ public class PositionProvider extends ProviderBase {
                 + "where p.device = :device and p.serverTime >= :minDate and p.serverTime <= :maxDate "
                 +   "and (validStatus is null or validStatus = :valid) "
                 + "order by p.serverTime", Position.class);
+        
+        historyQuery = em.createQuery("from Position p "
+                +"where p.device = :device and p.time between :minDate and :maxDate "
+                +   "and (validStatus is null or validStatus = :valid) "
+                + "order by p.time", Position.class);
     }
     
     public Position get(long id) throws ProviderException {
@@ -78,6 +84,35 @@ public class PositionProvider extends ProviderBase {
             positionListQuery.setMaxResults(maxCount);            
         
         return positionListQuery.getResultList().stream();
+    }
+    
+    public Stream<Position> getDeviceHistory(Device device, Date minDate, Date maxDate)
+            throws ProviderException {
+        if (!user.hasPermission(UserPermission.HISTORY_READ))
+            throw new ProviderException(ProviderException.Type.ACCESS_DENIED);
+        
+        Date lastAvailPos = device.getLastAvailablePositionDate(new Date());
+        
+        if(minDate == null && user.hasPermission(UserPermission.ALL_HISTORY))
+            minDate = new Date(0);
+        else if (!user.hasPermission(UserPermission.ALL_HISTORY) && 
+                (minDate == null || minDate.before(lastAvailPos)))
+            minDate = lastAvailPos;
+        
+        if(maxDate == null || maxDate.after(new Date()))
+            maxDate = new Date();
+        if(!user.hasPermission(UserPermission.ALL_DEVICES)
+           && !user.getAllAvailableDevices().stream()
+                .anyMatch(d -> d.equals(device)))
+            return Stream.empty();
+
+        historyQuery.setParameter("device", device);
+        historyQuery.setParameter("minDate", minDate);
+        historyQuery.setParameter("maxDate", maxDate);
+        historyQuery.setParameter("valid", Position.VALID_STATUS_CORRECT_POSITION);         
+        
+        return historyQuery.getResultList().stream();
+        
     }
     
     private boolean isVisible(Position p) {

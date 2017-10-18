@@ -101,9 +101,7 @@ public abstract class ReportGenerator {
     }
     
     protected List<Position> getPositions(Device d, Date from, Date to, boolean disableFilter) throws ProviderException {
-        List<Position> positions = positionProvider.getAllAvailablePositions(d, 
-                    from, to, 0)
-                .sorted((p1, p2) -> p1.getTime().compareTo(p2.getTime()))
+        List<Position> positions = positionProvider.getDeviceHistory(d, from, to)
                 .collect(Collectors.toList());
         if(!disableFilter) {
             UserSettings us = currentUser.getUserSettings();
@@ -115,7 +113,7 @@ public abstract class ReportGenerator {
                 qp.speedValue = us.getSpeedForFilter().intValue();
                 qp.speedComp = speedOpFromSpeedModifier(us.getSpeedModifier());
             }
-            PositionProvider.filterPositions(positions, qp);
+            positions = PositionProvider.filterPositions(positions, qp);
         }
         for(int i=1;i<positions.size();++i) {
             Position current=positions.get(i),
