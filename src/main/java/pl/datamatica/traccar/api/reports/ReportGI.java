@@ -21,7 +21,6 @@ import pl.datamatica.traccar.model.Position;
 import java.io.IOException;
 import java.util.Date;
 import java.util.List;
-import java.util.stream.Collectors;
 import pl.datamatica.traccar.api.dtos.out.ReportDto;
 import pl.datamatica.traccar.api.providers.ProviderException;
 import pl.datamatica.traccar.api.reports.MapBuilder.MarkerStyle;

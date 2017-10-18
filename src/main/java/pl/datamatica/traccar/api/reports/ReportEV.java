@@ -147,7 +147,7 @@ public class ReportEV extends ReportGenerator {
 
         for (String header : new String[] {"time", "event"}) {
             tableHeadCellStart();
-            text(message("report"+header));
+            text(message("report_"+header));
             tableHeadCellEnd();
         }
 
