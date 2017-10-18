@@ -45,6 +45,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import pl.datamatica.traccar.api.Application;
 import pl.datamatica.traccar.model.RegistrationMaintenance;
+import pl.datamatica.traccar.model.SpeedUnitMultipier;
 import pl.datamatica.traccar.model.UserPermission;
 
 public class DeviceProvider extends ProviderBase {
@@ -279,8 +280,6 @@ public class DeviceProvider extends ProviderBase {
         query.setParameter(1, device.getId());
         query.executeUpdate();
     }
-
-    public static final Double NauticMilesToKilometersMultiplier = 0.54;
     
     public void updateDevice(long id, EditDeviceDto dto) throws ProviderException {
         checkUserEditPermission();
@@ -297,7 +296,7 @@ public class DeviceProvider extends ProviderBase {
         device.setDescription(dto.getDescription());
         
         if(dto.getSpeedLimit() != null)
-            device.setSpeedLimit(dto.getSpeedLimit() * NauticMilesToKilometersMultiplier);
+            device.setSpeedLimit(dto.getSpeedLimit() * SpeedUnitMultipier.KM_TO_KNOTS_MULTIPIER);
         else
             device.setSpeedLimit(null);
         
@@ -354,7 +353,7 @@ public class DeviceProvider extends ProviderBase {
                 d.setSpeedLimit(null);
             else
                 d.setSpeedLimit(changes.get("speedLimit").getAsDouble()*
-                        DeviceProvider.NauticMilesToKilometersMultiplier);
+                        SpeedUnitMultipier.KM_TO_KNOTS_MULTIPIER);
         }
         if(changes.has("fuelCapacity")) {
             if(changes.get("fuelCapacity").isJsonNull())
@@ -384,7 +383,7 @@ public class DeviceProvider extends ProviderBase {
             d.setMinIdleTime(changes.get("minIdleTime").getAsInt());
         if(changes.has("idleSpeedThreshold"))
             d.setIdleSpeedThreshold(changes.get("idleSpeedThreshold").getAsDouble() *
-                        DeviceProvider.NauticMilesToKilometersMultiplier);
+                    SpeedUnitMultipier.KM_TO_KNOTS_MULTIPIER);
         if(changes.has("timeZoneOffset")) {
             if(changes.get("timeZoneOffset").isJsonNull())
                 d.setTimezoneOffset(null);
