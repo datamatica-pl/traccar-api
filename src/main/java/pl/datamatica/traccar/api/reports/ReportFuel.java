@@ -34,9 +34,8 @@ public class ReportFuel extends ReportGenerator {
         h2(report.getName());
 
         for (Device device : getDevices(report)) {
-            List<Position> positions = positionProvider.getAllAvailablePositions(
-                    device, report.getFromDate(), report.getToDate(), 0)
-                    .collect(Collectors.toList());
+            List<Position> positions = getPositions(device, 
+                    report.getFromDate(), report.getToDate(), report.isDisableFilter());
             panelStart();
 
             // heading

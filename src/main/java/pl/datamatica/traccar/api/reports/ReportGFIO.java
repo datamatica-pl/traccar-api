@@ -33,9 +33,8 @@ public class ReportGFIO extends ReportGenerator {
 
         for (Device device : getDevices(report)) {
             List<GeoFence> geoFences = getGeoFences(report, device);
-            List<Position> positions = positionProvider.getAllAvailablePositions(device, 
-                    report.getFromDate(), report.getToDate(), 0)
-                    .collect(Collectors.toList());
+            List<Position> positions = getPositions(device, 
+                    report.getFromDate(), report.getToDate(), report.isDisableFilter());
 
             panelStart();
 

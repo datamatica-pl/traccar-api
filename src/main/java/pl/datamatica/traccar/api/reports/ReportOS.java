@@ -36,9 +36,8 @@ public class ReportOS extends ReportGenerator {
             if (device.getSpeedLimit() == null) {
                 positions = Collections.emptyList();
             } else {
-                positions = positionProvider.getAllAvailablePositions(device, 
-                        report.getFromDate(), report.getToDate(), 0)
-                        .collect(Collectors.toList());
+                positions = getPositions(device, 
+                        report.getFromDate(), report.getToDate(), report.isDisableFilter());
             }
 
             panelStart();

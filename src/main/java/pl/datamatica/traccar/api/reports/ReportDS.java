@@ -22,7 +22,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-import java.util.stream.Collectors;
 import pl.datamatica.traccar.api.dtos.out.ReportDto;
 import pl.datamatica.traccar.api.providers.ProviderException;
 import pl.datamatica.traccar.api.reports.MapBuilder.MarkerStyle;
@@ -35,9 +34,8 @@ public class ReportDS extends ReportGenerator {
 
         for (Device device : getDevices(report)) {
             List<Position> positions;
-            positions = positionProvider.getAllAvailablePositions(device, 
-                    report.getFromDate(), report.getToDate(), 0)
-                    .collect(Collectors.toList());
+            positions = getPositions(device, 
+                    report.getFromDate(), report.getToDate(), report.isDisableFilter());
 
             panelStart();
 
