@@ -155,7 +155,7 @@ public class Application implements spark.servlet.SparkApplication {
                     }
                     rc.close();
                 } catch (Exception e) {
-                    logger.error("Unable to close resources (EntityManager): ", e.getMessage());
+                    logger.error("Unable to close resources (EntityManager): " + e.getMessage());
                 }
                 StringWriter sw = new StringWriter();
                 exception.printStackTrace(new PrintWriter(sw));
