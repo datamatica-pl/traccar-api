@@ -245,7 +245,11 @@ public class BasicAuthFilter {
                 }
                 rc.close();
             } catch (Exception e) {
-                logger.error("Resources cannot be closed: " + e.getMessage());
+                String closeErrMsg = "Resources cannot be closed! ";
+                closeErrMsg += "Request uri: " + rc.getRequestUri() + ". ";
+                closeErrMsg += "Class and message: " + e.getClass().toString() + ": " + e.getMessage();
+                
+                logger.error(closeErrMsg);
             }
         } else {
             logger.error("Request or RequestContext can not be find, so resources can't properly be closed.");

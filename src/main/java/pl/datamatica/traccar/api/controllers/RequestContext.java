@@ -282,6 +282,14 @@ public class RequestContext implements AutoCloseable {
         final String manager_uri_pattern = "^/imei_manager.*";
         return request.uri().matches(manager_uri_pattern);
     }
+    
+    public final String getRequestUri() {
+        if (request.uri() != null) {
+            return request.uri();
+        } else {
+            return "";
+        }
+    }
 
     @Override
     public void close() throws Exception {
