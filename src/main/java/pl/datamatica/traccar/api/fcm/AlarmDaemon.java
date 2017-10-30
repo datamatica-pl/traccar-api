@@ -41,10 +41,13 @@ public class AlarmDaemon extends Daemon{
         TypedQuery<DeviceEvent> tq = em.createQuery("from DeviceEvent ev "
                 + "inner join fetch ev.device as dev "
                 + "inner join fetch dev.users as usr "
-                + "where ev.time > :prev_test_time", 
+                + "inner join fetch ev.position as pos "
+                + "where ev.time > :prev_test_time "
+                + "and pos.valid = :true", 
                 DeviceEvent.class);
         calendar.add(Calendar.MINUTE, -1);
-        tq.setParameter("prev_test_time", calendar.getTime());
+        tq.setParameter("prev_test_time", calendar.getTime())
+                .setParameter("true", true);
         
         Set<User> users = new HashSet<>();
         for(DeviceEvent ev : tq.getResultList())

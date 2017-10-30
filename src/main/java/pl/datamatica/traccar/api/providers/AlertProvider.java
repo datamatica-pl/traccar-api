@@ -93,6 +93,10 @@ public class AlertProvider {
                 .filter(e -> ChronoUnit.DAYS.between(e.getTime().toInstant()
                         .atZone(ZoneId.systemDefault()).toLocalDate(), 
                         LocalDate.now()) <= e.getDevice().getAlertsHistoryLength())
+                .filter(e -> e.getPosition().getValid() != null 
+                        && e.getPosition().getValid())
+                .filter(e -> e.getPosition().getSpeed() == null 
+                        || e.getPosition().getSpeed() < 255)
                 .collect(Collectors.toList());
     }
 }
