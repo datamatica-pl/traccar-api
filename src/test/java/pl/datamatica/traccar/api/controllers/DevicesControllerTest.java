@@ -31,7 +31,6 @@ import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
 import static pl.datamatica.traccar.api.controllers.ControllerTest.*;
-import pl.datamatica.traccar.api.controllers.DevicesController.PositionsQueryParams;
 import pl.datamatica.traccar.api.dtos.MessageKeys;
 import pl.datamatica.traccar.api.dtos.in.AddDeviceDto;
 import pl.datamatica.traccar.api.dtos.in.EditDeviceDto;
@@ -41,6 +40,8 @@ import pl.datamatica.traccar.api.dtos.out.ListDto;
 import pl.datamatica.traccar.api.dtos.out.PositionDto;
 import pl.datamatica.traccar.api.providers.DeviceProvider;
 import pl.datamatica.traccar.api.providers.PositionProvider;
+import pl.datamatica.traccar.api.providers.PositionProvider.PositionSpeedOperator;
+import pl.datamatica.traccar.api.providers.PositionProvider.PositionsQueryParams;
 import pl.datamatica.traccar.api.providers.ProviderException;
 import pl.datamatica.traccar.api.providers.ProviderException.Type;
 import pl.datamatica.traccar.api.providers.UserProvider;
@@ -438,7 +439,7 @@ public class DevicesControllerTest {
         assertTrue(res.hideInvalid);
         assertTrue(res.hideDuplicates);
         assertTrue(res.getAll);
-        assertEquals(DevicesController.PositionSpeedOperator.GREATEREQUAL, res.speedComp);
+        assertEquals(PositionSpeedOperator.GREATEREQUAL, res.speedComp);
         assertEquals(15, res.speedValue.intValue());
         assertEquals(2, res.minDistance.intValue());
     }
@@ -446,10 +447,10 @@ public class DevicesControllerTest {
     @Test
     public void filterPositions_hideZero() {
         List<Position> list = getFilterTestPositionsList();
-        PositionsQueryParams qp = dc.new PositionsQueryParams();
+        PositionsQueryParams qp = new PositionsQueryParams();
         qp.hideZero = true;
         
-        List<Position> res = dc.filterPositions(list, qp);
+        List<Position> res = PositionProvider.filterPositions(list, qp);
         
         assertNotNull(res);
         assertEquals(list.size() - 2, res.size());
@@ -461,10 +462,10 @@ public class DevicesControllerTest {
     @Test
     public void filterPositions_hideInvalid() {
         List<Position> list = getFilterTestPositionsList();
-        PositionsQueryParams qp = dc.new PositionsQueryParams();
+        PositionsQueryParams qp = new PositionsQueryParams();
         qp.hideInvalid = true;
         
-        List<Position> res = dc.filterPositions(list, qp);
+        List<Position> res = PositionProvider.filterPositions(list, qp);
         
         assertNotNull(res);
         assertEquals(list.size() - 2, res.size());
@@ -476,10 +477,10 @@ public class DevicesControllerTest {
     @Test
     public void filterPositions_hideDuplicates() {
         List<Position> list = getFilterTestPositionsList();
-        PositionsQueryParams qp = dc.new PositionsQueryParams();
+        PositionsQueryParams qp = new PositionsQueryParams();
         qp.hideDuplicates = true;
         
-        List<Position> res = dc.filterPositions(list, qp);
+        List<Position> res = PositionProvider.filterPositions(list, qp);
         
         assertNotNull(res);
         assertEquals(list.size() - 3, res.size());
@@ -488,10 +489,10 @@ public class DevicesControllerTest {
     @Test
     public void filterPositions_minDistance() {
     List<Position> list = getFilterTestPositionsList();
-        PositionsQueryParams qp = dc.new PositionsQueryParams();
+        PositionsQueryParams qp = new PositionsQueryParams();
         qp.minDistance = 100;
         
-        List<Position> res = dc.filterPositions(list, qp);
+        List<Position> res = PositionProvider.filterPositions(list, qp);
         
         assertNotNull(res);
         assertEquals(list.size() - 6, res.size());
@@ -500,11 +501,11 @@ public class DevicesControllerTest {
     @Test
     public void filterPositions_speedEqual() {
     List<Position> list = getFilterTestPositionsList();
-        PositionsQueryParams qp = dc.new PositionsQueryParams();
-        qp.speedComp = DevicesController.PositionSpeedOperator.EQUAL;
+        PositionsQueryParams qp = new PositionsQueryParams();
+        qp.speedComp = PositionSpeedOperator.EQUAL;
         qp.speedValue = 10;
         
-        List<Position> res = dc.filterPositions(list, qp);
+        List<Position> res = PositionProvider.filterPositions(list, qp);
         
         assertNotNull(res);
         assertEquals(4, res.size());
@@ -513,11 +514,11 @@ public class DevicesControllerTest {
     @Test
     public void filterPositions_speedLess() {
         List<Position> list = getFilterTestPositionsList();
-        PositionsQueryParams qp = dc.new PositionsQueryParams();
-        qp.speedComp = DevicesController.PositionSpeedOperator.LESS;
+        PositionsQueryParams qp = new PositionsQueryParams();
+        qp.speedComp = PositionSpeedOperator.LESS;
         qp.speedValue = 19;
         
-        List<Position> res = dc.filterPositions(list, qp);
+        List<Position> res = PositionProvider.filterPositions(list, qp);
         
         assertNotNull(res);
         assertEquals(6, res.size());
@@ -526,14 +527,14 @@ public class DevicesControllerTest {
     @Test
     public void filterPositions_combined() {
         List<Position> list = getFilterTestPositionsList();
-        PositionsQueryParams qp = dc.new PositionsQueryParams();
-        qp.speedComp = DevicesController.PositionSpeedOperator.LESSEQUAL;
+        PositionsQueryParams qp = new PositionsQueryParams();
+        qp.speedComp = PositionSpeedOperator.LESSEQUAL;
         qp.speedValue = 25;
         qp.minDistance = 100;
         qp.hideInvalid = true;
         qp.hideZero = true;
         
-        List<Position> res = dc.filterPositions(list, qp);
+        List<Position> res = PositionProvider.filterPositions(list, qp);
         
         assertNotNull(res);
         assertEquals(2, res.size());

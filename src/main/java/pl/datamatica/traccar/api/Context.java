@@ -18,6 +18,7 @@ package pl.datamatica.traccar.api;
 
 import com.google.gson.*;
 import java.awt.Image;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.Map;
@@ -73,6 +74,14 @@ public class Context {
     
     private Map<String, String> getApiConnectionData() {
         Map<String, String> properties = new HashMap<>();
+
+        // Let's always use C3P0 instead of built in Hibernate connection pool,
+        // Traccar also hard-code it, so it should not be a problem.
+        // First property (provider_class) may be ommitted if any c3po properties are added, but let's be explicit
+        properties.put("hibernate.connection.provider_class", "org.hibernate.c3p0.internal.C3P0ConnectionProvider");
+        properties.put("hibernate.c3p0.testConnectionOnCheckin", "true");
+        properties.put("hibernate.c3p0.idle_test_period", "600");
+
         try {
             final Class<?> configClass;
             configClass = Class.forName("org.traccar.Config");
@@ -83,7 +92,7 @@ public class Context {
 
             try {
                 loadMethod.invoke(configObject, PRODUCTION_TRACCAR_CONFIG_FILE);
-            } catch (Exception e1) {
+            } catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException e1) {
                 loadMethod.invoke(configObject, DEV_TRACCAR_CONFIG_FILE);
             }
             
@@ -104,7 +113,8 @@ public class Context {
             if (password != null) {
                 properties.put("hibernate.connection.password", password);
             }
-        } catch (Exception e) {
+        } catch (ClassNotFoundException | IllegalAccessException | IllegalArgumentException | InstantiationException |
+                NoSuchMethodException | SecurityException | InvocationTargetException e) {
             String errMsg = String.format("Unable to get connection to API's metadata DB from config file"
                     + " (can't load %s nor %s): %s", PRODUCTION_TRACCAR_CONFIG_FILE,
                     DEV_TRACCAR_CONFIG_FILE, e.getMessage());

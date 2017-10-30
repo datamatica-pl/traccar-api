@@ -30,24 +30,20 @@ public class ApplicationSettingsDto extends EditApplicationSettingsDto {
             boolean registrationEnabled, 
             Short updateInterval, 
             String defaultPasswordHash, 
-            boolean disallowDeviceManagementByUsers, 
             boolean evantRecordingEnabled, 
             int notificationExpirationPeriod, 
             String language, 
             String bingMapsKey, 
             String matchServiceURL, 
-            boolean allowCommandsOnlyForAdmins,
             long defaultUserGroupId) {
         super(registrationEnabled, 
                     updateInterval, 
                     defaultPasswordHash, 
-                    disallowDeviceManagementByUsers, 
                     evantRecordingEnabled, 
                     notificationExpirationPeriod, 
                     language, 
                     bingMapsKey, 
                     matchServiceURL, 
-                    allowCommandsOnlyForAdmins,
                     defaultUserGroupId);
         this.id = id;
     }
@@ -57,13 +53,11 @@ public class ApplicationSettingsDto extends EditApplicationSettingsDto {
         private boolean registrationEnabled;
         private Short updateInterval;
         private String defaultPasswordHash;
-        private boolean disallowDeviceManagementByUsers;
         private boolean evantRecordingEnabled;
         private int notificationExpirationPeriod;
         private String language;
         private String bingMapsKey;
         private String matchServiceURL;
-        private boolean allowCommandsOnlyForAdmins;
         private long defaultUserGroupId;
         
         public Builder() {
@@ -86,11 +80,6 @@ public class ApplicationSettingsDto extends EditApplicationSettingsDto {
         
         public Builder defaultPasswordHash(final String value) {
             this.defaultPasswordHash = value;
-            return this;
-        }
-        
-        public Builder disallowDeviceManagementByUsers(final boolean value) {
-            this.disallowDeviceManagementByUsers = value;
             return this;
         }
         
@@ -119,11 +108,6 @@ public class ApplicationSettingsDto extends EditApplicationSettingsDto {
             return this;
         }
         
-        public Builder allowCommandsOnlyForAdmins(final boolean value) {
-            this.allowCommandsOnlyForAdmins = value;
-            return this;
-        }
-        
         public Builder defaultUserGroupId(final long value) {
             this.defaultUserGroupId = value;
             return this;
@@ -140,13 +124,11 @@ public class ApplicationSettingsDto extends EditApplicationSettingsDto {
             this.registrationEnabled = as.getRegistrationEnabled();
             this.updateInterval = as.getUpdateInterval();
             this.defaultPasswordHash = as.getDefaultHashImplementation().getName();
-            this.disallowDeviceManagementByUsers = as.isDisallowDeviceManagementByUsers();
             this.evantRecordingEnabled = as.isEventRecordingEnabled();
             this.notificationExpirationPeriod = as.getNotificationExpirationPeriod();
             this.language = as.getLanguage();
             this.bingMapsKey = as.getBingMapsKey();
             this.matchServiceURL = as.getMatchServiceURL();
-            this.allowCommandsOnlyForAdmins = as.isAllowCommandsOnlyForAdmins();
             this.defaultUserGroupId = as.getDefaultGroup().getId();
             return this;
         }
@@ -156,13 +138,11 @@ public class ApplicationSettingsDto extends EditApplicationSettingsDto {
                     registrationEnabled, 
                     updateInterval, 
                     defaultPasswordHash, 
-                    disallowDeviceManagementByUsers, 
                     evantRecordingEnabled, 
                     notificationExpirationPeriod, 
                     language, 
                     bingMapsKey, 
                     matchServiceURL, 
-                    allowCommandsOnlyForAdmins,
                     defaultUserGroupId);
         }
     }

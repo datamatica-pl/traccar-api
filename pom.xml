@@ -81,6 +81,17 @@
             <artifactId>log4j-core</artifactId>
             <version>2.7</version>
         </dependency>
+        
+        <dependency>
+            <groupId>com.mchange</groupId>
+            <artifactId>c3p0</artifactId>
+            <version>0.9.5.2</version>
+        </dependency>
+        <dependency>
+            <groupId>org.hibernate</groupId>
+            <artifactId>hibernate-c3p0</artifactId>
+            <version>4.3.1.Final</version>
+        </dependency>
 
         <dependency>
                 <groupId>org.eclipse.persistence</groupId>
@@ -123,6 +134,13 @@
             <type>jar</type>
         </dependency>
 
+        <dependency>
+            <groupId>commons-io</groupId>
+            <artifactId>commons-io</artifactId>
+            <version>2.5</version>
+        </dependency>
+
+
         <!-- Test dependencies -->
         <dependency>
             <groupId>junit</groupId>
@@ -134,7 +152,7 @@
         <dependency>
             <groupId>org.mockito</groupId>
             <artifactId>mockito-core</artifactId>
-            <version>1.9.5</version>
+            <version>1.10.19</version>
             <scope>test</scope>
             <type>jar</type>
         </dependency>
@@ -143,6 +161,12 @@
             <artifactId>h2</artifactId>
             <version>1.4.186</version>
             <scope>test</scope>
+        </dependency>
+        <dependency>
+          <groupId>org.apache.commons</groupId>
+          <artifactId>commons-lang3</artifactId>
+          <version>3.3.2</version>
+          <scope>test</scope>
         </dependency>
     </dependencies>
     

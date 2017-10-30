@@ -86,6 +86,12 @@ public class GeoFenceProvider extends ProviderBase{
         }
         return geoFence;
     }
+    
+    GeoFence getEditableGeofence(long id) throws ProviderException {
+        if(!requestUser.hasPermission(UserPermission.GEOFENCE_READ))
+            throw new ProviderException(Type.ACCESS_DENIED);
+        return get(GeoFence.class, id, this::isVisible);
+    }
 
     private boolean isVisible(GeoFence gf) {
         if(requestUser.hasPermission(UserPermission.ALL_GEOFENCES))
@@ -100,13 +106,7 @@ public class GeoFenceProvider extends ProviderBase{
             throw new ProviderException(Type.ACCESS_DENIED);
         
         GeoFence gf = new GeoFence();
-        gf.setName(geoFenceDto.getGeofenceName());
-        gf.setDescription(geoFenceDto.getDescription());
-        gf.setColor(geoFenceDto.getColor());
-        gf.setPoints(geoFenceDto.getPointsString());
-        gf.setType(GeoFenceType.valueOf(geoFenceDto.getType()));
-        if(gf.getType() != GeoFenceType.POLYGON)
-            gf.setRadius(geoFenceDto.getRadius());
+        updateGeoFence(gf, geoFenceDto);
         gf.setUsers(Collections.singleton(requestUser));
         Set<Device> devices = Arrays.stream(geoFenceDto.getDeviceIds())
                 .mapToObj(id -> em.find(Device.class, id))
@@ -126,10 +126,8 @@ public class GeoFenceProvider extends ProviderBase{
             throw new ProviderException(Type.ACCESS_DENIED);
         
         GeoFence geoFence = get(GeoFence.class, id, this::isVisible);
+        updateGeoFence(geoFence, geoFenceDto);
         
-        geoFence.setColor(geoFenceDto.getColor());
-        geoFence.setDescription(geoFenceDto.getDescription());
-
         Set<Device> devices = Arrays.stream(geoFenceDto.getDeviceIds())
                 .mapToObj(i -> em.find(Device.class, i))
                 .collect(Collectors.toSet());
@@ -139,15 +137,20 @@ public class GeoFenceProvider extends ProviderBase{
             geoFence.getDevices().removeAll(requestUser.getAllAvailableDevices());
         geoFence.getDevices().addAll(devices);
         
-        geoFence.setName(geoFenceDto.getGeofenceName());
-        geoFence.setPoints(geoFenceDto.getPointsString());
-        geoFence.setType(GeoFenceType.valueOf(geoFenceDto.getType()));
-        if(geoFence.getType() != GeoFenceType.POLYGON)
-            geoFence.setRadius(geoFenceDto.getRadius());
-        
         em.persist(geoFence);
         logger.info("{} updated geofence {} (id={})",
                 requestUser.getLogin(), geoFence.getName(), geoFence.getId());
+    }
+    
+    private void updateGeoFence(GeoFence gf, IGeoFenceInfo dto) {
+        gf.setName(dto.getGeofenceName());
+        gf.setDescription(dto.getDescription());
+        gf.setColor(dto.getColor());
+        gf.setPoints(dto.getPointsString());
+        gf.setType(GeoFenceType.valueOf(dto.getType()));
+        if(gf.getType() != GeoFenceType.POLYGON)
+            gf.setRadius(dto.getRadius());
+        gf.setAddress(dto.getAddress());
     }
     
     public void updateGeofenceShare(long id, List<Long> uids) throws ProviderException {

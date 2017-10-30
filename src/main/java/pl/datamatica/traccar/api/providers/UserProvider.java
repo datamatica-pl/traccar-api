@@ -88,10 +88,7 @@ public class UserProvider extends ProviderBase {
     public Stream<User> getAllAvailableUsers() {
         if(requestUser.hasPermission(UserPermission.ALL_USERS)) 
             return getAllUsers();
-        return Stream.concat(requestUser.getAllManagedUsers().stream(), 
-                requestUser.getManagedBy() == null ?
-                        Stream.of(requestUser) :
-                        Stream.of(requestUser, requestUser.getManagedBy()));
+        return Stream.concat(requestUser.getAllManagedUsers().stream(), Stream.of(requestUser));
     }
     
     public Stream<User> getAllManagedUsers() {
@@ -227,6 +224,10 @@ public class UserProvider extends ProviderBase {
         query = em.createQuery("DELETE FROM UserDeviceStatus uds WHERE uds.id.user = ?");
         query.setParameter(1, user);
         query.executeUpdate();
+        
+        query = em.createQuery("DELETE FROM UserSession us WHERE us.userId = ?");
+        query.setParameter(1, user.getId());
+        query.executeUpdate();
     }
     
     private void removeUserResources(User user) throws Exception {
@@ -349,8 +350,11 @@ public class UserProvider extends ProviderBase {
         logger.info("{} activated his account", user.getLogin());
     }
     
-    public String requestPasswordReset(String login) {
+    public String requestPasswordReset(String login) throws ProviderException {
         User u = getUserByLogin(login);
+        if (u == null) 
+            throw new ProviderException(Type.NOT_FOUND);
+        
         u.setPassResetToken(generateToken("passResetToken"));
         em.persist(u);
         return u.getPassResetToken();
@@ -460,10 +464,16 @@ public class UserProvider extends ProviderBase {
             addSingleEditUserAuditLog(user.getLogin(), "firstName", dto.getFirstName());
         if (!Objects.equals(user.getLastName(), dto.getLastName()))
             addSingleEditUserAuditLog(user.getLogin(), "lastName", dto.getLastName());
-        if (!Objects.equals(user.getMaxNumOfDevices(), dto.getMaxNumOfDevices()))
-            addSingleEditUserAuditLog(user.getLogin(), "maxNumOfDevices", dto.getMaxNumOfDevices().toString());
-        if (!Objects.equals(user.getExpirationDate(), dto.getExpirationDate()))
-            addSingleEditUserAuditLog(user.getLogin(), "expirationDate", dto.getExpirationDate().toString());
+        if (!Objects.equals(user.getMaxNumOfDevices(), dto.getMaxNumOfDevices())) {
+            String maxDevStr = dto.getMaxNumOfDevices() == null ? 
+                    "null" : dto.getMaxNumOfDevices().toString();
+            addSingleEditUserAuditLog(user.getLogin(), "maxNumOfDevices", maxDevStr);
+        }
+        if (!Objects.equals(user.getExpirationDate(), dto.getExpirationDate())) {
+            String dateStr = dto.getExpirationDate() == null ? 
+                    "null" : dto.getExpirationDate().toString();
+            addSingleEditUserAuditLog(user.getLogin(), "expirationDate", dateStr);
+        }
         if (!Objects.equals(user.isBlocked(), dto.isBlocked()))
             addSingleEditUserAuditLog(user.getLogin(), "blocked", dto.isBlocked() ? "true" : "false");  
     }

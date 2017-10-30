@@ -34,4 +34,6 @@ public interface IGeoFenceInfo {
     
     long[] getDeviceIds();
     
+    String getAddress();
+    
 }

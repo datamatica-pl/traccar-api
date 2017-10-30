@@ -26,6 +26,7 @@ import java.util.logging.Level;
 import java.util.regex.Pattern;
 import javax.imageio.ImageIO;
 import javax.naming.InitialContext;
+import javax.persistence.EntityManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import spark.Spark;
@@ -36,6 +37,7 @@ import pl.datamatica.traccar.api.controllers.RequestContext;
 import pl.datamatica.traccar.api.fcm.AlarmDaemon;
 import pl.datamatica.traccar.api.fcm.Daemon;
 import pl.datamatica.traccar.api.fcm.SubscriptionDaemon;
+import pl.datamatica.traccar.api.providers.ApplicationSettingsProvider;
 import pl.datamatica.traccar.api.providers.ImageProvider;
 
 
@@ -67,7 +69,8 @@ public class Application implements spark.servlet.SparkApplication {
             new ApplicationSettingsController.Binder(),
             new DeviceGroupController.Binder(),
             new UserGroupsController.Binder(),
-            new AuditLogController.Binder()
+            new AuditLogController.Binder(),
+            new ReportsController.Binder()
         };
     
     private final Daemon[] DAEMONS = new Daemon[]{
@@ -95,9 +98,6 @@ public class Application implements spark.servlet.SparkApplication {
             rc.beginTransaction();
             if (rc.isRequestForMetadata(req)) {
                 rc.beginMetadataTransaction();
-            }
-            if (rc.isRequestForImeiManager(req)) {
-                String test = "abc";
             }
             req.attribute(REQUEST_CONTEXT_KEY, rc);
             baf.handle(req, res);
@@ -137,6 +137,11 @@ public class Application implements spark.servlet.SparkApplication {
         ScheduledExecutorService scheduler = Context.getInstance().getDaemonExecutor();
         for(Daemon daemon : DAEMONS) 
             daemon.start(scheduler);
+        
+        EntityManager em = Context.getInstance().createEntityManager();
+        ApplicationSettingsProvider asp = new ApplicationSettingsProvider(em);
+        if(asp.get().isEventRecordingEnabled())
+            EventDaemon.getInstance().start();
 
         if(Context.getInstance().isInDevMode()) {
             Spark.exception(Exception.class, (exception, request, response) -> {

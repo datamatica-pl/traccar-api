@@ -64,13 +64,11 @@ public class ApplicationSettingsProvider{
         as.setRegistrationEnabled(dto.isRegistrationEnabled());
         as.setUpdateInterval(dto.getUpdateInterval());
         as.setDefaultHashImplementation(PasswordHashMethod.fromString(dto.getDefaultPasswordHash()));
-        as.setDisallowDeviceManagementByUsers(dto.isDisallowDeviceManagementByUsers());
         as.setEventRecordingEnabled(dto.isEventRecordingEnabled());
         as.setNotificationExpirationPeriod(dto.getNotificationExpirationPeriod());
         as.setLanguage(dto.getLanguage());
         as.setBingMapsKey(dto.getBingMapsKey());
         as.setMatchServiceURL(dto.getMatchServiceURL());
-        as.setAllowCommandsOnlyForAdmins(dto.isAllowCommandsOnlyForAdmins());
         
         if (requestUser.hasPermission(UserPermission.USER_GROUP_MANAGEMENT) && dto.getDefaultUserGroupId() != null) {
             UserGroup group = userGroupsProvider.getGroup(dto.getDefaultUserGroupId());
@@ -91,8 +89,6 @@ public class ApplicationSettingsProvider{
             addSingleChangeAuditLog("updateInterval", dto.getUpdateInterval().toString());
         if (!Objects.equals(as.getDefaultHashImplementation(), PasswordHashMethod.fromString(dto.getDefaultPasswordHash())))
             addSingleChangeAuditLog("defaultPasswordHash", dto.getDefaultPasswordHash());
-        if (as.isDisallowDeviceManagementByUsers() != dto.isDisallowDeviceManagementByUsers())
-            addSingleChangeAuditLog("disallowDeviceManagementByUsers", dto.isDisallowDeviceManagementByUsers() ? "true" : "false");
         if (as.isEventRecordingEnabled() != dto.isEventRecordingEnabled())
             addSingleChangeAuditLog("eventRecordingEnabled", dto.isEventRecordingEnabled() ? "true" : "false");
         if (as.getNotificationExpirationPeriod() != dto.getNotificationExpirationPeriod())
@@ -103,8 +99,6 @@ public class ApplicationSettingsProvider{
             addSingleChangeAuditLog("bingMapsKey", dto.getBingMapsKey());
         if (!Objects.equals(as.getMatchServiceURL(), dto.getMatchServiceURL()))
             addSingleChangeAuditLog("matchServiceURL", dto.getMatchServiceURL());
-        if (as.isAllowCommandsOnlyForAdmins() != dto.isAllowCommandsOnlyForAdmins())
-            addSingleChangeAuditLog("allowCommandsOnlyForAdmins", dto.isAllowCommandsOnlyForAdmins() ? "true" : "false");
     }
     
     private void addSingleChangeAuditLog(String fieldName, String fieldNewValue) {
