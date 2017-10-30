@@ -60,7 +60,7 @@ public class HtmlReportRenderer implements IReportRenderer {
         line("<link rel=\"stylesheet\" href=\"https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css\" type=\"text/css\">");
         // include OpenLayers 3 css and javascript if report intends to include map
         if (report.isIncludeMap() && ReportType.valueOf(report.getReportType()).supportsMapDisplay()) {
-            line("<link rel=\"stylesheet\" href=\"https://cdnjs.cloudflare.com/ajax/libs/ol3/3.11.1/ol.min.js\" type=\"text/css\">");
+            line("<link rel=\"stylesheet\" href=\"https://cdnjs.cloudflare.com/ajax/libs/ol3/3.11.1/ol.min.css\" type=\"text/css\">");
             line("<script src=\"https://cdnjs.cloudflare.com/ajax/libs/ol3/3.11.1/ol.min.js\" type=\"text/javascript\"></script>");
         }
         if(ReportType.valueOf(report.getReportType()) == ReportType.FUEL_CONSUMPTION) {
