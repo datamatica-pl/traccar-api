@@ -51,9 +51,15 @@ public class ReportGI extends ReportGenerator {
             // device details
             deviceDetails(device);
             // data table
+            if(!positions.isEmpty() && report.isIncludeMap()) {
+                html("<div class=\"col-md-6\">");
+            }
             dataTable(new Info(positions).calculate());
             if (!positions.isEmpty() && report.isIncludeMap()) {
+                html("</div>");
+                html("<div class=\"col-md-6\">");
                 drawMap(positions);
+                html("</div>");
             }
             panelBodyEnd();
 

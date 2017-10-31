@@ -65,9 +65,16 @@ public class ReportEV extends ReportGenerator {
             deviceDetails(device);
             // data table
             if (!events.isEmpty()) {
+                if(report.isIncludeMap()) {
+                    html("<div class=\"col-md-6\">");
+                }
                 drawTable(getGeoFences(report, device), events);
-                if(report.isIncludeMap())
+                if(report.isIncludeMap()) {
+                    html("</div>");
+                    html("<div class=\"col-md-6\">");
                     drawMap(events);
+                    html("</div>");
+                }
             }
 
             panelBodyEnd();
@@ -82,7 +89,7 @@ public class ReportEV extends ReportGenerator {
         for(DeviceEvent ev : events) {
             if(isVisible(ev))
                 builder.marker(ev.getPosition(), 
-                        MarkerStyle.event(ev.getType(), getLabel(ev)));
+                        MarkerStyle.event(ev.getType(), ""));
         }
         html(builder.bindWithTable("table", 1).create());
     }

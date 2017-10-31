@@ -49,7 +49,7 @@ import pl.datamatica.traccar.api.providers.ProviderException;
 import pl.datamatica.traccar.api.utils.GeoUtils;
 
 public abstract class ReportGenerator {
-    public static final int DEFAULT_TABLE_HEIGHT = 150;
+    public static final int DEFAULT_TABLE_HEIGHT = 350;
     
     EntityManager entityManager;
     PositionProvider positionProvider;

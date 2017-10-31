@@ -21,7 +21,6 @@ import pl.datamatica.traccar.model.Device;
 
 import java.io.IOException;
 import java.util.*;
-import java.util.stream.Collectors;
 import pl.datamatica.traccar.api.dtos.out.ReportDto;
 import pl.datamatica.traccar.api.providers.ProviderException;
 import pl.datamatica.traccar.api.utils.GeoFenceCalculator;

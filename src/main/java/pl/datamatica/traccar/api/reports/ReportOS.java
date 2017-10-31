@@ -58,8 +58,15 @@ public class ReportOS extends ReportGenerator {
             deviceDetails(device);
             // data table
             if (!positions.isEmpty()) {
+                if(report.isIncludeMap())
+                    html("<div class=\"col-md-6\">");
                 drawTable(positions);
-                drawMap(positions);
+                if(report.isIncludeMap()) {
+                    html("</div");
+                    html("<div class=\"col-md-6\">");
+                    drawMap(positions);
+                    html("</div>");
+                }
             }
 
             panelBodyEnd();

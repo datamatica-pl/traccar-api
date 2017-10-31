@@ -56,9 +56,16 @@ public class ReportDS extends ReportGenerator {
             // data table
             if (!positions.isEmpty()) {
                 List<Data> datas = calculate(positions);
+                if(!datas.isEmpty() && report.isIncludeMap()) {
+                    html("<div class=\"col-md-6\">");
+                }
                 drawTable(datas);
-                if(!datas.isEmpty() && report.isIncludeMap())
+                if(!datas.isEmpty() && report.isIncludeMap()) {
+                    html("</div>");
+                    html("<div class=\"col-md-6\">");
                     drawMap(datas, positions);
+                    html("</div>");
+                }
             } else {
                 drawSummary(0d, 0, 0, 0d, 0d);
             }
@@ -78,9 +85,7 @@ public class ReportDS extends ReportGenerator {
         
         for(Data data : datas) {
             if(data.idle) {
-                String label = String.format("T: %s D: %d m", data.start.getTime(),
-                        data.getDuration()/60000);
-                builder.marker(data.start, MarkerStyle.event(DeviceEventType.STOPPED, label));
+                builder.marker(data.start, MarkerStyle.event(DeviceEventType.STOPPED, ""));
             }
         }
         
