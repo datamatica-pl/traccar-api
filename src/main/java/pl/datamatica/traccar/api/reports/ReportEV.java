@@ -72,7 +72,7 @@ public class ReportEV extends ReportGenerator {
                 if(report.isIncludeMap()) {
                     html("</div>");
                     html("<div class=\"col-md-6\">");
-                    drawMap(events);
+                    drawMap(getGeoFences(report, device), events);
                     html("</div>");
                 }
             }
@@ -84,9 +84,12 @@ public class ReportEV extends ReportGenerator {
         }
     }
     
-    private void drawMap(List<DeviceEvent> events) {
+    private void drawMap(List<GeoFence> gfs, List<DeviceEvent> events) {
         MapBuilder builder = getMapBuilder();
         for(DeviceEvent ev : events) {
+            if (ev.getGeoFence() != null && !gfs.contains(ev.getGeoFence())) {
+                continue;
+            }
             if(isVisible(ev))
                 builder.marker(ev.getPosition(), 
                         MarkerStyle.event(ev.getType(), ""));
@@ -177,6 +180,9 @@ public class ReportEV extends ReportGenerator {
             }
             if (event.getMaintenance() != null) {
                 eventText += " (" + event.getMaintenance().getName() + ")";
+            }
+            if(event.getType() == DeviceEventType.OVERSPEED) {
+                eventText += " (" + formatSpeed(event.getPosition().getSpeed()) +")";
             }
             tableCell(eventText);
             extentCell(event.getPosition(), event.getPosition());
