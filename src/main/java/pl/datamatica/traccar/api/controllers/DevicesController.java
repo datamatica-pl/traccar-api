@@ -320,6 +320,9 @@ public class DevicesController extends ControllerBase {
             if (!qp.errors.isEmpty()) 
                 return badRequest(qp.errors);
             
+            if(qp.minDate == null)
+                qp.minDate = minDate;
+            
             List<Position> pos = positions
                     .getAllAvailablePositions(device, qp.minDate, qp.maxDate, 
                             qp.getAll ? 0 : MAX_RESULT_COUNT+1)
