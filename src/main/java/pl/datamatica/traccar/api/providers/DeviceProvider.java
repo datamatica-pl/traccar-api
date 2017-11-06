@@ -506,6 +506,10 @@ public class DeviceProvider extends ProviderBase {
             d.getUsers().removeAll(requestUser.getAllManagedUsers());
             d.getUsers().remove(requestUser);
         }
+        if(userIds.isEmpty()) {
+            return;
+        }
+        
         Set<Long> ids = new HashSet<>(userIds);
         List<User> users;
         if(requestUser.hasPermission(UserPermission.ALL_USERS)) {
