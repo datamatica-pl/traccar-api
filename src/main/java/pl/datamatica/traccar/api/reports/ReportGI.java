@@ -72,8 +72,6 @@ public class ReportGI extends ReportGenerator {
                 .polyline(positions, "#00f", 2)
                 .marker(positions.get(0), MarkerStyle.routeStart())
                 .marker(positions.get(positions.size()-1), MarkerStyle.routeEnd());
-        for(Position p:positions)
-            builder.marker(p, MarkerStyle.arrow(p.getCourse()));
         html(builder.create());
     }
 
