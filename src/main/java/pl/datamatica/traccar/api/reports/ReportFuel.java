@@ -46,14 +46,20 @@ public class ReportFuel extends ReportGenerator {
             // body
             panelBodyStart();
             
+            // period
+            paragraphStart();
+            bold(message("report_time_period") + ": ");
+            text(formatDate(report.getFromDate()) + " - " + formatDate(report.getToDate()));
+            paragraphEnd();
+            
             printData(positions);
             declareFunctions();
-            drawTable(positions);
             drawPlot(new DataAccessor().id("io83").conversion("y*0.1")
                     .normalize(true),
                     "report_fuel_consumed");
             drawPlot(new DataAccessor().id("io84"),
                     "report_fuel_level");
+            drawTable(positions);
 
             panelBodyEnd();
 
