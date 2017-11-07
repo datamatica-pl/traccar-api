@@ -24,6 +24,8 @@ import java.util.*;
 import pl.datamatica.traccar.api.dtos.out.ReportDto;
 import pl.datamatica.traccar.api.providers.ProviderException;
 import pl.datamatica.traccar.api.utils.GeoFenceCalculator;
+import pl.datamatica.traccar.model.DeviceEvent;
+import pl.datamatica.traccar.model.DeviceEventType;
 
 public class ReportGFIO extends ReportGenerator {
     @Override
@@ -53,7 +55,17 @@ public class ReportGFIO extends ReportGenerator {
             deviceDetails(device);
             // data table
             if (!positions.isEmpty() && !geoFences.isEmpty()) {
-                drawTable(calculate(geoFences, positions));
+                List<DeviceEvent> events = calculate(geoFences, positions);
+                if(report.isIncludeMap() && !events.isEmpty()) {
+                    html("<div class=\"col-md-6\">");
+                }
+                drawTable(events);
+                if(report.isIncludeMap() && !events.isEmpty()) {
+                    html("</div>");
+                    html("<div class=\"col-md-6\">");
+                    drawMap(events);
+                    html("</div>");
+                }
             }
 
             panelBodyEnd();
@@ -62,64 +74,47 @@ public class ReportGFIO extends ReportGenerator {
         }
     }
 
-    static class Data implements Comparable<Data> {
-        final GeoFence geoFence;
-        final Position enter;
-        Position exit;
-
-        Data(GeoFence geoFence, Position enter) {
-            this.enter = enter;
-            this.geoFence = geoFence;
-        }
-
-
-        @Override
-        public int compareTo(Data o) {
-            return enter.getTime().compareTo(o.enter.getTime());
-        }
-    }
-
-    List<Data> calculate(List<GeoFence> geoFences, List<Position> positions) {
+    List<DeviceEvent> calculate(List<GeoFence> geoFences, List<Position> positions) {
         // calculate
         GeoFenceCalculator calculator = new GeoFenceCalculator(geoFences);
-        Map<GeoFence, Data> currentData = new HashMap<>(geoFences.size());
-        List<Data> result = new ArrayList<>();
+        Set<GeoFence> currentData = new HashSet<>(geoFences.size());
+        List<DeviceEvent> result = new ArrayList<>();
 
         for (Position position : positions) {
             for (GeoFence geoFence : geoFences) {
                 if (calculator.contains(geoFence, position)) {
-                    if (!currentData.containsKey(geoFence)) {
-                        currentData.put(geoFence, new Data(geoFence, position));
+                    if (!currentData.contains(geoFence)) {
+                        DeviceEvent ev = new DeviceEvent(position.getTime(), 
+                                position.getDevice(), position, geoFence, null);
+                        ev.setType(DeviceEventType.GEO_FENCE_ENTER);
+                        result.add(ev);
+                        currentData.add(geoFence);
                     }
                 } else {
-                    Data geoFenceData = currentData.remove(geoFence);
-                    if (geoFenceData != null) {
-                        geoFenceData.exit = position;
-                        result.add(geoFenceData);
+                    boolean geoFenceData = currentData.remove(geoFence);
+                    if (geoFenceData) {
+                        DeviceEvent ev = new DeviceEvent(position.getTime(), 
+                                position.getDevice(), position, geoFence, null);
+                        ev.setType(DeviceEventType.GEO_FENCE_EXIT);
+                        result.add(ev);
                     }
                 }
             }
         }
-        Collection<Data> lastData = currentData.values();
-        for (Data data : lastData) {
-            data.exit = positions.get(positions.size() - 1);
-        }
-        result.addAll(lastData);
-        Collections.sort(result);
         return result;
     }
 
-    void drawTable(List<Data> datas) {
+    void drawTable(List<DeviceEvent> datas) {
 
         // draw
-        tableStart(hover().condensed());
+        tableStart("table", hover().condensed());
 
         // header
         tableHeadStart();
         tableRowStart();
 
-        String[] GFIO_report_headers = new String[]{"report_header_geofence_in", "report_header_geofence_out",
-            "report_header_duration", "report_header_geofence_name", "report_header_geofence_position"};
+        String[] GFIO_report_headers = new String[]{"report_header_geofence_name", 
+            "report_time", "report_event"};
 
         for (String report_header : GFIO_report_headers) {
             tableHeadCellStart();
@@ -133,21 +128,26 @@ public class ReportGFIO extends ReportGenerator {
         // body
         tableBodyStart();
 
-        for (Data data : datas) {
+        for (DeviceEvent data : datas) {
             tableRowStart();
-            tableCell(formatDate(data.enter.getTime()));
-            tableCell(formatDate(data.exit.getTime()));
-            long duration = data.exit.getTime().getTime() - data.enter.getTime().getTime();
-            tableCell(formatDuration(duration));
-            tableCell(data.geoFence.getName());
-            tableCellStart();
-            mapLink(data.enter.getLatitude(), data.enter.getLongitude());
-            tableCellEnd();
+            tableCell(data.getGeoFence().getName());
+            tableCell(formatDate(data.getTime()));
+            tableCell(message("report_event_" + data.getType().name().toLowerCase()));
+            extentCell(data.getPosition(), data.getPosition());
             tableRowEnd();
         }
 
         tableBodyEnd();
 
         tableEnd();
+    }
+    
+    void drawMap(List<DeviceEvent> events) {
+        MapBuilder builder = getMapBuilder();
+        for(DeviceEvent ev : events) {
+            builder.marker(ev.getPosition(), 
+                    MapBuilder.MarkerStyle.event(ev.getType(), ""));
+        }
+        html(builder.bindWithTable("table", 1).create());
     }
 }

@@ -303,7 +303,7 @@ public abstract class ReportGenerator {
         String extent = new MapBuilder.MapBoundsBuilder()
                 .addPosition(p1)
                 .addPosition(p2)
-                .create(1e-2);
+                .create(5e-3);
         tableCellStart(new HtmlReportRenderer.CellStyle().hidden(true).id("ext"));
         text(extent);
         tableCellEnd();
