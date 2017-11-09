@@ -216,8 +216,16 @@ public class BasicAuthFilter {
     }
     
     private void unauthorized(Response response, String errorMessage) {
-        if(req.pathInfo().matches("/v[0-9]+/session/user") 
-                && req.requestMethod().equalsIgnoreCase("get"))
+        final Boolean isReqForUserSession = req.pathInfo().matches("/v[0-9]+/session/user")
+                && req.requestMethod().equalsIgnoreCase("get");
+        final RequestContext rc = req.attribute(Application.REQUEST_CONTEXT_KEY);
+        Boolean isReqForImeiManager = false;
+        
+        if (rc != null && rc.isRequestForImeiManager(req)) {
+            isReqForImeiManager = true;
+        }
+        
+        if(isReqForUserSession || isReqForImeiManager)
             response.header("WWW-Authenticate", SCHEME + " " + "realm=\"" + REALM + "\"");
         else
             response.header("WWW-Authenticate", "xBasic realm=\""+REALM+"\"");
