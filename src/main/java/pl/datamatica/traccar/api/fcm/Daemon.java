@@ -28,6 +28,7 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.naming.NamingException;
 import javax.persistence.EntityManager;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import pl.datamatica.traccar.api.Context;
@@ -36,6 +37,7 @@ import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.util.EntityUtils;
+import pl.datamatica.traccar.api.Application;
 import pl.datamatica.traccar.model.NotificationStatus;
 import pl.datamatica.traccar.model.User;
 import pl.datamatica.traccar.model.UserSession;
@@ -76,12 +78,17 @@ public abstract class Daemon {
         String result = sendToFcm(message);
         boolean success = false;
         if(result != null) {
-            JsonParser parser = new JsonParser();
-            JsonObject o = parser.parse(result).getAsJsonObject();
-            success = o.get("success").getAsInt() == 1;
-            if(!success)
-                Logger.getLogger(Daemon.class.getName())
-                    .log(Level.INFO, o.getAsJsonArray("results").toString());
+            try {
+                JsonParser parser = new JsonParser();
+                JsonObject o = parser.parse(result).getAsJsonObject();
+                success = o.get("success").getAsInt() == 1;
+                if(!success)
+                    Logger.getLogger(Daemon.class.getName())
+                        .log(Level.INFO, o.getAsJsonArray("results").toString());
+            } catch(Exception e) {
+                // Probably incorrect fcm scret -> incorrect response JSON
+                Logger.getLogger(Daemon.class.getName()).log(Level.INFO, e.getLocalizedMessage());
+            }
         }
         NotificationStatus ns = new NotificationStatus(dto.getTo(), dto.getKind(), success);
         em.persist(ns);
@@ -91,16 +98,21 @@ public abstract class Daemon {
         CloseableHttpClient client = HttpClients.createDefault();
         HttpPost request = new HttpPost("https://fcm.googleapis.com/fcm/send");
         CloseableHttpResponse response = null;
-        request.addHeader("Authorization", 
-                "key=AIzaSyA9Ifi4l6POfav5KHz3J797wV91m62NQus");
-        request.addHeader("Content-Type", "application/json");
         
         try {
+            request.addHeader("Authorization", 
+                    "key=" + Application.getConfigRecord("java:/fcm_secret"));
+            request.addHeader("Content-Type", "application/json");
+
             request.setEntity(new StringEntity(body));
             response = client.execute(request);
             if(response.getStatusLine().getStatusCode() != 200)
                 return EntityUtils.toString(response.getEntity());
             return EntityUtils.toString(response.getEntity());
+        } catch (NamingException ne) {
+            // probably config file doesn't have fcm secret
+            Logger.getLogger(Daemon.class.getName()).log(Level.SEVERE, null, ne);
+            return null;
         } catch (Exception ex) {
             Logger.getLogger(Daemon.class.getName()).log(Level.SEVERE, null, ex);
             return null;
