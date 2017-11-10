@@ -97,19 +97,20 @@ public class DevicesController extends ControllerBase {
             }, gson::toJson);
             
             Spark.get(rootUrl()+"/:id/customicon", (req, res) -> {
-                try {
-                    DevicesController dc = createController(req);
+                DevicesController dc = createController(req);
+                try {             
                     Picture pic = dc.getCustomIcon(Long.parseLong(req.params(":id")));
                     if(pic == null) {
-                        res.status(404);
-                        return res;
+                        return gson.toJson(render(dc.notFound(), res));
                     }
                     res.raw().setContentType(pic.getMimeType());
                     res.raw().getOutputStream().write(pic.getData(),0, pic.getData().length);
                     return res;
                 } catch(ProviderException e) {
-                    res.status(404);
-                    return res;
+                    if (e.getType() == ProviderException.Type.ACCESS_DENIED) 
+                        return gson.toJson(render(dc.forbidden(), res));
+                    else 
+                        return gson.toJson(render(dc.notFound(), res));
                 }
             });
             
@@ -422,8 +423,6 @@ public class DevicesController extends ControllerBase {
     
     /* PARSING POSITIONS QUERY - END */
     
-    
-    
     private Picture getCustomIcon(long deviceId) throws ProviderException {
         Device device = dp.getDevice(deviceId);
         PicturesProvider provider = requestContext.getPicturesProvider();
@@ -432,16 +431,8 @@ public class DevicesController extends ControllerBase {
 
     private HttpResponse updateCustomIcon(long deviceId, byte[] data) throws ProviderException {
         try {
-            if (!requestContext.getUser().hasPermission(UserPermission.DEVICE_EDIT))
-                throw new ProviderException(ProviderException.Type.ACCESS_DENIED);
-            
-            Device device = dp.getDevice(deviceId);
-            PicturesProvider pp = requestContext.getPicturesProvider();
-            if(device.getCustomIconId() != null)
-                pp.deletePictureIfExists(device.getCustomIconId());
-            Picture p = pp.createPicture(data);
-            device.setCustomIconId(p.getId());
-            return ok(p.getId());
+            long res = dp.updateCustomIcon(deviceId, data);
+            return ok(res);
         } catch (ProviderException e) {
             return handle(e);
         }

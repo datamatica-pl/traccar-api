@@ -111,7 +111,8 @@ public class RequestContext implements AutoCloseable {
     
     public DeviceProvider getDeviceProvider() {
         if(devices == null)
-            devices = new DeviceProvider(em, user, getImeiProvider(), getDeviceGroupProvider());
+            devices = new DeviceProvider(em, user, getImeiProvider(), 
+                    getDeviceGroupProvider(), getPicturesProvider());
         return devices;
     }
     
@@ -196,7 +197,8 @@ public class RequestContext implements AutoCloseable {
         if (deviceGroupProvider == null) {
             deviceGroupProvider = new DeviceGroupProvider(em, user);
             if (devices == null) {
-                devices = new DeviceProvider(em, user, getImeiProvider(), deviceGroupProvider);
+                devices = new DeviceProvider(em, user, getImeiProvider(), 
+                        deviceGroupProvider, getPicturesProvider());
             }
             deviceGroupProvider.setDeviceProvider(devices);
         }
