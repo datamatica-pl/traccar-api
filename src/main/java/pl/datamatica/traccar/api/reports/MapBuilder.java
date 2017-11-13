@@ -95,9 +95,14 @@ public class MapBuilder {
         output.append("      source: source\r\n");
         output.append("    })\r\n");
         output.append("  ],\r\n");
-        output.append("  view: new ol.View()\r\n");
+        output.append("  view: new ol.View({\r\n");
+        output.append("    zoom: 12\r\n");
+        output.append("  })\r\n");
         output.append("});\r\n");
-        output.append("map.getView().fit(source.getExtent(), map.getSize());\r\n");
+        if(vectors.size() >= 2)
+            output.append("map.getView().fit(source.getExtent(), map.getSize());\r\n");
+        else if(vectors.size() == 1)
+            output.append("map.getView().setCenter(v0.getGeometry().getCoordinates());\r\n");
         output.append("bind(map, '").append(tableId).append("', ")
                 .append(tableStartRow).append(");\r\n");
         output.append("</script>");
