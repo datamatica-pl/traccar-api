@@ -17,8 +17,10 @@
 
 package pl.datamatica.traccar.api.providers;
 
+import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Image;
+import java.awt.RenderingHints;
 import java.awt.geom.Ellipse2D;
 import java.awt.image.BufferedImage;
 import java.awt.image.RenderedImage;
@@ -65,11 +67,29 @@ public class ImageProvider {
                 return null;
             float l = 30f/141, t=28f/189, r=110f/141, b=108f/189;
             int w = emptyMarker.getWidth(null), h = emptyMarker.getHeight(null);
+            int tw = (int)Math.round((r-l)*w), th = (int)Math.round((b-t)*h);
+            
+            //https://stackoverflow.com/a/7951324
+            int wi = icon.getWidth(null), hi = icon.getHeight(null);
+            while(wi >= 2*tw || hi >= 2*th) {
+                if(wi >= 2*tw)
+                    wi /= 2;
+                if(hi >= 2*th)
+                    hi /= 2;
+                BufferedImage tmp = new BufferedImage(wi, hi, BufferedImage.TYPE_INT_ARGB);
+                Graphics2D g2 = tmp.createGraphics();
+                g2.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
+                g2.drawImage(icon, 0, 0, wi, hi, null);
+                g2.dispose();
+                icon = tmp;
+            }
+            
             BufferedImage marker = new BufferedImage(w, h, BufferedImage.TYPE_INT_ARGB);
-            marker.getGraphics().drawImage(emptyMarker, 0, 0, null);
-            marker.getGraphics().drawImage(icon, (int)Math.round(l*w), 
-                    (int)Math.round(t*h), (int)Math.round((r-l)*w), 
-                    (int)Math.round((b-t)*h), null);
+            Graphics2D g = marker.createGraphics();            
+            g.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
+            g.drawImage(emptyMarker, 0, 0, null);
+            g.drawImage(icon, (int)Math.round(l*w), (int)Math.round(t*h), tw, th, null);
+            g.dispose();
 
             ByteArrayOutputStream boss = new ByteArrayOutputStream();
             ImageIO.write((RenderedImage)marker, "png", boss);
