@@ -32,6 +32,7 @@ import pl.datamatica.traccar.api.responses.HttpStatuses;
 import pl.datamatica.traccar.api.services.CommandService;
 import pl.datamatica.traccar.api.utils.JsonUtils;
 import pl.datamatica.traccar.api.providers.ProviderException;
+import pl.datamatica.traccar.api.services.StringCommandFormatter;
 import pl.datamatica.traccar.model.Device;
 import pl.datamatica.traccar.model.User;
 import pl.datamatica.traccar.model.UserPermission;
@@ -62,10 +63,12 @@ public class CommandsController extends ControllerBase {
                 final RequestContext context = req.attribute(Application.REQUEST_CONTEXT_KEY);
                 final User requestUser = context.getUser();
                 final Long deviceId = Long.valueOf(req.params(":deviceId"));
-                final String commandType = req.params(":commandType");
+                String commandType = req.params(":commandType");
                 final String params = req.body();
                 Map<String, Object> commandParams = new HashMap<>();
+                DeviceModel model;
                 Device device;
+                
 
                 if (!requestUser.hasPermission(UserPermission.COMMAND_TCP)) {
                     res.status(HttpStatuses.FORBIDDEN);
@@ -75,6 +78,7 @@ public class CommandsController extends ControllerBase {
                 res.status(HttpStatuses.BAD_REQUEST);
                 res.type("application/json");
                 
+                // Musimy rozroznic, nie musimy, bo commandType bedzie inny!
                 if(("custom".equals(commandType) || "extendedCustom".equals(commandType))
                         && !requestUser.hasPermission(UserPermission.COMMAND_CUSTOM)) {
                     res.status(HttpStatuses.FORBIDDEN);
@@ -100,7 +104,13 @@ public class CommandsController extends ControllerBase {
                     }
                 }
                 commandParams.put("userId", context.getUser().getId());
-
+                
+                // TODO: Get Device model.
+                model = context.getDeviceModelProvider().getDeviceModel(device.getDeviceModelId()); // Now we must have model to sendCommand
+                StringCommandFormatter scf = new StringCommandFormatter(model, commandType, commandParams);
+                String formattedCommand = scf.getFormattedCommand(); // Only for debug
+                // TODO: Don't format if not found commandFormat
+                
                 ActiveDeviceProvider adp = new ActiveDeviceProvider();
                 Object activeDevice = adp.getActiveDevice(deviceId);
                 if (activeDevice == null) {
@@ -108,14 +118,37 @@ public class CommandsController extends ControllerBase {
                     return getResponseError(MessageKeys.ERR_ACTIVE_DEVICE_NOT_FOUND);
                 }
                 
+                // Podlaczmy GT_06
+                
                 CommandService cs = new CommandService();
                 Map<String, Object> result;
                 
                 if("custom".equals(commandType)) {
+                    // I can send as custom. Currently only admin can do that.
                     result = cs.sendCustomCommand(activeDevice, commandParams.get("command").toString());
+                    
                 } else {
+                    // ExtendedCustom powinien isc normanym trybem, sprawdzic.
+                    
                     BackendCommandProvider bcp = new BackendCommandProvider();
                     Object backendCommand = null;
+                    
+                    // If device == teltonika FMB set commandType = extendedCustom, and message to what is set by new parser.
+                    // I must add device.getDeviceModel()
+                    // if (device351608082566857
+                    if (device.getUniqueId().equals("351608082566857")) {
+                        commandType = "extendedCustom";
+                        commandParams.clear();
+                        commandParams.put("userId", context.getUser().getId());
+                        
+                        
+//                        model = context.getDeviceModelProvider().getDeviceModel(device.getDeviceModelId()); // Now we must have model to sendCommand
+//                        StringCommandFormatter scf = new StringCommandFormatter(model, commandType, commandParams);
+//                        String formattedCommandTest = scf.getFormattedCommand(); // Only for debug
+                        
+                        commandParams.put("message", formattedCommand);
+                    }
+                    
                     try {
                         backendCommand = bcp.getBackendCommand(deviceId, commandType);
                     } catch (Exception e) {
