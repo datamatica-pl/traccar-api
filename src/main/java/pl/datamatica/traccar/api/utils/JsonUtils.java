@@ -27,7 +27,7 @@ import java.util.Map;
 public class JsonUtils {
 
     public static Map<String,Object> getCommandParams(String json) {
-        if (json.isEmpty()) {
+        if (json.isEmpty() || json == null) {
             json = "{}";
         }
         Gson gson = new Gson();

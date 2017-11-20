@@ -22,6 +22,6 @@ import java.util.Map;
  *
  * @author Jan Usarek
  */
-interface CommandParser {
+public interface IDeviceCommandParser {
     public String parse(String commandFormat, Map<String, Object> commandParams);
 }

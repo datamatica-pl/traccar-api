@@ -17,28 +17,17 @@
 package pl.datamatica.traccar.api.services;
 
 import java.util.Map;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import pl.datamatica.traccar.api.Application;
 
 /**
  *
  * @author Jan Usarek
  */
-public class SimpleCommandParser implements CommandParser {
+public class SimpleCommandParser implements IDeviceCommandParser {
     
     @Override
     public String parse(String cmdFormat, Map<String, Object> commandParams) {
-        Logger logger = LoggerFactory.getLogger(Application.class);
-        
-//        String cmdFormat = "setparam 1234 {timezone}";
         
         for (Map.Entry<String, Object> cmdParam : commandParams.entrySet()) {
-            
-            logger.error("cmdParam Key: " + cmdParam.getKey());
-            logger.error("cmdParam Value: " + cmdParam.getValue());
-            
-            // TODO: Skip userId
             String paramToReplace = String.format("{%s}", cmdParam.getKey());
             cmdFormat = cmdFormat.replace(paramToReplace, cmdParam.getValue().toString());
         }

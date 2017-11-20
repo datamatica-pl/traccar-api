@@ -46,6 +46,13 @@ public class CommandType extends UpdateTimestampedEntity implements Serializable
     private String commandSMS;
     
     @Column(length=100)
+    private String commandTCP;
+
+    public String getCommandTCP() {
+        return commandTCP;
+    }
+    
+    @Column(length=100)
     private String warning;
 
     @OneToMany(fetch=FetchType.EAGER)
