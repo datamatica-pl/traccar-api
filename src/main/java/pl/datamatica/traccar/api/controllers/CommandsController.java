@@ -28,6 +28,7 @@ import pl.datamatica.traccar.api.dtos.out.ErrorDto;
 import pl.datamatica.traccar.api.metadata.model.DeviceModel;
 import pl.datamatica.traccar.api.providers.ActiveDeviceProvider;
 import pl.datamatica.traccar.api.providers.BackendCommandProvider;
+import pl.datamatica.traccar.api.providers.CommandParamsProvider;
 import pl.datamatica.traccar.api.providers.CommandTypeProvider;
 import pl.datamatica.traccar.api.responses.HttpStatuses;
 import pl.datamatica.traccar.api.services.CommandService;
@@ -62,12 +63,12 @@ public class CommandsController extends ControllerBase {
         public void bind() {
 
             Spark.post(rootUrl() + "/devices/:deviceId/sendCommand/:commandType", (req, res) -> {
+                final String API_PREFORMATTED_COMMAND_TYPE = "extendedCustom";
                 final RequestContext context = req.attribute(Application.REQUEST_CONTEXT_KEY);
                 final User requestUser = context.getUser();
                 final Long deviceId = Long.valueOf(req.params(":deviceId"));
                 final String originalCommandType = req.params(":commandType");
                 final String params = req.body();
-                final String apiPreformattedCommandType = "extendedCustom";
                 final Map<String, Object> originalCmdParams =  JsonUtils.getCommandParams(params);
                 Device device;
 
@@ -100,18 +101,9 @@ public class CommandsController extends ControllerBase {
                 final DeviceModel devModel = context.getDeviceModelProvider().getDeviceModel(device.getDeviceModelId());
                 final CommandTypeProvider cmdTypeProvider = new CommandTypeProvider(devModel);
                 final String cmdFormat = cmdTypeProvider.getTcpCommand(originalCommandType);
-                final IDeviceCommandParser cmdParser = new SimpleCommandParser();
-                Map<String, Object> commandParamsToSend = new HashMap<>();
-                String commandTypeToSend;
-                
-                commandParamsToSend.put("userId", context.getUser().getId());
-                if (cmdFormat != null && !cmdFormat.equals("")) {
-                    commandTypeToSend = apiPreformattedCommandType;
-                    commandParamsToSend.put("message", cmdParser.parse(cmdFormat, originalCmdParams));
-                } else {
-                    commandTypeToSend = originalCommandType;
-                    commandParamsToSend.putAll(originalCmdParams);
-                }
+                final String commandType = cmdFormat.isEmpty() ? originalCommandType : API_PREFORMATTED_COMMAND_TYPE;
+                final Map<String, Object> commandParams = new CommandParamsProvider(new SimpleCommandParser(), requestUser)
+                        .getCommandParams(params, cmdFormat);
                 
                 ActiveDeviceProvider adp = new ActiveDeviceProvider();
                 Object activeDevice = adp.getActiveDevice(deviceId);
@@ -130,24 +122,17 @@ public class CommandsController extends ControllerBase {
                     Object backendCommand = null;
                     
                     try {
-                        backendCommand = bcp.getBackendCommand(deviceId, commandTypeToSend);
+                        backendCommand = bcp.getBackendCommand(deviceId, commandType);
                     } catch (Exception e) {
                         return getResponseError(MessageKeys.ERR_CREATE_COMMAND_OBJECT_FAILED);
                     }
 
-                    if (commandParamsToSend.size() > 0) {
-                        // Change timezone parameter from hours to seconds
-                        if (commandParamsToSend.get("timezone") != null) {
-                            long timezoneHours = Long.valueOf(commandParamsToSend.get("timezone").toString());
-                            long timezoneSeconds = timezoneHours * 3600;
-                            commandParamsToSend.replace("timezone", timezoneSeconds);
-                        }
-
+                    if (commandParams.size() > 0) {
                         try {
                             backendCommand
                                 .getClass()
                                 .getMethod("setAttributes", Map.class)
-                                .invoke(backendCommand, commandParamsToSend);
+                                .invoke(backendCommand, commandParams);
                         } catch (Exception e) {
                             return getResponseError(MessageKeys.ERR_SET_COMMAND_ATTRIBUTES_FAILED);
                         }

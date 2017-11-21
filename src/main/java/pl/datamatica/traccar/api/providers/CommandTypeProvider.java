@@ -18,6 +18,7 @@ package pl.datamatica.traccar.api.providers;
 
 import java.util.List;
 import java.util.stream.Collectors;
+import javax.validation.constraints.NotNull;
 import pl.datamatica.traccar.api.metadata.model.CommandType;
 import pl.datamatica.traccar.api.metadata.model.DeviceModel;
 
@@ -33,6 +34,7 @@ public class CommandTypeProvider {
         this.deviceModel = deviceModel;
     }
 
+    @NotNull
     public String getTcpCommand(String commandTypeName) {
 
         List<CommandType> cmdTypeList = deviceModel
@@ -42,9 +44,14 @@ public class CommandTypeProvider {
                 .collect(Collectors.toList());
 
         if (cmdTypeList.size() == 1) {
-            return cmdTypeList.get(0).getCommandTCP();
+            String commandTCP = cmdTypeList.get(0).getCommandTCP();
+            if (commandTCP == null) {
+                return "";
+            } else {
+                return commandTCP;
+            }
         } else if (cmdTypeList.isEmpty()) {
-            return null;
+            return "";
         } else {
             throw new IllegalStateException("DeviceModel has one than one command of the same type.");
         }
