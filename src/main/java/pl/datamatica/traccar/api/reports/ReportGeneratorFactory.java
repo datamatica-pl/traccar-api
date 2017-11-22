@@ -35,6 +35,8 @@ public class ReportGeneratorFactory {
                 return new ReportMD();
             case FUEL_CONSUMPTION:
                 return new ReportFuel();
+            case TRACK:
+                return new ReportTrack();
             default:
                 return null;
         }

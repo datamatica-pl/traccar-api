@@ -25,8 +25,8 @@ import pl.datamatica.traccar.model.Position;
 public class MapBuilder {    
     private final List<String> vectors = new ArrayList<>();
     private final String width, height;
-    private String tableId;
-    private int tableStartRow;
+    private List<String> tableIds = new ArrayList<>();
+    private List<Integer> tableStartRows = new ArrayList<>();
     
     public MapBuilder(String width, String height, Map<Long, String> icons) {
         this.width = width;
@@ -56,8 +56,8 @@ public class MapBuilder {
     }
     
     public MapBuilder bindWithTable(String id, int startRow) {
-        tableId = id;
-        this.tableStartRow = startRow;
+        tableIds.add(id);
+        tableStartRows.add(startRow);
         return this;
     }
     
@@ -103,8 +103,11 @@ public class MapBuilder {
             output.append("map.getView().fit(source.getExtent(), map.getSize());\r\n");
         else if(vectors.size() == 1)
             output.append("map.getView().setCenter(v0.getGeometry().getCoordinates());\r\n");
-        output.append("bind(map, '").append(tableId).append("', ")
-                .append(tableStartRow).append(");\r\n");
+        
+        for(int i=0;i<tableIds.size();++i) {
+            output.append("bind(map, '").append(tableIds.get(i)).append("', ")
+                    .append(tableStartRows.get(i)).append(");\r\n");
+        }
         output.append("</script>");
         return output.toString();
     }

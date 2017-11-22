@@ -20,9 +20,9 @@ import pl.datamatica.traccar.model.Position;
 
 import java.io.IOException;
 import java.util.Collections;
+import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
-import java.util.stream.Collectors;
 import pl.datamatica.traccar.api.dtos.out.ReportDto;
 import pl.datamatica.traccar.api.providers.ProviderException;
 
@@ -32,12 +32,13 @@ public class ReportOS extends ReportGenerator {
         h2(report.getName());
 
         for (Device device : getDevices(report)) {
+            Date from = getFromDate(report, device);
             List<Position> positions;
             if (device.getSpeedLimit() == null) {
                 positions = Collections.emptyList();
             } else {
                 positions = getPositions(device, 
-                        report.getFromDate(), report.getToDate(), report.isDisableFilter());
+                        from, report.getToDate(), report.isDisableFilter());
             }
 
             panelStart();
@@ -52,7 +53,7 @@ public class ReportOS extends ReportGenerator {
             // period
             paragraphStart();
             bold(message("report_time_period") + ": ");
-            text(formatDate(report.getFromDate()) + " - " + formatDate(report.getToDate()));
+            text(formatDate(from) + " - " + formatDate(report.getToDate()));
             paragraphEnd();
             // device details
             deviceDetails(device);

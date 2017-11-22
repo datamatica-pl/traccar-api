@@ -30,6 +30,7 @@ public class EditReportDto {
     private String reportType;
     private List<Long> deviceIds;
     private List<Long> geofenceIds;
+    private Long routeId;
     private Date fromDate;
     private Date toDate;
     private boolean includeMap;
@@ -65,6 +66,14 @@ public class EditReportDto {
 
     public void setGeofenceIds(List<Long> geofenceIds) {
         this.geofenceIds = geofenceIds;
+    }
+    
+    public Long getRouteId() {
+        return routeId;
+    }
+    
+    public void setRouteId(Long routeId) {
+        this.routeId = routeId;
     }
 
     public Date getFromDate() {

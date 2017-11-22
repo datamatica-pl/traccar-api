@@ -65,8 +65,12 @@ public class GeoFenceCalculator {
     }
 
     public boolean contains(GeoFence geoFence, Position position) {
-        if (position.getDevice() == null 
-                || !geoFence.getDevices().contains(position.getDevice())) {
+        return contains(geoFence, position, false);
+    }
+    
+    public boolean contains(GeoFence geoFence, Position position, boolean skipCheck) {
+        if (!skipCheck && (position.getDevice() == null 
+                || !geoFence.getDevices().contains(position.getDevice()))) {
             return false;
         }
 
