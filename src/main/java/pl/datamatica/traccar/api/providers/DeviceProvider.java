@@ -44,6 +44,7 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.stream.Collectors;
 import pl.datamatica.traccar.api.Application;
+import pl.datamatica.traccar.model.Picture;
 import pl.datamatica.traccar.model.RegistrationMaintenance;
 import pl.datamatica.traccar.model.SpeedUnitMultipier;
 import pl.datamatica.traccar.model.UserPermission;
@@ -52,15 +53,17 @@ public class DeviceProvider extends ProviderBase {
     private User requestUser;
     private ImeiProvider imeis;
     private DeviceGroupProvider groups;
+    private PicturesProvider pictures;
     private Logger logger;
     private final SimpleDateFormat dateFormat;
     
     public DeviceProvider(EntityManager em, User requestUser, ImeiProvider imeis,
-            DeviceGroupProvider groups) {
+            DeviceGroupProvider groups, PicturesProvider pictures) {
         super(em);
         this.requestUser = requestUser;
         this.imeis = imeis;
         this.groups = groups;
+        this.pictures = pictures;
         logger = DbLog.getLogger();
         dateFormat = new SimpleDateFormat(Application.DATE_FORMAT);
     }
@@ -522,5 +525,16 @@ public class DeviceProvider extends ProviderBase {
             users.removeIf(u -> !ids.contains(u.getId()));
         }
         d.getUsers().addAll(users);
+    }
+    
+    public long updateCustomIcon(long deviceId, byte[] data) throws ProviderException {
+        checkUserEditPermission();
+        Device device = getEditableDevice(deviceId);
+        if(device.getCustomIconId() != null)
+            pictures.deletePictureIfExists(device.getCustomIconId());
+        Picture p = pictures.createPicture(data);
+        device.setCustomIconId(p.getId());
+        em.persist(device);
+        return p.getId();
     }
 }
