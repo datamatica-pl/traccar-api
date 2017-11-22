@@ -16,6 +16,7 @@
  */
 package pl.datamatica.traccar.api.controllers;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
@@ -32,10 +33,8 @@ import pl.datamatica.traccar.api.providers.CommandParamsProvider;
 import pl.datamatica.traccar.api.providers.CommandTypeProvider;
 import pl.datamatica.traccar.api.responses.HttpStatuses;
 import pl.datamatica.traccar.api.services.CommandService;
-import pl.datamatica.traccar.api.utils.JsonUtils;
 import pl.datamatica.traccar.api.providers.ProviderException;
 import pl.datamatica.traccar.api.services.SimpleCommandParser;
-import pl.datamatica.traccar.api.services.IDeviceCommandParser;
 import pl.datamatica.traccar.model.Device;
 import pl.datamatica.traccar.model.User;
 import pl.datamatica.traccar.model.UserPermission;
@@ -69,7 +68,6 @@ public class CommandsController extends ControllerBase {
                 final Long deviceId = Long.valueOf(req.params(":deviceId"));
                 final String originalCommandType = req.params(":commandType");
                 final String params = req.body();
-                final Map<String, Object> originalCmdParams =  JsonUtils.getCommandParams(params);
                 Device device;
 
                 if (!requestUser.hasPermission(UserPermission.COMMAND_TCP)) {
@@ -90,14 +88,18 @@ public class CommandsController extends ControllerBase {
                      device = context.getDeviceProvider().getDevice(deviceId);
                 } catch (ProviderException e) {
                      device = null;
-                     return getResponseError(MessageKeys.ERR_DEVICE_NOT_FOUND_OR_NO_PRIVILEGES);
                 }
 
                 if (device == null && !requestUser.hasAccessTo(device)) {
                     res.status(HttpStatuses.NOT_FOUND);
                     return getResponseError(MessageKeys.ERR_DEVICE_NOT_FOUND_OR_NO_PRIVILEGES);
                 }
-
+                
+                if (device.getDeviceModelId() < 1) {
+                    res.status(HttpStatuses.BAD_REQUEST);
+                    return getResponseError(MessageKeys.ERR_DEVICE_MODEL_ID_NOT_PROVIDED);
+                }
+                
                 final DeviceModel devModel = context.getDeviceModelProvider().getDeviceModel(device.getDeviceModelId());
                 final CommandTypeProvider cmdTypeProvider = new CommandTypeProvider(devModel);
                 final String cmdFormat = cmdTypeProvider.getTcpCommand(originalCommandType);
@@ -116,24 +118,26 @@ public class CommandsController extends ControllerBase {
                 Map<String, Object> result;
                 
                 if("custom".equals(originalCommandType)) {
-                    result = cs.sendCustomCommand(activeDevice, originalCmdParams.get("command").toString());
+                    result = cs.sendCustomCommand(activeDevice, commandParams.get("command").toString());
                 } else {
                     BackendCommandProvider bcp = new BackendCommandProvider();
                     Object backendCommand = null;
                     
                     try {
                         backendCommand = bcp.getBackendCommand(deviceId, commandType);
-                    } catch (Exception e) {
+                    } catch (ClassNotFoundException | IllegalAccessException | IllegalArgumentException
+                            | InstantiationException | NoSuchMethodException | InvocationTargetException e) {
                         return getResponseError(MessageKeys.ERR_CREATE_COMMAND_OBJECT_FAILED);
                     }
 
                     if (commandParams.size() > 0) {
                         try {
                             backendCommand
-                                .getClass()
-                                .getMethod("setAttributes", Map.class)
-                                .invoke(backendCommand, commandParams);
-                        } catch (Exception e) {
+                                    .getClass()
+                                    .getMethod("setAttributes", Map.class)
+                                    .invoke(backendCommand, commandParams);
+                        } catch (IllegalAccessException | IllegalArgumentException | NoSuchMethodException
+                                | SecurityException | InvocationTargetException e) {
                             return getResponseError(MessageKeys.ERR_SET_COMMAND_ATTRIBUTES_FAILED);
                         }
                     }
@@ -185,6 +189,11 @@ public class CommandsController extends ControllerBase {
                     return getResponseError(MessageKeys.ERR_DEVICE_NOT_FOUND_OR_NO_PRIVILEGES);
                 }
                 
+                if (device.getDeviceModelId() < 1) {
+                    res.status(HttpStatuses.BAD_REQUEST);
+                    return getResponseError(MessageKeys.ERR_DEVICE_MODEL_ID_NOT_PROVIDED);
+                }
+                
                 model = context.getDeviceModelProvider().getDeviceModel(device.getDeviceModelId());
 
                 ActiveDeviceProvider adp = new ActiveDeviceProvider();
@@ -204,7 +213,9 @@ public class CommandsController extends ControllerBase {
                     Object backendCommand = null;
                     try {
                         backendCommand = bcp.getBackendCommand(deviceId, type);
-                    } catch (Exception e) {
+                    } catch (ClassNotFoundException | IllegalAccessException
+                            | IllegalArgumentException | InstantiationException
+                            | NoSuchMethodException | InvocationTargetException e) {
                         result.put(type, MessageKeys.ERR_CREATE_COMMAND_OBJECT_FAILED);
                         continue;
                     }
