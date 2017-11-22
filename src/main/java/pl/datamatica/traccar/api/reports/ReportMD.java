@@ -29,8 +29,9 @@ public class ReportMD extends ReportGenerator {
         h2(report.getName());
 
         for (Device device : getDevices(report)) {
+            Date from = getFromDate(report, device);
             List<Position> positions = getPositions(
-                    device, report.getFromDate(), report.getToDate(), report.isDisableFilter());
+                    device, from, report.getToDate(), report.isDisableFilter());
             
             panelStart();
 
@@ -44,7 +45,7 @@ public class ReportMD extends ReportGenerator {
             // period
             paragraphStart();
             bold(message("report_time_period") + ": ");
-            text(formatDate(report.getFromDate()) + " - " + formatDate(report.getToDate()));
+            text(formatDate(from) + " - " + formatDate(report.getToDate()));
             paragraphEnd();
             // device details
             deviceDetails(device);

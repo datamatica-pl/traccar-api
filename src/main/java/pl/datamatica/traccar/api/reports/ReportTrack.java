@@ -24,7 +24,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 import pl.datamatica.traccar.api.dtos.out.ReportDto;
 import pl.datamatica.traccar.api.providers.ProviderException;
 import pl.datamatica.traccar.api.utils.GeoFenceCalculator;
@@ -44,12 +43,23 @@ public class ReportTrack extends ReportGenerator{
     @Override
     void generateImpl(ReportDto report) throws IOException, ProviderException {
         DbRoute route = entityManager.find(DbRoute.class, report.getRouteId());
+        Date from = getFromDate(report, route.getDevice());
+        
+        h2(report.getName());
+        bold("Trasa: ");
+        text(route.getName());
+        paragraphStart();
+        bold(message("report_time_period") + ": ");
+        text(formatDate(from) + " - " + formatDate(report.getToDate()));
+        paragraphEnd();
         
         List<RoutePoint> rp = route.getRoutePoints();
         if(rp.get(0).getEnterTime() == null)
             return;
         Date startTime = rp.get(0).getEnterTime();
-        Date endTime = new Date();
+        if(startTime.before(from))
+            startTime = from;
+        Date endTime = report.getToDate();
         if(rp.get(rp.size()-1).getExitTime() != null)
             endTime = rp.get(rp.size()-1).getExitTime();
         List<Position> history = positionProvider.getDeviceHistory(
@@ -60,15 +70,9 @@ public class ReportTrack extends ReportGenerator{
         for(RoutePoint p : rp)
             gfs.add(p.getGeofence());
         
-        h2(report.getName());
-        bold("Trasa: ");
-        text(route.getName());
-        paragraphStart();
-        bold(message("report_time_period") + ": ");
-        text(formatDate(report.getFromDate()) + " - " + formatDate(report.getToDate()));
-        paragraphEnd();
-        
         List<DeviceEvent> rpe = calculate(gfs, history);
+        if(report.isIncludeMap())
+            html("<div class=\"col-md-6\">");
         drawTable("rpe", rpe);
         List<DeviceEvent> alle = new ArrayList<>(rpe);
         
@@ -78,8 +82,12 @@ public class ReportTrack extends ReportGenerator{
             alle.addAll(core);
         }
         
-        if(report.isIncludeMap())
+        if(report.isIncludeMap() && !alle.isEmpty()) {
+            html("</div>");
+            html("<div class=\"col-md-6\">");
             drawMap(alle);
+            html("</div>");
+        }
     }
     
     void drawTable(String id, List<DeviceEvent> datas) {

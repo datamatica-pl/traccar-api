@@ -427,6 +427,12 @@ public abstract class ReportGenerator {
         }
         return geoFences;
     }
+    
+    Date getFromDate(ReportDto report, Device device) {
+        Date from = report.getFromDate();
+        Date lastAvail = device.getLastAvailablePositionDate(new Date());
+        return from.before(lastAvail) ? lastAvail : from;
+    }
 
     String formatDuration(long duration) {
         if (duration == 0) {
