@@ -16,6 +16,7 @@
  */
 package pl.datamatica.traccar.api.controllers;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
@@ -28,10 +29,12 @@ import pl.datamatica.traccar.api.dtos.out.ErrorDto;
 import pl.datamatica.traccar.api.metadata.model.DeviceModel;
 import pl.datamatica.traccar.api.providers.ActiveDeviceProvider;
 import pl.datamatica.traccar.api.providers.BackendCommandProvider;
+import pl.datamatica.traccar.api.providers.CommandParamsProvider;
+import pl.datamatica.traccar.api.providers.CommandTypeProvider;
 import pl.datamatica.traccar.api.responses.HttpStatuses;
 import pl.datamatica.traccar.api.services.CommandService;
-import pl.datamatica.traccar.api.utils.JsonUtils;
 import pl.datamatica.traccar.api.providers.ProviderException;
+import pl.datamatica.traccar.api.services.SimpleCommandParser;
 import pl.datamatica.traccar.model.Device;
 import pl.datamatica.traccar.model.User;
 import pl.datamatica.traccar.model.UserPermission;
@@ -59,12 +62,12 @@ public class CommandsController extends ControllerBase {
         public void bind() {
 
             Spark.post(rootUrl() + "/devices/:deviceId/sendCommand/:commandType", (req, res) -> {
+                final String API_PREFORMATTED_COMMAND_TYPE = "extendedCustom";
                 final RequestContext context = req.attribute(Application.REQUEST_CONTEXT_KEY);
                 final User requestUser = context.getUser();
                 final Long deviceId = Long.valueOf(req.params(":deviceId"));
-                final String commandType = req.params(":commandType");
+                final String originalCommandType = req.params(":commandType");
                 final String params = req.body();
-                Map<String, Object> commandParams = new HashMap<>();
                 Device device;
 
                 if (!requestUser.hasPermission(UserPermission.COMMAND_TCP)) {
@@ -75,14 +78,14 @@ public class CommandsController extends ControllerBase {
                 res.status(HttpStatuses.BAD_REQUEST);
                 res.type("application/json");
                 
-                if(("custom".equals(commandType) || "extendedCustom".equals(commandType))
+                if(("custom".equals(originalCommandType) || "extendedCustom".equals(originalCommandType))
                         && !requestUser.hasPermission(UserPermission.COMMAND_CUSTOM)) {
                     res.status(HttpStatuses.FORBIDDEN);
                     return getResponseError(MessageKeys.ERR_ACCESS_DENIED);
                 }
 
                 try {
-                    device = context.getDeviceProvider().getDevice(deviceId);
+                     device = context.getDeviceProvider().getDevice(deviceId);
                 } catch (ProviderException e) {
                      device = null;
                 }
@@ -91,16 +94,19 @@ public class CommandsController extends ControllerBase {
                     res.status(HttpStatuses.NOT_FOUND);
                     return getResponseError(MessageKeys.ERR_DEVICE_NOT_FOUND_OR_NO_PRIVILEGES);
                 }
-
-                if (params != null) {
-                    try {
-                        commandParams = JsonUtils.getCommandParams(params);
-                    } catch (Exception e) {
-                        return getResponseError(MessageKeys.ERR_COMMAND_PARSE_PARAMS_FAILED);
-                    }
+                
+                if (device.getDeviceModelId() < 1) {
+                    res.status(HttpStatuses.BAD_REQUEST);
+                    return getResponseError(MessageKeys.ERR_DEVICE_MODEL_ID_NOT_PROVIDED);
                 }
-                commandParams.put("userId", context.getUser().getId());
-
+                
+                final DeviceModel devModel = context.getDeviceModelProvider().getDeviceModel(device.getDeviceModelId());
+                final CommandTypeProvider cmdTypeProvider = new CommandTypeProvider(devModel);
+                final String cmdFormat = cmdTypeProvider.getTcpCommand(originalCommandType);
+                final String commandType = cmdFormat.isEmpty() ? originalCommandType : API_PREFORMATTED_COMMAND_TYPE;
+                final Map<String, Object> commandParams = new CommandParamsProvider(new SimpleCommandParser(), requestUser)
+                        .getCommandParams(params, cmdFormat);
+                
                 ActiveDeviceProvider adp = new ActiveDeviceProvider();
                 Object activeDevice = adp.getActiveDevice(deviceId);
                 if (activeDevice == null) {
@@ -111,31 +117,27 @@ public class CommandsController extends ControllerBase {
                 CommandService cs = new CommandService();
                 Map<String, Object> result;
                 
-                if("custom".equals(commandType)) {
+                if("custom".equals(originalCommandType)) {
                     result = cs.sendCustomCommand(activeDevice, commandParams.get("command").toString());
                 } else {
                     BackendCommandProvider bcp = new BackendCommandProvider();
                     Object backendCommand = null;
+                    
                     try {
                         backendCommand = bcp.getBackendCommand(deviceId, commandType);
-                    } catch (Exception e) {
+                    } catch (ClassNotFoundException | IllegalAccessException | IllegalArgumentException
+                            | InstantiationException | NoSuchMethodException | InvocationTargetException e) {
                         return getResponseError(MessageKeys.ERR_CREATE_COMMAND_OBJECT_FAILED);
                     }
 
                     if (commandParams.size() > 0) {
-                        // Change timezone parameter from hours to seconds
-                        if (commandParams.get("timezone") != null) {
-                            long timezoneHours = Long.valueOf(commandParams.get("timezone").toString());
-                            long timezoneSeconds = timezoneHours * 3600;
-                            commandParams.replace("timezone", timezoneSeconds);
-                        }
-
                         try {
                             backendCommand
-                                .getClass()
-                                .getMethod("setAttributes", Map.class)
-                                .invoke(backendCommand, commandParams);
-                        } catch (Exception e) {
+                                    .getClass()
+                                    .getMethod("setAttributes", Map.class)
+                                    .invoke(backendCommand, commandParams);
+                        } catch (IllegalAccessException | IllegalArgumentException | NoSuchMethodException
+                                | SecurityException | InvocationTargetException e) {
                             return getResponseError(MessageKeys.ERR_SET_COMMAND_ATTRIBUTES_FAILED);
                         }
                     }
@@ -187,6 +189,11 @@ public class CommandsController extends ControllerBase {
                     return getResponseError(MessageKeys.ERR_DEVICE_NOT_FOUND_OR_NO_PRIVILEGES);
                 }
                 
+                if (device.getDeviceModelId() < 1) {
+                    res.status(HttpStatuses.BAD_REQUEST);
+                    return getResponseError(MessageKeys.ERR_DEVICE_MODEL_ID_NOT_PROVIDED);
+                }
+                
                 model = context.getDeviceModelProvider().getDeviceModel(device.getDeviceModelId());
 
                 ActiveDeviceProvider adp = new ActiveDeviceProvider();
@@ -206,7 +213,9 @@ public class CommandsController extends ControllerBase {
                     Object backendCommand = null;
                     try {
                         backendCommand = bcp.getBackendCommand(deviceId, type);
-                    } catch (Exception e) {
+                    } catch (ClassNotFoundException | IllegalAccessException
+                            | IllegalArgumentException | InstantiationException
+                            | NoSuchMethodException | InvocationTargetException e) {
                         result.put(type, MessageKeys.ERR_CREATE_COMMAND_OBJECT_FAILED);
                         continue;
                     }

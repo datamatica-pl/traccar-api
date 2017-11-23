@@ -14,26 +14,25 @@
  *  You should have received a copy of the GNU Affero General Public License
  *  along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-package pl.datamatica.traccar.api.utils;
+package pl.datamatica.traccar.api.services;
 
-import com.google.gson.Gson;
-import java.util.HashMap;
 import java.util.Map;
 
 /**
  *
  * @author Jan Usarek
  */
-public class JsonUtils {
-
-    public static Map<String,Object> getCommandParams(String json) {
-        if (json.isEmpty() || json == null) {
-            json = "{}";
+public class SimpleCommandParser implements IDeviceCommandParser {
+    
+    @Override
+    public String parse(String cmdFormat, Map<String, Object> commandParams) {
+        
+        for (Map.Entry<String, Object> cmdParam : commandParams.entrySet()) {
+            String paramToReplace = String.format("{%s}", cmdParam.getKey());
+            cmdFormat = cmdFormat.replace(paramToReplace, cmdParam.getValue().toString());
         }
-        Gson gson = new Gson();
-        Map<String,Object> map = new HashMap<>();
-        map = (Map<String,Object>) gson.fromJson(json, map.getClass());
-        return map;
+        
+        return cmdFormat;
     }
-
+    
 }
