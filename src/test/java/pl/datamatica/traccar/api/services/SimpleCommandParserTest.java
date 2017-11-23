@@ -64,7 +64,7 @@ public class SimpleCommandParserTest {
     }
     
     @Test
-    public void testWithTwoManyParameters() {
+    public void testWithTooManyParameters() {
         final IDeviceCommandParser cmdParser = new SimpleCommandParser();
         final Map<String, Object> commandParams = new HashMap<String, Object>() {
             {
