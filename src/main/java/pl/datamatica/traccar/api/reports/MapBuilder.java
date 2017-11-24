@@ -20,6 +20,8 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import pl.datamatica.traccar.model.DeviceEventType;
+import pl.datamatica.traccar.model.GeoFence;
+import pl.datamatica.traccar.model.GeoFence.LonLat;
 import pl.datamatica.traccar.model.Position;
 
 public class MapBuilder {    
@@ -50,6 +52,30 @@ public class MapBuilder {
         sb.append("var ").append(id).append(" = marker([").append(position.getLongitude())
                 .append(", ").append(position.getLatitude()).append("], '');\r\n");
         sb.append(id).append(".setStyle(").append(style.compile()).append(");");
+        
+        vectors.add(sb.toString());
+        return this;
+    }
+    
+    public MapBuilder geofence(GeoFence gf) {
+        switch(gf.getType()) {
+            case CIRCLE:
+                circle(gf.points().get(0), gf.getRadius(), gf.getColor());
+                break;
+        }
+        
+        return this;
+    }
+    
+    public MapBuilder circle(LonLat pt, double r, String color) {
+        String id = "v"+vectors.size();
+        StringBuilder sb = new StringBuilder();
+        sb.append("var ").append(id).append(" = marker([").append(pt.lon)
+                .append(", ").append(pt.lat).append("]").append(");\r\n");
+        sb.append(id).append("setStyle(").append("{\r\n")
+                .append("  radius: ").append(r).append(",\r\n")
+                .append("  fill: \"").append(color).append("\"\r\n")
+                .append("});\r\n");
         
         vectors.add(sb.toString());
         return this;
@@ -121,6 +147,10 @@ public class MapBuilder {
                 + "function marker(coords, name) {\r\n"
                 + "  var geom = new ol.geom.Point(ol.proj.transform(coords, 'EPSG:4326', 'EPSG:3857'));\r\n"
                 + "  return new ol.Feature({ geometry: geom, name: name});\r\n"
+                + "}\r\n"
+                +"function circle(coords, radius) {\r\n"
+                + "  var geom = new ol.geom.Circle(ol.proj.transform(coords, 'EPSG:4326', 'EPSG:3857'));\r\n"
+                + "  return new ol.Feature({ geometry: geom});\r\n"
                 + "}\r\n"
                 + "function bind(map, tableId, startRow) {\r\n"
                 + "  var table = document.getElementById(tableId);\r\n"

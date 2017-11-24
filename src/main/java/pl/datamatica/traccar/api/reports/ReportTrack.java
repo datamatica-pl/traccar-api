@@ -38,6 +38,7 @@ import pl.datamatica.traccar.model.RoutePoint;
  *
  * @author ŁŁ
  */
+//test on !test! 2017-06-06 ~RealDevice
 public class ReportTrack extends ReportGenerator{
 
     @Override
