@@ -49,7 +49,7 @@ import pl.datamatica.traccar.api.providers.ProviderException;
 import pl.datamatica.traccar.api.utils.GeoUtils;
 
 public abstract class ReportGenerator {
-    public static final int DEFAULT_TABLE_HEIGHT = 350;
+    public static final int DEFAULT_TABLE_HEIGHT = 500;
     
     EntityManager entityManager;
     PositionProvider positionProvider;
@@ -333,7 +333,7 @@ public abstract class ReportGenerator {
     }
     
     protected MapBuilder getMapBuilder() {
-        return new MapBuilder("100%", "500px", icons);
+        return new MapBuilder("100%", DEFAULT_TABLE_HEIGHT+"px", icons);
     }
     
     void html(String html) {

@@ -64,7 +64,7 @@ public class ReportGFIO extends ReportGenerator {
                 if(report.isIncludeMap() && !events.isEmpty()) {
                     html("</div>");
                     html("<div class=\"col-md-6\">");
-                    drawMap(events);
+                    drawMap(events, geoFences);
                     html("</div>");
                 }
             }
@@ -108,7 +108,7 @@ public class ReportGFIO extends ReportGenerator {
     void drawTable(List<DeviceEvent> datas) {
 
         // draw
-        tableStart("table", hover().condensed());
+        tableStart("table", hover().condensed().height(DEFAULT_TABLE_HEIGHT));
 
         // header
         tableHeadStart();
@@ -143,12 +143,14 @@ public class ReportGFIO extends ReportGenerator {
         tableEnd();
     }
     
-    void drawMap(List<DeviceEvent> events) {
+    void drawMap(List<DeviceEvent> events, List<GeoFence> gfs) {
         MapBuilder builder = getMapBuilder();
         for(DeviceEvent ev : events) {
             builder.marker(ev.getPosition(), 
                     MapBuilder.MarkerStyle.event(ev.getType(), ""));
         }
+        for(GeoFence gf : gfs)
+            builder.geofence(gf);
         html(builder.bindWithTable("table", 1).create());
     }
 }
