@@ -34,6 +34,7 @@ import pl.datamatica.traccar.api.providers.CommandTypeProvider;
 import pl.datamatica.traccar.api.responses.HttpStatuses;
 import pl.datamatica.traccar.api.services.CommandService;
 import pl.datamatica.traccar.api.providers.ProviderException;
+import pl.datamatica.traccar.api.services.CommandParser;
 import pl.datamatica.traccar.api.services.SimpleCommandParser;
 import pl.datamatica.traccar.model.Device;
 import pl.datamatica.traccar.model.User;
@@ -104,7 +105,7 @@ public class CommandsController extends ControllerBase {
                 final CommandTypeProvider cmdTypeProvider = new CommandTypeProvider(devModel);
                 final String cmdFormat = cmdTypeProvider.getTcpCommand(originalCommandType);
                 final String commandType = cmdFormat.isEmpty() ? originalCommandType : API_PREFORMATTED_COMMAND_TYPE;
-                final Map<String, Object> commandParams = new CommandParamsProvider(new SimpleCommandParser(), requestUser)
+                final Map<String, Object> commandParams = new CommandParamsProvider(new CommandParser(), requestUser)
                         .getCommandParams(params, cmdFormat);
                 
                 ActiveDeviceProvider adp = new ActiveDeviceProvider();
