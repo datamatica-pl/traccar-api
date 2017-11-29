@@ -96,6 +96,8 @@ public class ReportEV extends ReportGenerator {
                 builder.marker(ev.getPosition(), 
                         MarkerStyle.event(ev.getType(), ""));
         }
+        for(GeoFence gf : gfs)
+            builder.geofence(gf);
         html(builder.bindWithTable("table", 1).create());
     }
 
@@ -106,19 +108,6 @@ public class ReportEV extends ReportGenerator {
                 
     }
     
-    private String getLabel(DeviceEvent ev) {
-        switch(ev.getType()) {
-            case OVERSPEED:
-                return String.format("V: %.0f km/h T: %s", 
-                        ev.getPosition().getSpeedInKmh(), ev.getTime());
-            case GEO_FENCE_ENTER:
-            case GEO_FENCE_EXIT:
-                return String.format("%s T: %s", 
-                        ev.getGeoFence().getName(), ev.getTime());
-        }
-        return "";
-    }
-
     static class Stats {
         int offline;
         Map<GeoFence, Integer> geoFenceEnter = new HashMap<>();

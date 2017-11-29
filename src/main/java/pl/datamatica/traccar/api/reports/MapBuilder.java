@@ -58,25 +58,34 @@ public class MapBuilder {
     }
     
     public MapBuilder geofence(GeoFence gf) {
+        String id = "v"+vectors.size();
+        List<LonLat> pt = gf.points();
+        double r = gf.getRadius();
+        String color = gf.getColor();
+        String name = gf.getName();
+        
+        StringBuilder sb = new StringBuilder();
+        sb.append("var ").append(id).append(" = ");
         switch(gf.getType()) {
             case CIRCLE:
-                circle(gf.points().get(0), gf.getRadius(), gf.getColor());
+                sb.append("circle([").append(pt.get(0).lon)
+                .append(", ").append(pt.get(0).lat).append("], ").append(r)
+                .append(", '").append(name).append("');\r\n");
                 break;
+            case POLYGON:
+                sb.append("polygon([[");
+                for(LonLat ll : pt)
+                    sb.append("[").append(ll.lon).append(",").append(ll.lat).append("],");
+                if(!pt.isEmpty())
+                    sb.deleteCharAt(sb.length()-1);
+                sb.append("]], '").append(name).append("');\r\n");
+                break;
+            default:
+                return this;
         }
         
-        return this;
-    }
-    
-    public MapBuilder circle(LonLat pt, double r, String color) {
-        String id = "v"+vectors.size();
-        StringBuilder sb = new StringBuilder();
-        sb.append("var ").append(id).append(" = marker([").append(pt.lon)
-                .append(", ").append(pt.lat).append("]").append(");\r\n");
-        sb.append(id).append("setStyle(").append("{\r\n")
-                .append("  radius: ").append(r).append(",\r\n")
-                .append("  fill: \"").append(color).append("\"\r\n")
-                .append("});\r\n");
-        
+        sb.append(id).append(".setStyle(geoStyle('").append(name).append("', '")
+                .append(color).append("'));");
         vectors.add(sb.toString());
         return this;
     }
@@ -148,9 +157,28 @@ public class MapBuilder {
                 + "  var geom = new ol.geom.Point(ol.proj.transform(coords, 'EPSG:4326', 'EPSG:3857'));\r\n"
                 + "  return new ol.Feature({ geometry: geom, name: name});\r\n"
                 + "}\r\n"
-                +"function circle(coords, radius) {\r\n"
-                + "  var geom = new ol.geom.Circle(ol.proj.transform(coords, 'EPSG:4326', 'EPSG:3857'));\r\n"
-                + "  return new ol.Feature({ geometry: geom});\r\n"
+                + "function polygon(coords, name) {\r\n"
+                + "  var geom = new ol.geom.Polygon(coords).transform('EPSG:4326', 'EPSG:3857');\r\n"
+                + "  return new ol.Feature({ geometry: geom, name: name });\r\n"
+                + "}"
+                +"function circle(coords, radius, name) {\r\n"
+                + "  var geom = new ol.geom.Circle(ol.proj.transform(coords, 'EPSG:4326', 'EPSG:3857'), radius);\r\n"
+                + "  return new ol.Feature({ geometry: geom, name: name});\r\n"
+                + "}\r\n"
+                + "function fillColor(hex) {\r\n"
+                + "  var tmp = parseInt(hex, 16);\r\n"
+                + "  return 'rgba('+((tmp>>16)&255)+', '+((tmp>>8)&255)+', '"
+                + "      +(tmp&255)+', 0.5)';\r\n"
+                + "}\r\n"
+                + "function geoStyle(name, color) {\r\n"
+                + "  return new ol.style.Style({\r\n"
+                + "    fill: new ol.style.Fill({ color: fillColor(color) }),\r\n"
+                + "    stroke: new ol.style.Stroke({ color: \"#\"+color }),\r\n"
+                + "    text: new ol.style.Text({\r\n"
+                + "      text: name,\r\n"
+                + "      font: 'bold 14px Arial, sans-serif'\r\n"
+                + "    })\r\n"
+                + "  });\r\n"
                 + "}\r\n"
                 + "function bind(map, tableId, startRow) {\r\n"
                 + "  var table = document.getElementById(tableId);\r\n"

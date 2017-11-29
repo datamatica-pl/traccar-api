@@ -18,6 +18,7 @@ package pl.datamatica.traccar.api.reports;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashSet;
@@ -86,7 +87,7 @@ public class ReportTrack extends ReportGenerator{
         if(report.isIncludeMap() && !alle.isEmpty()) {
             html("</div>");
             html("<div class=\"col-md-6\">");
-            drawMap(alle);
+            drawMap(alle, gfs);
             html("</div>");
         }
     }
@@ -94,7 +95,7 @@ public class ReportTrack extends ReportGenerator{
     void drawTable(String id, List<DeviceEvent> datas) {
 
         // draw
-        tableStart(id, hover().condensed());
+        tableStart(id, hover().condensed().height(250));
 
         // header
         tableHeadStart();
@@ -159,12 +160,14 @@ public class ReportTrack extends ReportGenerator{
         return result;
     }
 
-    void drawMap(List<DeviceEvent> events) {
+    void drawMap(List<DeviceEvent> events, Collection<GeoFence> gfs) {
         MapBuilder builder = getMapBuilder();
         for(DeviceEvent ev : events) {
             builder.marker(ev.getPosition(), 
                     MapBuilder.MarkerStyle.event(ev.getType(), ""));
         }
+        for(GeoFence gf : gfs)
+            builder.geofence(gf);
         builder.bindWithTable("rpe", 1)
                 .bindWithTable("core", 1);
         html(builder.create());
