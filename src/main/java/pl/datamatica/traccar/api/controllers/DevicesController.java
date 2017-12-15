@@ -406,7 +406,7 @@ public class DevicesController extends ControllerBase {
                     default:
                         throw new IllegalArgumentException();
                 }
-                parsed.speedValue = Integer.parseInt(params.get("speedValue")[0]);
+                parsed.speedValue = Double.parseDouble(params.get("speedValue")[0]);
             }
             catch(ArrayIndexOutOfBoundsException oob) {
                 parsed.errors.add(new ErrorDto(MessageKeys.ERR_POSITIONS_QUERY_SPEED_VALUE_NOT_PROVIDED));

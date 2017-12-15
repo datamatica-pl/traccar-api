@@ -110,7 +110,7 @@ public abstract class ReportGenerator {
             qp.hideInvalid = us.isHideInvalidLocations();
             qp.hideDuplicates = us.isHideDuplicates();
             if(us.getSpeedForFilter() != null) {
-                qp.speedValue = us.getSpeedForFilter().intValue();
+                qp.speedValue = us.getSpeedForFilter();
                 qp.speedComp = speedOpFromSpeedModifier(us.getSpeedModifier());
             }
             positions = PositionProvider.filterPositions(positions, qp);

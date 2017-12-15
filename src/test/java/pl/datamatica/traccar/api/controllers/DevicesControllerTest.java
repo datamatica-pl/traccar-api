@@ -503,7 +503,7 @@ public class DevicesControllerTest {
     List<Position> list = getFilterTestPositionsList();
         PositionsQueryParams qp = new PositionsQueryParams();
         qp.speedComp = PositionSpeedOperator.EQUAL;
-        qp.speedValue = 10;
+        qp.speedValue = 10d;
         
         List<Position> res = PositionProvider.filterPositions(list, qp);
         
@@ -516,7 +516,7 @@ public class DevicesControllerTest {
         List<Position> list = getFilterTestPositionsList();
         PositionsQueryParams qp = new PositionsQueryParams();
         qp.speedComp = PositionSpeedOperator.LESS;
-        qp.speedValue = 19;
+        qp.speedValue = 19d;
         
         List<Position> res = PositionProvider.filterPositions(list, qp);
         
@@ -529,7 +529,7 @@ public class DevicesControllerTest {
         List<Position> list = getFilterTestPositionsList();
         PositionsQueryParams qp = new PositionsQueryParams();
         qp.speedComp = PositionSpeedOperator.LESSEQUAL;
-        qp.speedValue = 25;
+        qp.speedValue = 25d;
         qp.minDistance = 100;
         qp.hideInvalid = true;
         qp.hideZero = true;

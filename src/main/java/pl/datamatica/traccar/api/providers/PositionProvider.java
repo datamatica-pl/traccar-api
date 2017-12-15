@@ -184,7 +184,7 @@ public class PositionProvider extends ProviderBase {
         public Boolean hideDuplicates = false;
         public Integer minDistance = 0;
         public PositionSpeedOperator speedComp;
-        public Integer speedValue = null;
+        public Double speedValue = null;
         public Boolean getAll = false;
         
         public List<ErrorDto> errors = new ArrayList<>();
