@@ -16,10 +16,16 @@
  */
 package pl.datamatica.traccar.api.controllers;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
+import org.slf4j.LoggerFactory;
+import org.slf4j.Logger;
 import pl.datamatica.traccar.api.Application;
+import pl.datamatica.traccar.api.TraccarConfig;
 import static pl.datamatica.traccar.api.controllers.ControllerBase.render;
 import pl.datamatica.traccar.api.dtos.MessageKeys;
 import pl.datamatica.traccar.api.dtos.in.AddUserDto;
@@ -30,6 +36,7 @@ import pl.datamatica.traccar.api.dtos.in.ResetPassReqDto;
 import pl.datamatica.traccar.api.dtos.out.ErrorDto;
 import pl.datamatica.traccar.api.dtos.out.UserDto;
 import pl.datamatica.traccar.api.dtos.out.UserSettingsDto;
+import pl.datamatica.traccar.api.exceptions.ConfigLoadException;
 import pl.datamatica.traccar.api.providers.MailSender;
 import pl.datamatica.traccar.api.providers.ProviderException;
 import pl.datamatica.traccar.api.providers.ProviderRemovingException;
@@ -46,7 +53,7 @@ public class UsersController extends ControllerBase {
     public static class Binder extends ControllerBinder{
 
         @Override
-        public void bind() {      
+        public void bind() {
             Spark.get(rootUrl(), (req, res) -> {
                 UsersController uc = createController(req);
                 return render(uc.get(), res);
@@ -306,26 +313,28 @@ public class UsersController extends ControllerBase {
     
     private static String emailConfirmationContent(String url) {
         url = url.replace("46.41.148.107", "gps.petio.eu").replace("46.41.149.43", "trackman.pl");
+        
         return String.format("Witaj,<br/><br/>" +
-                "Dziękujemy za założenie konta w systemie DM TrackMan.<br/>" +
+                "Dziękujemy za założenie konta w systemie " + getAppInfo().get("appName") + ".<br/>" +
                 "Twoje konto jest nieaktywne. Aby aktywować konto kliknij w poniższy link.<br/><br/><br/>" +
                 "<a href=\"%s\">Link do aktywacji konta</a><br/><br/>" +
                 "bądź skopiuj poniższy link i wklej do przeglądarki w pasku adresu.<br/><br/>" +
                 "%s<br/><br/>" +
                 "Uwaga: link aktywacyjny ważny jest przez 7 dni.<br/><br/><br/>" +
                 "Dziękujemy,<br/><br/>" +
-                "Zespół serwisu DM TrackMan<br/><br/>" +
+                "Zespół serwisu " + getAppInfo().get("appName") + "<br/><br/>" +
                 "Ten email został wygenerowany automatycznie - nie odpowiadaj na niego.",
                 url, url);
     }
     
     private static String passResetReqContent(String url) {
         url = url.replace("46.41.148.107", "gps.petio.eu").replace("46.41.149.43", "trackman.pl");
+        
         return String.format("Witaj,<br/><br/>"
-                + "Odnotowaliśmy próbę odzyskania hasła do konta w systemie DM TrackMan.<br/>"
+                + "Odnotowaliśmy próbę odzyskania hasła do konta w systemie " + getAppInfo().get("appName") + ".<br/>"
                 + "Nowe hasło zostanie wysłane na adres e-mail po kliknięciu poniższego linku:<br/><br/>"
                 + "%s<br/><br/>"
-                + "Zespół serwisu DM TrackMan<br/><br/>"
+                + "Zespół serwisu " + getAppInfo().get("appName") +  "<br/><br/>"
                 + "Ten email został wygenerowany automatycznie - nie odpowiadaj na niego.", 
                 url);
     }
@@ -336,7 +345,7 @@ public class UsersController extends ControllerBase {
                 + "%s<br/><br/>"
                 + "W celu zwiększenia bezpieczeństwa prosimy o zmianę wygenerowanego hasła "
                 + "po zalogowaniu się do systemu.<br/>"
-                + "Zespół serwisu DM TrackMan<br/><br/>"
+                + "Zespół serwisu " + getAppInfo().get("appName") +  "<br/><br/>"
                 + "Ten email został wygenerowany automatycznie - nie odpowiadaj na niego.",
                 pass);
     }
@@ -344,9 +353,39 @@ public class UsersController extends ControllerBase {
     public HttpResponse activateUser(String token) {
         try {
             up.activateUser(token);
-            return redirect("http://trackman.pl/rejestracja");
+            return redirect(getAppInfo().get("afterRegisterLink"));
         } catch (ProviderException ex) {
             return ok("");
         }
+    }
+    
+    private static Map<String, String> getAppInfo() {
+        Logger logger = LoggerFactory.getLogger(Application.class);
+        TraccarConfig traccarConf;
+        Map<String, String> appInfo = new HashMap<>();
+
+        appInfo.put("appName", "DM TrackMan / Petio / Travman");
+        appInfo.put("afterRegisterLink", "http://trackman.pl/rejestracja");
+
+        try {
+            traccarConf = TraccarConfig.getInstance();
+        } catch (ConfigLoadException e) {
+            logger.error("Instance of TraccarConfig cannot be obtained. Default values will be used");
+            return appInfo;
+        }
+
+        try {
+            appInfo.put("appName", traccarConf.getNotNullStringParam("dm_app.app_name"));
+        } catch (IllegalAccessException | InvocationTargetException e) {
+            logger.error("Config key dm_app.app_name cannot be get. Default value will be used.");
+        }
+
+        try {
+            appInfo.put("afterRegisterLink", traccarConf.getNotNullStringParam("dm_app.email.after_register_link"));
+        } catch (IllegalAccessException | InvocationTargetException e) {
+            logger.error("Config key dm_app.email.after_register_link cannot be get. Default value will be used.");
+        }
+
+        return appInfo;
     }
 }
