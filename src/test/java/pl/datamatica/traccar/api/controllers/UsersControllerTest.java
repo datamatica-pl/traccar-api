@@ -118,7 +118,7 @@ public class UsersControllerTest {
         
         HttpResponse response = controller.register(registerDto);
         
-        Mockito.verify(devices, Mockito.times(1)).createDevice(registerDto.getImei());
+        Mockito.verify(devices, Mockito.times(1)).createDevice(registerDto.getImei(), null);
         assertTrue(response instanceof CreatedResponse);
         assertEquals("", response.getContent());
     }
@@ -144,7 +144,7 @@ public class UsersControllerTest {
     
     @Test
     public void register_invalidImei() throws ProviderException {
-        Mockito.when(devices.createDevice(registerDto.getImei()))
+        Mockito.when(devices.createDevice(registerDto.getImei(), null))
                 .thenThrow(new ProviderException(Type.INVALID_IMEI));
         
         HttpResponse response = controller.register(registerDto);

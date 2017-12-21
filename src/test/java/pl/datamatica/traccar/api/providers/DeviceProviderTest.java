@@ -26,6 +26,8 @@ import org.junit.*;
 import static org.junit.Assert.*;
 import org.mockito.Mockito;
 import pl.datamatica.traccar.api.dtos.in.EditDeviceDto;
+import pl.datamatica.traccar.api.metadata.model.DeviceModel;
+import pl.datamatica.traccar.api.metadata.model.ImeiNumber;
 import pl.datamatica.traccar.model.Device;
 import pl.datamatica.traccar.model.User;
 
@@ -50,6 +52,11 @@ public class DeviceProviderTest {
         imeiProvider = Mockito.mock(ImeiProvider.class);
         Mockito.when(imeiProvider.isImeiRegistered(Mockito.anyString()))
                 .thenReturn(true);
+        
+        ImeiNumber imei = new ImeiNumber();
+        imei.setDeviceModel("GT100/MT200");
+        Mockito.when(imeiProvider.getImeiByImeiString(Mockito.anyString())).thenReturn(imei);
+        
         em.getTransaction().begin();
         em.getTransaction().setRollbackOnly();
     }
@@ -121,7 +128,7 @@ public class DeviceProviderTest {
         User user = database.admin;
         provider = new DeviceProvider(em, user, imeiProvider, null, null);
 
-        Device device = provider.createDevice(uniqueId);
+        Device device = provider.createDevice(uniqueId, null);
         em.flush();
         
         assertNotNull(device);
@@ -140,7 +147,7 @@ public class DeviceProviderTest {
         try{
             String uniqueId = database.managerDevice.getUniqueId();
 
-            provider.createDevice(uniqueId);
+            provider.createDevice(uniqueId, null);
         } catch(ProviderException e) {
             assertEquals(ProviderException.Type.DEVICE_ALREADY_EXISTS, e.getType());
             return;
@@ -154,7 +161,7 @@ public class DeviceProviderTest {
         User user = database.managed2;
         provider = new DeviceProvider(em, user, imeiProvider, null, null);
         
-        Device device = provider.createDevice(uniqueId);
+        Device device = provider.createDevice(uniqueId, null);
         
         assertTrue(device.getId() > 0);
         assertEquals(uniqueId, device.getUniqueId());

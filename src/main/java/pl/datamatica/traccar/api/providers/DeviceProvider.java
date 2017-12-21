@@ -48,6 +48,8 @@ import pl.datamatica.traccar.model.Picture;
 import pl.datamatica.traccar.model.RegistrationMaintenance;
 import pl.datamatica.traccar.model.SpeedUnitMultipier;
 import pl.datamatica.traccar.model.UserPermission;
+import org.apache.commons.lang3.StringUtils;
+import pl.datamatica.traccar.api.metadata.model.DeviceModel;
 
 public class DeviceProvider extends ProviderBase {
     private User requestUser;
@@ -153,7 +155,7 @@ public class DeviceProvider extends ProviderBase {
         }
     }
 
-    public Device createDevice(String imei) throws ProviderException {
+    public Device createDevice(String imei, DeviceModelProvider devModelProvider) throws ProviderException {
         checkUserEditPermission();
         
         if(!isImeiValid(imei))
@@ -172,6 +174,16 @@ public class DeviceProvider extends ProviderBase {
         device.setUsers(Collections.singleton(requestUser));
         device.setIconId(4L);
         device.setOwner(requestUser);
+        final String modelName = imeis.getImeiByImeiString(imei).getDeviceModel();
+        
+        // Set device model if match is found
+        if (devModelProvider != null && StringUtils.isNotBlank(modelName)) {
+            DeviceModel devModel = devModelProvider.getDeviceModelLike(modelName);
+            if (devModel != null) {
+                device.setDeviceModelId(devModel.getId());
+            }
+        }
+        
         em.persist(device);
         
         logger.info("{} created device {} (id={})", 

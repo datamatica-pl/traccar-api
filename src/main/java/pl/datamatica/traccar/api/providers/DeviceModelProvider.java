@@ -46,4 +46,11 @@ public class DeviceModelProvider extends ProviderBase {
                 .setParameter("id", id);
         return query.getSingleResult();
     }
+    
+    public DeviceModel getDeviceModelLike(String devModelPart) {
+        TypedQuery<DeviceModel> query = emMetadata.createQuery(
+                "from DeviceModel d where d.modelName LIKE :modelNamePart", DeviceModel.class)
+                .setParameter("modelNamePart", "%" + devModelPart + "%");
+        return query.getSingleResult();
+    }
 }
