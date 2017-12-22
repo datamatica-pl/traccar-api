@@ -38,6 +38,7 @@ public class DeviceProviderTest {
     private static TestDatabase database;
     private ImeiProvider imeiProvider;
     private boolean isImeiValid;
+    private final static long DEFAULT_NOT_EXISTENT_MODEL_ID = -1L;
     
     @BeforeClass
     public static void classInit() {
@@ -134,11 +135,64 @@ public class DeviceProviderTest {
         assertNotNull(device);
         assertEquals(uniqueId, device.getUniqueId());
         assertEquals(user, device.getOwner());
-        assertEquals(-1, device.getDeviceModelId());
+        assertEquals(DEFAULT_NOT_EXISTENT_MODEL_ID, device.getDeviceModelId());
         assertEquals("0000FF", device.getColor());
         assertFalse(device.isDeleted());
         assertNotNull(device.getIconType());
         assertTrue(device.getUsers().contains(user));
+    }
+    
+    @Test
+    public void createDevice_model_id_automatically_added() throws ProviderException {
+        final Long expectedModelId = 3L;
+        User testUser = Mockito.mock(User.class);
+        Mockito.when(testUser.hasPermission(Mockito.anyObject())).thenReturn(Boolean.TRUE);
+        provider = new DeviceProvider(em, testUser, imeiProvider, null, null);
+
+        DeviceModelProvider modelProvider = Mockito.mock(DeviceModelProvider.class);
+        DeviceModel devModelTest = new DeviceModel();
+        devModelTest.setId(expectedModelId);
+
+        Mockito.when(modelProvider.getDeviceModelLike(Mockito.anyString())).thenReturn(devModelTest);
+
+        try {
+            Long modelId = provider.createDevice("999888777666011", modelProvider).getDeviceModelId();
+            assertEquals(modelId, expectedModelId);
+        } catch (ProviderException e) {
+            fail("ProviderExcepton: " + e.getMessage());
+        }
+    }
+    
+    @Test
+    public void createDevice_deviceModel_null() throws ProviderException {
+        User testUser = Mockito.mock(User.class);
+        Mockito.when(testUser.hasPermission(Mockito.anyObject())).thenReturn(Boolean.TRUE);
+        provider = new DeviceProvider(em, testUser, imeiProvider, null, null);
+
+        DeviceModelProvider modelProvider = Mockito.mock(DeviceModelProvider.class);
+
+        Mockito.when(modelProvider.getDeviceModelLike(Mockito.anyString())).thenReturn(null);
+
+        try {
+            long modelId = provider.createDevice("999888777666011", modelProvider).getDeviceModelId();
+            assertEquals(modelId, DEFAULT_NOT_EXISTENT_MODEL_ID);
+        } catch (ProviderException e) {
+            fail("ProviderExcepton: " + e.getMessage());
+        }
+    }
+    
+    @Test
+    public void createDevice_deviceModelProvider_null() throws ProviderException {
+        User testUser = Mockito.mock(User.class);
+        Mockito.when(testUser.hasPermission(Mockito.anyObject())).thenReturn(Boolean.TRUE);
+        provider = new DeviceProvider(em, testUser, imeiProvider, null, null);
+
+        try {
+            long modelId = provider.createDevice("999888777666011", null).getDeviceModelId();
+            assertEquals(modelId, DEFAULT_NOT_EXISTENT_MODEL_ID);
+        } catch (ProviderException e) {
+            fail("ProviderExcepton: " + e.getMessage());
+        }
     }
     
     @Test
