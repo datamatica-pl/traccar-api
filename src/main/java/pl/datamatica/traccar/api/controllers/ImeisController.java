@@ -165,6 +165,25 @@ public class ImeisController extends ControllerBase {
 
                 return "";
             });
+            
+            Spark.get(baseUrl() + "/imei/:imeiStr/deviceModel", (req, res) -> {
+                final String imeiStr = req.params(":imeiStr");
+                final RequestContext context = req.attribute(Application.REQUEST_CONTEXT_KEY);
+                final ImeiProvider imp = context.getImeiProvider();
+                final ImeiNumber imei = imp.getImeiByImeiString(imeiStr);
+
+                if (imei != null) {
+                    res.status(HttpStatuses.OK);
+                    String deviceModel = imei.getDeviceModel();
+                    if (deviceModel == null) {
+                        deviceModel = "";
+                    }
+                    return deviceModel;
+                } else {
+                    res.status(HttpStatuses.NOT_FOUND);
+                    return "";
+                }
+            });
 
         }
         
