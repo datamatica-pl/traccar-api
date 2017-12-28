@@ -152,6 +152,8 @@ public class ImeisController extends ControllerBase {
                 return successMsg;
             });
 
+            // TODO: Delete after migrating AUTO-1358 on all servers
+            // Path GET "/imei/:imeiStr/deviceModel" will be used to determine if IMEI exists
             Spark.head(baseUrl() + "/imei/:imeiStr", (req, res) -> {
                 final String imeiStr = req.params(":imeiStr");
                 final RequestContext context = req.attribute(Application.REQUEST_CONTEXT_KEY);

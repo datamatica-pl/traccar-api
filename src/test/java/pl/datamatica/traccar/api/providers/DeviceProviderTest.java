@@ -51,10 +51,9 @@ public class DeviceProviderTest {
     @Before
     public void testInit() {
         imeiProvider = Mockito.mock(ImeiProvider.class);
-        Mockito.when(imeiProvider.isImeiRegistered(Mockito.anyString()))
-                .thenReturn(true);
         
         ImeiNumber imei = new ImeiNumber();
+        imei.setImei("999888777666001");
         imei.setDeviceModel("GT100/MT200");
         Mockito.when(imeiProvider.getImeiByImeiString(Mockito.anyString())).thenReturn(imei);
         
@@ -125,7 +124,7 @@ public class DeviceProviderTest {
     
     @Test
     public void createDevice_ok() throws ProviderException {
-        String uniqueId = "584930";
+        String uniqueId = "999888777666001";
         User user = database.admin;
         provider = new DeviceProvider(em, user, imeiProvider, null, null);
 

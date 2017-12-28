@@ -50,13 +50,14 @@ import pl.datamatica.traccar.model.SpeedUnitMultipier;
 import pl.datamatica.traccar.model.UserPermission;
 import org.apache.commons.lang3.StringUtils;
 import pl.datamatica.traccar.api.metadata.model.DeviceModel;
+import pl.datamatica.traccar.api.metadata.model.LocalOrRemoteImeiNumber;
 
 public class DeviceProvider extends ProviderBase {
-    private User requestUser;
-    private ImeiProvider imeis;
-    private DeviceGroupProvider groups;
-    private PicturesProvider pictures;
-    private Logger logger;
+    private final User requestUser;
+    private final ImeiProvider imeis;
+    private final DeviceGroupProvider groups;
+    private final PicturesProvider pictures;
+    private final Logger logger;
     private final SimpleDateFormat dateFormat;
     
     public DeviceProvider(EntityManager em, User requestUser, ImeiProvider imeis,
@@ -157,9 +158,11 @@ public class DeviceProvider extends ProviderBase {
 
     public Device createDevice(String imei, DeviceModelProvider devModelProvider) throws ProviderException {
         checkUserEditPermission();
+        LocalOrRemoteImeiNumber imeiChecker = new LocalOrRemoteImeiNumber(imei, imeis);
         
-        if(!isImeiValid(imei))
+        if (!imeiChecker.isImeiValidAndRegistered()) {
             throw new ProviderException(Type.INVALID_IMEI);
+        }
         
         Device existing = getDeviceByImei(imei);
         if(existing != null) {
@@ -174,7 +177,8 @@ public class DeviceProvider extends ProviderBase {
         device.setUsers(Collections.singleton(requestUser));
         device.setIconId(4L);
         device.setOwner(requestUser);
-        final String modelName = imeis.getImeiByImeiString(imei).getDeviceModel();
+        
+        final String modelName = imeiChecker.getDeviceModelName();
         
         // Set device model if match is found
         if (devModelProvider != null && StringUtils.isNotBlank(modelName)) {
@@ -247,10 +251,6 @@ public class DeviceProvider extends ProviderBase {
     private List<Device> getAllDevices() {
         TypedQuery<Device> tq = em.createQuery("Select x from Device x", Device.class);
         return tq.getResultList();
-    }
-    
-    private boolean isImeiValid(String imei) {
-        return imeis.isImeiRegistered(imei);
     }
     
     private void hardDelete(Device device) {
