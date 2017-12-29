@@ -230,7 +230,7 @@ public class DevicesControllerTest {
         expectedContent.setUsers(Collections.singleton(user));
         expectedContent.setMaintenances(Collections.EMPTY_LIST);
         expectedContent.setUniqueId(uniqueId);
-        Mockito.when(dp.createDevice(uniqueId)).thenReturn(expectedContent);
+        Mockito.when(dp.createDevice(uniqueId, null)).thenReturn(expectedContent);
         AddDeviceDto deviceDto = new AddDeviceDto(uniqueId);
         
         HttpResponse response = dc.post(deviceDto);
@@ -261,7 +261,7 @@ public class DevicesControllerTest {
         String imei = "8";
         AddDeviceDto deviceDto = new AddDeviceDto(imei);
         ErrorDto expectedError = new ErrorDto(MessageKeys.ERR_INVALID_IMEI);
-        Mockito.when(dp.createDevice("8")).thenThrow(new ProviderException(Type.INVALID_IMEI));
+        Mockito.when(dp.createDevice("8", null)).thenThrow(new ProviderException(Type.INVALID_IMEI));
         
         HttpResponse response = dc.post(deviceDto);
         

@@ -46,4 +46,24 @@ public class DeviceModelProvider extends ProviderBase {
                 .setParameter("id", id);
         return query.getSingleResult();
     }
+    
+    /**
+     * Return DeviceModel.modelName LIKE specified part of name. Only one device model is returned,
+     * even if many for such filter exists.
+     * 
+     * @param devModelPart String used to query DeviceModel.modelName (LIKE)
+     * @return DeviceModel or null if DeviceModel for like argument has not been found
+     */
+    public DeviceModel getDeviceModelLike(String devModelPart) {
+        TypedQuery<DeviceModel> query = emMetadata.createQuery(
+                "from DeviceModel d where d.modelName LIKE :modelNamePart", DeviceModel.class)
+                .setParameter("modelNamePart", "%" + devModelPart + "%");
+        List<DeviceModel> result =  query.getResultList();
+        
+        if (result.isEmpty()) {
+            return null;
+        } else {
+            return result.get(0);
+        }
+    }
 }

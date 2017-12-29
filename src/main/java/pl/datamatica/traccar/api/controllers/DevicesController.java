@@ -207,7 +207,7 @@ public class DevicesController extends ControllerBase {
         if(!validationErrors.isEmpty())
             return badRequest(validationErrors);
         try {
-            Device device = dp.createDevice(deviceDto.getImei());
+            Device device = dp.createDevice(deviceDto.getImei(), this.requestContext.getDeviceModelProvider());
             return created("devices/"+device.getId(), new DeviceDto.Builder().device(device, userIds).build());
         } catch(ProviderException e) {
             switch(e.getType()) {

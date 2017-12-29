@@ -179,13 +179,13 @@ public class TestDatabase {
     
     private void createDevices() {
         managerDevice = new Device();
-        managerDevice.setUniqueId("20");
+        managerDevice.setUniqueId("999888777666010");
         managerDevice.setOwner(manager);
         manager.setDevices(Collections.singleton(managerDevice));
         em.persist(managerDevice);
         
         managedDevice = new Device();
-        managedDevice.setUniqueId("10");
+        managedDevice.setUniqueId("999888777666011");
         managedDevice.setOwner(managedUser);
         managedDevice.setDeleted(true);
         managedDevice.setGroup(managedDeviceDeviceGroup);
@@ -193,14 +193,14 @@ public class TestDatabase {
         em.persist(managedDevice);
         
         adminDevice = new Device();
-        adminDevice.setUniqueId("30");
+        adminDevice.setUniqueId("999888777666012");
         adminDevice.setOwner(admin);
         adminDevice.setGroup(adminDeviceGroup);
         admin.setDevices(Collections.singleton(adminDevice));
         em.persist(adminDevice);
         
         managed2Device = new Device();
-        managed2Device.setUniqueId("5");
+        managed2Device.setUniqueId("999888777666013");
         managed2Device.setOwner(managed2);
         managed2Device.setGroup(managed2DeviceGroup);
         managed2.setDevices(Collections.singleton(managed2Device));
