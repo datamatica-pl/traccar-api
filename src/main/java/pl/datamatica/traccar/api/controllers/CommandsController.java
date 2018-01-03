@@ -105,7 +105,7 @@ public class CommandsController extends ControllerBase {
                 final CommandTypeProvider cmdTypeProvider = new CommandTypeProvider(devModel);
                 final String cmdFormat = cmdTypeProvider.getTcpCommand(originalCommandType);
                 final String commandType = cmdFormat.isEmpty() ? originalCommandType : API_PREFORMATTED_COMMAND_TYPE;
-                final Map<String, Object> commandParams = new CommandParamsProvider(new CommandParser(), requestUser)
+                final Map<String, Object> commandParams = new CommandParamsProvider(new SimpleCommandParser(), requestUser)
                         .getCommandParams(params, cmdFormat);
                 
                 ActiveDeviceProvider adp = new ActiveDeviceProvider();
