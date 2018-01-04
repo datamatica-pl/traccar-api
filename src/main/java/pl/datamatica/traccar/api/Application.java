@@ -70,7 +70,8 @@ public class Application implements spark.servlet.SparkApplication {
             new DeviceGroupController.Binder(),
             new UserGroupsController.Binder(),
             new AuditLogController.Binder(),
-            new ReportsController.Binder()
+            new ReportsController.Binder(),
+            new RulesController.Binder()
         };
     
     private final Daemon[] DAEMONS = new Daemon[]{

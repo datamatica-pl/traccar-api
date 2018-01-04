@@ -18,6 +18,7 @@ package pl.datamatica.traccar.api.dtos.in;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Date;
 import java.util.List;
 import pl.datamatica.traccar.api.dtos.MessageKeys;
 import pl.datamatica.traccar.api.dtos.out.ErrorDto;
@@ -143,6 +144,8 @@ public class EditApplicationSettingsDto {
         private String bingMapsKey;
         private String matchServiceURL;
         private long defaultUserGroupId;
+        private String newRulesUrl;
+        private Date newRulesStartDate;
         
         public Builder() {
         }
@@ -201,7 +204,8 @@ public class EditApplicationSettingsDto {
                     language, 
                     bingMapsKey, 
                     matchServiceURL, 
-                    defaultUserGroupId);
+                    defaultUserGroupId
+            );
         }
     }
 }

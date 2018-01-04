@@ -19,7 +19,6 @@ package pl.datamatica.traccar.api.controllers;
 import java.util.List;
 import pl.datamatica.traccar.api.responses.HttpResponse;
 import pl.datamatica.traccar.api.Application;
-import pl.datamatica.traccar.api.Context;
 import pl.datamatica.traccar.api.EventDaemon;
 import static pl.datamatica.traccar.api.controllers.ControllerBase.render;
 import pl.datamatica.traccar.api.dtos.in.EditApplicationSettingsDto;

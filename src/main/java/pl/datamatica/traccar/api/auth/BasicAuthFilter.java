@@ -75,6 +75,11 @@ public class BasicAuthFilter {
                 request.attribute(RequestContext.REQUEST_FIELD_ERROR_DTO, new ErrorDto(MessageKeys.ERR_ACCOUNT_BLOCKED));
             } else if(user.isExpired()) {
                 request.attribute(RequestContext.REQUEST_FIELD_ERROR_DTO, new ErrorDto(MessageKeys.ERR_ACCOUNT_EXPIRED));
+            } else if(!user.areActiveRulesAccepted() 
+                    && !(request.pathInfo().matches("/v[0-9]+/rules/.*/accept")
+                        && request.requestMethod().equalsIgnoreCase("put"))) {
+                if(rc.getRulesProvider().getActiveRules() != null)
+                    request.attribute(RequestContext.REQUEST_FIELD_ERROR_DTO, new ErrorDto(MessageKeys.ERR_RULES_NOT_ACCEPTED));
             }
             
             if (req.attribute(RequestContext.REQUEST_FIELD_ERROR_DTO) == null && rc.isRequestForImeiManager(request)) {
