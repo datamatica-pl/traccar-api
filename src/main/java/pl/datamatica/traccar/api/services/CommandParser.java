@@ -30,13 +30,15 @@ public class CommandParser implements IDeviceCommandParser {
         StringBuilder msg = new StringBuilder();
         Scanner sc = new Scanner(commandFormat);
         while(true) {
-            sc.useDelimiter("\\{");
-            if(!sc.hasNext())
-                break;
-            msg.append(sc.next());
-            if(!sc.hasNext())
-                break;
-            sc.skip("\\{");
+            if(sc.findWithinHorizon("\\{", 1) == null) {
+                sc.useDelimiter("\\{");
+                if(!sc.hasNext())
+                    break;
+                msg.append(sc.next());
+                if(!sc.hasNext())
+                    break;
+                sc.skip("\\{");
+            }
             sc.useDelimiter("\\}");
             String param = emplaceParam(commandParams, sc.next());
             if(param == null)

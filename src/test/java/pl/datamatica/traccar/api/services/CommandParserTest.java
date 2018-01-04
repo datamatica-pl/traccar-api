@@ -56,7 +56,7 @@ public class CommandParserTest {
     }
     
     // TODO: This test doesn't pass, correct parser.
-    @Ignore
+    @Test
     public void testWithOneParameterOnBegin() {
         final Map<String, Object> commandParams = new HashMap<String, Object>() {
             {
@@ -66,6 +66,19 @@ public class CommandParserTest {
         
         assertEquals("123456A0",
                 cmdParser.parse("{password}A0", commandParams));
+    }
+    
+    @Test
+    public void testTwoParametersInARow() {
+        final Map<String, Object> commandParams = new HashMap<String, Object>() {
+            {
+                put("frequency", "80");
+                put("password", "123456");
+            }
+        };
+        
+        String cmd = cmdParser.parse("test{frequency}{password}", commandParams);
+        assertEquals("test80123456", cmd);
     }
     
     @Test
