@@ -33,6 +33,7 @@ import pl.datamatica.traccar.model.DeviceEvent;
 import pl.datamatica.traccar.model.DeviceEventType;
 import pl.datamatica.traccar.model.GeoFence;
 import pl.datamatica.traccar.model.Position;
+import pl.datamatica.traccar.model.Route;
 import pl.datamatica.traccar.model.RoutePoint;
 
 /**
@@ -56,14 +57,20 @@ public class ReportTrack extends ReportGenerator{
         paragraphEnd();
         
         List<RoutePoint> rp = route.getRoutePoints();
-        if(rp.get(0).getEnterTime() == null)
+        if(route.getStatus() == Route.Status.NEW)
             return;
-        Date startTime = rp.get(0).getEnterTime();
+        Date startTime = rp.get(0).getEnterTime(),
+                endTime = rp.get(0).getExitTime();
+        for(RoutePoint pt : rp) {
+            if(startTime == null || pt.getEnterTime().before(startTime))
+                startTime = pt.getEnterTime();
+            if(endTime == null || pt.getExitTime().after(endTime))
+                endTime = pt.getExitTime();
+        }
         if(startTime.before(from))
             startTime = from;
-        Date endTime = report.getToDate();
-        if(rp.get(rp.size()-1).getExitTime() != null)
-            endTime = rp.get(rp.size()-1).getExitTime();
+        if(endTime == null)
+            endTime = report.getToDate();
         List<Position> history = positionProvider.getDeviceHistory(
                 route.getDevice(), startTime, endTime)
                 .collect(Collectors.toList());

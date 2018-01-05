@@ -484,22 +484,20 @@ public class EventDaemon {
                     .setParameter("status", EnumSet.of(Route.Status.NEW, Route.Status.IN_PROGRESS_OK, Route.Status.IN_PROGRESS_LATE))
                     .getResultList();
             for(DbRoute r : routes) {
+                if(r.getRoutePoints().get(0).getDeadline() == null)
+                    continue;
                 unvisited.put(r, new ArrayList<>());
                 for(int i=0;i<r.getRoutePoints().size();++i) {
                     RoutePoint rp = r.getRoutePoints().get(i);
-                    if(rp.getEnterTime() == null 
-                            || rp.getExitTime() == null
-                            || (i == r.getRoutePoints().size()-1 && r.isForceLast())) {
+                    if(rp.getEnterTime() == null || rp.getExitTime() == null) {
                         long id = rp.getGeofence().getId();
                         if(!gfs.containsKey(id)) {
                             GeoFence gf = new GeoFence().copyFrom(rp.getGeofence());
                             gf.setDevices(new HashSet<>());
-                            gfs.put(id, gf);
-                            
+                            gfs.put(id, gf);  
                         }
                         gfs.get(id).getDevices().add(r.getDevice());
                         unvisited.get(r).add(rp);
-                        break;
                     }
                 }
             }
@@ -515,9 +513,11 @@ public class EventDaemon {
                 Date start = new Date(route.getRoutePoints().get(0).getDeadline().getTime() - route.getTolerance()*60*1000);
                 if(position.getTime().before(start))
                     continue;
-                Collection<RoutePoint> activePoints = new ArrayList<>(unvisited.get(route));
+                List<RoutePoint> activePoints = new ArrayList<>(unvisited.get(route));
                 if(route.isForceFirst() && route.getStatus() == Route.Status.NEW) {
-                    activePoints = Collections.singleton(route.getRoutePoints().get(0));
+                    activePoints = Collections.singletonList(route.getRoutePoints().get(0));
+                } else if(route.isForceLast() && route.getDonePointsCount() != route.getRoutePoints().size()-1) {
+                    activePoints.remove(activePoints.size()-1);
                 }
                 
                 for(RoutePoint rp : activePoints) {
@@ -529,11 +529,11 @@ public class EventDaemon {
                         boolean containsPrevious = gfCalc.contains(gf, prevPosition);
 
                         if (containsCurrent && !containsPrevious && beforeEnter) {
-                            rp.setEnterTime(new Date());
+                            rp.setEnterTime(position.getTime());
                             entityManager.persist(rp);
                             if(route.getStatus() != Route.Status.NEW) {
                                 Date alarm = new Date(rp.getDeadline().getTime() + route.getTolerance()*60*1000);
-                                if(activePoints.size() == 1) {
+                                if(route.getDonePointsCount() == route.getRoutePoints().size()) {
                                     if(rp.getEnterTime().after(alarm))
                                         route.setStatus(Route.Status.FINISHED_LATE);
                                     else
@@ -547,7 +547,7 @@ public class EventDaemon {
                             }
                         } else if (!containsCurrent && containsPrevious && !beforeEnter) {
                             unvisited.get(route).remove(rp);
-                            rp.setExitTime(new Date());
+                            rp.setExitTime(position.getTime());
                             entityManager.persist(rp);
                             if(route.getStatus() == Route.Status.NEW) {
                                 Date alarm = new Date(rp.getDeadline().getTime() + route.getTolerance()*60*1000);
