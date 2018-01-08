@@ -61,10 +61,16 @@ public class ReportTrack extends ReportGenerator{
             return;
         Date startTime = rp.get(0).getEnterTime(),
                 endTime = rp.get(0).getExitTime();
+        if(route.isForceFirst())
+            startTime = rp.get(0).getExitTime();
+        if(route.isForceLast())
+            endTime = rp.get(rp.size()-1).getEnterTime();
         for(RoutePoint pt : rp) {
-            if(startTime == null || pt.getEnterTime().before(startTime))
+            if(startTime == null || 
+                    (pt.getEnterTime() != null && pt.getEnterTime().before(startTime)))
                 startTime = pt.getEnterTime();
-            if(endTime == null || pt.getExitTime().after(endTime))
+            if(endTime == null || 
+                    (pt.getExitTime() != null && pt.getExitTime().after(endTime)))
                 endTime = pt.getExitTime();
         }
         if(startTime.before(from))
@@ -80,6 +86,13 @@ public class ReportTrack extends ReportGenerator{
             gfs.add(p.getGeofence());
         
         List<DeviceEvent> rpe = calculate(gfs, history);
+        if(route.isForceFirst()) {
+            Position p = history.get(0);
+            DeviceEvent ev = new DeviceEvent(p.getTime(), p.getDevice(), p,
+                rp.get(0).getGeofence(), null);
+            ev.setType(DeviceEventType.GEO_FENCE_EXIT);
+            rpe.add(0, ev);
+        }
         if(report.isIncludeMap())
             html("<div class=\"col-md-6\">");
         drawTable("rpe", rpe);
