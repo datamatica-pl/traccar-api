@@ -524,6 +524,8 @@ public class EventDaemon {
                     GeoFence gf = new GeoFence().copyFrom(rp.getGeofence());
                     gf.setDevices(Collections.singleton(route.getDevice()));
                     boolean beforeEnter = rp.getEnterTime() == null;
+                    if(route.isForceFirst() && route.getStatus() == Route.Status.NEW)
+                        beforeEnter = false;
                     if (prevPosition != null) {
                         boolean containsCurrent = gfCalc.contains(gf, position);
                         boolean containsPrevious = gfCalc.contains(gf, prevPosition);
@@ -531,34 +533,34 @@ public class EventDaemon {
                         if (containsCurrent && !containsPrevious && beforeEnter) {
                             rp.setEnterTime(position.getTime());
                             entityManager.persist(rp);
-                            if(route.getStatus() != Route.Status.NEW) {
-                                Date alarm = new Date(rp.getDeadline().getTime() + route.getTolerance()*60*1000);
-                                if(route.getDonePointsCount() == route.getRoutePoints().size()) {
-                                    if(rp.getEnterTime().after(alarm))
-                                        route.setStatus(Route.Status.FINISHED_LATE);
-                                    else
-                                        route.setStatus(Route.Status.FINISHED_OK);
-                                } else {
-                                    if(rp.getEnterTime().after(alarm))
-                                        route.setStatus(Route.Status.IN_PROGRESS_LATE);
-                                    else
-                                        route.setStatus(Route.Status.IN_PROGRESS_OK);
-                                }
-                            }
+                            updateStatus(route, rp);
                         } else if (!containsCurrent && containsPrevious && !beforeEnter) {
                             unvisited.get(route).remove(rp);
                             rp.setExitTime(position.getTime());
                             entityManager.persist(rp);
-                            if(route.getStatus() == Route.Status.NEW) {
-                                Date alarm = new Date(rp.getDeadline().getTime() + route.getTolerance()*60*1000);
-                                if(rp.getEnterTime().after(alarm))
-                                    route.setStatus(Route.Status.IN_PROGRESS_LATE);
-                                else
-                                    route.setStatus(Route.Status.IN_PROGRESS_OK);
-                            }
+                            updateStatus(route, rp);
                         }
                     }
                 }
+            }
+        }
+        
+        public void updateStatus(Route route, RoutePoint rp) {
+            Date alarm = new Date(rp.getDeadline().getTime() + route.getTolerance()*60*1000);
+            Date time = rp.getEnterTime();
+            if(route.getStatus() == Route.Status.NEW && route.isForceFirst())
+                time = rp.getExitTime();
+            
+            if(route.getDonePointsCount() == route.getRoutePoints().size()) {
+                if(time.after(alarm))
+                    route.setStatus(Route.Status.FINISHED_LATE);
+                else
+                    route.setStatus(Route.Status.FINISHED_OK);
+            } else {
+                if(time.after(alarm))
+                    route.setStatus(Route.Status.IN_PROGRESS_LATE);
+                else
+                    route.setStatus(Route.Status.IN_PROGRESS_OK);
             }
         }
 
