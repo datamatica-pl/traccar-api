@@ -16,7 +16,6 @@
  */
 package pl.datamatica.traccar.api.controllers;
 
-import com.google.gson.reflect.TypeToken;
 import java.util.List;
 import pl.datamatica.traccar.api.Application;
 import pl.datamatica.traccar.api.dtos.in.AddRulesDto;

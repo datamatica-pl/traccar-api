@@ -181,11 +181,11 @@ public class UserDto extends EditUserDto {
             settings = new UserSettingsDto.Builder().userSettings(user.getUserSettings()).build();
             userGroup = new UserGroupDto.Builder().userGroup(user.getUserGroup()).build();
             for(RulesVersion arv : activeRules) {
-                if(!user.acceptsRules(arv))
+                if(!user.seenRules(arv) || (arv.isObligatory() && !user.acceptsRules(arv)))
                     unacceptedActiveRules.add(new RulesDto.Builder().rulesVersion(arv).build());
             }
             for(RulesVersion frv : futureRules) {
-                if(!user.acceptsRules(frv))
+                if(!user.seenRules(frv) || (frv.isObligatory() && !user.acceptsRules(frv)))
                     unacceptedFutureRules.add(new RulesDto.Builder().rulesVersion(frv).build());
             }
             return this;

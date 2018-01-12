@@ -16,6 +16,7 @@
  */
 package pl.datamatica.traccar.api.dtos.out;
 
+import java.util.Date;
 import pl.datamatica.traccar.model.RulesVersion;
 
 /**
@@ -25,12 +26,14 @@ import pl.datamatica.traccar.model.RulesVersion;
 public class RulesDto {
     private final long id;
     private final String url;
+    private final Date startDate;
     private final boolean isObligatory;
     private final String description;
     
-    public RulesDto(long id, String url, boolean isObligatory, String description) {
+    public RulesDto(long id, String url, Date startDate, boolean isObligatory, String description) {
         this.id = id;
         this.url = url;
+        this.startDate = startDate;
         this.isObligatory = isObligatory;
         this.description = description;
     }
@@ -38,19 +41,21 @@ public class RulesDto {
     public static class Builder {
         private long id;
         private String url;
+        private Date startDate;
         private boolean isObligatory;
         private String description;
         
         public Builder rulesVersion(RulesVersion rv) {
             this.id = rv.getId();
             this.url = rv.getUrl();
+            this.startDate = rv.getStartDate();
             this.isObligatory = rv.isObligatory();
             this.description = rv.getType().getName();
             return this;
         }
         
         public RulesDto build() {
-            return new RulesDto(id, url, isObligatory, description);
+            return new RulesDto(id, url, startDate, isObligatory, description);
         }
     }
 }
