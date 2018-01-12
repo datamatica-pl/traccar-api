@@ -29,10 +29,12 @@ import pl.datamatica.traccar.api.dtos.out.ErrorDto;
 public class AddRulesDto {
     private final String url;
     private final Date startDate;
+    private final String type;
     
-    public AddRulesDto(String url, Date startDate) {
+    public AddRulesDto(String url, Date startDate, String type) {
         this.url = url;
         this.startDate = startDate;
+        this.type = type;
     }
     
     public String getUrl() {
@@ -43,12 +45,18 @@ public class AddRulesDto {
         return startDate;
     }
     
+    public String getType() {
+        return type;
+    }
+    
     public static List<ErrorDto> validate(AddRulesDto dto) {
         if(dto == null)
             return Collections.singletonList(new ErrorDto(MessageKeys.ERR_DATA_NOT_PROVIDED));
         if(dto.url == null || dto.url.isEmpty())
             return Collections.singletonList(new ErrorDto(MessageKeys.ERR_DATA_NOT_PROVIDED));
         if(dto.startDate == null)
+            return Collections.singletonList(new ErrorDto(MessageKeys.ERR_DATA_NOT_PROVIDED));
+        if(dto.type == null || dto.type.isEmpty())
             return Collections.singletonList(new ErrorDto(MessageKeys.ERR_DATA_NOT_PROVIDED));
         return Collections.<ErrorDto>emptyList();
     }

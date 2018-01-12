@@ -23,6 +23,7 @@ import java.util.Date;
 import java.util.List;
 import pl.datamatica.traccar.model.Device;
 import pl.datamatica.traccar.model.DeviceEventType;
+import pl.datamatica.traccar.model.RulesVersion;
 import pl.datamatica.traccar.model.User;
 
 public class UserDto extends EditUserDto {
@@ -33,6 +34,8 @@ public class UserDto extends EditUserDto {
     private final UserGroupDto userGroup;
     private final boolean premium;
     private final String userGroupName;
+    private final List<RulesDto> unacceptedActiveRules;
+    private final List<RulesDto> unacceptedFutureRules;
 
     public static class Builder {
 
@@ -56,6 +59,8 @@ public class UserDto extends EditUserDto {
         private UserGroupDto userGroup;
         private boolean premium;
         private String userGroupName;
+        private List<RulesDto> unacceptedActiveRules = new ArrayList<>();
+        private List<RulesDto> unacceptedFutureRules = new ArrayList<>();
 
         public Builder id(final long value) {
             this.id = value;
@@ -170,10 +175,19 @@ public class UserDto extends EditUserDto {
             return this;
         }
         
-        public Builder sessionUser(final User user) {
+        public Builder sessionUser(final User user, List<RulesVersion> activeRules,
+                List<RulesVersion> futureRules) {
             user(user);
             settings = new UserSettingsDto.Builder().userSettings(user.getUserSettings()).build();
             userGroup = new UserGroupDto.Builder().userGroup(user.getUserGroup()).build();
+            for(RulesVersion arv : activeRules) {
+                if(!user.acceptsRules(arv))
+                    unacceptedActiveRules.add(new RulesDto.Builder().rulesVersion(arv).build());
+            }
+            for(RulesVersion frv : futureRules) {
+                if(!user.acceptsRules(frv))
+                    unacceptedFutureRules.add(new RulesDto.Builder().rulesVersion(frv).build());
+            }
             return this;
         }
         
@@ -186,7 +200,9 @@ public class UserDto extends EditUserDto {
             return new UserDto(id, login, email, companyName, firstName, lastName, 
                     phoneNumber, expirationDate, maxNumOfDevices, managedById, 
                     manager, admin, archive, blocked, notificationEvents, readOnly,
-                    settings, userGroup, premium, userGroupName);
+                    settings, userGroup, premium, userGroupName,
+                    unacceptedActiveRules, unacceptedFutureRules
+            );
         }
     }
     
@@ -209,7 +225,9 @@ public class UserDto extends EditUserDto {
             final UserSettingsDto settings,
             final UserGroupDto userGroup,
             final boolean premium,
-            final String userGroupName) {
+            final String userGroupName,
+            final List<RulesDto> unacceptedActiveRules,
+            final List<RulesDto> unacceptedFutureRules) {
         super(email, companyName, firstName, lastName, phoneNumber,
                 expirationDate, maxNumOfDevices, manager, admin, archive,
                 blocked, PASSWORD_PLACEHOLDER, notificationEvents, readOnly);
@@ -220,6 +238,8 @@ public class UserDto extends EditUserDto {
         this.userGroup = userGroup;
         this.premium = premium;
         this.userGroupName = userGroupName;
+        this.unacceptedActiveRules = unacceptedActiveRules;
+        this.unacceptedFutureRules = unacceptedFutureRules;
     }
     
     public long getId() {

@@ -16,6 +16,7 @@
  */
 package pl.datamatica.traccar.api.controllers;
 
+import java.util.Collections;
 import java.util.List;
 import spark.Session;
 import org.junit.*;
@@ -28,6 +29,7 @@ import pl.datamatica.traccar.api.dtos.in.NotificationTokenDto;
 import pl.datamatica.traccar.api.dtos.out.ErrorDto;
 import pl.datamatica.traccar.api.dtos.out.UserDto;
 import pl.datamatica.traccar.api.providers.ProviderException;
+import pl.datamatica.traccar.api.providers.RulesProvider;
 import pl.datamatica.traccar.api.providers.SessionProvider;
 import pl.datamatica.traccar.api.responses.*;
 import pl.datamatica.traccar.model.User;
@@ -45,6 +47,7 @@ public class SessionControllerTest {
     public void testInit() {
         session = Mockito.mock(Session.class);
         sp = Mockito.mock(SessionProvider.class);
+        RulesProvider rp = Mockito.mock(RulesProvider.class);
         requestUser = new User();
         requestUser.setLogin("test");
         requestUser.setUserSettings(new UserSettings());
@@ -52,6 +55,9 @@ public class SessionControllerTest {
         Mockito.when(rc.getUser()).thenReturn(requestUser);
         Mockito.when(rc.getSessionProvider()).thenReturn(sp);
         Mockito.when(rc.session()).thenReturn(session);
+        Mockito.when(rc.getRulesProvider()).thenReturn(rp);
+        Mockito.when(rp.getActiveRules()).thenReturn(Collections.EMPTY_LIST);
+        Mockito.when(rp.getFutureRules()).thenReturn(Collections.EMPTY_LIST);
         controller = new SessionController(rc, token -> isTokenValid);
     }
     

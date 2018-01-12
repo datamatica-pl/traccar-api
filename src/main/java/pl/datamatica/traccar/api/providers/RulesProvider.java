@@ -42,9 +42,16 @@ public class RulesProvider extends ProviderBase {
             throw new ProviderException(Type.ACCESS_DENIED);
         
         Date date = dto.getStartDate();
-        em.createQuery("UPDATE RulesVersion SET endDate = :date WHERE endDate IS NULL")
-                .setParameter("date", date).executeUpdate();
-        RulesVersion rv = new RulesVersion(dto.getUrl(), date);
+        RulesVersion.Type type = RulesVersion.Type.valueOf(dto.getType());
+        if(date.before(new Date()))
+            throw new ProviderException(Type.BAD_REQUEST);
+        
+        em.createQuery("UPDATE RulesVersion SET endDate = :date "
+                + "WHERE endDate IS NULL AND type = :type")
+                .setParameter("date", date)
+                .setParameter("type", type)
+                .executeUpdate();
+        RulesVersion rv = new RulesVersion(dto.getUrl(), date, type);
         em.persist(rv);
         
         return rv;
@@ -59,14 +66,27 @@ public class RulesProvider extends ProviderBase {
         em.persist(user);
     }
     
-    public RulesVersion getActiveRules() {
+    public void rejectVersion(long id) throws ProviderException {
+        RulesVersion rv = em.find(RulesVersion.class, id);
+        if(rv == null)
+            throw new ProviderException(Type.NOT_FOUND);
+        
+        user.addRulesRejection(rv);
+    }
+    
+    public List<RulesVersion> getActiveRules() {
         List<RulesVersion> v = em.createQuery("from RulesVersion where startDate <= :now AND "
                 + "(endDate IS NULL OR endDate > :now)", RulesVersion.class)
                 .setParameter("now", new Date())
-                .setMaxResults(1)
                 .getResultList();
-        if(v.isEmpty())
-            return null;
-        return v.get(0);
+        return v;
+    }
+
+    public List<RulesVersion> getFutureRules() {
+        List<RulesVersion> v = em.createQuery("from RulesVersion "
+                + "where startDate > :now", RulesVersion.class)
+                .setParameter("now", new Date())
+                .getResultList();
+        return v;
     }
 }

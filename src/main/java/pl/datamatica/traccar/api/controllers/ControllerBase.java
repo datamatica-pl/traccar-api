@@ -43,6 +43,8 @@ public abstract class ControllerBase {
                 return notFound();
             case ACCESS_DENIED:
                 return forbidden();
+            case BAD_REQUEST:
+                return badRequest();
         }
         throw e;
     }

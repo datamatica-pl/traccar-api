@@ -16,9 +16,11 @@
  */
 package pl.datamatica.traccar.api.controllers;
 
+import com.google.gson.reflect.TypeToken;
 import java.util.List;
 import pl.datamatica.traccar.api.Application;
 import pl.datamatica.traccar.api.dtos.in.AddRulesDto;
+import pl.datamatica.traccar.api.dtos.in.RulesAcceptanceDto;
 import pl.datamatica.traccar.api.dtos.out.ErrorDto;
 import pl.datamatica.traccar.api.providers.ProviderException;
 import pl.datamatica.traccar.api.providers.RulesProvider;
@@ -35,10 +37,10 @@ public class RulesController extends ControllerBase {
     public static class Binder extends ControllerBinder {
         @Override
         public void bind() {            
-            Spark.put(baseUrl()+"/:id/accept", (req, res) -> {
+            Spark.put(baseUrl()+"/accept", (req, res) -> {
                 RulesController rc = createController(req);
-                long id = Long.parseLong(req.params(":id"));
-                return render(rc.acceptVersion(id), res);
+                RulesAcceptanceDto ra = gson.fromJson(req.body(), RulesAcceptanceDto.class);
+                return render(rc.acceptVersions(ra), res);
             });
             
             Spark.post(baseUrl(), (req, res) -> {
@@ -79,9 +81,12 @@ public class RulesController extends ControllerBase {
         }
     }
  
-    public HttpResponse acceptVersion(long id) throws ProviderException {
+    public HttpResponse acceptVersions(RulesAcceptanceDto ra) throws ProviderException {
         try{
-            rp.acceptVersion(id);
+            for(long id : ra.getAccepted())
+                rp.acceptVersion(id);
+            for(long id : ra.getRejected())
+                rp.rejectVersion(id);
             return ok("");
         } catch(ProviderException e) {
             return handle(e);

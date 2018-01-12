@@ -20,6 +20,7 @@ import com.google.gson.Gson;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -35,6 +36,7 @@ import pl.datamatica.traccar.api.providers.ApplicationSettingsProvider;
 import pl.datamatica.traccar.api.providers.ProviderException;
 import pl.datamatica.traccar.api.providers.UserProvider;
 import pl.datamatica.traccar.api.responses.HttpStatuses;
+import pl.datamatica.traccar.model.RulesVersion;
 import pl.datamatica.traccar.model.User;
 
 public class BasicAuthFilter {
@@ -75,9 +77,11 @@ public class BasicAuthFilter {
                 request.attribute(RequestContext.REQUEST_FIELD_ERROR_DTO, new ErrorDto(MessageKeys.ERR_ACCOUNT_BLOCKED));
             } else if(user.isExpired()) {
                 request.attribute(RequestContext.REQUEST_FIELD_ERROR_DTO, new ErrorDto(MessageKeys.ERR_ACCOUNT_EXPIRED));
-            } else if(!user.areActiveRulesAccepted() 
-                    && !(request.pathInfo().matches("/v[0-9]+/rules/.*/accept")
-                        && request.requestMethod().equalsIgnoreCase("put"))) {
+            } else if(!checkRules(user, rc.getRulesProvider().getActiveRules())
+                    && !(request.pathInfo().matches("/v[0-9]+/rules/accept")
+                        && request.requestMethod().equalsIgnoreCase("put"))
+                    && !(request.pathInfo().matches("/v[0-9]+/session/user(/web)?")
+                        && request.requestMethod().equalsIgnoreCase("get"))) {
                 if(rc.getRulesProvider().getActiveRules() != null)
                     request.attribute(RequestContext.REQUEST_FIELD_ERROR_DTO, new ErrorDto(MessageKeys.ERR_RULES_NOT_ACCEPTED));
             }
@@ -172,6 +176,13 @@ public class BasicAuthFilter {
     private User continueSession(Request request, UserProvider up) throws Exception {
         long userId = request.session().attribute(USER_ID_SESSION_KEY);
         return up.authenticateUser(userId);
+    }
+    
+    private boolean checkRules(User u, List<RulesVersion> rules) {
+        for(RulesVersion r : rules)
+            if(r.isObligatory() && !u.acceptsRules(r))
+                return false;
+        return true;
     }
     
     public User verifyCredentials(Credentials credentials, UserProvider up) 
