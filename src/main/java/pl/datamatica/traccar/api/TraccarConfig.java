@@ -20,6 +20,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import javax.validation.constraints.NotNull;
 import pl.datamatica.traccar.api.exceptions.ConfigLoadException;
 
 /**
@@ -74,6 +75,15 @@ public class TraccarConfig {
     
     public String getStringParam(String paramPath) throws IllegalAccessException, InvocationTargetException {
         return (String)getStringMethod.invoke(configObject, paramPath);
+    }
+    
+    @NotNull
+    public String getNotNullStringParam(String paramPath) throws IllegalAccessException, InvocationTargetException {
+        try {
+            return (String)getStringMethod.invoke(configObject, paramPath);
+        } catch (NullPointerException npe) {
+            return "";
+        }
     }
     
     public boolean getBooleanParam(String paramPath) throws IllegalAccessException, InvocationTargetException {

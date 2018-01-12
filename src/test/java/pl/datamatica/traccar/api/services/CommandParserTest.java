@@ -20,6 +20,7 @@ import java.util.HashMap;
 import java.util.Map;
 import static org.junit.Assert.assertEquals;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 
 /**
@@ -52,6 +53,32 @@ public class CommandParserTest {
 
         assertEquals("run,20",
                 cmdParser.parse("run,{frequency}", commandParams));
+    }
+    
+    // TODO: This test doesn't pass, correct parser.
+    @Test
+    public void testWithOneParameterOnBegin() {
+        final Map<String, Object> commandParams = new HashMap<String, Object>() {
+            {
+                put("password", "123456");
+            }
+        };
+        
+        assertEquals("123456A0",
+                cmdParser.parse("{password}A0", commandParams));
+    }
+    
+    @Test
+    public void testTwoParametersInARow() {
+        final Map<String, Object> commandParams = new HashMap<String, Object>() {
+            {
+                put("frequency", "80");
+                put("password", "123456");
+            }
+        };
+        
+        String cmd = cmdParser.parse("test{frequency}{password}", commandParams);
+        assertEquals("test80123456", cmd);
     }
     
     @Test

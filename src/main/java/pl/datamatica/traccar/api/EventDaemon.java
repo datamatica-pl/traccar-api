@@ -273,7 +273,13 @@ public class EventDaemon {
 
         @Override
         void before() {
-            geoFences.addAll(entityManager.createQuery("SELECT g FROM GeoFence g LEFT JOIN FETCH g.devices", GeoFence.class).getResultList());
+            List<GeoFence> gfs = entityManager
+                    .createQuery("SELECT g FROM GeoFence g LEFT JOIN FETCH g.devices", GeoFence.class)
+                    .getResultList();
+            for(GeoFence gf : gfs) {
+                if(!gf.points().isEmpty())
+                    geoFences.add(gf);
+            }
             if (geoFences.isEmpty()) {
                 return;
             }

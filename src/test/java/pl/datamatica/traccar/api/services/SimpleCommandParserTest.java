@@ -50,6 +50,19 @@ public class SimpleCommandParserTest {
     }
     
     @Test
+    public void testWithOneParameterOnBegin() {
+        final IDeviceCommandParser cmdParser = new SimpleCommandParser();
+        final Map<String, Object> commandParams = new HashMap<String, Object>() {
+            {
+                put("password", "123456");
+            }
+        };
+        
+        assertEquals("123456A0",
+                cmdParser.parse("{password}A0", commandParams));
+    }
+    
+    @Test
     public void testWithTwoParameters() {
         final IDeviceCommandParser cmdParser = new SimpleCommandParser();
         final Map<String, Object> commandParams = new HashMap<String, Object>() {

@@ -95,38 +95,8 @@ public class ImeiProvider {
         return imei;
     };
     
-    public boolean isImeiRegistered(String imeiStr) {
-        try {
-            final TraccarConfig traccarConf = TraccarConfig.getInstance();
-            final String imeiExistenceCheckURL = traccarConf.getStringParam("api.imei_manager.check_imei_existence_url");
-            final String imeiManagerUser = traccarConf.getStringParam("api.imei_manager.imei_manager_user");
-            final String imeiManagerPassword = traccarConf.getStringParam("api.imei_manager.imei_manager_password");
-            final MetadataValidator mdv = new MetadataValidator();
-            
-            if (!mdv.isImeiValid(imeiStr)) {
-                // "Invalid IMEI, only digits are valid in IMEI."
-                return false;
-            }
-            
-            if (imeiExistenceCheckURL.equals("")) {
-                return isImeiRegisteredLocally(imeiStr);
-            } else {
-                URL myURL = new URL(imeiExistenceCheckURL + imeiStr);
-                HttpURLConnection connection = (HttpURLConnection) myURL.openConnection();
-                connection.setRequestProperty("Authorization", "Basic " 
-                                            + HttpHeaders.getEncodedCredentials(imeiManagerUser, imeiManagerPassword));
-                connection.setRequestMethod("HEAD");
-
-                int responseCode = connection.getResponseCode();
-                return responseCode == HttpURLConnection.HTTP_OK;
-            }
-        } catch (IOException | ConfigLoadException | IllegalAccessException | InvocationTargetException e) {
-            logger.error(String.format("Existence of IMEI %s can't be check by API, trying to check in local DB.", imeiStr), e);
-            return isImeiRegisteredLocally(imeiStr);
-        }
-    }
-    
     // Check local database to determine, whether IMEI exists
+    // TODO: Delete after migrating AUTO-1358 on all serwers
     public boolean isImeiRegisteredLocally(String imeiStr) {
         ImeiNumber imei = getImeiByImeiString(imeiStr);
         if (imei == null) {
