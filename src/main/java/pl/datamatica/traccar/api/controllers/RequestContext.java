@@ -42,6 +42,7 @@ import pl.datamatica.traccar.api.providers.NotificationSettingsProvider;
 import pl.datamatica.traccar.api.providers.PicturesProvider;
 import pl.datamatica.traccar.api.providers.PositionProvider;
 import pl.datamatica.traccar.api.providers.ReportProvider;
+import pl.datamatica.traccar.api.providers.RulesProvider;
 import pl.datamatica.traccar.api.providers.UserGroupProvider;
 import pl.datamatica.traccar.api.providers.UserProvider;
 import pl.datamatica.traccar.api.reports.ReportGenerator;
@@ -251,6 +252,10 @@ public class RequestContext implements AutoCloseable {
         GeoFenceProvider gfp = getGeoFencesProvider();
         return new ReportProvider(em, user, dp, gfp);
     }
+     
+     public RulesProvider getRulesProvider() {
+         return new RulesProvider(em, user);
+     }
     
     public String getApiRoot() {
         if(request == null)

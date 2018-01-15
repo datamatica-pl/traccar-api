@@ -16,6 +16,7 @@
  */
 package pl.datamatica.traccar.api.providers;
 
+import java.util.Date;
 import java.util.List;
 import java.util.Objects;
 import javax.persistence.EntityManager;
@@ -25,6 +26,7 @@ import pl.datamatica.traccar.model.ApplicationSettings;
 import pl.datamatica.traccar.model.AuditLog;
 import pl.datamatica.traccar.model.AuditLogType;
 import pl.datamatica.traccar.model.PasswordHashMethod;
+import pl.datamatica.traccar.model.RulesVersion;
 import pl.datamatica.traccar.model.User;
 import pl.datamatica.traccar.model.UserGroup;
 import pl.datamatica.traccar.model.UserPermission;
