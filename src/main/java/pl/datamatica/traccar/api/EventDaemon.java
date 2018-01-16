@@ -577,6 +577,45 @@ public class EventDaemon {
         }
     }
     
+    public static class RoutesArchivizer extends EventProducer {
+
+        @Override
+        void before() {
+            List<DbRoute> routes = entityManager.createQuery("SELECT r FROM DbRoute r "
+                    + "LEFT JOIN FETCH r.routePoints "
+                    + "WHERE r.device IS NOT NULL AND r.status IN (:status) AND archive = :false", DbRoute.class)
+                    .setParameter("status", EnumSet.of(Route.Status.FINISHED_OK, Route.Status.FINISHED_LATE, Route.Status.CANCELLED))
+                    .setParameter("false", false)
+                    .getResultList();
+            for(DbRoute r : routes) {
+                Date finish = new Date(System.currentTimeMillis() - r.getArchiveAfter()*24*60L*60*1000);
+                if(r.getCancelTimestamp() != null && finish.after(r.getCancelTimestamp()))
+                    r.setArchived(true);
+                else {
+                    List<RoutePoint> rps = r.getRoutePoints();
+                    RoutePoint last = rps.get(rps.size()-1);
+                    Date lastTime;
+                    if(r.isForceLast())
+                        lastTime = last.getEnterTime();
+                    else
+                        lastTime = last.getExitTime();
+                    if(finish.after(lastTime))
+                        r.setArchived(true);
+                }
+                entityManager.persist(r);
+            }
+        }
+
+        @Override
+        void positionScanned(Position prevPosition, Position position) {
+        }
+
+        @Override
+        void after() {
+        }
+        
+    }
+    
     private OfflineDetector offlineDetector;
     private GeoFenceDetector geoFenceDetector;
     private OdometerUpdater odometerUpdater;
@@ -584,6 +623,7 @@ public class EventDaemon {
     private StopMoveDetector stopMoveDetector;
     private PositionScanner positionScanner;
     private RoutesDetector routesDetector;
+    private RoutesArchivizer routesArchivizer;
 
     private ScheduledExecutorService executor;
     
@@ -597,12 +637,14 @@ public class EventDaemon {
         stopMoveDetector = new StopMoveDetector();
         positionScanner = new PositionScanner();
         routesDetector = new RoutesDetector();
+        routesArchivizer = new RoutesArchivizer();
         
         positionScanner.eventProducers.add(geoFenceDetector);
         positionScanner.eventProducers.add(odometerUpdater);
         positionScanner.eventProducers.add(overspeedDetector);
         positionScanner.eventProducers.add(stopMoveDetector);
         positionScanner.eventProducers.add(routesDetector);
+        positionScanner.eventProducers.add(routesArchivizer);
     }
 
     public void start() {
