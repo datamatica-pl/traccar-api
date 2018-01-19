@@ -15,6 +15,7 @@
  */
 package pl.datamatica.traccar.api.reports;
 
+import com.vividsolutions.jts.geom.Coordinate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
@@ -26,9 +27,11 @@ import pl.datamatica.traccar.model.Position;
 
 public class MapBuilder {    
     private final List<String> vectors = new ArrayList<>();
+    private final List<String> markers = new ArrayList<>();
     private final String width, height;
     private List<String> tableIds = new ArrayList<>();
     private List<Integer> tableStartRows = new ArrayList<>();
+    private List<Integer> featOffs = new ArrayList<>();
     
     public MapBuilder(String width, String height, Map<Long, String> icons) {
         this.width = width;
@@ -46,14 +49,24 @@ public class MapBuilder {
         return this;
     }
     
-    public MapBuilder marker(Position position, MarkerStyle style) {
+    public MapBuilder polyline(Coordinate[] points, String color, int width) {
         String id = "v"+vectors.size();
+        StringBuilder sb = new StringBuilder();
+        sb.append("var ").append(id).append(" = polyline('").append(PolylineEncoder.encode(points)).append("');\r\n");
+        sb.append(id).append(".setStyle(new ol.style.Style({ stroke: new ol.style.Stroke({color: '").append(color).append("', width: ").append(width).append("})}));\r\n");
+        
+        vectors.add(sb.toString());
+        return this;
+    }
+    
+    public MapBuilder marker(Position position, MarkerStyle style) {
+        String id = "m"+markers.size();
         StringBuilder sb = new StringBuilder();
         sb.append("var ").append(id).append(" = marker([").append(position.getLongitude())
                 .append(", ").append(position.getLatitude()).append("], '');\r\n");
         sb.append(id).append(".setStyle(").append(style.compile()).append(");");
         
-        vectors.add(sb.toString());
+        markers.add(sb.toString());
         return this;
     }
     
@@ -91,12 +104,22 @@ public class MapBuilder {
     }
     
     public MapBuilder bindWithTable(String id, int startRow) {
+        return bindWithTable(id, startRow, -1);
+    }
+    
+    public MapBuilder bindWithTable(String id, int startRow, int featOff) {
         tableIds.add(id);
         tableStartRows.add(startRow);
+        if(featOff != -1)
+            featOffs.add(featOff);
         return this;
     }
     
     public String create() {
+        return create(false);
+    }
+    
+    public String create(boolean showOnClick) {
         StringBuilder output = new StringBuilder();
         output.append("<div id=\"map\" style=\"width: ").append(width)
                 .append("; height: ").append(height).append(";\"></div>\r\n");
@@ -107,11 +130,29 @@ public class MapBuilder {
         output.append("//features\r\n");
         for(String v : vectors)
             output.append(v).append("\r\n");
+        for(String m : markers)
+            output.append(m).append("\r\n");
+        
+        output.append("var mfeat = [\r\n");
+        for(int i=0;i<markers.size();++i) {
+            output.append("m").append(i);
+            if(i!= vectors.size()-1)
+                output.append(", ");
+            else
+                output.append("\r\n");
+        }
+        output.append("];\r\n");
+        if(showOnClick)
+            output.append("var msource = new ol.source.Vector({});\r\n");
+        else
+            output.append("var msource = new ol.source.Vector({features: mfeat});\r\n");
+        output.append("var mlayer = new ol.layer.Vector({source: msource});");
+        output.append("\r\n\r\n");
         
         output.append("var source = new ol.source.Vector({\r\n");
         output.append("  features: [\r\n");
         for(int i=0;i<vectors.size();++i) {
-            output.append("          v").append(i);
+            output.append("v").append(i);
             if(i != vectors.size()-1)
                 output.append(", ");
             else
@@ -128,7 +169,8 @@ public class MapBuilder {
         output.append("    new ol.layer.Tile({source: new ol.source.OSM()}),\r\n");
         output.append("    new ol.layer.Vector({\r\n");
         output.append("      source: source\r\n");
-        output.append("    })\r\n");
+        output.append("    }),\r\n")
+              .append("    mlayer\r\n");
         output.append("  ],\r\n");
         output.append("  view: new ol.View({\r\n");
         output.append("    zoom: 12\r\n");
@@ -141,7 +183,12 @@ public class MapBuilder {
         
         for(int i=0;i<tableIds.size();++i) {
             output.append("bind(map, '").append(tableIds.get(i)).append("', ")
-                    .append(tableStartRows.get(i)).append(");\r\n");
+                    .append(tableStartRows.get(i)).append(", ");
+            if(showOnClick)
+                output.append(featOffs.get(i));
+            else
+                output.append("-1");
+            output.append(");\r\n");
         }
         output.append("</script>");
         return output.toString();
@@ -180,19 +227,28 @@ public class MapBuilder {
                 + "    })\r\n"
                 + "  });\r\n"
                 + "}\r\n"
-                + "function bind(map, tableId, startRow) {\r\n"
+                + "function bind(map, tableId, startRow, featOff) {\r\n"
                 + "  var table = document.getElementById(tableId);\r\n"
                 + "  var rows = table.getElementsByTagName('tr');\r\n"
                 + "  for(i=startRow;i<rows.length;++i) {\r\n"
                 + "    var row = rows[i];\r\n"
-                + "    var cells = row.getElementsByTagName('td');\r\n"
-                + "    var extCell = cells[cells.length-1];\r\n"
-                + "    row.onclick = function(c) {\r\n"
+                + "    row.onclick = function(i) {\r\n"
                 + "      return function() {\r\n"
-                + "        var extent = ol.proj.transformExtent(JSON.parse(c.innerHTML), 'EPSG:4326', 'EPSG:3857');"
+                + "        var r = rows[i];\r\n"
+                + "        console.log(i);\r\n"
+                + "        for(j=startRow;j<rows.length;++j)\r\n"
+                + "          rows[j].classList.remove('active');\r\n"
+                + "        r.classList.add('active');\r\n"
+                + "        var cells = r.getElementsByTagName('td');\r\n"
+                + "        var c = cells[cells.length-1];\r\n"
+                + "        var extent = ol.proj.transformExtent(JSON.parse(c.innerHTML), 'EPSG:4326', 'EPSG:3857');\r\n"
                 + "        map.getView().fit(extent, map.getSize());\r\n"
+                + "        if(featOff != -1) {\r\n"
+                + "          msource.clear();\r\n"
+                + "          msource.addFeature(mfeat[i-startRow+featOff]);\r\n"
+                + "        }\r\n"
                 + "      };\r\n"
-                + "    }(extCell);\r\n"
+                + "    }(i);\r\n"
                 + "  }\r\n"
                 + "}\r\n";
     }

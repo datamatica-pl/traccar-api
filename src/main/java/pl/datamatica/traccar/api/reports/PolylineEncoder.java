@@ -1,8 +1,10 @@
 package pl.datamatica.traccar.api.reports;
 
+import com.vividsolutions.jts.geom.Coordinate;
 import pl.datamatica.traccar.model.Position;
 
 import java.util.List;
+import org.postgis.Point;
 
 /**
  * Methods to encode and decode a polyline with Google polyline encoding/decoding scheme.
@@ -53,6 +55,20 @@ public class PolylineEncoder {
         for (Position trackpoint : polyline) {
             int lat = (int) Math.round(trackpoint.getLatitude() * 1e5);
             int lng = (int) Math.round(trackpoint.getLongitude() * 1e5);
+            encodedPoints.append(encodeSignedNumber(lat - prev_lat));
+            encodedPoints.append(encodeSignedNumber(lng - prev_lng));
+            prev_lat = lat;
+            prev_lng = lng;
+        }
+        return encodedPoints.toString();
+    }
+    
+    public static String encode(Coordinate[] points) {
+        StringBuilder encodedPoints = new StringBuilder();
+        int prev_lat = 0, prev_lng = 0;
+        for (Coordinate trackpoint : points) {
+            int lat = (int) Math.round(trackpoint.y * 1e5);
+            int lng = (int) Math.round(trackpoint.x * 1e5);
             encodedPoints.append(encodeSignedNumber(lat - prev_lat));
             encodedPoints.append(encodeSignedNumber(lng - prev_lng));
             prev_lat = lat;

@@ -16,6 +16,7 @@
  */
 package pl.datamatica.traccar.api.reports;
 
+import com.vividsolutions.jts.geom.LineString;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -86,7 +87,7 @@ public class ReportTrack extends ReportGenerator{
             gfs.add(p.getGeofence());
         
         List<DeviceEvent> rpe = calculate(gfs, history);
-        if(route.isForceFirst()) {
+        if(route.isForceFirst() && route.getRoutePoints().get(0).getExitTime().after(startTime)) {
             Position p = history.get(0);
             DeviceEvent ev = new DeviceEvent(p.getTime(), p.getDevice(), p,
                 rp.get(0).getGeofence(), null);
@@ -107,7 +108,7 @@ public class ReportTrack extends ReportGenerator{
         if(report.isIncludeMap() && !alle.isEmpty()) {
             html("</div>");
             html("<div class=\"col-md-6\">");
-            drawMap(alle, gfs);
+            drawMap(alle, gfs, route.getLineString(), rpe.size());
             html("</div>");
         }
     }
@@ -180,16 +181,19 @@ public class ReportTrack extends ReportGenerator{
         return result;
     }
 
-    void drawMap(List<DeviceEvent> events, Collection<GeoFence> gfs) {
+    void drawMap(List<DeviceEvent> events, Collection<GeoFence> gfs, LineString ls,
+            int corridorOff) {
         MapBuilder builder = getMapBuilder();
+        builder.polyline(ls.getCoordinates(), "#808080", 3);
         for(DeviceEvent ev : events) {
+            System.out.println(ev.getTime()+"");
             builder.marker(ev.getPosition(), 
                     MapBuilder.MarkerStyle.event(ev.getType(), ""));
         }
         for(GeoFence gf : gfs)
             builder.geofence(gf);
-        builder.bindWithTable("rpe", 1)
-                .bindWithTable("core", 1);
-        html(builder.create());
+        builder.bindWithTable("rpe", 1, 0)
+                .bindWithTable("core", 1, corridorOff);
+        html(builder.create(true));
     }
 }
