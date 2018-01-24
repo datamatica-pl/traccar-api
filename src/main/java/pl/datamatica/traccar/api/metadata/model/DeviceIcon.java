@@ -47,6 +47,12 @@ public class DeviceIcon extends UpdateTimestampedEntity implements Serializable 
     
     @Column(nullable = false, columnDefinition = "boolean default false")
     private boolean isWithoutFrame;
+    
+    @Column(nullable = false, columnDefinition = "int default 36")
+    private int markerWidth;
+    
+    @Column(nullable = false, columnDefinition = "int default 48")
+    private int markerHeight;
 
     public long getId() {
         return id;
@@ -78,5 +84,13 @@ public class DeviceIcon extends UpdateTimestampedEntity implements Serializable 
     
     public void setWithoutFrame(boolean withoutFrame) {
         this.isWithoutFrame = withoutFrame;
+    }
+    
+    public int getMarkerWidth() {
+        return markerWidth;
+    }
+    
+    public int getMarkerHeight() {
+        return markerHeight;
     }
 }
