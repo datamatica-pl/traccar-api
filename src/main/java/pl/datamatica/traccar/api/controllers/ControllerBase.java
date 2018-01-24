@@ -84,7 +84,7 @@ public abstract class ControllerBase {
         return new NotModifiedResponse(serverModification);
     }
     
-    protected HttpResponse notFound() {
+    protected static HttpResponse notFound() {
         ErrorDto error = new ErrorDto(MessageKeys.ERR_NOT_FOUND);
         return new ErrorResponse(HttpStatuses.NOT_FOUND, Collections.singletonList(error));
     }

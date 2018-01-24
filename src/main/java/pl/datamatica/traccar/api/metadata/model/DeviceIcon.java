@@ -44,6 +44,9 @@ public class DeviceIcon extends UpdateTimestampedEntity implements Serializable 
     
     @Column(nullable = false, columnDefinition = "boolean default false")
     private boolean isDeleted;
+    
+    @Column(nullable = false, columnDefinition = "boolean default false")
+    private boolean isWithoutFrame;
 
     public long getId() {
         return id;
@@ -67,5 +70,13 @@ public class DeviceIcon extends UpdateTimestampedEntity implements Serializable 
 
     public void setIsDeleted(Boolean isDeleted) {
         this.isDeleted = isDeleted;
+    }
+    
+    public boolean isWithoutFrame() {
+        return isWithoutFrame;
+    }
+    
+    public void setWithoutFrame(boolean withoutFrame) {
+        this.isWithoutFrame = withoutFrame;
     }
 }
