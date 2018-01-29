@@ -136,7 +136,7 @@ public class MapBuilder {
         output.append("var mfeat = [\r\n");
         for(int i=0;i<markers.size();++i) {
             output.append("m").append(i);
-            if(i!= vectors.size()-1)
+            if(i!= markers.size()-1)
                 output.append(", ");
             else
                 output.append("\r\n");
