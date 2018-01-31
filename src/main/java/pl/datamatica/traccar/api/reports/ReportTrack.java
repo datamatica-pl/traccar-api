@@ -16,6 +16,7 @@
  */
 package pl.datamatica.traccar.api.reports;
 
+import com.vividsolutions.jts.geom.LineString;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -33,6 +34,7 @@ import pl.datamatica.traccar.model.DeviceEvent;
 import pl.datamatica.traccar.model.DeviceEventType;
 import pl.datamatica.traccar.model.GeoFence;
 import pl.datamatica.traccar.model.Position;
+import pl.datamatica.traccar.model.Route;
 import pl.datamatica.traccar.model.RoutePoint;
 
 /**
@@ -56,14 +58,26 @@ public class ReportTrack extends ReportGenerator{
         paragraphEnd();
         
         List<RoutePoint> rp = route.getRoutePoints();
-        if(rp.get(0).getEnterTime() == null)
+        if(route.getStatus() == Route.Status.NEW)
             return;
-        Date startTime = rp.get(0).getEnterTime();
+        Date startTime = rp.get(0).getEnterTime(),
+                endTime = rp.get(0).getExitTime();
+        if(route.isForceFirst())
+            startTime = rp.get(0).getExitTime();
+        if(route.isForceLast())
+            endTime = rp.get(rp.size()-1).getEnterTime();
+        for(RoutePoint pt : rp) {
+            if(startTime == null || 
+                    (pt.getEnterTime() != null && pt.getEnterTime().before(startTime)))
+                startTime = pt.getEnterTime();
+            if(endTime == null || 
+                    (pt.getExitTime() != null && pt.getExitTime().after(endTime)))
+                endTime = pt.getExitTime();
+        }
         if(startTime.before(from))
             startTime = from;
-        Date endTime = report.getToDate();
-        if(rp.get(rp.size()-1).getExitTime() != null)
-            endTime = rp.get(rp.size()-1).getExitTime();
+        if(endTime == null)
+            endTime = report.getToDate();
         List<Position> history = positionProvider.getDeviceHistory(
                 route.getDevice(), startTime, endTime)
                 .collect(Collectors.toList());
@@ -73,6 +87,13 @@ public class ReportTrack extends ReportGenerator{
             gfs.add(p.getGeofence());
         
         List<DeviceEvent> rpe = calculate(gfs, history);
+        if(route.isForceFirst() && route.getRoutePoints().get(0).getExitTime().after(startTime)) {
+            Position p = history.get(0);
+            DeviceEvent ev = new DeviceEvent(p.getTime(), p.getDevice(), p,
+                rp.get(0).getGeofence(), null);
+            ev.setType(DeviceEventType.GEO_FENCE_EXIT);
+            rpe.add(0, ev);
+        }
         if(report.isIncludeMap())
             html("<div class=\"col-md-6\">");
         drawTable("rpe", rpe);
@@ -87,7 +108,7 @@ public class ReportTrack extends ReportGenerator{
         if(report.isIncludeMap() && !alle.isEmpty()) {
             html("</div>");
             html("<div class=\"col-md-6\">");
-            drawMap(alle, gfs);
+            drawMap(alle, gfs, route.getLineString(), rpe.size());
             html("</div>");
         }
     }
@@ -160,16 +181,19 @@ public class ReportTrack extends ReportGenerator{
         return result;
     }
 
-    void drawMap(List<DeviceEvent> events, Collection<GeoFence> gfs) {
+    void drawMap(List<DeviceEvent> events, Collection<GeoFence> gfs, LineString ls,
+            int corridorOff) {
         MapBuilder builder = getMapBuilder();
+        builder.polyline(ls.getCoordinates(), "#808080", 3);
         for(DeviceEvent ev : events) {
+            System.out.println(ev.getTime()+"");
             builder.marker(ev.getPosition(), 
                     MapBuilder.MarkerStyle.event(ev.getType(), ""));
         }
         for(GeoFence gf : gfs)
             builder.geofence(gf);
-        builder.bindWithTable("rpe", 1)
-                .bindWithTable("core", 1);
-        html(builder.create());
+        builder.bindWithTable("rpe", 1, 0)
+                .bindWithTable("core", 1, corridorOff);
+        html(builder.create(true));
     }
 }
