@@ -34,6 +34,7 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import javax.imageio.ImageIO;
 import javax.persistence.EntityManager;
+import org.apache.commons.io.IOUtils;
 import pl.datamatica.traccar.model.Picture;
 
 public class ImageProvider {
@@ -123,11 +124,23 @@ public class ImageProvider {
         return custMarkerCache.get(id);
     }
     
+    public byte[] getVecMarker(String name) throws IOException {
+        return IOUtils.toByteArray(getInputStreamForVector(name));
+    }
+    
     public FileInputStream getInputStreamForImage(String name) {
         try {
             return new FileInputStream(new File(rootDirectory, name + ".png"));
         } catch (FileNotFoundException ex) {
             System.out.println(ex);
+            return null;
+        }
+    }
+    
+    public FileInputStream getInputStreamForVector(String name) {
+        try {
+            return new FileInputStream(new File(rootDirectory, name+".svg"));
+        } catch(FileNotFoundException ex) {
             return null;
         }
     }
