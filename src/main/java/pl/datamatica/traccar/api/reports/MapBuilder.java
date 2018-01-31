@@ -107,7 +107,7 @@ public class MapBuilder {
         return bindWithTable(id, startRow, -1);
     }
     
-    public MapBuilder bindWithTable(String id, int startRow, int featOff) {
+        public MapBuilder bindWithTable(String id, int startRow, int featOff) {
         tableIds.add(id);
         tableStartRows.add(startRow);
         if(featOff != -1)
@@ -175,11 +175,8 @@ public class MapBuilder {
         output.append("  view: new ol.View({\r\n");
         output.append("    zoom: 12\r\n");
         output.append("  })\r\n");
-        output.append("});\r\n");
-        if(vectors.size() >= 2)
-            output.append("map.getView().fit(source.getExtent(), map.getSize());\r\n");
-        else if(vectors.size() == 1)
-            output.append("map.getView().setCenter(v0.getGeometry().getCoordinates());\r\n");
+        output.append("});\r\n"); 
+        output.append("map.getView().fit(boundingBox(source.getFeatures().concat(mfeat)), map.getSize());\r\n");
         
         for(int i=0;i<tableIds.size();++i) {
             output.append("bind(map, '").append(tableIds.get(i)).append("', ")
@@ -216,6 +213,29 @@ public class MapBuilder {
                 + "  var tmp = parseInt(hex, 16);\r\n"
                 + "  return 'rgba('+((tmp>>16)&255)+', '+((tmp>>8)&255)+', '"
                 + "      +(tmp&255)+', 0.5)';\r\n"
+                + "}\r\n"
+                + "function boundingBox(markers) {\r\n"
+                + "  var p1=ol.proj.transform([-180, -90], 'EPSG:4326', 'EPSG:3857');\r\n"
+                + "  var p2=ol.proj.transform([180, 90], 'EPSG:4326', 'EPSG:3857');\r\n"
+                + "  for(var i=0;i<markers.length;++i) {\r\n"
+                + "    var ext = markers[i].getGeometry().getExtent();\r\n"
+                + "    p1[0] = Math.max(p1[0], ext[2]);\r\n"
+                + "    p1[1] = Math.max(p1[1], ext[3]);\r\n"
+                + "    p2[0] = Math.min(p2[0], ext[0]);\r\n"
+                + "    p2[1] = Math.min(p2[1], ext[1]);\r\n"
+                + "  }\r\n"
+                + "  var lonDiff = p2[0]-p1[0], latDiff = p2[1]-p1[1];\r\n"
+                + "  var delta = (1000 - lonDiff)/2;\r\n"
+                + "  if(delta > 0) {\r\n"
+                + "    p2[0] -= delta;\r\n"
+                + "    p1[0] += delta;\r\n"
+                + "  }\r\n"
+                + "  delta = (1000-latDiff)/2;\r\n"
+                + "  if(delta > 0) {\r\n"
+                + "    p2[1] -= delta;\r\n"
+                + "    p1[1] += delta;\r\n"
+                + "  }\r\n"
+                + "  return [p2[0], p2[1], p1[0], p1[1]];\r\n"
                 + "}\r\n"
                 + "function geoStyle(name, color) {\r\n"
                 + "  return new ol.style.Style({\r\n"
@@ -301,7 +321,7 @@ public class MapBuilder {
         public static MarkerStyle deviceMarker(Position position) {
             MarkerStyle style = new MarkerStyle();
             String url = icons.get(position.getDevice().getIconId());
-            style.image = "new ol.style.Icon({src: '/"+url+"', anchor: [0.5, 1]})";
+            style.image = "new ol.style.Icon({src: '"+url+"', anchor: [0.5, 1]})";
             return style;
         }
         
