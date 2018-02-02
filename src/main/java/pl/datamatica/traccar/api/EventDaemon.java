@@ -588,6 +588,8 @@ public class EventDaemon {
                     .setParameter("false", false)
                     .getResultList();
             for(DbRoute r : routes) {
+                if(r.getArchiveAfter() <= 0)
+                    continue;
                 Date finish = new Date(System.currentTimeMillis() - r.getArchiveAfter()*24*60L*60*1000);
                 if(r.getCancelTimestamp() != null && finish.after(r.getCancelTimestamp()))
                     r.setArchived(true);

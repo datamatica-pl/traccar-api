@@ -87,7 +87,7 @@ public class ReportTrack extends ReportGenerator{
             gfs.add(p.getGeofence());
         
         List<DeviceEvent> rpe = calculate(gfs, history);
-        if(route.isForceFirst() && route.getRoutePoints().get(0).getExitTime().after(startTime)) {
+        if(route.isForceFirst() && !startTime.after(route.getRoutePoints().get(0).getExitTime())) {
             Position p = history.get(0);
             DeviceEvent ev = new DeviceEvent(p.getTime(), p.getDevice(), p,
                 rp.get(0).getGeofence(), null);
