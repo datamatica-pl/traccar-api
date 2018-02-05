@@ -35,7 +35,8 @@ public class ApplicationSettingsDto extends EditApplicationSettingsDto {
             String language, 
             String bingMapsKey, 
             String matchServiceURL, 
-            long defaultUserGroupId) {
+            long defaultUserGroupId,
+            long defaultIconId) {
         super(registrationEnabled, 
                     updateInterval, 
                     defaultPasswordHash, 
@@ -44,7 +45,8 @@ public class ApplicationSettingsDto extends EditApplicationSettingsDto {
                     language, 
                     bingMapsKey, 
                     matchServiceURL, 
-                    defaultUserGroupId);
+                    defaultUserGroupId,
+                    defaultIconId);
         this.id = id;
     }
     
@@ -59,6 +61,7 @@ public class ApplicationSettingsDto extends EditApplicationSettingsDto {
         private String bingMapsKey;
         private String matchServiceURL;
         private long defaultUserGroupId;
+        private long defaultIconId;
         
         public Builder() {
         }
@@ -113,6 +116,11 @@ public class ApplicationSettingsDto extends EditApplicationSettingsDto {
             return this;
         }
         
+        public Builder defaultIconId(long value) {
+            this.defaultIconId = value;
+            return this;
+        }
+        
         public Builder purgeConfidentialData() {
             this.bingMapsKey = null;
             this.matchServiceURL = null;
@@ -130,6 +138,7 @@ public class ApplicationSettingsDto extends EditApplicationSettingsDto {
             this.bingMapsKey = as.getBingMapsKey();
             this.matchServiceURL = as.getMatchServiceURL();
             this.defaultUserGroupId = as.getDefaultGroup().getId();
+            this.defaultIconId = as.getDefaultIconId();
             return this;
         }
         
@@ -143,7 +152,8 @@ public class ApplicationSettingsDto extends EditApplicationSettingsDto {
                     language, 
                     bingMapsKey, 
                     matchServiceURL, 
-                    defaultUserGroupId);
+                    defaultUserGroupId,
+                    defaultIconId);
         }
     }
 }

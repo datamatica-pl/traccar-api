@@ -39,6 +39,7 @@ public class EditApplicationSettingsDto {
     private final String bingMapsKey;
     private final String matchServiceURL;
     private final Long defaultUserGroupId;
+    private final Long defaultIconId;
 
     protected EditApplicationSettingsDto(boolean registrationEnabled, 
             Short updateInterval, 
@@ -48,7 +49,8 @@ public class EditApplicationSettingsDto {
             String language, 
             String bingMapsKey, 
             String matchServiceURL, 
-            long defaultUserGroupId) {
+            long defaultUserGroupId,
+            long defaultIconId) {
         this.registrationEnabled = registrationEnabled;
         this.updateInterval = updateInterval;
         this.defaultPasswordHash = defaultPasswordHash;
@@ -58,6 +60,7 @@ public class EditApplicationSettingsDto {
         this.bingMapsKey = bingMapsKey;
         this.matchServiceURL = matchServiceURL;
         this.defaultUserGroupId = defaultUserGroupId;
+        this.defaultIconId = defaultIconId;
     }
  
     public boolean isRegistrationEnabled() {
@@ -96,6 +99,10 @@ public class EditApplicationSettingsDto {
         return defaultUserGroupId;
     }
     
+    public Long getDefaultIconId() {
+        return defaultIconId;
+    }
+    
     public static List<ErrorDto> validate(EditApplicationSettingsDto dto) {
         if(dto == null)
             return Collections.singletonList(new ErrorDto(MessageKeys.ERR_DATA_NOT_PROVIDED));
@@ -130,6 +137,8 @@ public class EditApplicationSettingsDto {
                 errors.add(new ErrorDto(MessageKeys.ERR_APPSETTINGS_ILLEGAL_PASSWORD_HASH_METHOD));
             }
         }
+        if(dto.defaultIconId == null)
+            errors.add(new ErrorDto(MessageKeys.ERR_APPSETTINGS_DEFAULT_ICON_ID_NOT_PROVIDED));
         
         return errors;
     }
@@ -146,6 +155,7 @@ public class EditApplicationSettingsDto {
         private long defaultUserGroupId;
         private String newRulesUrl;
         private Date newRulesStartDate;
+        private long defaultIconId;
         
         public Builder() {
         }
@@ -195,6 +205,11 @@ public class EditApplicationSettingsDto {
             return this;
         }
         
+        public Builder defaultIconId(long id) {
+            this.defaultIconId = id;
+            return this;
+        }
+        
         public EditApplicationSettingsDto build() {
             return new EditApplicationSettingsDto(registrationEnabled, 
                     updateInterval, 
@@ -204,7 +219,8 @@ public class EditApplicationSettingsDto {
                     language, 
                     bingMapsKey, 
                     matchServiceURL, 
-                    defaultUserGroupId
+                    defaultUserGroupId,
+                    defaultIconId
             );
         }
     }

@@ -111,9 +111,11 @@ public class RequestContext implements AutoCloseable {
     }
     
     public DeviceProvider getDeviceProvider() {
-        if(devices == null)
+        if(devices == null) {
+            long defIconId = getApplicationSettingsProvider().get().getDefaultIconId();
             devices = new DeviceProvider(em, user, getImeiProvider(), 
-                    getDeviceGroupProvider(), getPicturesProvider());
+                    getDeviceGroupProvider(), getPicturesProvider(), defIconId);
+        }
         return devices;
     }
     
@@ -198,8 +200,9 @@ public class RequestContext implements AutoCloseable {
         if (deviceGroupProvider == null) {
             deviceGroupProvider = new DeviceGroupProvider(em, user);
             if (devices == null) {
+                long defIconId = getApplicationSettingsProvider().get().getDefaultIconId();
                 devices = new DeviceProvider(em, user, getImeiProvider(), 
-                        deviceGroupProvider, getPicturesProvider());
+                        deviceGroupProvider, getPicturesProvider(), defIconId);
             }
             deviceGroupProvider.setDeviceProvider(devices);
         }

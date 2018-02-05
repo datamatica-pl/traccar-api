@@ -59,14 +59,16 @@ public class DeviceProvider extends ProviderBase {
     private final PicturesProvider pictures;
     private final Logger logger;
     private final SimpleDateFormat dateFormat;
+    private final long defaultIconId;
     
     public DeviceProvider(EntityManager em, User requestUser, ImeiProvider imeis,
-            DeviceGroupProvider groups, PicturesProvider pictures) {
+            DeviceGroupProvider groups, PicturesProvider pictures, long defaultIconId) {
         super(em);
         this.requestUser = requestUser;
         this.imeis = imeis;
         this.groups = groups;
         this.pictures = pictures;
+        this.defaultIconId = defaultIconId;
         logger = DbLog.getLogger();
         dateFormat = new SimpleDateFormat(Application.DATE_FORMAT);
     }
@@ -175,7 +177,7 @@ public class DeviceProvider extends ProviderBase {
         device.setName(createGpsName());
         device.setUniqueId(imei);
         device.setUsers(Collections.singleton(requestUser));
-        device.setIconId(4L);
+        device.setIconId(defaultIconId);
         device.setOwner(requestUser);
         
         final String modelName = imeiChecker.getDeviceModelName();
