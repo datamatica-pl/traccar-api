@@ -96,12 +96,12 @@ public class ReportTrack extends ReportGenerator{
         }
         if(report.isIncludeMap())
             html("<div class=\"col-md-6\">");
-        drawTable("rpe", rpe);
+        drawTable("rpe", rpe, "report_header_route_point");
         List<DeviceEvent> alle = new ArrayList<>(rpe);
         
         if(route.getCorridor() != null) {
             List<DeviceEvent> core = calculate(Collections.singleton(route.getCorridor()), history);
-            drawTable("core", core);
+            drawTable("core", core, "report_header_route_corridor");
             alle.addAll(core);
         }
         
@@ -113,7 +113,7 @@ public class ReportTrack extends ReportGenerator{
         }
     }
     
-    void drawTable(String id, List<DeviceEvent> datas) {
+    void drawTable(String id, List<DeviceEvent> datas, String ptHeader) {
 
         // draw
         tableStart(id, hover().condensed().height(250));
@@ -122,7 +122,7 @@ public class ReportTrack extends ReportGenerator{
         tableHeadStart();
         tableRowStart();
 
-        String[] GFIO_report_headers = new String[]{"report_header_geofence_name", 
+        String[] GFIO_report_headers = new String[]{ptHeader, 
             "report_time", "report_event"};
 
         for (String report_header : GFIO_report_headers) {
