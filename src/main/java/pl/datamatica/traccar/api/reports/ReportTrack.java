@@ -50,11 +50,19 @@ public class ReportTrack extends ReportGenerator{
         Date from = getFromDate(report, route.getDevice());
         
         h2(report.getName());
-        bold("Trasa: ");
+        bold(message("report_route")+": ");
         text(route.getName());
         paragraphStart();
         bold(message("report_time_period") + ": ");
         text(formatDate(from) + " - " + formatDate(report.getToDate()));
+        paragraphEnd();
+        paragraphStart();
+        bold(message("report_device")+": ");
+        text(route.getDevice().getName());
+        paragraphEnd();
+        paragraphStart();
+        bold(message("report_route_status")+": ");
+        text(message("route_status_"+route.getStatus().name().toLowerCase()));
         paragraphEnd();
         
         List<RoutePoint> rp = route.getRoutePoints();
@@ -103,6 +111,7 @@ public class ReportTrack extends ReportGenerator{
             List<DeviceEvent> core = calculate(Collections.singleton(route.getCorridor()), history);
             drawTable("core", core, "report_header_route_corridor");
             alle.addAll(core);
+            gfs.add(route.getCorridor());
         }
         
         if(report.isIncludeMap() && !alle.isEmpty()) {
@@ -188,7 +197,7 @@ public class ReportTrack extends ReportGenerator{
         for(DeviceEvent ev : events) {
             System.out.println(ev.getTime()+"");
             builder.marker(ev.getPosition(), 
-                    MapBuilder.MarkerStyle.event(ev.getType(), ""));
+                    MapBuilder.MarkerStyle.deviceMarker(ev.getPosition()));
         }
         for(GeoFence gf : gfs)
             builder.geofence(gf);

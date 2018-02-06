@@ -23,6 +23,7 @@ import java.util.Map;
 import pl.datamatica.traccar.model.DeviceEventType;
 import pl.datamatica.traccar.model.GeoFence;
 import pl.datamatica.traccar.model.GeoFence.LonLat;
+import pl.datamatica.traccar.model.GeoFenceType;
 import pl.datamatica.traccar.model.Position;
 
 public class MapBuilder {    
@@ -93,12 +94,26 @@ public class MapBuilder {
                     sb.deleteCharAt(sb.length()-1);
                 sb.append("]], '").append(name).append("');\r\n");
                 break;
+            case LINE:
+                Coordinate[] coords = new Coordinate[gf.points().size()];
+                for(int i=0;i<gf.points().size();++i) {
+                    LonLat ll = gf.points().get(i);
+                    coords[i] = new Coordinate(ll.lon, ll.lat);
+                }
+                sb.append("polyline('").append(PolylineEncoder.encode(coords)).append("');\r\n");
+                break;
             default:
                 return this;
         }
         
-        sb.append(id).append(".setStyle(geoStyle('").append(name).append("', '")
-                .append(color).append("'));");
+        if(GeoFenceType.LINE.equals(gf.getType())) {
+            sb.append(id).append(".setStyle(lineStyle(").append(gf.getRadius())
+                    .append(", ").append(gf.points().get(0).lat).append(", ")
+                    .append(color).append("));\r\n");
+        } else {
+            sb.append(id).append(".setStyle(geoStyle('").append(name).append("', '")
+                    .append(color).append("'));");
+        }
         vectors.add(sb.toString());
         return this;
     }
@@ -270,6 +285,18 @@ public class MapBuilder {
                 + "      };\r\n"
                 + "    }(i);\r\n"
                 + "  }\r\n"
+                + "}\r\n"
+                + "function lineStyle(widthInMeters, lat, color) {\r\n"
+                + "  var w = widthInMeters / Math.cos(lat*Math.PI/180);\r\n"
+                + "  return function(resolution) {\r\n"
+                + "    console.log(w/resolution);\r\n"
+                + "    return [new ol.style.Style({\r\n"
+                + "      stroke: new ol.style.Stroke({\r\n"
+                + "        width: w / resolution,\r\n"
+                + "        color: fillColor(color)\r\n"
+                + "      })\r\n"
+                + "    })];\r\n"
+                + "  };\r\n"
                 + "}\r\n";
     }
     

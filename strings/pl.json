@@ -74,6 +74,7 @@
 	"err_appsettings_password_hash_method_not_provided": "Błędne zapytanie",
 	"err_appsettings_illegal_password_hash_method": "Błędne zapytanie",
 	"err_appsettings_default_user_group_not_provided": "Błędne zapytanie",
+	"err_appsettings_default_icon_id_not_provided": "Błędne zapytanie",
 	"err_device_group_name_not_provided": "Błędne zapytanie",
 	"err_device_group_would_create_cycle": "Błędne zapytanie",
 	"err_positions_query_mindistance_value_not_provided": "Błędne parametry zapytania",
@@ -220,5 +221,14 @@
 	"report_header_geofence_name": "Geo-strefa nazwa",
 	"report_header_geofence_position": "Geo-strefa pozycja",
 	"report_header_route_point": "Punkt trasy",
-	"report_header_route_corridor": "Korytarz trasy"
+	"report_header_route_corridor": "Korytarz trasy",
+	"report_device": "Urządzenie",
+	"report_route": "Trasa",
+	"report_route_status": "Status",
+	"route_status_new": " Nierozpoczęta",
+	"route_status_in_progress_ok": "Rozpoczęta zgodna z planem",
+	"route_status_in_progress_late": "Rozpoczęta opóźniona",
+	"route_status_finished_ok": "Wykonana zgodnie z planem",
+	"route_status_finished_late": "Wykonana z opóźnieniem",
+	"route_status_cancelled": "Anulowana"
 }
