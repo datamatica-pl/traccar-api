@@ -74,6 +74,7 @@
 	"err_appsettings_password_hash_method_not_provided": "Invalid request",
 	"err_appsettings_illegal_password_hash_method": "Invalid request",
 	"err_appsettings_default_user_group_not_provided": "Invalid request",
+	"err_appsettings_default_icon_id_not_provided": "Invalid request",
 	"err_device_group_name_not_provided": "Invalid request",
 	"err_device_group_would_create_cycle": "Invalid request",
 	"err_positions_query_mindistance_value_not_provided": "Invalid request's parameters",
@@ -220,5 +221,14 @@
 	"report_header_geofence_name": "Geo-fence name",
 	"report_header_geofence_position": "Geo-fence position",
 	"report_header_route_point": "Route point",
-	"report_header_route_corridor": "Route corridor"
+	"report_header_route_corridor": "Route corridor",
+	"report_device": "Device",
+	"report_route": "Route",
+	"report_route_status": "Status",
+	"route_status_new": "Not started",
+	"route_status_in_progress_ok": "Started consistent with plan",
+	"route_status_in_progress_late": "Started late",
+	"route_status_finished_ok": "Finished according to plan",
+	"route_status_finished_late": "Finished late",
+	"route_status_cancelled": "Cancelled"
 }
