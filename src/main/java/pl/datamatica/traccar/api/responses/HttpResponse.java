@@ -29,6 +29,7 @@ public abstract class HttpResponse<T>{
     public final Object write(Response response) {
         response.status(getHttpStatus());
         response.type("application/json; charset=utf-8");
+        response.header("Content-Encoding", "gzip");
         for(HttpHeader header : getHeaders())
             response.header(header.getName(), header.getValue());
         return getContent();
