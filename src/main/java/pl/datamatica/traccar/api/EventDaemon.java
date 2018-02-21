@@ -565,8 +565,10 @@ public class EventDaemon {
     }
 
     public void start() {
-        executor = Executors.newScheduledThreadPool(1);
-        startTasks();
+        Logger logger = LoggerFactory.getLogger(EventDaemon.class);
+        logger.error("eventDaemon.start called");
+//        executor = Executors.newScheduledThreadPool(1);
+//        startTasks();
     }
 
     private synchronized void startTasks() {
