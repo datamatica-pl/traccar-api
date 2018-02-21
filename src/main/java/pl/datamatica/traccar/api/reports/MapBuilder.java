@@ -245,7 +245,7 @@ public class MapBuilder {
         public static MarkerStyle deviceMarker(Position position) {
             MarkerStyle style = new MarkerStyle();
             String url = icons.get(position.getDevice().getIconId());
-            style.image = "new ol.style.Icon({src: '/"+url+"', anchor: [0.5, 1]})";
+            style.image = "new ol.style.Icon({src: '"+url+"', anchor: [0.5, 1]})";
             return style;
         }
         

@@ -96,8 +96,12 @@ public abstract class ReportGenerator {
 
     private void loadDeviceIcons() throws IOException {
         icons = new HashMap<>();
-        for(DeviceIcon di : iconsProvider.getDeviceIconsMetadata())
-            icons.put(di.getId(), di.getIconUrl().replace("/images/", "/markers/"));
+        for(DeviceIcon di : iconsProvider.getDeviceIconsMetadata()) {
+            String url = di.getIconUrl();
+            if(!di.isWithoutFrame())
+                url = url.replace("/images/", "/markers/");
+            icons.put(di.getId(), url);
+        }
     }
     
     protected List<Position> getPositions(Device d, Date from, Date to, boolean disableFilter) throws ProviderException {
