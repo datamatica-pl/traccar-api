@@ -159,7 +159,6 @@ public class DevicesController extends ControllerBase {
     private final DeviceGroupProvider gp;
     private final PositionProvider positions;
     private final Date minDate;
-    private final Set<Long> userIds;
     private final SimpleDateFormat dateFormat;
     
     
@@ -169,8 +168,6 @@ public class DevicesController extends ControllerBase {
         this.gp = requestContext.getDeviceGroupProvider();
         this.positions = requestContext.getPositionProvider();
         this.minDate = requestContext.getModificationDate();
-        this.userIds = requestContext.getUserProvider().getAllAvailableUsers()
-                .map(User::getId).collect(Collectors.toSet());
         this.dateFormat = new SimpleDateFormat(Application.DATE_FORMAT);
     }
 
@@ -179,7 +176,7 @@ public class DevicesController extends ControllerBase {
                 .filter(d -> !d.isDeleted())
                 .collect(Collectors.toList());
         List<DeviceDto> changedDevices = devices.stream()
-                .map(d -> new DeviceDto.Builder().device(d, userIds).build())
+                .map(d -> new DeviceDto.Builder().device(d).build())
                 .filter(d -> isModified(d.getModificationTime()))
                 .collect(Collectors.toList());
         long[] deviceIds = devices.stream()
@@ -196,7 +193,7 @@ public class DevicesController extends ControllerBase {
     public HttpResponse get(long id) throws Exception {
         try{
             Device dev = dp.getDevice(id);
-            return okCached(new DeviceDto.Builder().device(dev, userIds).build());
+            return okCached(new DeviceDto.Builder().device(dev).build());
         } catch(ProviderException e) {
             return handle(e);
         }
@@ -208,7 +205,7 @@ public class DevicesController extends ControllerBase {
             return badRequest(validationErrors);
         try {
             Device device = dp.createDevice(deviceDto.getImei(), this.requestContext.getDeviceModelProvider());
-            return created("devices/"+device.getId(), new DeviceDto.Builder().device(device, userIds).build());
+            return created("devices/"+device.getId(), new DeviceDto.Builder().device(device).build());
         } catch(ProviderException e) {
             switch(e.getType()) {
                 case INVALID_IMEI:

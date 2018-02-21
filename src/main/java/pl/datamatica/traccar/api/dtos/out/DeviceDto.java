@@ -45,7 +45,6 @@ public class DeviceDto extends EditDeviceDto implements ICachedDto {
     
     private final Date lastAlarmsCheck;
     private final boolean unreadAlarms;
-    private final Set<Long> userIds;
     
     @JsonIgnore
     private final Date modificationTime;
@@ -84,7 +83,6 @@ public class DeviceDto extends EditDeviceDto implements ICachedDto {
         private Long groupId;
         private Date lastAlarmsCheck;
         private boolean unreadAlarms;
-        private Set<Long> userIds;
         private List<MaintenanceDto> maintenances;
         private List<MaintenanceDto> registrations;
         private String vehicleInfo;
@@ -212,7 +210,7 @@ public class DeviceDto extends EditDeviceDto implements ICachedDto {
             return this;
         }
 
-        public Builder device(final Device device, Set<Long> availableUserIds) {
+        public Builder device(final Device device) {
             this.id = device.getId();
             this.deviceName = device.getName();
             this.deviceModelId = device.getDeviceModelId();
@@ -252,9 +250,6 @@ public class DeviceDto extends EditDeviceDto implements ICachedDto {
             this.fuelCapacity = device.getFuelCapacity();
             this.lastAlarmsCheck = device.getLastAlarmsCheck();
             this.unreadAlarms = device.hasUnreadAlarms();
-            this.userIds = device.getUsers().stream().map(u-> u.getId())
-                    .filter(id->availableUserIds.contains(id))
-                    .collect(Collectors.toSet());
             if(device.getMaintenances() == null)
                 this.maintenances = Collections.EMPTY_LIST;
             else
@@ -316,7 +311,6 @@ public class DeviceDto extends EditDeviceDto implements ICachedDto {
                     fuelCapacity,
                     lastAlarmsCheck,
                     unreadAlarms,
-                    userIds,
                     maintenances, registrations,
                     vehicleInfo, autoUpdateOdometer, timeout, timeZoneOffset,commandPassword,
                     showOdometer, showProtocol, showName, arrowRadius, arrowMovingColor,
@@ -355,7 +349,6 @@ public class DeviceDto extends EditDeviceDto implements ICachedDto {
             final Double fuelCapacity,
             final Date lastAlarmsCheck,
             final boolean unreadAlarms,
-            final Set<Long> userIds,
             final List<MaintenanceDto> maintenances,
             final List<MaintenanceDto> registrations,
             final String vehicleInfo,
@@ -394,7 +387,6 @@ public class DeviceDto extends EditDeviceDto implements ICachedDto {
         this.autoArm = autoArm;
         this.lastAlarmsCheck = lastAlarmsCheck;
         this.unreadAlarms = unreadAlarms;
-        this.userIds = userIds;
     }
     
     public long getId() {
