@@ -37,9 +37,7 @@ public class DeviceDtoSpeedUnitConversionTest {
         int expectedSpeedKmH = 1852;
 
         testDevice.setSpeedLimit(speedNauticalMiles);
-
-        HashSet<Long> availableUserIds = new HashSet<>(Arrays.asList(1L));
-        DeviceDto deviceDto = new DeviceDto.Builder().device(testDevice, availableUserIds).build();
+        DeviceDto deviceDto = new DeviceDto.Builder().device(testDevice).build();
 
         assertEquals(expectedSpeedKmH, deviceDto.getSpeedLimit().intValue());
     }
@@ -51,9 +49,7 @@ public class DeviceDtoSpeedUnitConversionTest {
         int expectedSpeedKmH = 1852;
 
         testDevice.setIdleSpeedThreshold(speedNauticalMiles);
-
-        HashSet<Long> availableUserIds = new HashSet<>(Arrays.asList(1L));
-        DeviceDto deviceDto = new DeviceDto.Builder().device(testDevice, availableUserIds).build();
+        DeviceDto deviceDto = new DeviceDto.Builder().device(testDevice).build();
 
         assertEquals(expectedSpeedKmH, deviceDto.getIdleSpeedThreshold().intValue());
     }
