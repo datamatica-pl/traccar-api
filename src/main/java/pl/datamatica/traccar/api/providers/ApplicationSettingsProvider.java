@@ -35,6 +35,7 @@ public class ApplicationSettingsProvider{
     private final EntityManager em;
     private UserGroupProvider userGroupsProvider;
     private User requestUser;
+    private ApplicationSettings settings;
 
     public ApplicationSettingsProvider(EntityManager em) {
         this.em = em;
@@ -49,11 +50,14 @@ public class ApplicationSettingsProvider{
     }
     
     public ApplicationSettings get() {
-        TypedQuery<ApplicationSettings> tq = em.createQuery("Select x from ApplicationSettings x", 
-                ApplicationSettings.class);
-        tq.setMaxResults(1);
-        List<ApplicationSettings> result = tq.getResultList();
-        return result.isEmpty() ? new ApplicationSettings() : tq.getSingleResult();
+        if(settings == null) {
+            TypedQuery<ApplicationSettings> tq = em.createQuery("Select x from ApplicationSettings x", 
+                    ApplicationSettings.class);
+            tq.setMaxResults(1);
+            List<ApplicationSettings> result = tq.getResultList();
+            settings = result.isEmpty() ? new ApplicationSettings() : result.get(0);
+        }
+        return settings;
     }
     
     public void updateApplicationSetting(EditApplicationSettingsDto dto) throws ProviderException {
