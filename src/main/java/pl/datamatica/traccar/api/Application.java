@@ -137,8 +137,6 @@ public class Application implements spark.servlet.SparkApplication {
         for(ControllerBinder binder : BINDERS)
             binder.bind();
         
-        Logger logger1 = LoggerFactory.getLogger(Application.class);
-        logger1.error("Now it's to not to turn on EventDaemon");
         ScheduledExecutorService scheduler = Context.getInstance().getDaemonExecutor();
         for(Daemon daemon : DAEMONS) 
             daemon.start(scheduler);
