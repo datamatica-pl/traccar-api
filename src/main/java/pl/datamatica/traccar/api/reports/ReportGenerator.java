@@ -46,6 +46,7 @@ import pl.datamatica.traccar.api.providers.PositionProvider;
 import pl.datamatica.traccar.api.providers.PositionProvider.PositionSpeedOperator;
 import pl.datamatica.traccar.api.providers.PositionProvider.PositionsQueryParams;
 import pl.datamatica.traccar.api.providers.ProviderException;
+import pl.datamatica.traccar.api.reports.MapBuilder.IconData;
 import pl.datamatica.traccar.api.utils.GeoUtils;
 
 public abstract class ReportGenerator {
@@ -64,7 +65,7 @@ public abstract class ReportGenerator {
     private SimpleDateFormat longDateFormat;
     private TimeZone timeZone;
     private DeviceIconProvider iconsProvider;
-    private Map<Long, String> icons;
+    private Map<Long, IconData> icons;
     
     abstract void generateImpl(ReportDto report) throws IOException, ProviderException;
 
@@ -97,10 +98,7 @@ public abstract class ReportGenerator {
     private void loadDeviceIcons() throws IOException {
         icons = new HashMap<>();
         for(DeviceIcon di : iconsProvider.getDeviceIconsMetadata()) {
-            String url = di.getIconUrl();
-            if(!di.isWithoutFrame())
-                url = url.replace("/images/", "/markers/");
-            icons.put(di.getId(), url);
+            icons.put(di.getId(), new IconData(di));
         }
     }
     

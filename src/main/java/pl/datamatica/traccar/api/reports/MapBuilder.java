@@ -20,6 +20,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import pl.datamatica.traccar.api.metadata.model.DeviceIcon;
 import pl.datamatica.traccar.model.DeviceEventType;
 import pl.datamatica.traccar.model.GeoFence;
 import pl.datamatica.traccar.model.GeoFence.LonLat;
@@ -34,7 +35,7 @@ public class MapBuilder {
     private List<Integer> tableStartRows = new ArrayList<>();
     private List<Integer> featOffs = new ArrayList<>();
     
-    public MapBuilder(String width, String height, Map<Long, String> icons) {
+    public MapBuilder(String width, String height, Map<Long, IconData> icons) {
         this.width = width;
         this.height = height;
         MarkerStyle.icons = icons;
@@ -305,7 +306,7 @@ public class MapBuilder {
     public static class MarkerStyle {
         private String image;
         private String text;
-        private static Map<Long, String> icons;
+        private static Map<Long, IconData> icons;
         
         public String compile() {
             StringBuilder sb = new StringBuilder("new ol.style.Style({\r\n");
@@ -347,8 +348,11 @@ public class MapBuilder {
         
         public static MarkerStyle deviceMarker(Position position) {
             MarkerStyle style = new MarkerStyle();
-            String url = icons.get(position.getDevice().getIconId());
-            style.image = "new ol.style.Icon({src: '"+url+"', anchor: [0.5, 1]})";
+            IconData data = icons.get(position.getDevice().getIconId());
+            style.image = "new ol.style.Icon({src: '"+data.getUrl()+"', "
+                    + "anchor: "+data.getAnchor()+", scale: "+data.getScale()+
+                    (data.canRotate && position.getCourse() != null ? 
+                    ", rotation: "+ position.getCourse()*Math.PI/180 : "")+"})";
             return style;
         }
         
@@ -391,6 +395,32 @@ public class MapBuilder {
             
             return String.format(Locale.US, "[%f,%f,%f,%f]", 
                     minLon, minLat, maxLon, maxLat);
+        }
+    }
+    
+    public static class IconData {
+        private boolean canRotate;
+        private String url;
+        
+        public IconData(DeviceIcon di) {
+            this.url = di.getIconUrl();
+            this.canRotate = di.isWithoutFrame();
+            
+            if(!di.isWithoutFrame()) {
+                url = url.replace("/images/", "/markers/");
+            }
+        }
+        
+        public String getUrl() {
+            return url;
+        }
+        
+        public String getAnchor() {
+            return canRotate ? "[0.5, 0.5]" : "[0.5, 1]";
+        }
+        
+        public float getScale() {
+            return canRotate ? 0.25f : 1;
         }
     }
 }
