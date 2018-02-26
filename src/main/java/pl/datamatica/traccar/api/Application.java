@@ -74,10 +74,10 @@ public class Application implements spark.servlet.SparkApplication {
             new RulesController.Binder()
         };
     
-//    private final Daemon[] DAEMONS = new Daemon[]{
-//            new AlarmDaemon(),
-//            new SubscriptionDaemon()
-//        };
+    private final Daemon[] DAEMONS = new Daemon[]{
+            new AlarmDaemon(),
+            new SubscriptionDaemon()
+        };
 
     @Override
     public void init() {
@@ -139,14 +139,14 @@ public class Application implements spark.servlet.SparkApplication {
         
         Logger logger1 = LoggerFactory.getLogger(Application.class);
         logger1.error("Now it's to not to turn on EventDaemon");
-//        ScheduledExecutorService scheduler = Context.getInstance().getDaemonExecutor();
-//        for(Daemon daemon : DAEMONS) 
-//            daemon.start(scheduler);
+        ScheduledExecutorService scheduler = Context.getInstance().getDaemonExecutor();
+        for(Daemon daemon : DAEMONS) 
+            daemon.start(scheduler);
         
-//        EntityManager em = Context.getInstance().createEntityManager();
-//        ApplicationSettingsProvider asp = new ApplicationSettingsProvider(em);
-//        if(asp.get().isEventRecordingEnabled())
-//            EventDaemon.getInstance().start();
+        EntityManager em = Context.getInstance().createEntityManager();
+        ApplicationSettingsProvider asp = new ApplicationSettingsProvider(em);
+        if(asp.get().isEventRecordingEnabled())
+            EventDaemon.getInstance().start();
 
         if(Context.getInstance().isInDevMode()) {
             Spark.exception(Exception.class, (exception, request, response) -> {
