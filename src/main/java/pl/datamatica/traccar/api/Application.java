@@ -95,8 +95,6 @@ public class Application implements spark.servlet.SparkApplication {
         Spark.staticFiles.location("/public");
 
         Spark.before((req, res) -> {
-            Logger logger = LoggerFactory.getLogger(Application.class);
-            logger.error(req.requestMethod()+" "+req.pathInfo());
             RequestContext rc = new RequestContext(req, res);
             rc.beginTransaction();
             if (rc.isRequestForMetadata(req)) {
