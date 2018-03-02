@@ -121,8 +121,9 @@ public class RequestContext implements AutoCloseable {
     
     public UserProvider getUserProvider() {
         ApplicationSettingsProvider appSettingsProvider = getApplicationSettingsProvider();
+        RulesProvider rulesProvider = getRulesProvider();
         if(users == null)
-            users = new UserProvider(em, appSettingsProvider.get());
+            users = new UserProvider(em, appSettingsProvider.get(), rulesProvider);
         return users;
     }
     

@@ -43,6 +43,7 @@ import pl.datamatica.traccar.model.DeviceEventType;
 import pl.datamatica.traccar.model.PositionIconType;
 import pl.datamatica.traccar.model.GeoFence;
 import pl.datamatica.traccar.model.Group;
+import pl.datamatica.traccar.model.RulesVersion;
 import pl.datamatica.traccar.model.User;
 import pl.datamatica.traccar.model.UserPermission;
 import pl.datamatica.traccar.model.UserSettings;
@@ -51,12 +52,15 @@ import pl.datamatica.traccar.model.UserSettings.SpeedUnit;
 public class UserProvider extends ProviderBase {
     private User requestUser;
     private ApplicationSettings appSettings;
+    private RulesProvider rulesProvider;
     private Logger logger;
     
-    public UserProvider(EntityManager entityManager, ApplicationSettings appSettings) {
+    public UserProvider(EntityManager entityManager, ApplicationSettings appSettings, 
+            RulesProvider rulesProvider) {
         super(entityManager);
         this.appSettings = appSettings;
         logger = DbLog.getLogger();
+        this.rulesProvider = rulesProvider;
     }
     
     public User authenticateUser(String email, String password) throws AuthenticationException {
@@ -139,6 +143,12 @@ public class UserProvider extends ProviderBase {
         user.setPasswordHashMethod(appSettings.getDefaultHashImplementation());
         user.setUserSettings(new UserSettings());
         user.setUserGroup(appSettings.getDefaultGroup());
+        for(RulesVersion rv : rulesProvider.getActiveRules())
+            if(rv.getType() == RulesVersion.Type.MARKETING && !user.getMarketingCheck()) {
+                user.addRulesRejection(rv);
+            } else {
+                user.addRulesAcceptance(rv);
+            }
         
         generateAuditLogForCreateRemoveUser(user.getLogin(), false);
         return user;

@@ -133,7 +133,7 @@ public class UserGroupProviderTest {
         asp.setRequestUser(requestUser);
         asp.setUserGroupsProvider(provider);
         provider.setApplicationSettingsProvider(asp);
-        UserProvider up = new UserProvider(em, asp.get());
+        UserProvider up = new UserProvider(em, asp.get(), null);
         up.authenticateUser(requestUser.getId());
         provider.setUserProvider(up);
     }

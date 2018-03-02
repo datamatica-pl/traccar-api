@@ -20,6 +20,7 @@ import javax.persistence.*;
 import org.junit.*;
 import static org.junit.Assert.*;
 import pl.datamatica.traccar.api.providers.ProviderException.Type;
+import pl.datamatica.traccar.api.providers.RulesProvider;
 import pl.datamatica.traccar.model.ApplicationSettings;
 import pl.datamatica.traccar.model.PasswordHashMethod;
 import pl.datamatica.traccar.model.User;
@@ -42,7 +43,8 @@ public class UserProviderTest {
     public void testInit() throws ProviderException {
         em.getTransaction().begin();
         appSettings = new ApplicationSettings();
-        provider = new UserProvider(em, appSettings);
+        RulesProvider rulesProvider = new RulesProvider(em, null);
+        provider = new UserProvider(em, appSettings, rulesProvider);
         provider.authenticateUser(database.admin.getId());
     }
     
@@ -91,7 +93,7 @@ public class UserProviderTest {
 
         em.flush();
         
-        UserProvider provider2 = new UserProvider(em, appSettings);
+        UserProvider provider2 = new UserProvider(em, appSettings, null);
         try {
             User user1 = provider2.getUser(removedId);
         } catch (ProviderException pe) {

@@ -91,7 +91,7 @@ public class ApplicationSettingsProviderTest {
         UserGroupProvider ugp = new UserGroupProvider(em, requestUser);
         provider = new ApplicationSettingsProvider(em);
         ugp.setApplicationSettingsProvider(provider);
-        UserProvider up = new UserProvider(em, provider.get());
+        UserProvider up = new UserProvider(em, provider.get(), null);
         up.authenticateUser(requestUser.getId());
         ugp.setUserProvider(up);
         provider.setUserGroupsProvider(ugp);
