@@ -16,6 +16,8 @@
  */
 package pl.datamatica.traccar.api.dtos;
 
+import org.apache.commons.lang3.StringUtils;
+
 /**
  *
  * @author Jan Usarek
@@ -74,12 +76,12 @@ public class ImeiNumberDto {
     }
 
     public void trimAllStrings() {
-        imei = imei.trim();
-        email = email.trim();
-        contactPhone = contactPhone.trim();
-        firstName = firstName.trim();
-        lastName = lastName.trim();
-        invoiceNumber = invoiceNumber.trim();
-        comment = comment.trim();
+        imei = StringUtils.trim(imei);
+        email = StringUtils.trim(email);
+        contactPhone = StringUtils.trim(contactPhone);
+        firstName = StringUtils.trim(firstName);
+        lastName = StringUtils.trim(lastName);
+        invoiceNumber = StringUtils.trim(invoiceNumber);
+        comment = StringUtils.trim(comment);
     }
 }
