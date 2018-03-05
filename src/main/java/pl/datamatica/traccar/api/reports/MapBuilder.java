@@ -35,10 +35,11 @@ public class MapBuilder {
     private List<Integer> tableStartRows = new ArrayList<>();
     private List<Integer> featOffs = new ArrayList<>();
     
-    public MapBuilder(String width, String height, Map<Long, IconData> icons) {
+    public MapBuilder(String width, String height, Map<Long, IconData> icons, long defIconId) {
         this.width = width;
         this.height = height;
         MarkerStyle.icons = icons;
+        MarkerStyle.defaultIconId = defIconId;
     }
     
     public MapBuilder polyline(List<Position> positions, String color, int width) {
@@ -307,6 +308,7 @@ public class MapBuilder {
         private String image;
         private String text;
         private static Map<Long, IconData> icons;
+        private static long defaultIconId;
         
         public String compile() {
             StringBuilder sb = new StringBuilder("new ol.style.Style({\r\n");
@@ -349,6 +351,8 @@ public class MapBuilder {
         public static MarkerStyle deviceMarker(Position position) {
             MarkerStyle style = new MarkerStyle();
             IconData data = icons.get(position.getDevice().getIconId());
+            if(data == null)
+                data = icons.get(defaultIconId);
             style.image = "new ol.style.Icon({src: '"+data.getUrl()+"', "
                     + "anchor: "+data.getAnchor()+", scale: "+data.getScale()+
                     (data.canRotate && position.getCourse() != null ? 

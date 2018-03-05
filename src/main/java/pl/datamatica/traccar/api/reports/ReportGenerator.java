@@ -335,7 +335,8 @@ public abstract class ReportGenerator {
     }
     
     protected MapBuilder getMapBuilder() {
-        return new MapBuilder("100%", DEFAULT_TABLE_HEIGHT+"px", icons);
+        return new MapBuilder("100%", DEFAULT_TABLE_HEIGHT+"px", icons, 
+            applicationSettings.getDefaultIconId());
     }
     
     void html(String html) {
