@@ -299,6 +299,11 @@ public class UserProvider extends ProviderBase {
                 gr.setUsers(us);
             }
         }
+        
+        // RulesAcceptances
+        query = em.createQuery("DELETE FROM RulesAcceptance a WHERE a.id.user = :user");
+        query.setParameter("user", user);
+        query.executeUpdate();
     }
     
     // REMOVING USER - END // 
