@@ -24,6 +24,7 @@ import pl.datamatica.traccar.model.GeoFence;
 
 public class GeoFenceDto extends AddGeoFenceDto {
     private final long id;
+    private final boolean isRouteOnly;
 
     public static class Builder {
 
@@ -37,6 +38,7 @@ public class GeoFenceDto extends AddGeoFenceDto {
         private String type;
         private long[] deviceIds;
         private String address;
+        private boolean isRouteOnly;
 
         public Builder geoFence(GeoFence geofence) {
             this.id = geofence.getId();
@@ -58,12 +60,13 @@ public class GeoFenceDto extends AddGeoFenceDto {
                 this.deviceIds = geofence.getDevices().stream()
                         .mapToLong(d -> d.getId()).toArray();
             this.address = geofence.getAddress();
+            this.isRouteOnly = geofence.isRouteOnly();
             return this;
         }
 
         public GeoFenceDto build() {
             return new GeoFenceDto(id, geofenceName, description, allDevices, 
-                    color, points, radius, type, deviceIds, address);
+                    color, points, radius, type, deviceIds, address, isRouteOnly);
         }
     }
 
@@ -76,13 +79,19 @@ public class GeoFenceDto extends AddGeoFenceDto {
             final float radius, 
             final String type, 
             final long[] deviceIds,
-            final String address) {
+            final String address,
+            final boolean isRouteOnly) {
         super(geofenceName, description, allDevices, color, points, radius, type, 
                 deviceIds, address);
         this.id = id;
+        this.isRouteOnly = isRouteOnly;
     }
 
     public long getId() {
         return id;
+    }
+    
+    public boolean isRouteOnly() {
+        return isRouteOnly;
     }
 }
