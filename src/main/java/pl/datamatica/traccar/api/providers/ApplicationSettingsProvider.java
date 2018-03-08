@@ -75,6 +75,7 @@ public class ApplicationSettingsProvider{
         as.setLanguage(dto.getLanguage());
         as.setBingMapsKey(dto.getBingMapsKey());
         as.setMatchServiceURL(dto.getMatchServiceURL());
+        as.setDefaultIconId(dto.getDefaultIconId());
         
         if (requestUser.hasPermission(UserPermission.USER_GROUP_MANAGEMENT) && dto.getDefaultUserGroupId() != null) {
             UserGroup group = userGroupsProvider.getGroup(dto.getDefaultUserGroupId());
