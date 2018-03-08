@@ -36,7 +36,7 @@ public class ApplicationSettingsDto extends EditApplicationSettingsDto {
             String bingMapsKey, 
             String matchServiceURL, 
             long defaultUserGroupId,
-            long defaultIconId) {
+            int defaultIconId) {
         super(registrationEnabled, 
                     updateInterval, 
                     defaultPasswordHash, 
@@ -61,7 +61,7 @@ public class ApplicationSettingsDto extends EditApplicationSettingsDto {
         private String bingMapsKey;
         private String matchServiceURL;
         private long defaultUserGroupId;
-        private long defaultIconId;
+        private int defaultIconId;
         
         public Builder() {
         }
@@ -116,7 +116,7 @@ public class ApplicationSettingsDto extends EditApplicationSettingsDto {
             return this;
         }
         
-        public Builder defaultIconId(long value) {
+        public Builder defaultIconId(int value) {
             this.defaultIconId = value;
             return this;
         }

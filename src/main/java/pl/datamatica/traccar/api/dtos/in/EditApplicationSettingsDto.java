@@ -39,7 +39,7 @@ public class EditApplicationSettingsDto {
     private final String bingMapsKey;
     private final String matchServiceURL;
     private final Long defaultUserGroupId;
-    private final Long defaultIconId;
+    private final Integer defaultIconId;
 
     protected EditApplicationSettingsDto(boolean registrationEnabled, 
             Short updateInterval, 
@@ -50,7 +50,7 @@ public class EditApplicationSettingsDto {
             String bingMapsKey, 
             String matchServiceURL, 
             long defaultUserGroupId,
-            long defaultIconId) {
+            int defaultIconId) {
         this.registrationEnabled = registrationEnabled;
         this.updateInterval = updateInterval;
         this.defaultPasswordHash = defaultPasswordHash;
@@ -99,7 +99,7 @@ public class EditApplicationSettingsDto {
         return defaultUserGroupId;
     }
     
-    public Long getDefaultIconId() {
+    public Integer getDefaultIconId() {
         return defaultIconId;
     }
     
@@ -155,7 +155,7 @@ public class EditApplicationSettingsDto {
         private long defaultUserGroupId;
         private String newRulesUrl;
         private Date newRulesStartDate;
-        private long defaultIconId;
+        private int defaultIconId;
         
         public Builder() {
         }
@@ -205,7 +205,7 @@ public class EditApplicationSettingsDto {
             return this;
         }
         
-        public Builder defaultIconId(long id) {
+        public Builder defaultIconId(int id) {
             this.defaultIconId = id;
             return this;
         }
