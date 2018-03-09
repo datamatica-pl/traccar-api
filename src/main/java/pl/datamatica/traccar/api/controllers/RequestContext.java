@@ -42,6 +42,7 @@ import pl.datamatica.traccar.api.providers.NotificationSettingsProvider;
 import pl.datamatica.traccar.api.providers.PicturesProvider;
 import pl.datamatica.traccar.api.providers.PositionProvider;
 import pl.datamatica.traccar.api.providers.ReportProvider;
+import pl.datamatica.traccar.api.providers.RouteProvider;
 import pl.datamatica.traccar.api.providers.RulesProvider;
 import pl.datamatica.traccar.api.providers.UserGroupProvider;
 import pl.datamatica.traccar.api.providers.UserProvider;
@@ -228,6 +229,10 @@ public class RequestContext implements AutoCloseable {
     
     public MessageProvider getMessageProvider(String lang) throws Exception {
         return new MessageProvider(em, Application.getStringsDir(), lang);
+    }
+    
+    public RouteProvider getRouteProvider() {
+        return new RouteProvider(em, user);
     }
     
     public ReportGenerator getReportGenerator(ReportType type, String lang) throws Exception {
