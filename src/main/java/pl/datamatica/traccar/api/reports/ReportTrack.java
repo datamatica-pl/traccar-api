@@ -117,7 +117,7 @@ public class ReportTrack extends ReportGenerator{
         if(report.isIncludeMap() && !alle.isEmpty()) {
             html("</div>");
             html("<div class=\"col-md-6\">");
-            drawMap(alle, gfs, route.getLineString(), rpe.size());
+            drawMap(alle, gfs, route.getLinePoints(), rpe.size());
             html("</div>");
         }
     }
@@ -190,10 +190,10 @@ public class ReportTrack extends ReportGenerator{
         return result;
     }
 
-    void drawMap(List<DeviceEvent> events, Collection<GeoFence> gfs, LineString ls,
+    void drawMap(List<DeviceEvent> events, Collection<GeoFence> gfs, String ls,
             int corridorOff) {
         MapBuilder builder = getMapBuilder();
-        builder.polyline(ls.getCoordinates(), "#808080", 3);
+        builder.polyline(ls, "#808080", 3);
         for(DeviceEvent ev : events) {
             System.out.println(ev.getTime()+"");
             builder.marker(ev.getPosition(), 

@@ -19,6 +19,8 @@ package pl.datamatica.traccar.api.providers;
 import java.util.List;
 import java.util.stream.Stream;
 import javax.persistence.EntityManager;
+import org.hibernate.Criteria;
+import org.hibernate.criterion.CriteriaSpecification;
 import pl.datamatica.traccar.model.DbRoute;
 import pl.datamatica.traccar.model.User;
 import pl.datamatica.traccar.model.UserPermission;
@@ -29,7 +31,7 @@ import pl.datamatica.traccar.api.providers.ProviderException.Type;
  * @author ŁŁ
  */
 public class RouteProvider extends ProviderBase {
-    private final String SELECT_WITH_JOINS = "select r from DbRoute r left join fetch r.device"
+    private final String SELECT_WITH_JOINS = "select distinct r from DbRoute r left join fetch r.device"
             + " left join fetch r.routePoints rp left join fetch rp.geofence"
             + " left join fetch r.corridor";
     

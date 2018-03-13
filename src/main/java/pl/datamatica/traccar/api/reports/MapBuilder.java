@@ -43,19 +43,17 @@ public class MapBuilder {
     }
     
     public MapBuilder polyline(List<Position> positions, String color, int width) {
-        String id = "v"+vectors.size();
-        StringBuilder sb = new StringBuilder();
-        sb.append("var ").append(id).append(" = polyline('").append(PolylineEncoder.encode(positions)).append("');\r\n");
-        sb.append(id).append(".setStyle(new ol.style.Style({ stroke: new ol.style.Stroke({color: '").append(color).append("', width: ").append(width).append("})}));\r\n");
-        
-        vectors.add(sb.toString());
-        return this;
+        return polyline(PolylineEncoder.encode(positions), color, width);
     }
     
     public MapBuilder polyline(Coordinate[] points, String color, int width) {
+        return polyline(PolylineEncoder.encode(points), color, width);
+    }
+    
+    public MapBuilder polyline(String polyStr, String color, int width) {
         String id = "v"+vectors.size();
         StringBuilder sb = new StringBuilder();
-        sb.append("var ").append(id).append(" = polyline('").append(PolylineEncoder.encode(points)).append("');\r\n");
+        sb.append("var ").append(id).append(" = polyline('").append(polyStr).append("');\r\n");
         sb.append(id).append(".setStyle(new ol.style.Style({ stroke: new ol.style.Stroke({color: '").append(color).append("', width: ").append(width).append("})}));\r\n");
         
         vectors.add(sb.toString());

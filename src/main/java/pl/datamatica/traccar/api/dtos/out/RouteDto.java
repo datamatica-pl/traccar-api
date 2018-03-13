@@ -34,11 +34,11 @@ public class RouteDto extends EditRouteDto {
 
     public RouteDto(long id, Date createdDate, 
             String status, Long corridorId,
-            Long deviceId, int tolerance, 
+            String name, Long deviceId, int tolerance, 
             int archiveAfter, boolean forceFirst, 
             boolean forceLast, List<RoutePointDto> points, 
-            List<PointDto> polyline) {
-        super(deviceId, tolerance, archiveAfter, forceFirst, forceLast, points, polyline);
+            String polyline) {
+        super(name, deviceId, tolerance, archiveAfter, forceFirst, forceLast, points, polyline);
         this.id = id;
         this.createdDate = createdDate;
         this.status = status;
@@ -85,8 +85,8 @@ public class RouteDto extends EditRouteDto {
         }
 
         public RouteDto build() {
-            return new RouteDto(id, createdDate, status, corridorId, deviceId, tolerance, 
-                    archiveAfter, forceFirst, forceLast, points, polyline);
+            return new RouteDto(id, createdDate, status, corridorId, name, deviceId, 
+                    tolerance, archiveAfter, forceFirst, forceLast, points, polyline);
         }
     }    
 }
