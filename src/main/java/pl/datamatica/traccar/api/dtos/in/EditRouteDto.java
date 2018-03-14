@@ -118,9 +118,7 @@ public class EditRouteDto {
             points = new ArrayList<>();
             for(RoutePoint rp : route.getRoutePoints())
                 points.add(new RoutePointDto.Builder().routePoint(rp).build());
-            if(route.getLineString() != null) {
-                polyline = PolylineEncoder.encode(route.getLineString().getCoordinates());
-            }
+            polyline = route.getLinePoints();
             return this;
         }
 
