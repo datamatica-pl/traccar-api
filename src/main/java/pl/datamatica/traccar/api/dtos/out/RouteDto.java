@@ -18,7 +18,7 @@ package pl.datamatica.traccar.api.dtos.out;
 
 import java.util.Date;
 import java.util.List;
-import pl.datamatica.traccar.api.dtos.in.EditRouteDto;
+import pl.datamatica.traccar.api.dtos.in.RouteBaseDto;
 import pl.datamatica.traccar.api.dtos.in.RoutePointDto;
 import pl.datamatica.traccar.model.DbRoute;
 
@@ -26,7 +26,7 @@ import pl.datamatica.traccar.model.DbRoute;
  *
  * @author ŁŁ
  */
-public class RouteDto extends EditRouteDto {
+public class RouteDto extends RouteBaseDto {
     private final long id;
     private final Date createdDate;
     private final String status;
@@ -45,7 +45,7 @@ public class RouteDto extends EditRouteDto {
         this.corridorId = corridorId;
     }
 
-    public static class Builder extends EditRouteDto.Builder{
+    public static class Builder extends RouteBaseDto.Builder{
 
         private long id;
         private Date createdDate;

@@ -172,6 +172,17 @@ public class AddGeoFenceDto implements IGeoFenceInfo {
         return address;
     }
     
+    public static List<ErrorDto> validateRoute(AddGeoFenceDto geoFenceDto) {
+        List<ErrorDto> errors = new ArrayList<>();
+        if(geoFenceDto.geofenceName == null || geoFenceDto.geofenceName.isEmpty())
+            errors.add(new ErrorDto(MessageKeys.ERR_GEOFENCE_NAME_NOT_PROVIDED));
+        if(geoFenceDto.points == null || geoFenceDto.points.isEmpty())
+            errors.add(new ErrorDto(MessageKeys.ERR_GEOFENCE_POINTS_NOT_PROVIDED));
+        if(geoFenceDto.radius == null)
+            errors.add(new ErrorDto(MessageKeys.ERR_GEOFENCE_RADIUS_NOT_PROVIDED));
+        return errors;
+    }
+    
     public static List<ErrorDto> validate(AddGeoFenceDto geoFenceDto) {
         if(geoFenceDto == null)
             return Collections.singletonList(new ErrorDto(MessageKeys.ERR_DATA_NOT_PROVIDED));

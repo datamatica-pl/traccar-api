@@ -16,7 +16,11 @@
  */
 package pl.datamatica.traccar.api.dtos.in;
 
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
+import pl.datamatica.traccar.api.dtos.MessageKeys;
+import pl.datamatica.traccar.api.dtos.out.ErrorDto;
 import pl.datamatica.traccar.model.RoutePoint;
 
 /**
@@ -38,6 +42,37 @@ public class RoutePointDto {
         this.exitTime = exitTime;
     }
 
+    public Long getId() {
+        return id;
+    }
+
+    public Long getGeofenceId() {
+        return geofenceId;
+    }
+
+    public Date getDeadline() {
+        return deadline;
+    }
+
+    public Date getEnterTime() {
+        return enterTime;
+    }
+
+    public Date getExitTime() {
+        return exitTime;
+    }
+
+    
+    
+    public static List<ErrorDto> validate(RoutePointDto dto) {
+        List<ErrorDto> errors = new ArrayList<>();
+        if(dto.geofenceId == null)
+            errors.add(new ErrorDto(MessageKeys.ERR_ROUTE_POINT_GEOFENCE_NOT_PROVIDED));
+        if(dto.deadline == null)
+            errors.add(new ErrorDto(MessageKeys.ERR_ROUTE_POINT_DEADLINE_NOT_PROVIDED));
+        return errors;
+    }
+    
     public static class Builder {
 
         private long id;

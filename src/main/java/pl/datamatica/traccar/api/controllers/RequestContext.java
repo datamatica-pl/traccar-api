@@ -232,7 +232,10 @@ public class RequestContext implements AutoCloseable {
     }
     
     public RouteProvider getRouteProvider() {
-        return new RouteProvider(em, user);
+        RouteProvider rp = new RouteProvider(em, user);
+        rp.setDeviceProvider(getDeviceProvider());
+        rp.setGeofenceProvider(getGeoFenceProvider());
+        return rp;
     }
     
     public ReportGenerator getReportGenerator(ReportType type, String lang) throws Exception {
