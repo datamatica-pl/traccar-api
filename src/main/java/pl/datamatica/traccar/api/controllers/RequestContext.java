@@ -234,7 +234,7 @@ public class RequestContext implements AutoCloseable {
     public RouteProvider getRouteProvider() {
         RouteProvider rp = new RouteProvider(em, user);
         rp.setDeviceProvider(getDeviceProvider());
-        rp.setGeofenceProvider(getGeoFenceProvider());
+        rp.setGeofenceProvider(getGeoFencesProvider());
         return rp;
     }
     

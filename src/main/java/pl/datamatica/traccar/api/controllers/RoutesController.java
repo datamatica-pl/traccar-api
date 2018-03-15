@@ -19,6 +19,8 @@ package pl.datamatica.traccar.api.controllers;
 import java.util.List;
 import java.util.stream.Collectors;
 import pl.datamatica.traccar.api.Application;
+import pl.datamatica.traccar.api.dtos.in.EditRouteDto;
+import pl.datamatica.traccar.api.dtos.out.ErrorDto;
 import pl.datamatica.traccar.api.dtos.out.RouteDto;
 import pl.datamatica.traccar.api.providers.ProviderException;
 import pl.datamatica.traccar.api.responses.HttpResponse;
@@ -37,6 +39,13 @@ public class RoutesController extends ControllerBase {
             Spark.get(baseUrl(), (req, res) -> {
                 RoutesController rc = createController(req);
                 return render(rc.get(), res);
+            }, gson::toJson);
+            
+            Spark.put(baseUrl()+"/:id", (req, res) -> {
+                RoutesController rc = createController(req);
+                long id = Long.parseLong(req.params(":id"));
+                EditRouteDto dto = gson.fromJson(req.body(), EditRouteDto.class);
+                return render(rc.put(id, dto), res);
             }, gson::toJson);
         }
 
@@ -57,6 +66,19 @@ public class RoutesController extends ControllerBase {
         List<RouteDto> dtos = requestContext.getRouteProvider().getAllAvailableRoutes(false)
                 .map(r -> new RouteDto.Builder().route(r).build()).collect(Collectors.toList());
         return ok(dtos);
+    }
+    
+    public HttpResponse put(long id, EditRouteDto dto) throws ProviderException {
+        List<ErrorDto> errors = EditRouteDto.validate(dto);
+        if(!errors.isEmpty())
+            return badRequest(errors);
+        
+        try {
+            requestContext.getRouteProvider().updateRoute(id, dto);
+            return ok("");
+        } catch(ProviderException e) {
+            return handle(e);
+        }
     }
     
 }

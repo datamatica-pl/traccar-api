@@ -16,12 +16,14 @@
  */
 package pl.datamatica.traccar.api.providers;
 
+import com.vividsolutions.jts.geom.Coordinate;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.stream.Stream;
 import javax.persistence.EntityManager;
+import javax.persistence.Query;
 import pl.datamatica.traccar.api.dtos.in.AddGeoFenceDto;
 import pl.datamatica.traccar.api.dtos.in.EditRouteDto;
 import pl.datamatica.traccar.api.dtos.in.RoutePointDto;
@@ -29,7 +31,9 @@ import pl.datamatica.traccar.model.DbRoute;
 import pl.datamatica.traccar.model.User;
 import pl.datamatica.traccar.model.UserPermission;
 import pl.datamatica.traccar.api.providers.ProviderException.Type;
+import pl.datamatica.traccar.api.reports.PolylineEncoder;
 import pl.datamatica.traccar.model.GeoFence;
+import pl.datamatica.traccar.model.GeoFence.LonLat;
 import pl.datamatica.traccar.model.GeoFenceType;
 import pl.datamatica.traccar.model.Route;
 import pl.datamatica.traccar.model.RoutePoint;
@@ -95,8 +99,39 @@ public class RouteProvider extends ProviderBase {
             r.setStatus(Route.Status.CANCELLED);
             r.setCancelTimestamp(new Date());
         }
+        if(r.getCorridor() != null) {
+            r.getCorridor().setUsers(null);
+            GeoFence corr = r.getCorridor();
+            r.setCorridor(null);
+            corr.setDevices(null);
+            em.flush();
+            Query q = em.createNativeQuery("delete from geofences where id = ?");
+            q.setParameter(1, corr.getId());
+            q.executeUpdate();
+        }
+        if(dto.getCorridorWidth() != null) {
+            GeoFence corr = new GeoFence();
+            corr.setType(GeoFenceType.LINE);
+            corr.setUsers(Collections.singleton(requestUser));
+            corr.setRouteOnly(true);
+            corr.setRadius(dto.getCorridorWidth());
+            StringBuilder sb = new StringBuilder();
+            List<LonLat> lls = PolylineEncoder.decode(r.getLinePoints());
+            for(LonLat coord : lls)
+                sb.append(coord.lon).append(" ").append(coord.lat).append(",");
+            if(sb.length() != 0)
+                sb.replace(sb.length()-1, sb.length()-1, "");
+            corr.setPoints(sb.toString());
+            if(r.getDevice() != null)
+                corr.setDevices(Collections.singleton(r.getDevice()));
+            em.persist(corr);
+            r.setCorridor(corr);
+        } else {
+            r.setCorridor(null);
+        }
         
-        r.getRoutePoints().clear();
+        r.getRoutePoints().removeIf(rp -> rp.getEnterTime() == null 
+                && rp.getExitTime() == null);
         List<GeoFence> gfs = new ArrayList<>();
         for(AddGeoFenceDto agf : dto.getNewGeofences()){
             GeoFence gf = new GeoFence();
@@ -105,6 +140,7 @@ public class RouteProvider extends ProviderBase {
             gf.setPoints(agf.getPointsString());
             gf.setRadius(agf.getRadius());
             gf.setType(GeoFenceType.CIRCLE);
+            gf.setName(agf.getGeofenceName());
             if(agf.getAddress() != null)
                 gf.setAddress(agf.getAddress());
             if(agf.getColor() != null)
@@ -115,12 +151,13 @@ public class RouteProvider extends ProviderBase {
             gfs.add(gf);
         }
         
-        int i = 0;
-        for(RoutePointDto rpd : dto.getPoints()) {
+        int i = 0, j = r.getRoutePoints().size();
+        for(;j < dto.getPoints().size();++j) {
+            RoutePointDto rpd = dto.getPoints().get(j);
             RoutePoint rp;
-            if(rpd.getId() != null && rpd.getId() != 0)
+            if(rpd.getId() != null && rpd.getId() != 0) {
                 rp = em.find(RoutePoint.class, rpd.getId());
-            else {
+            } else {
                 rp = new RoutePoint();
                 GeoFence gf;
                 if(rpd.getGeofenceId() != null && rpd.getGeofenceId() != 0)

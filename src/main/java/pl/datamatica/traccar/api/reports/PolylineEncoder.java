@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import pl.datamatica.traccar.model.Position;
 
 import java.util.List;
+import pl.datamatica.traccar.model.GeoFence.LonLat;
 
 /**
  * Methods to encode and decode a polyline with Google polyline encoding/decoding scheme.
@@ -77,22 +78,22 @@ public class PolylineEncoder {
         return encodedPoints.toString();
     }
     
-    public static Coordinate[] decode(String encoded) {
+    public static List<LonLat> decode(String encoded) {
         PolylineParser parser = new PolylineParser(encoded);
-        List<Coordinate> coords = new ArrayList<>();
+        List<LonLat> coords = new ArrayList<>();
         double lat = 0, lon = 0;
         while(parser.hasNext()) {
             int dLat = parser.parseNext();
             lat += dLat / 1.e5;
             int dLon = parser.parseNext();
             lon += dLon / 1.e5;
-            coords.add(new Coordinate(lon, lat));
+            coords.add(new LonLat(lon, lat));
         }
-        return coords.toArray(new Coordinate[0]);
+        return coords;
     }
     
     private static class PolylineParser {
-        private int i;
+        private int i = -1;
         private final String encoded;
         
         public PolylineParser(String encoded) {
@@ -100,7 +101,8 @@ public class PolylineEncoder {
         }
         
         public int parseNext() {
-            int res =0, s =0;
+            ++i;
+            int res = 0, s = 0;
             while((encoded.charAt(i) & 0x20) != 0) {
                 res |= ((encoded.charAt(i) - 63) & 0x1F) << s;
                 s+=5;

@@ -24,13 +24,13 @@ import pl.datamatica.traccar.api.dtos.out.ErrorDto;
 
 public class EditRouteDto extends RouteBaseDto {
     private final List<AddGeoFenceDto> newGeofences;
-    private final Integer corridorWidth;
+    private final Float corridorWidth;
     private final Boolean archive;
     private final Boolean cancel;
     
     public EditRouteDto(String name, Long deviceId, int tolerance, int archiveAfter, 
             boolean forceFirst, boolean forceLast, List<RoutePointDto> points, 
-            String polyline, List<AddGeoFenceDto> newGeofences, Integer corridorWidth,
+            String polyline, List<AddGeoFenceDto> newGeofences, Float corridorWidth,
             Boolean archive, Boolean cancel) {
         super(name, deviceId, tolerance, archiveAfter, forceFirst, forceLast, points, polyline);
         this.newGeofences = newGeofences;
@@ -43,7 +43,7 @@ public class EditRouteDto extends RouteBaseDto {
         return newGeofences;
     }
     
-    public Integer getCorridorWidth() {
+    public Float getCorridorWidth() {
         return corridorWidth;
     }
     
