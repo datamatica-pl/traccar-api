@@ -54,6 +54,12 @@ public class RoutesController extends ControllerBase {
                 EditRouteDto dto = gson.fromJson(req.body(), EditRouteDto.class);
                 return render(rc.post(dto), res);
             }, gson::toJson);
+            
+            Spark.delete(baseUrl()+"/:id", (req, res) -> {
+                RoutesController rc = createController(req);
+                long id = Long.parseLong(req.params(":id"));
+                return render(rc.delete(id), res);
+            }, gson::toJson);
         }
 
         private RoutesController createController(Request req) {
@@ -96,6 +102,15 @@ public class RoutesController extends ControllerBase {
         try {
             DbRoute r = requestContext.getRouteProvider().createRoute(dto);
             return created("routes/"+r.getId(), new RouteDto.Builder().route(r).build());
+        } catch(ProviderException e) {
+            return handle(e);
+        }
+    }
+    
+    public HttpResponse delete(long id) throws ProviderException {
+        try {
+            requestContext.getRouteProvider().deleteRoute(id);
+            return ok("");
         } catch(ProviderException e) {
             return handle(e);
         }

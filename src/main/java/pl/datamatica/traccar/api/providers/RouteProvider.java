@@ -20,10 +20,13 @@ import com.vividsolutions.jts.geom.Coordinate;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Stream;
 import javax.persistence.EntityManager;
 import javax.persistence.Query;
+import javax.persistence.TypedQuery;
 import pl.datamatica.traccar.api.dtos.in.AddGeoFenceDto;
 import pl.datamatica.traccar.api.dtos.in.EditRouteDto;
 import pl.datamatica.traccar.api.dtos.in.RoutePointDto;
@@ -78,11 +81,7 @@ public class RouteProvider extends ProviderBase {
     public DbRoute updateRoute(long id, EditRouteDto dto) throws ProviderException {
         if(!requestUser.hasPermission(UserPermission.TRACK_EDIT))
             throw new ProviderException(Type.ACCESS_DENIED);
-        DbRoute r = em.find(DbRoute.class, id);
-        if(r == null)
-            throw new ProviderException(Type.NOT_FOUND);
-        if(!requestUser.hasPermission(UserPermission.ALL_TRACKS) && !r.getOwner().equals(requestUser))
-            throw new ProviderException(Type.ACCESS_DENIED);
+        DbRoute r = get(DbRoute.class, id, this::isVisible);
         editFromDto(r, dto);
         return r;
     }
@@ -180,5 +179,44 @@ public class RouteProvider extends ProviderBase {
             }
             r.getRoutePoints().add(rp);
         }
+        em.flush();
+        deleteUnusedGeofences();
+    }
+
+    public void deleteRoute(long id) throws ProviderException {
+        if(!requestUser.hasPermission(UserPermission.TRACK_EDIT))
+            throw new ProviderException(Type.ACCESS_DENIED);
+        DbRoute r = get(DbRoute.class, id, this::isVisible);
+        if(r.getCorridor() != null) {
+            GeoFence corr = r.getCorridor();
+            r.setCorridor(null);
+            hardDeleteGeofence(corr);
+        }
+        em.remove(r);
+        em.flush();
+        deleteUnusedGeofences();
+    }
+
+    private void deleteUnusedGeofences() {
+        TypedQuery<GeoFence> gfs = em.createQuery("select g from GeoFence g where"
+                + " g.routeOnly = :true and g.type <> :line"
+                + " and not exists (from RoutePoint rp where rp.geofence = g)", GeoFence.class)
+                .setParameter("true", true).setParameter("line", GeoFenceType.LINE);
+        for(GeoFence gf : gfs.getResultList())
+            hardDeleteGeofence(gf);
+    }
+    
+    private void hardDeleteGeofence(GeoFence gf) {
+        gf.setDevices(null);
+        gf.setUsers(null);
+        em.flush();
+        Query q = em.createNativeQuery("delete from geofences where id = ?");
+        q.setParameter(1, gf.getId());
+        q.executeUpdate();
+    }
+    
+    private boolean isVisible(DbRoute r) {
+        return requestUser.hasPermission(UserPermission.ALL_TRACKS) ||
+                r.getOwner().equals(requestUser);
     }
 }
