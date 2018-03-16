@@ -85,7 +85,9 @@ public class PolylineEncoder {
         while(parser.hasNext()) {
             int dLat = parser.parseNext();
             lat += dLat / 1.e5;
-            int dLon = parser.parseNext();
+            int dLon = 0;
+            if(parser.hasNext())
+                dLon = parser.parseNext();
             lon += dLon / 1.e5;
             coords.add(new LonLat(lon, lat));
         }
@@ -103,7 +105,7 @@ public class PolylineEncoder {
         public int parseNext() {
             ++i;
             int res = 0, s = 0;
-            while((encoded.charAt(i) & 0x20) != 0) {
+            while(((encoded.charAt(i) - 63) & 0x20) != 0) {
                 res |= ((encoded.charAt(i) - 63) & 0x1F) << s;
                 s+=5;
                 ++i;

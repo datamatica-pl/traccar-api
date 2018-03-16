@@ -75,7 +75,7 @@ public class RouteProvider extends ProviderBase {
                 .getResultList().stream();
     }
     
-    public void updateRoute(long id, EditRouteDto dto) throws ProviderException {
+    public DbRoute updateRoute(long id, EditRouteDto dto) throws ProviderException {
         if(!requestUser.hasPermission(UserPermission.TRACK_EDIT))
             throw new ProviderException(Type.ACCESS_DENIED);
         DbRoute r = em.find(DbRoute.class, id);
@@ -83,7 +83,20 @@ public class RouteProvider extends ProviderBase {
             throw new ProviderException(Type.NOT_FOUND);
         if(!requestUser.hasPermission(UserPermission.ALL_TRACKS) && !r.getOwner().equals(requestUser))
             throw new ProviderException(Type.ACCESS_DENIED);
-        
+        editFromDto(r, dto);
+        return r;
+    }
+
+    public DbRoute createRoute(EditRouteDto dto) throws ProviderException {
+        if(!requestUser.hasPermission(UserPermission.TRACK_EDIT))
+            throw new ProviderException(Type.ACCESS_DENIED);
+        DbRoute r = new DbRoute();
+        editFromDto(r, dto);
+        em.persist(r);
+        return r;
+    }
+    
+    private void editFromDto(DbRoute r, EditRouteDto dto) throws ProviderException {
         r.setArchiveAfter(dto.getArchiveAfter());
         r.setName(dto.getName());
         r.setForceFirst(dto.getForceFirst());
@@ -129,7 +142,6 @@ public class RouteProvider extends ProviderBase {
         } else {
             r.setCorridor(null);
         }
-        
         r.getRoutePoints().removeIf(rp -> rp.getEnterTime() == null 
                 && rp.getExitTime() == null);
         List<GeoFence> gfs = new ArrayList<>();
@@ -150,7 +162,6 @@ public class RouteProvider extends ProviderBase {
             em.persist(gf);
             gfs.add(gf);
         }
-        
         int i = 0, j = r.getRoutePoints().size();
         for(;j < dto.getPoints().size();++j) {
             RoutePointDto rpd = dto.getPoints().get(j);

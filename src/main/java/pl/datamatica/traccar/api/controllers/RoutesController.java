@@ -24,6 +24,7 @@ import pl.datamatica.traccar.api.dtos.out.ErrorDto;
 import pl.datamatica.traccar.api.dtos.out.RouteDto;
 import pl.datamatica.traccar.api.providers.ProviderException;
 import pl.datamatica.traccar.api.responses.HttpResponse;
+import pl.datamatica.traccar.model.DbRoute;
 import spark.Request;
 import spark.Spark;
 
@@ -46,6 +47,12 @@ public class RoutesController extends ControllerBase {
                 long id = Long.parseLong(req.params(":id"));
                 EditRouteDto dto = gson.fromJson(req.body(), EditRouteDto.class);
                 return render(rc.put(id, dto), res);
+            }, gson::toJson);
+            
+            Spark.post(baseUrl(), (req, res) -> {
+                RoutesController rc = createController(req);
+                EditRouteDto dto = gson.fromJson(req.body(), EditRouteDto.class);
+                return render(rc.post(dto), res);
             }, gson::toJson);
         }
 
@@ -74,8 +81,21 @@ public class RoutesController extends ControllerBase {
             return badRequest(errors);
         
         try {
-            requestContext.getRouteProvider().updateRoute(id, dto);
-            return ok("");
+            DbRoute r = requestContext.getRouteProvider().updateRoute(id, dto);
+            return ok(new RouteDto.Builder().route(r).build());
+        } catch(ProviderException e) {
+            return handle(e);
+        }
+    }
+    
+    public HttpResponse post(EditRouteDto dto) throws ProviderException {
+        List<ErrorDto> errors = EditRouteDto.validate(dto);
+        if(!errors.isEmpty())
+            return badRequest(errors);
+        
+        try {
+            DbRoute r = requestContext.getRouteProvider().createRoute(dto);
+            return created("routes/"+r.getId(), new RouteDto.Builder().route(r).build());
         } catch(ProviderException e) {
             return handle(e);
         }
