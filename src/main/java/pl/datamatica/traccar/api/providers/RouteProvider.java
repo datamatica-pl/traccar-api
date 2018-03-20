@@ -16,13 +16,10 @@
  */
 package pl.datamatica.traccar.api.providers;
 
-import com.vividsolutions.jts.geom.Coordinate;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 import java.util.stream.Stream;
 import javax.persistence.EntityManager;
 import javax.persistence.Query;
@@ -103,8 +100,15 @@ public class RouteProvider extends ProviderBase {
         r.setLinePoints(dto.getPolyline());
         r.setOwner(requestUser);
         r.setTolerance(dto.getTolerance());
-        if(dto.getArchive() != null)
-            r.setArchived(dto.getArchive());
+        if(dto.getArchive() != null) {
+            if(r.isArchived() && !dto.getArchive()) {
+                r.setArchived(false);
+                r.setArchiveAfter(0);
+            }
+            if(!r.isArchived() && dto.getArchive()) {
+                r.setArchived(true);
+            }
+        }
         if(dto.getDeviceId() != null)
             r.setDevice(devices.getEditableDevice(dto.getDeviceId()));
         if(dto.getCancel() != null && dto.getCancel()) {
