@@ -39,7 +39,8 @@ public class RoutesController extends ControllerBase {
         public void bind() {
             Spark.get(baseUrl(), (req, res) -> {
                 RoutesController rc = createController(req);
-                return render(rc.get(), res);
+                boolean archived = "1".equals(req.params("archived"));
+                return render(rc.get(archived), res);
             }, gson::toJson);
             
             Spark.put(baseUrl()+"/:id", (req, res) -> {
@@ -75,8 +76,8 @@ public class RoutesController extends ControllerBase {
         super(requestContext);
     }
     
-    public HttpResponse<List<RouteDto>> get() throws ProviderException {
-        List<RouteDto> dtos = requestContext.getRouteProvider().getAllAvailableRoutes(false)
+    public HttpResponse<List<RouteDto>> get(boolean archive) throws ProviderException {
+        List<RouteDto> dtos = requestContext.getRouteProvider().getAllAvailableRoutes(archive)
                 .map(r -> new RouteDto.Builder().route(r).build()).collect(Collectors.toList());
         return ok(dtos);
     }
