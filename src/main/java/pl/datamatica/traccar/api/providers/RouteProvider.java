@@ -110,21 +110,14 @@ public class RouteProvider extends ProviderBase {
             r.setStatus(Route.Status.CANCELLED);
             r.setCancelTimestamp(new Date());
         }
-        if(r.getCorridor() != null) {
-            r.getCorridor().setUsers(null);
-            GeoFence corr = r.getCorridor();
-            r.setCorridor(null);
-            corr.setDevices(null);
-            em.flush();
-            Query q = em.createNativeQuery("delete from geofences where id = ?");
-            q.setParameter(1, corr.getId());
-            q.executeUpdate();
-        }
-        if(dto.getCorridorWidth() != null) {
-            GeoFence corr = new GeoFence();
+        GeoFence corr = r.getCorridor();
+        if(r.getCorridor() == null) {
+            corr = new GeoFence();
             corr.setType(GeoFenceType.LINE);
             corr.setUsers(Collections.singleton(requestUser));
             corr.setRouteOnly(true);
+        }
+        if(dto.getCorridorWidth() != null) {
             corr.setRadius(dto.getCorridorWidth());
             StringBuilder sb = new StringBuilder();
             List<LonLat> lls = PolylineEncoder.decode(r.getLinePoints());
