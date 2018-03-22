@@ -1,5 +1,5 @@
 /*
- *  Copyright (C) 2016  Datamatica (dev@datamatica.pl)
+ *  Copyright (C) 2018  Datamatica (dev@datamatica.pl)
  * 
  *   This program is free software: you can redistribute it and/or modify
  *   it under the terms of the GNU Affero General Public License as published
@@ -20,7 +20,7 @@ import java.util.Date;
 import java.util.List;
 import pl.datamatica.traccar.api.dtos.in.RouteBaseDto;
 import pl.datamatica.traccar.api.dtos.in.RoutePointDto;
-import pl.datamatica.traccar.model.DbRoute;
+import pl.datamatica.traccar.model.Route;
 
 /**
  *
@@ -76,7 +76,7 @@ public class RouteDto extends RouteBaseDto {
         }
         
         @Override
-        public Builder route(DbRoute route) {
+        public Builder route(Route route) {
             super.route(route);
             if(route.getCorridor() != null)
                 corridorId(route.getCorridor().getId());

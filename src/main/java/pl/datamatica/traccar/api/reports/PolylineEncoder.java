@@ -95,7 +95,7 @@ public class PolylineEncoder {
     }
     
     private static class PolylineParser {
-        private int i = -1;
+        private int i = 0;
         private final String encoded;
         
         public PolylineParser(String encoded) {
@@ -103,13 +103,13 @@ public class PolylineEncoder {
         }
         
         public int parseNext() {
-            ++i;
             int res = 0, s = 0;
             while(((encoded.charAt(i) - 63) & 0x20) != 0) {
                 res |= ((encoded.charAt(i) - 63) & 0x1F) << s;
                 s+=5;
                 ++i;
             }
+            res |= ((encoded.charAt(i++) - 63) & 0x1F) << s;
             if((res & 1) != 0) {
                 res = ~res;
             }
@@ -118,7 +118,7 @@ public class PolylineEncoder {
         }
         
         public boolean hasNext() {
-            return encoded.length() - 1 > i;
+            return encoded.length() > i;
         }
     }
 }

@@ -27,7 +27,6 @@ import javax.persistence.TypedQuery;
 import pl.datamatica.traccar.api.dtos.in.AddGeoFenceDto;
 import pl.datamatica.traccar.api.dtos.in.EditRouteDto;
 import pl.datamatica.traccar.api.dtos.in.RoutePointDto;
-import pl.datamatica.traccar.model.DbRoute;
 import pl.datamatica.traccar.model.User;
 import pl.datamatica.traccar.model.UserPermission;
 import pl.datamatica.traccar.api.providers.ProviderException.Type;
@@ -43,7 +42,7 @@ import pl.datamatica.traccar.model.RoutePoint;
  * @author ŁŁ
  */
 public class RouteProvider extends ProviderBase {
-    private final String SELECT_WITH_JOINS = "select distinct r from DbRoute r left join fetch r.device"
+    private final String SELECT_WITH_JOINS = "select distinct r from Route r left join fetch r.device"
             + " left join fetch r.routePoints rp left join fetch rp.geofence"
             + " left join fetch r.corridor";
     
@@ -64,35 +63,34 @@ public class RouteProvider extends ProviderBase {
         this.geofences = geofences;
     }
     
-    public Stream<DbRoute> getAllAvailableRoutes(boolean archive) throws ProviderException {
+    public Stream<Route> getAllAvailableRoutes(boolean archive) throws ProviderException {
         if(!requestUser.hasPermission(UserPermission.TRACK_READ))
             throw new ProviderException(Type.ACCESS_DENIED);
         if(requestUser.hasPermission(UserPermission.ALL_TRACKS))
-            return em.createQuery(SELECT_WITH_JOINS+" where r.archive = :archive", DbRoute.class)
+            return em.createQuery(SELECT_WITH_JOINS+" where r.archive = :archive", Route.class)
                     .setParameter("archive", archive).getResultList().stream();
-        return em.createQuery(SELECT_WITH_JOINS+" where r.owner = :user and r.archive = :archive", DbRoute.class)
+        return em.createQuery(SELECT_WITH_JOINS+" where r.owner = :user and r.archive = :archive", Route.class)
                 .setParameter("user", requestUser).setParameter("archive", archive)
                 .getResultList().stream();
     }
     
-    public DbRoute updateRoute(long id, EditRouteDto dto) throws ProviderException {
+    public Route updateRoute(long id, EditRouteDto dto) throws ProviderException {
         if(!requestUser.hasPermission(UserPermission.TRACK_EDIT))
             throw new ProviderException(Type.ACCESS_DENIED);
-        DbRoute r = get(DbRoute.class, id, this::isVisible);
+        Route r = get(Route.class, id, this::isVisible);
         editFromDto(r, dto);
         return r;
     }
 
-    public DbRoute createRoute(EditRouteDto dto) throws ProviderException {
+    public Route createRoute(EditRouteDto dto) throws ProviderException {
         if(!requestUser.hasPermission(UserPermission.TRACK_EDIT))
             throw new ProviderException(Type.ACCESS_DENIED);
-        DbRoute r = new DbRoute();
+        Route r = new Route();
         editFromDto(r, dto);
-        em.persist(r);
         return r;
     }
     
-    private void editFromDto(DbRoute r, EditRouteDto dto) throws ProviderException {
+    private void editFromDto(Route r, EditRouteDto dto) throws ProviderException {
         r.setArchiveAfter(dto.getArchiveAfter());
         r.setName(dto.getName());
         r.setForceFirst(dto.getForceFirst());
@@ -102,12 +100,9 @@ public class RouteProvider extends ProviderBase {
         r.setTolerance(dto.getTolerance());
         if(dto.getArchive() != null) {
             if(r.isArchived() && !dto.getArchive()) {
-                r.setArchived(false);
                 r.setArchiveAfter(0);
             }
-            if(!r.isArchived() && dto.getArchive()) {
-                r.setArchived(true);
-            }
+            r.setArchived(dto.getArchive());
         }
         if(dto.getDeviceId() != null)
             r.setDevice(devices.getEditableDevice(dto.getDeviceId()));
@@ -184,13 +179,14 @@ public class RouteProvider extends ProviderBase {
             r.getRoutePoints().add(rp);
         }
         em.flush();
+        em.persist(r);
         deleteUnusedGeofences();
     }
 
     public void deleteRoute(long id) throws ProviderException {
         if(!requestUser.hasPermission(UserPermission.TRACK_EDIT))
             throw new ProviderException(Type.ACCESS_DENIED);
-        DbRoute r = get(DbRoute.class, id, this::isVisible);
+        Route r = get(Route.class, id, this::isVisible);
         if(r.getCorridor() != null) {
             GeoFence corr = r.getCorridor();
             r.setCorridor(null);
@@ -219,7 +215,7 @@ public class RouteProvider extends ProviderBase {
         q.executeUpdate();
     }
     
-    private boolean isVisible(DbRoute r) {
+    private boolean isVisible(Route r) {
         return requestUser.hasPermission(UserPermission.ALL_TRACKS) ||
                 r.getOwner().equals(requestUser);
     }

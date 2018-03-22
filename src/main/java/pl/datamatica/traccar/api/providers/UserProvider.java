@@ -268,7 +268,7 @@ public class UserProvider extends ProviderBase {
         em.flush();
 
         // tracks
-        query = em.createQuery("DELETE FROM DbRoute r WHERE r.owner = :owner");
+        query = em.createQuery("DELETE FROM Route r WHERE r.owner = :owner");
         query.setParameter("owner", user);
         query.executeUpdate();
         

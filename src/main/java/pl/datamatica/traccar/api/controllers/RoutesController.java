@@ -24,7 +24,7 @@ import pl.datamatica.traccar.api.dtos.out.ErrorDto;
 import pl.datamatica.traccar.api.dtos.out.RouteDto;
 import pl.datamatica.traccar.api.providers.ProviderException;
 import pl.datamatica.traccar.api.responses.HttpResponse;
-import pl.datamatica.traccar.model.DbRoute;
+import pl.datamatica.traccar.model.Route;
 import spark.Request;
 import spark.Spark;
 
@@ -39,7 +39,7 @@ public class RoutesController extends ControllerBase {
         public void bind() {
             Spark.get(baseUrl(), (req, res) -> {
                 RoutesController rc = createController(req);
-                boolean archived = "1".equals(req.params("archived"));
+                boolean archived = "true".equals(req.queryParams("archived"));
                 return render(rc.get(archived), res);
             }, gson::toJson);
             
@@ -88,7 +88,7 @@ public class RoutesController extends ControllerBase {
             return badRequest(errors);
         
         try {
-            DbRoute r = requestContext.getRouteProvider().updateRoute(id, dto);
+            Route r = requestContext.getRouteProvider().updateRoute(id, dto);
             return ok(new RouteDto.Builder().route(r).build());
         } catch(ProviderException e) {
             return handle(e);
@@ -101,7 +101,7 @@ public class RoutesController extends ControllerBase {
             return badRequest(errors);
         
         try {
-            DbRoute r = requestContext.getRouteProvider().createRoute(dto);
+            Route r = requestContext.getRouteProvider().createRoute(dto);
             return created("routes/"+r.getId(), new RouteDto.Builder().route(r).build());
         } catch(ProviderException e) {
             return handle(e);
