@@ -78,7 +78,7 @@ public class EditRouteDto extends RouteBaseDto {
         if(dto.getPolyline() == null)
             errors.add(new ErrorDto(MessageKeys.ERR_ROUTE_POLYLINE_NOT_PROVIDED));
         for(AddGeoFenceDto gf : dto.getNewGeofences())
-            errors.addAll(AddGeoFenceDto.validateRoute(gf));
+            errors.addAll(AddGeoFenceDto.validateGeofenceFromRoute(gf));
         return errors;
     }
 }
