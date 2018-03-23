@@ -149,4 +149,14 @@ public class MessageKeys {
     public static final String ERR_USER_GROUP_DELETING_DEFAULT = "err_user_group_deleting_default";
     public static final String ERR_USER_GROUP_LACKING_BASE_PERMISSIONS = "err_user_group_lacking_base_permissions";
     public static final String ERR_RULES_NOT_ACCEPTED = "err_rules_not_accepted";
+    
+    public static final String ERR_ROUTE_NAME_NOT_PROVIDED = "err_route_name_not_provided";
+    public static final String ERR_ROUTE_TOLERANCE_NOT_PROVIDED = "err_route_tolerance_not_provided";
+    public static final String ERR_ROUTE_FORCE_FIRST_NOT_PROVIDED = "err_route_force_first_not_provided";
+    public static final String ERR_ROUTE_FORCE_LAST_NOT_PROVIDED = "err_route_force_last_not_provided";
+    public static final String ERR_ROUTE_ARCHIVE_AFTER_NOT_PROVIDED = "err_route_archive_after_not_provided";
+    public static final String ERR_ROUTE_POINTS_NOT_PROVIDED = "err_route_points_not_provided";
+    public static final String ERR_ROUTE_POLYLINE_NOT_PROVIDED = "err_route_polyline_not_provided";
+    public static final String ERR_ROUTE_POINT_GEOFENCE_NOT_PROVIDED = "err_route_point_geofence_not_provided";
+    public static final String ERR_ROUTE_POINT_DEADLINE_NOT_PROVIDED = "err_route_point_deadline_not_provided";
 }

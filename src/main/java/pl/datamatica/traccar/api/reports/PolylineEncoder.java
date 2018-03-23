@@ -1,10 +1,11 @@
 package pl.datamatica.traccar.api.reports;
 
 import com.vividsolutions.jts.geom.Coordinate;
+import java.util.ArrayList;
 import pl.datamatica.traccar.model.Position;
 
 import java.util.List;
-import org.postgis.Point;
+import pl.datamatica.traccar.model.GeoFence.LonLat;
 
 /**
  * Methods to encode and decode a polyline with Google polyline encoding/decoding scheme.
@@ -75,5 +76,49 @@ public class PolylineEncoder {
             prev_lng = lng;
         }
         return encodedPoints.toString();
+    }
+    
+    public static List<LonLat> decode(String encoded) {
+        PolylineParser parser = new PolylineParser(encoded);
+        List<LonLat> coords = new ArrayList<>();
+        double lat = 0, lon = 0;
+        while(parser.hasNext()) {
+            int dLat = parser.parseNext();
+            lat += dLat / 1.e5;
+            int dLon = 0;
+            if(parser.hasNext())
+                dLon = parser.parseNext();
+            lon += dLon / 1.e5;
+            coords.add(new LonLat(lon, lat));
+        }
+        return coords;
+    }
+    
+    private static class PolylineParser {
+        private int i = 0;
+        private final String encoded;
+        
+        public PolylineParser(String encoded) {
+            this.encoded = encoded;
+        }
+        
+        public int parseNext() {
+            int res = 0, s = 0;
+            while(((encoded.charAt(i) - 63) & 0x20) != 0) {
+                res |= ((encoded.charAt(i) - 63) & 0x1F) << s;
+                s+=5;
+                ++i;
+            }
+            res |= ((encoded.charAt(i++) - 63) & 0x1F) << s;
+            if((res & 1) != 0) {
+                res = ~res;
+            }
+            res >>= 1;
+            return res;
+        }
+        
+        public boolean hasNext() {
+            return encoded.length() > i;
+        }
     }
 }

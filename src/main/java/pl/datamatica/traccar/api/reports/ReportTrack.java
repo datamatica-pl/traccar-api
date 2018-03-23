@@ -16,7 +16,6 @@
  */
 package pl.datamatica.traccar.api.reports;
 
-import com.vividsolutions.jts.geom.LineString;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -29,7 +28,6 @@ import java.util.stream.Collectors;
 import pl.datamatica.traccar.api.dtos.out.ReportDto;
 import pl.datamatica.traccar.api.providers.ProviderException;
 import pl.datamatica.traccar.api.utils.GeoFenceCalculator;
-import pl.datamatica.traccar.model.DbRoute;
 import pl.datamatica.traccar.model.DeviceEvent;
 import pl.datamatica.traccar.model.DeviceEventType;
 import pl.datamatica.traccar.model.GeoFence;
@@ -46,7 +44,7 @@ public class ReportTrack extends ReportGenerator{
 
     @Override
     void generateImpl(ReportDto report) throws IOException, ProviderException {
-        DbRoute route = entityManager.find(DbRoute.class, report.getRouteId());
+        Route route = entityManager.find(Route.class, report.getRouteId());
         Date from = getFromDate(report, route.getDevice());
         
         h2(report.getName());
@@ -117,7 +115,7 @@ public class ReportTrack extends ReportGenerator{
         if(report.isIncludeMap() && !alle.isEmpty()) {
             html("</div>");
             html("<div class=\"col-md-6\">");
-            drawMap(alle, gfs, route.getLineString(), rpe.size());
+            drawMap(alle, gfs, route.getLinePoints(), rpe.size());
             html("</div>");
         }
     }
@@ -190,10 +188,10 @@ public class ReportTrack extends ReportGenerator{
         return result;
     }
 
-    void drawMap(List<DeviceEvent> events, Collection<GeoFence> gfs, LineString ls,
+    void drawMap(List<DeviceEvent> events, Collection<GeoFence> gfs, String ls,
             int corridorOff) {
         MapBuilder builder = getMapBuilder();
-        builder.polyline(ls.getCoordinates(), "#808080", 3);
+        builder.polyline(ls, "#808080", 3);
         for(DeviceEvent ev : events) {
             System.out.println(ev.getTime()+"");
             builder.marker(ev.getPosition(), 

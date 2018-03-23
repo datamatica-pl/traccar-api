@@ -33,7 +33,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pl.datamatica.traccar.api.utils.GeoFenceCalculator;
 import pl.datamatica.traccar.api.utils.GeoUtils;
-import pl.datamatica.traccar.model.DbRoute;
 import static pl.datamatica.traccar.model.DeviceEventType.*;
 import pl.datamatica.traccar.model.LastDeviceEventTime;
 import pl.datamatica.traccar.model.Route;
@@ -479,17 +478,17 @@ public class EventDaemon {
     
     public static class RoutesDetector extends EventProducer {
         GeoFenceCalculator gfCalc;
-        Map<DbRoute, List<RoutePoint>> unvisited = new HashMap<>(); 
+        Map<Route, List<RoutePoint>> unvisited = new HashMap<>(); 
         
         @Override
         void before() {
             Map<Long, GeoFence> gfs = new HashMap<>();
-            List<DbRoute> routes = entityManager.createQuery("SELECT r FROM DbRoute r "
+            List<Route> routes = entityManager.createQuery("SELECT r FROM Route r "
                     + "LEFT JOIN FETCH r.routePoints "
-                    + "WHERE r.device IS NOT NULL AND r.status IN (:status)", DbRoute.class)
+                    + "WHERE r.device IS NOT NULL AND r.status IN (:status)", Route.class)
                     .setParameter("status", EnumSet.of(Route.Status.NEW, Route.Status.IN_PROGRESS_OK, Route.Status.IN_PROGRESS_LATE))
                     .getResultList();
-            for(DbRoute r : routes) {
+            for(Route r : routes) {
                 if(r.getRoutePoints().get(0).getDeadline() == null)
                     continue;
                 unvisited.put(r, new ArrayList<>());
@@ -515,7 +514,7 @@ public class EventDaemon {
 
         @Override
         void positionScanned(Position prevPosition, Position position) {            
-            for(DbRoute route : unvisited.keySet()) {
+            for(Route route : unvisited.keySet()) {
                 Date start = new Date(route.getRoutePoints().get(0).getDeadline().getTime() - route.getTolerance()*60*1000);
                 if(position.getTime().before(start))
                     continue;
@@ -581,13 +580,13 @@ public class EventDaemon {
 
         @Override
         void before() {
-            List<DbRoute> routes = entityManager.createQuery("SELECT r FROM DbRoute r "
+            List<Route> routes = entityManager.createQuery("SELECT r FROM Route r "
                     + "LEFT JOIN FETCH r.routePoints "
-                    + "WHERE r.device IS NOT NULL AND r.status IN (:status) AND archive = :false", DbRoute.class)
+                    + "WHERE r.device IS NOT NULL AND r.status IN (:status) AND archive = :false", Route.class)
                     .setParameter("status", EnumSet.of(Route.Status.FINISHED_OK, Route.Status.FINISHED_LATE, Route.Status.CANCELLED))
                     .setParameter("false", false)
                     .getResultList();
-            for(DbRoute r : routes) {
+            for(Route r : routes) {
                 if(r.getArchiveAfter() <= 0)
                     continue;
                 Date finish = new Date(System.currentTimeMillis() - r.getArchiveAfter()*24*60L*60*1000);
