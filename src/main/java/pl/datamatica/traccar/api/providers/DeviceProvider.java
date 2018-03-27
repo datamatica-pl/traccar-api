@@ -421,6 +421,8 @@ public class DeviceProvider extends ProviderBase {
             else
                 try {
                     Date date = dateFormat.parse(changes.get("validTo").getAsString());
+                    //Handling different server timezone, time should be truncated anyway
+                    date = new Date(date.getTime() + 12*60*60*1000);
                     d.setValidTo(date);
                 } catch (ParseException ex) {
                     throw new IllegalArgumentException("Unparseable validTo");
