@@ -22,6 +22,7 @@ import java.io.PrintWriter;
 import java.text.SimpleDateFormat;
 import pl.datamatica.traccar.api.dtos.out.ReportDto;
 import pl.datamatica.traccar.model.ReportType;
+import org.apache.commons.lang3.StringUtils;
 
 public class HtmlReportRenderer implements IReportRenderer {
     final HttpServletResponse response;
@@ -77,28 +78,28 @@ public class HtmlReportRenderer implements IReportRenderer {
 
     @Override
     public void h1(String text) {
-        line("<h1>" + text + "</h1>");
+        line("<h1>" + StringUtils.defaultString(text) + "</h1>");
     }
 
     @Override
     public void h2(String text) {
-        line("<h2>" + text + "</h2>");
+        line("<h2>" + StringUtils.defaultString(text) + "</h2>");
     }
 
     @Override
     public void h3(String text) {
-        line("<h3>" + text + "</h3>");
+        line("<h3>" + StringUtils.defaultString(text) + "</h3>");
     }
 
     @Override
     public void text(String text) {
-        writer.write(text);
+        writer.write(StringUtils.defaultString(text));
     }
 
     @Override
     public void bold(String text) {
         writer.write("<strong>");
-        writer.write(text);
+        writer.write(StringUtils.defaultString(text));
         writer.write("</strong>");
     }
 
@@ -225,7 +226,7 @@ public class HtmlReportRenderer implements IReportRenderer {
             writer.write("\"");
         }
         writer.write(">");
-        writer.write(text);
+        writer.write(StringUtils.defaultString(text));
         writer.write("</a>");
     }
 
