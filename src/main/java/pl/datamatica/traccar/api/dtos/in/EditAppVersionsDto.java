@@ -68,7 +68,6 @@ public class EditAppVersionsDto {
         if (dto == null)
             return Collections.singletonList(new ErrorDto(MessageKeys.ERR_DATA_NOT_PROVIDED));
         
-        String versionRegex = "^(\\d+)\\.(\\d+)\\.(\\d+)$";
         List<ErrorDto> errors = new ArrayList<>();
         if (dto.iosVersion == null ||
                 dto.iosRequired == null ||
@@ -78,12 +77,16 @@ public class EditAppVersionsDto {
         }
         else {
             // if versions are provided then check their format
+            String versionRegex = "^(\\d+)\\.(\\d+)\\.(\\d+)$";
             if (!dto.iosVersion.matches(versionRegex) ||
                     !dto.iosRequired.matches(versionRegex) ||
                     !dto.androidVersion.matches(versionRegex) ||
                     !dto.androidRequired.matches(versionRegex))
                 errors.add(new ErrorDto(MessageKeys.ERR_APPVERSIONS_VERSION_REGEX_MISMATCH));
         }
+        if ((dto.messageKey == null || dto.messageKey.isEmpty()) && 
+                (dto.messageUrl != null || dto.localizedMessage != null))
+            errors.add(new ErrorDto(MessageKeys.ERR_APPVERSIONS_MESSAGE_KEY_IS_REQUIRED_FOR_MESSAGES));
         if (dto.messageUrl != null && 
                 (!dto.messageUrl.startsWith("http://") && !dto.messageUrl.startsWith("https://")))
             errors.add(new ErrorDto(MessageKeys.ERR_APPVERSIONS_MESSAGE_URL_INVALID_PROTOCOL));
