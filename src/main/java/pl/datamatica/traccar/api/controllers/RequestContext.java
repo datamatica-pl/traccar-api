@@ -25,27 +25,7 @@ import javax.persistence.EntityManager;
 import javax.persistence.EntityTransaction;
 import pl.datamatica.traccar.api.Application;
 import pl.datamatica.traccar.api.Context;
-import pl.datamatica.traccar.api.providers.AlertProvider;
-import pl.datamatica.traccar.api.providers.ApplicationSettingsProvider;
-import pl.datamatica.traccar.api.providers.AuditLogProvider;
-import pl.datamatica.traccar.api.providers.DeviceIconProvider;
-import pl.datamatica.traccar.api.providers.DeviceModelProvider;
-import pl.datamatica.traccar.api.providers.DeviceProvider;
-import pl.datamatica.traccar.api.providers.FileProvider;
-import pl.datamatica.traccar.api.providers.GeoFenceProvider;
-import pl.datamatica.traccar.api.providers.DeviceGroupProvider;
-import pl.datamatica.traccar.api.providers.ImageProvider;
-import pl.datamatica.traccar.api.providers.ImeiProvider;
-import pl.datamatica.traccar.api.providers.MailSender;
-import pl.datamatica.traccar.api.providers.MessageProvider;
-import pl.datamatica.traccar.api.providers.NotificationSettingsProvider;
-import pl.datamatica.traccar.api.providers.PicturesProvider;
-import pl.datamatica.traccar.api.providers.PositionProvider;
-import pl.datamatica.traccar.api.providers.ReportProvider;
-import pl.datamatica.traccar.api.providers.RouteProvider;
-import pl.datamatica.traccar.api.providers.RulesProvider;
-import pl.datamatica.traccar.api.providers.UserGroupProvider;
-import pl.datamatica.traccar.api.providers.UserProvider;
+import pl.datamatica.traccar.api.providers.*;
 import pl.datamatica.traccar.api.reports.ReportGenerator;
 import pl.datamatica.traccar.api.reports.ReportGeneratorFactory;
 import pl.datamatica.traccar.api.utils.DateUtil;
@@ -73,6 +53,7 @@ public class RequestContext implements AutoCloseable {
     private DeviceProvider devices;
     private UserProvider users;
     private ApplicationSettingsProvider appSettings;
+    private AppVersionsProvider appVersions;
     private FileProvider files;
     private ImageProvider images;
     private PositionProvider positions;
@@ -133,6 +114,13 @@ public class RequestContext implements AutoCloseable {
             appSettings = new ApplicationSettingsProvider(em);
         }
         return appSettings;
+    }
+
+    public AppVersionsProvider getAppVersionsProvider() {
+        if(appVersions == null) {
+            appVersions = new AppVersionsProvider(em);
+        }
+        return appVersions;
     }
     
     public FileProvider getFileProvider() throws Exception {
