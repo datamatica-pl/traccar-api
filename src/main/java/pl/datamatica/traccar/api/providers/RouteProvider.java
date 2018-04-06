@@ -31,6 +31,7 @@ import pl.datamatica.traccar.model.User;
 import pl.datamatica.traccar.model.UserPermission;
 import pl.datamatica.traccar.api.providers.ProviderException.Type;
 import pl.datamatica.traccar.api.reports.PolylineEncoder;
+import pl.datamatica.traccar.model.Device;
 import pl.datamatica.traccar.model.GeoFence;
 import pl.datamatica.traccar.model.GeoFence.LonLat;
 import pl.datamatica.traccar.model.GeoFenceType;
@@ -91,6 +92,13 @@ public class RouteProvider extends ProviderBase {
     }
     
     private void editFromDto(Route r, EditRouteDto dto) throws ProviderException {
+        Device device = null;
+        if(dto.getDeviceId() != null) {
+            device = devices.getEditableDevice(dto.getDeviceId());
+            if(!device.isValid(new Date()))
+                throw new ProviderException(Type.BAD_REQUEST);
+            r.setDevice(device);
+        }
         r.setArchiveAfter(dto.getArchiveAfter());
         r.setName(dto.getName());
         r.setForceFirst(dto.getForceFirst());
@@ -104,8 +112,6 @@ public class RouteProvider extends ProviderBase {
             }
             r.setArchived(dto.getArchive());
         }
-        if(dto.getDeviceId() != null)
-            r.setDevice(devices.getEditableDevice(dto.getDeviceId()));
         if(dto.getCancel() != null && dto.getCancel()) {
             r.setStatus(Route.Status.CANCELLED);
             r.setCancelTimestamp(new Date());
@@ -116,6 +122,8 @@ public class RouteProvider extends ProviderBase {
             corr.setType(GeoFenceType.LINE);
             corr.setUsers(Collections.singleton(requestUser));
             corr.setRouteOnly(true);
+            if(device != null)
+                corr.setDevices(Collections.singleton(device));
         }
         if(dto.getCorridorWidth() != null) {
             corr.setRadius(dto.getCorridorWidth());
