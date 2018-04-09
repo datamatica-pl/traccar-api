@@ -53,7 +53,7 @@ public class MapBuilder {
     public MapBuilder polyline(String polyStr, String color, int width) {
         String id = "v"+vectors.size();
         StringBuilder sb = new StringBuilder();
-        sb.append("var ").append(id).append(" = polyline('").append(polyStr).append("');\r\n");
+        sb.append("var ").append(id).append(" = polyline('").append(polyStr.replace("\\", "\\\\")).append("');\r\n");
         sb.append(id).append(".setStyle(new ol.style.Style({ stroke: new ol.style.Stroke({color: '").append(color).append("', width: ").append(width).append("})}));\r\n");
         
         vectors.add(sb.toString());
