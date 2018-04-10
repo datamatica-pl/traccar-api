@@ -16,29 +16,6 @@ var imeiManager = {
             return $bootstrapAlert;
         }
     },
-    imeiBackupStorage : {
-        addImei: function(imei, value) {
-            if (typeof(Storage) !== "undefined") {
-                localStorage.setItem(imei, value);
-            }
-        },
-        removeImei: function(imei) {
-            if (typeof(Storage) !== "undefined") {
-                localStorage.setItem(imei, "deleted");
-            }
-        },
-        refreshLocalImeis: function() {
-            $imeiNumberRows = $('#imei-numbers')
-                                .find('tbody')
-                                .find('tr');
-
-            $imeiNumberRows.each(function() {
-                var $row = $(this);
-                var imeiObj = $row.data('imei-obj');
-                imeiManager.imeiBackupStorage.addImei(imeiObj.imei, JSON.stringify(imeiObj));
-            });
-        }
-    },
     getImeiJsonFromForm: function($form) {
         var $form_inputs = $form.find('.form-control');
         
@@ -106,9 +83,6 @@ var imeiManager = {
 }
 
 $(function() {
-    
-    imeiManager.imeiBackupStorage.refreshLocalImeis();
-    
     // Fill device model select options on new IMEI modal on page load
     $('#new-imei-modal')
             .find('.form-control.device-model')
@@ -131,8 +105,6 @@ $(function() {
                 success: function(result) {
                     var $alertEl = imeiManager.bootstrapAlertsFactory.getAlertEl('success', result);
                     var $rowToDelete = $delButton.closest('tr');
-                    
-                    imeiManager.imeiBackupStorage.removeImei( $rowToDelete.find('td.imei').text() );
                     
                     $rowToDelete.remove();
                     $("#imei-numbers").before($alertEl);
