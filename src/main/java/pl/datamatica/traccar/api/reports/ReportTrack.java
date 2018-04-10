@@ -107,7 +107,7 @@ public class ReportTrack extends ReportGenerator{
         
         if(route.getCorridor() != null) {
             List<DeviceEvent> core = calculate(Collections.singleton(route.getCorridor()), history);
-            drawTable("core", core, "report_header_route_corridor");
+            drawTable("core", core, null);
             alle.addAll(core);
             gfs.add(route.getCorridor());
         }
@@ -129,8 +129,11 @@ public class ReportTrack extends ReportGenerator{
         tableHeadStart();
         tableRowStart();
 
-        String[] GFIO_report_headers = new String[]{ptHeader, 
-            "report_time", "report_event"};
+        String[] GFIO_report_headers;
+        if(ptHeader == null)
+            GFIO_report_headers = new String[]{"report_time", "report_event"};
+        else
+            GFIO_report_headers = new String[]{ptHeader, "report_time", "report_event"};
 
         for (String report_header : GFIO_report_headers) {
             tableHeadCellStart();
@@ -146,7 +149,8 @@ public class ReportTrack extends ReportGenerator{
 
         for (DeviceEvent data : datas) {
             tableRowStart();
-            tableCell(data.getGeoFence().getName());
+            if(ptHeader != null)
+                tableCell(data.getGeoFence().getName());
             tableCell(formatDate(data.getTime()));
             tableCell(message("report_event_" + data.getType().name().toLowerCase()));
             extentCell(data.getPosition(), data.getPosition());
