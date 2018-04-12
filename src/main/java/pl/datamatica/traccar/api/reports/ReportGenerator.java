@@ -418,7 +418,11 @@ public abstract class ReportGenerator {
         } else {
             geoFences = new ArrayList<>(report.getGeofenceIds().size());
             for (long id : report.getGeofenceIds()) {
-                geoFences.add(gfProvider.getGeoFence(id));
+                try {
+                    geoFences.add(gfProvider.getGeoFence(id));
+                } catch(ProviderException e) {
+                    //not found or access denied
+                }
             }
         }
         // filter device-specific geo-fences that are not assigned to device from method arguments
