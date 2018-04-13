@@ -66,6 +66,7 @@ public abstract class ReportGenerator {
     private TimeZone timeZone;
     private DeviceIconProvider iconsProvider;
     private Map<Long, IconData> icons;
+    private int mapCnt = 0;
     
     abstract void generateImpl(ReportDto report) throws IOException, ProviderException;
 
@@ -302,15 +303,18 @@ public abstract class ReportGenerator {
     }
     
     void extentCell(Position p1, Position p2) {
-        String extent = new MapBuilder.MapBoundsBuilder()
+        extentCell(new MapBuilder.MapBoundsBuilder()
                 .addPosition(p1)
-                .addPosition(p2)
-                .create(5e-3);
+                .addPosition(p2));
+    }
+
+    void extentCell(MapBuilder.MapBoundsBuilder builder) {
+        String extent = builder.create(5e-3);
         tableCellStart(new HtmlReportRenderer.CellStyle().hidden(true).id("ext"));
         text(extent);
         tableCellEnd();
     }
-
+    
     public void tableCellStart(IReportRenderer.CellStyle style) {
         renderer.tableCellStart(style);
     }
@@ -335,8 +339,8 @@ public abstract class ReportGenerator {
     }
     
     protected MapBuilder getMapBuilder() {
-        return new MapBuilder("100%", DEFAULT_TABLE_HEIGHT+"px", icons, 
-            applicationSettings.getDefaultIconId());
+        return new MapBuilder("map"+mapCnt++, "100%", DEFAULT_TABLE_HEIGHT+"px", 
+                icons, applicationSettings.getDefaultIconId());
     }
     
     void html(String html) {

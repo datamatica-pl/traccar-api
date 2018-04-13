@@ -30,14 +30,16 @@ import pl.datamatica.traccar.model.Position;
 public class MapBuilder {    
     private final List<String> vectors = new ArrayList<>();
     private final List<String> markers = new ArrayList<>();
-    private final String width, height;
+    private final String mapId, width, height;
     private List<String> tableIds = new ArrayList<>();
     private List<Integer> tableStartRows = new ArrayList<>();
     private List<Integer> featOffs = new ArrayList<>();
     
-    public MapBuilder(String width, String height, Map<Long, IconData> icons, long defIconId) {
+    public MapBuilder(String id, String width, String height, 
+            Map<Long, IconData> icons, long defIconId) {
         this.width = width;
         this.height = height;
+        this.mapId = id;
         MarkerStyle.icons = icons;
         MarkerStyle.defaultIconId = defIconId;
     }
@@ -51,7 +53,7 @@ public class MapBuilder {
     }
     
     public MapBuilder polyline(String polyStr, String color, int width) {
-        String id = "v"+vectors.size();
+        String id = mapId+"_v"+vectors.size();
         StringBuilder sb = new StringBuilder();
         sb.append("var ").append(id).append(" = polyline('").append(polyStr.replace("\\", "\\\\")).append("');\r\n");
         sb.append(id).append(".setStyle(new ol.style.Style({ stroke: new ol.style.Stroke({color: '").append(color).append("', width: ").append(width).append("})}));\r\n");
@@ -61,7 +63,7 @@ public class MapBuilder {
     }
     
     public MapBuilder marker(Position position, MarkerStyle style) {
-        String id = "m"+markers.size();
+        String id = mapId+"_m"+markers.size();
         StringBuilder sb = new StringBuilder();
         sb.append("var ").append(id).append(" = marker([").append(position.getLongitude())
                 .append(", ").append(position.getLatitude()).append("], '');\r\n");
@@ -72,7 +74,7 @@ public class MapBuilder {
     }
     
     public MapBuilder geofence(GeoFence gf) {
-        String id = "v"+vectors.size();
+        String id = mapId+"_v"+vectors.size();
         List<LonLat> pt = gf.points();
         double r = gf.getRadius();
         String color = gf.getColor();
@@ -122,7 +124,7 @@ public class MapBuilder {
         return bindWithTable(id, startRow, -1);
     }
     
-        public MapBuilder bindWithTable(String id, int startRow, int featOff) {
+    public MapBuilder bindWithTable(String id, int startRow, int featOff) {
         tableIds.add(id);
         tableStartRows.add(startRow);
         if(featOff != -1)
@@ -136,7 +138,7 @@ public class MapBuilder {
     
     public String create(boolean showOnClick) {
         StringBuilder output = new StringBuilder();
-        output.append("<div id=\"map\" style=\"width: ").append(width)
+        output.append("<div id=\"").append(mapId).append("\" style=\"width: ").append(width)
                 .append("; height: ").append(height).append(";\"></div>\r\n");
         output.append("<script type=\"text/javascript\">\r\n");
         
@@ -150,7 +152,7 @@ public class MapBuilder {
         
         output.append("var mfeat = [\r\n");
         for(int i=0;i<markers.size();++i) {
-            output.append("m").append(i);
+            output.append(mapId).append("_m").append(i);
             if(i!= markers.size()-1)
                 output.append(", ");
             else
@@ -167,7 +169,7 @@ public class MapBuilder {
         output.append("var source = new ol.source.Vector({\r\n");
         output.append("  features: [\r\n");
         for(int i=0;i<vectors.size();++i) {
-            output.append("v").append(i);
+            output.append(mapId).append("_v").append(i);
             if(i != vectors.size()-1)
                 output.append(", ");
             else
@@ -178,8 +180,8 @@ public class MapBuilder {
         
         
         output.append("//the map\r\n");
-        output.append("var map = new ol.Map({\r\n");
-        output.append("  target: 'map',\r\n");
+        output.append("var ").append(mapId).append(" = new ol.Map({\r\n");
+        output.append("  target: '"+mapId+"',\r\n");
         output.append("  layers: [\r\n");
         output.append("    new ol.layer.Tile({source: new ol.source.OSM()}),\r\n");
         output.append("    new ol.layer.Vector({\r\n");
@@ -191,11 +193,12 @@ public class MapBuilder {
         output.append("    zoom: 12\r\n");
         output.append("  })\r\n");
         output.append("});\r\n"); 
-        output.append("map.getView().fit(boundingBox(source.getFeatures().concat(mfeat)), map.getSize());\r\n");
+        output.append(mapId).append(".getView().fit(boundingBox(source.getFeatures().concat(mfeat)), ")
+                .append(mapId).append(".getSize());\r\n");
         
         for(int i=0;i<tableIds.size();++i) {
-            output.append("bind(map, '").append(tableIds.get(i)).append("', ")
-                    .append(tableStartRows.get(i)).append(", ");
+            output.append("bind(").append(mapId).append(", '").append(tableIds.get(i))
+                    .append("', ").append(tableStartRows.get(i)).append(", ");
             if(showOnClick)
                 output.append(featOffs.get(i));
             else
@@ -207,21 +210,22 @@ public class MapBuilder {
     }
     
     private String helperFunctions() {
-        return "function polyline(polyString) {\r\n"
+        return "var mapProjection = 'EPSG:3857';"
+                + "function polyline(polyString) {\r\n"
                 + "  var routeGeom = new ol.format.Polyline().readGeometry(polyString, "
-                + "    {dataProjection: 'EPSG:4326', featureProjection: 'EPSG:3857'});\r\n"
+                + "    {dataProjection: 'EPSG:4326', featureProjection: mapProjection});\r\n"
                 + "  return new ol.Feature({ geometry: routeGeom, name: 'Route'});\r\n"  
                 + "}\r\n"
                 + "function marker(coords, name) {\r\n"
-                + "  var geom = new ol.geom.Point(ol.proj.transform(coords, 'EPSG:4326', 'EPSG:3857'));\r\n"
+                + "  var geom = new ol.geom.Point(ol.proj.transform(coords, 'EPSG:4326', mapProjection));\r\n"
                 + "  return new ol.Feature({ geometry: geom, name: name});\r\n"
                 + "}\r\n"
                 + "function polygon(coords, name) {\r\n"
-                + "  var geom = new ol.geom.Polygon(coords).transform('EPSG:4326', 'EPSG:3857');\r\n"
+                + "  var geom = new ol.geom.Polygon(coords).transform('EPSG:4326', mapProjection);\r\n"
                 + "  return new ol.Feature({ geometry: geom, name: name });\r\n"
                 + "}"
                 +"function circle(coords, radius, name) {\r\n"
-                + "  var geom = new ol.geom.Circle(ol.proj.transform(coords, 'EPSG:4326', 'EPSG:3857'), radius);\r\n"
+                + "  var geom = new ol.geom.Circle(ol.proj.transform(coords, 'EPSG:4326', mapProjection), radius);\r\n"
                 + "  return new ol.Feature({ geometry: geom, name: name});\r\n"
                 + "}\r\n"
                 + "function fillColor(hex) {\r\n"
@@ -230,8 +234,8 @@ public class MapBuilder {
                 + "      +(tmp&255)+', 0.5)';\r\n"
                 + "}\r\n"
                 + "function boundingBox(markers) {\r\n"
-                + "  var p1=ol.proj.transform([-180, -90], 'EPSG:4326', 'EPSG:3857');\r\n"
-                + "  var p2=ol.proj.transform([180, 90], 'EPSG:4326', 'EPSG:3857');\r\n"
+                + "  var p1=ol.proj.transform([-180, -90], 'EPSG:4326', mapProjection);\r\n"
+                + "  var p2=ol.proj.transform([180, 90], 'EPSG:4326', mapProjection);\r\n"
                 + "  for(var i=0;i<markers.length;++i) {\r\n"
                 + "    var ext = markers[i].getGeometry().getExtent();\r\n"
                 + "    p1[0] = Math.max(p1[0], ext[2]);\r\n"
@@ -276,7 +280,7 @@ public class MapBuilder {
                 + "        r.classList.add('active');\r\n"
                 + "        var cells = r.getElementsByTagName('td');\r\n"
                 + "        var c = cells[cells.length-1];\r\n"
-                + "        var extent = ol.proj.transformExtent(JSON.parse(c.innerHTML), 'EPSG:4326', 'EPSG:3857');\r\n"
+                + "        var extent = ol.proj.transformExtent(JSON.parse(c.innerHTML), 'EPSG:4326', mapProjection);\r\n"
                 + "        map.getView().fit(extent, map.getSize());\r\n"
                 + "        if(featOff != -1) {\r\n"
                 + "          msource.clear();\r\n"

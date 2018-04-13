@@ -25,6 +25,7 @@ import java.util.Iterator;
 import java.util.List;
 import pl.datamatica.traccar.api.dtos.out.ReportDto;
 import pl.datamatica.traccar.api.providers.ProviderException;
+import pl.datamatica.traccar.api.reports.MapBuilder.MapBoundsBuilder;
 import pl.datamatica.traccar.api.reports.MapBuilder.MarkerStyle;
 import pl.datamatica.traccar.model.DeviceEventType;
 
@@ -33,6 +34,7 @@ public class ReportDS extends ReportGenerator {
     void generateImpl(ReportDto report) throws IOException, ProviderException {
         h2(report.getName());
 
+        int id = 0;
         for (Device device : getDevices(report)) {
             Date from = getFromDate(report, device);
             List<Position> positions;
@@ -61,11 +63,11 @@ public class ReportDS extends ReportGenerator {
                 if(!datas.isEmpty() && report.isIncludeMap()) {
                     html("<div class=\"col-md-6\">");
                 }
-                drawTable(datas);
+                drawTable(id, datas);
                 if(!datas.isEmpty() && report.isIncludeMap()) {
                     html("</div>");
                     html("<div class=\"col-md-6\">");
-                    drawMap(datas, positions);
+                    drawMap(id, datas, positions);
                     html("</div>");
                 }
             } else {
@@ -75,10 +77,11 @@ public class ReportDS extends ReportGenerator {
             panelBodyEnd();
 
             panelEnd();
+            ++id;
         }
     }
 
-    private void drawMap(List<Data> datas, List<Position> positions) {
+    private void drawMap(int id, List<Data> datas, List<Position> positions) {
         MapBuilder builder = getMapBuilder();
         
         builder.polyline(positions, "#00f", 2);
@@ -93,7 +96,7 @@ public class ReportDS extends ReportGenerator {
         
         Position latest = positions.get(positions.size()-1);
         builder.marker(latest, MarkerStyle.deviceMarker(latest));
-        html(builder.bindWithTable("table", 2).create());
+        html(builder.bindWithTable("table"+id, 1).create());
     }
 
     static class Data {
@@ -105,12 +108,20 @@ public class ReportDS extends ReportGenerator {
         double totalSpeed;
         double distance;
         int positionsWithSpeed;
+        
+        MapBoundsBuilder bbuilder;
 
         Data(boolean idle, Position start) {
             this.start = start;
             this.idle = idle;
+            bbuilder = new MapBoundsBuilder();
+            bbuilder.addPosition(start);
         }
 
+        void addPosition(Position position) {
+            bbuilder.addPosition(position);
+        }
+        
         long getDuration() {
             return end.getTime().getTime() - start.getTime().getTime();
         }
@@ -131,11 +142,13 @@ public class ReportDS extends ReportGenerator {
             if (currentData == null) {
                 currentData = new Data(isIdle(position), position);
             }
-
+            
             if (prevPosition != null && isIdle(position) != isIdle(prevPosition)) {
                 currentData.end = position;
                 datas.add(currentData);
                 currentData = new Data(isIdle(position), position);
+            } else {
+                currentData.addPosition(position);
             }
 
             if (position.getSpeed() != null && !isIdle(position)) {
@@ -192,8 +205,8 @@ public class ReportDS extends ReportGenerator {
         return datas;
     }
 
-    void drawTable(List<Data> datas) {
-        tableStart("table", hover().condensed().height(DEFAULT_TABLE_HEIGHT));
+    void drawTable(int id, List<Data> datas) {
+        tableStart("table"+id, hover().condensed().height(DEFAULT_TABLE_HEIGHT));
 
         // header
         tableHeadStart();
@@ -246,7 +259,7 @@ public class ReportDS extends ReportGenerator {
                 totalSpeed += data.totalSpeed;
                 totalTopSpeed = Math.max(totalTopSpeed, data.topSpeed);
             }
-            extentCell(data.start, data.end);
+            extentCell(data.bbuilder);
             totalDistance += data.distance;
             tableRowEnd();
         }
