@@ -34,6 +34,7 @@ import org.slf4j.LoggerFactory;
 import pl.datamatica.traccar.api.utils.GeoFenceCalculator;
 import pl.datamatica.traccar.api.utils.GeoUtils;
 import static pl.datamatica.traccar.model.DeviceEventType.*;
+import pl.datamatica.traccar.model.GeoFenceType;
 import pl.datamatica.traccar.model.LastDeviceEventTime;
 import pl.datamatica.traccar.model.Route;
 import pl.datamatica.traccar.model.RoutePoint;
@@ -294,6 +295,8 @@ public class EventDaemon {
             Device device = position.getDevice();
             // calculate
             for (GeoFence geoFence : geoFences) {
+                if(geoFence.getType() == GeoFenceType.LINE && !device.isValid(new Date()))
+                    continue;
                 if (prevPosition != null) {
                     boolean containsCurrent = geoFenceCalculator.contains(geoFence, position);
                     boolean containsPrevious = geoFenceCalculator.contains(geoFence, prevPosition);
@@ -483,13 +486,15 @@ public class EventDaemon {
         @Override
         void before() {
             Map<Long, GeoFence> gfs = new HashMap<>();
-            List<Route> routes = entityManager.createQuery("SELECT r FROM Route r "
+            List<Route> routes = entityManager.createQuery("SELECT distinct r FROM Route r "
                     + "LEFT JOIN FETCH r.routePoints "
                     + "WHERE r.device IS NOT NULL AND r.status IN (:status)", Route.class)
                     .setParameter("status", EnumSet.of(Route.Status.NEW, Route.Status.IN_PROGRESS_OK, Route.Status.IN_PROGRESS_LATE))
                     .getResultList();
             for(Route r : routes) {
                 if(r.getRoutePoints().get(0).getDeadline() == null)
+                    continue;
+                if(r.getStatus() == Route.Status.NEW && !r.getDevice().isValid(new Date()))
                     continue;
                 unvisited.put(r, new ArrayList<>());
                 for(int i=0;i<r.getRoutePoints().size();++i) {
@@ -519,9 +524,13 @@ public class EventDaemon {
                 if(position.getTime().before(start))
                     continue;
                 List<RoutePoint> activePoints = new ArrayList<>(unvisited.get(route));
-                if(route.isForceFirst() && route.getStatus() == Route.Status.NEW) {
-                    activePoints = Collections.singletonList(route.getRoutePoints().get(0));
-                } else if(route.isForceLast() && route.getDonePointsCount() != route.getRoutePoints().size()-1) {
+                if(route.isForceFirst()) {
+                    if(route.getStatus() == Route.Status.NEW)
+                        activePoints = Collections.singletonList(route.getRoutePoints().get(0));
+                    else
+                        activePoints.remove(0);
+                }
+                if(route.isForceLast() && route.getDonePointsCount() != route.getRoutePoints().size()-1) {
                     activePoints.remove(activePoints.size()-1);
                 }
                 
@@ -590,9 +599,10 @@ public class EventDaemon {
                 if(r.getArchiveAfter() <= 0)
                     continue;
                 Date finish = new Date(System.currentTimeMillis() - r.getArchiveAfter()*24*60L*60*1000);
-                if(r.getCancelTimestamp() != null && finish.after(r.getCancelTimestamp()))
-                    r.setArchived(true);
-                else {
+                if(r.getStatus() == Route.Status.CANCELLED) {
+                    if(finish.after(r.getCancelTimestamp()))
+                        r.setArchived(true);
+                } else {
                     List<RoutePoint> rps = r.getRoutePoints();
                     RoutePoint last = rps.get(rps.size()-1);
                     Date lastTime;

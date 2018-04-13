@@ -92,12 +92,23 @@ public class RouteProvider extends ProviderBase {
     }
     
     private void editFromDto(Route r, EditRouteDto dto) throws ProviderException {
+        if(dto.getCancel() != null && dto.getCancel()) {
+            r.setStatus(Route.Status.CANCELLED);
+            r.setCancelTimestamp(new Date());
+        }
         Device device = null;
         if(dto.getDeviceId() != null) {
             device = devices.getEditableDevice(dto.getDeviceId());
-            if(!device.isValid(new Date()))
+            if(!device.isValid(new Date())) {
+                if(r.getDevice().getId() != dto.getDeviceId()
+                || (r.getStatus() != Route.Status.CANCELLED && 
+                    r.getStatus() != Route.Status.FINISHED_OK &&
+                    r.getStatus() != Route.Status.FINISHED_LATE))
                 throw new ProviderException(Type.BAD_REQUEST);
+            }
             r.setDevice(device);
+        } else {
+            r.setDevice(null);
         }
         r.setArchiveAfter(dto.getArchiveAfter());
         r.setName(dto.getName());
@@ -112,16 +123,13 @@ public class RouteProvider extends ProviderBase {
             }
             r.setArchived(dto.getArchive());
         }
-        if(dto.getCancel() != null && dto.getCancel()) {
-            r.setStatus(Route.Status.CANCELLED);
-            r.setCancelTimestamp(new Date());
-        }
         GeoFence corr = r.getCorridor();
         if(r.getCorridor() == null) {
             corr = new GeoFence();
             corr.setType(GeoFenceType.LINE);
             corr.setUsers(Collections.singleton(requestUser));
             corr.setRouteOnly(true);
+            corr.setName(r.getName()+"_c");
             if(device != null)
                 corr.setDevices(Collections.singleton(device));
         }
@@ -208,6 +216,9 @@ public class RouteProvider extends ProviderBase {
     }
     
     private void hardDeleteGeofence(GeoFence gf) {
+        em.createQuery("DELETE FROM DeviceEvent e where e.geoFence = :gf")
+                .setParameter("gf", gf)
+                .executeUpdate();
         gf.setDevices(null);
         gf.setUsers(null);
         em.flush();
