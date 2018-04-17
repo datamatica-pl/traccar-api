@@ -195,7 +195,7 @@ public class ReportTrack extends ReportGenerator{
     void drawMap(List<DeviceEvent> events, Collection<GeoFence> gfs, String ls,
             int corridorOff) {
         MapBuilder builder = getMapBuilder();
-        builder.polyline(ls, "#808080", 3);
+        builder.polyline(ls.replace("\\", "\\\\"), "#808080", 3);
         for(DeviceEvent ev : events) {
             System.out.println(ev.getTime()+"");
             builder.marker(ev.getPosition(), 

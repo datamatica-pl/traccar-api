@@ -55,7 +55,7 @@ public class MapBuilder {
     public MapBuilder polyline(String polyStr, String color, int width) {
         String id = mapId+"_v"+vectors.size();
         StringBuilder sb = new StringBuilder();
-        sb.append("var ").append(id).append(" = polyline('").append(polyStr.replace("\\", "\\\\")).append("');\r\n");
+        sb.append("var ").append(id).append(" = polyline('").append(polyStr).append("');\r\n");
         sb.append(id).append(".setStyle(new ol.style.Style({ stroke: new ol.style.Stroke({color: '").append(color).append("', width: ").append(width).append("})}));\r\n");
         
         vectors.add(sb.toString());
@@ -238,10 +238,14 @@ public class MapBuilder {
                 + "  var p2=ol.proj.transform([180, 90], 'EPSG:4326', mapProjection);\r\n"
                 + "  for(var i=0;i<markers.length;++i) {\r\n"
                 + "    var ext = markers[i].getGeometry().getExtent();\r\n"
-                + "    p1[0] = Math.max(p1[0], ext[2]);\r\n"
-                + "    p1[1] = Math.max(p1[1], ext[3]);\r\n"
-                + "    p2[0] = Math.min(p2[0], ext[0]);\r\n"
-                + "    p2[1] = Math.min(p2[1], ext[1]);\r\n"
+                + "    if(!isNaN(ext[2]))\r\n"
+                + "      p1[0] = Math.max(p1[0], ext[2]);\r\n"
+                + "    if(!isNaN(ext[3]))\r\n"
+                + "      p1[1] = Math.max(p1[1], ext[3]);\r\n"
+                + "    if(!isNaN(ext[0]))\r\n"
+                + "      p2[0] = Math.min(p2[0], ext[0]);\r\n"
+                + "    if(!isNaN(ext[1]))\r\n"
+                + "      p2[1] = Math.min(p2[1], ext[1]);\r\n"
                 + "  }\r\n"
                 + "  var lonDiff = p2[0]-p1[0], latDiff = p2[1]-p1[1];\r\n"
                 + "  var delta = (1000 - lonDiff)/2;\r\n"

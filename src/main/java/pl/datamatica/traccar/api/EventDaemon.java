@@ -499,7 +499,14 @@ public class EventDaemon {
                 unvisited.put(r, new ArrayList<>());
                 for(int i=0;i<r.getRoutePoints().size();++i) {
                     RoutePoint rp = r.getRoutePoints().get(i);
-                    if(rp.getEnterTime() == null || rp.getExitTime() == null) {
+                    boolean add = rp.getEnterTime() == null || rp.getExitTime() == null;
+                    if(r.isForceFirst() && i == 0) {
+                        add = rp.getExitTime() == null;
+                    }
+                    if(r.isForceLast() && i == r.getRoutePoints().size() -1) {
+                        add = unvisited.get(r).isEmpty() && rp.getEnterTime() == null;
+                    }
+                    if(add) {
                         long id = rp.getGeofence().getId();
                         if(!gfs.containsKey(id)) {
                             GeoFence gf = new GeoFence().copyFrom(rp.getGeofence());
@@ -523,18 +530,8 @@ public class EventDaemon {
                 Date start = new Date(route.getRoutePoints().get(0).getDeadline().getTime() - route.getTolerance()*60*1000);
                 if(position.getTime().before(start))
                     continue;
-                List<RoutePoint> activePoints = new ArrayList<>(unvisited.get(route));
-                if(route.isForceFirst()) {
-                    if(route.getStatus() == Route.Status.NEW)
-                        activePoints = Collections.singletonList(route.getRoutePoints().get(0));
-                    else
-                        activePoints.remove(0);
-                }
-                if(route.isForceLast() && route.getDonePointsCount() != route.getRoutePoints().size()-1) {
-                    activePoints.remove(activePoints.size()-1);
-                }
                 
-                for(RoutePoint rp : activePoints) {
+                for(RoutePoint rp : unvisited.get(route)) {
                     GeoFence gf = new GeoFence().copyFrom(rp.getGeofence());
                     gf.setDevices(Collections.singleton(route.getDevice()));
                     boolean beforeEnter = rp.getEnterTime() == null;
@@ -549,7 +546,6 @@ public class EventDaemon {
                             entityManager.persist(rp);
                             updateStatus(route, rp);
                         } else if (!containsCurrent && containsPrevious && !beforeEnter) {
-                            unvisited.get(route).remove(rp);
                             rp.setExitTime(position.getTime());
                             entityManager.persist(rp);
                             updateStatus(route, rp);
