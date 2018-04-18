@@ -281,6 +281,10 @@ public class DeviceProvider extends ProviderBase {
         query = em.createQuery("DELETE FROM Maintenance x WHERE x.device = :device");
         query.setParameter("device", device);
         query.executeUpdate();
+        
+        query = em.createQuery("DELETE FROM RegistrationMaintenance x WHERE x.device = :device");
+        query.setParameter("device", device);
+        query.executeUpdate();
 
         query = em.createQuery("DELETE FROM Sensor x WHERE x.device = :device");
         query.setParameter("device", device);
