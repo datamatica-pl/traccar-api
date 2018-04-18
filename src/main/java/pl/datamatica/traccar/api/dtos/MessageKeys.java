@@ -164,4 +164,9 @@ public class MessageKeys {
     public static final String ERR_ROUTE_POLYLINE_NOT_PROVIDED = "err_route_polyline_not_provided";
     public static final String ERR_ROUTE_POINT_GEOFENCE_NOT_PROVIDED = "err_route_point_geofence_not_provided";
     public static final String ERR_ROUTE_POINT_DEADLINE_NOT_PROVIDED = "err_route_point_deadline_not_provided";
+    
+    public static final String ERR_MODEL_NAME_NOT_PROVIDED = "err_model_name_not_provided";
+    public static final String ERR_CREATION_TIMESTAMP_NOT_PROVIDED = "err_creation_timestamp_not_provided";
+    public static final String ERR_PHONE_MODEL_NOT_PROVIDED = "err_phone_model_not_provided";
+    public static final String ERR_PHONE_SYSTEM_NOT_PROVIDED = "err_phone_system_not_provided";
 }

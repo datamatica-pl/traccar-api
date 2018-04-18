@@ -16,7 +16,9 @@
  */
 package pl.datamatica.traccar.api.controllers;
 
+import com.google.gson.reflect.TypeToken;
 import java.lang.reflect.InvocationTargetException;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -29,6 +31,7 @@ import pl.datamatica.traccar.api.TraccarConfig;
 import static pl.datamatica.traccar.api.controllers.ControllerBase.render;
 import pl.datamatica.traccar.api.dtos.MessageKeys;
 import pl.datamatica.traccar.api.dtos.in.AddUserDto;
+import pl.datamatica.traccar.api.dtos.in.BleDeviceDto;
 import pl.datamatica.traccar.api.dtos.in.EditUserDto;
 import pl.datamatica.traccar.api.dtos.in.EditUserSettingsDto;
 import pl.datamatica.traccar.api.dtos.in.RegisterUserDto;
@@ -125,6 +128,14 @@ public class UsersController extends ControllerBase {
                 long id = Long.parseLong(req.params(":id"));
                 UserSettingsDto dto = gson.fromJson(req.body(), UserSettingsDto.class);
                 return render(uc.updateUserSettings(id, dto), res);
+            }, gson::toJson);
+            
+            Spark.put(rootUrl()+"/:id/ble", (req, res) -> {
+                UsersController uc = createController(req);
+                long id = Long.parseLong(req.params(":id"));
+                List<BleDeviceDto> dto = gson.fromJson(req.body(), 
+                        new TypeToken<List<BleDeviceDto>>(){}.getType());
+                return render(uc.updateUserBleDevices(id, dto), res);
             }, gson::toJson);
         }
 
@@ -305,6 +316,21 @@ public class UsersController extends ControllerBase {
             return badRequest(errors);
         try {
             up.updateUserSettings(id, dto);
+        } catch(ProviderException e) {
+            return handle(e);
+        }
+        return ok("");
+    }
+    
+    public HttpResponse updateUserBleDevices(long id, List<BleDeviceDto> dtos) 
+            throws ProviderException {
+        List<ErrorDto> errors = new ArrayList<ErrorDto>();
+        for(BleDeviceDto dto : dtos)
+            errors.addAll(BleDeviceDto.validate(dto));
+        if(!errors.isEmpty())
+            return badRequest(errors);
+        try {
+            up.updateUserBleDevices(id, dtos);
         } catch(ProviderException e) {
             return handle(e);
         }

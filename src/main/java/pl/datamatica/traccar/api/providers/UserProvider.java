@@ -16,6 +16,7 @@
  */
 package pl.datamatica.traccar.api.providers;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
@@ -23,6 +24,7 @@ import java.util.Objects;
 import java.util.Random;
 import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import javax.persistence.EntityManager;
 import javax.persistence.NoResultException;
@@ -32,12 +34,14 @@ import org.slf4j.Logger;
 import pl.datamatica.traccar.api.auth.AuthenticationException;
 import pl.datamatica.traccar.api.dtos.MessageKeys;
 import pl.datamatica.traccar.api.dtos.in.AddUserDto;
+import pl.datamatica.traccar.api.dtos.in.BleDeviceDto;
 import pl.datamatica.traccar.api.dtos.in.EditUserDto;
 import pl.datamatica.traccar.api.dtos.in.EditUserSettingsDto;
 import pl.datamatica.traccar.api.providers.ProviderException.Type;
 import pl.datamatica.traccar.model.ApplicationSettings;
 import pl.datamatica.traccar.model.AuditLog;
 import pl.datamatica.traccar.model.AuditLogType;
+import pl.datamatica.traccar.model.BleDevice;
 import pl.datamatica.traccar.model.Device;
 import pl.datamatica.traccar.model.DeviceEventType;
 import pl.datamatica.traccar.model.PositionIconType;
@@ -304,6 +308,11 @@ public class UserProvider extends ProviderBase {
         query = em.createQuery("DELETE FROM RulesAcceptance a WHERE a.id.user = :user");
         query.setParameter("user", user);
         query.executeUpdate();
+        
+        //BleDevices
+        query = em.createQuery("DELETE FROM BleDevice bd where bd.owner = :user");
+        query.setParameter("user", user);
+        query.executeUpdate();
     }
     
     // REMOVING USER - END // 
@@ -459,6 +468,32 @@ public class UserProvider extends ProviderBase {
             throw new ProviderException(Type.ACCESS_DENIED);
         return requestUser.getUserSettings();
     }
+    
+    public void updateUserBleDevices(long id, List<BleDeviceDto> dtos) throws ProviderException {
+        if(id != requestUser.getId())
+            throw new ProviderException(Type.ACCESS_DENIED);
+        if(!dtos.isEmpty())
+            requestUser.setWasBleUser(true);
+        
+        Query q = em.createQuery("DELETE FROM BleDevice bd where bd.owner = :user");
+        q.setParameter("user", requestUser);
+        q.executeUpdate();
+        
+        List<BleDevice> bled = new ArrayList<>();
+        for(BleDeviceDto dto : dtos) {
+            BleDevice bd = new BleDevice();
+            bd.setModelName(dto.getModelName());
+            bd.setCreationTimestamp(dto.getCreationTimestamp());
+            bd.setPhoneModel(dto.getPhoneModel());
+            bd.setPhoneSystem(dto.getPhoneSystem());
+            bd.setOwner(requestUser);
+            em.persist(bd); 
+            bled.add(bd);
+        }
+        requestUser.updateBleDevices(bled);
+        em.persist(requestUser);
+    }
+                
     
     // AuditLog methods
     
