@@ -484,8 +484,8 @@ public class UserProvider extends ProviderBase {
             BleDevice bd = new BleDevice();
             bd.setModelName(dto.getModelName());
             bd.setCreationTimestamp(dto.getCreationTimestamp());
-            bd.setPhoneModel(dto.getPhoneModel());
-            bd.setPhoneSystem(dto.getPhoneSystem());
+            bd.setPhoneModel(dto.getPhoneModel().toLowerCase());
+            bd.setPhoneSystem(dto.getPhoneSystem().toLowerCase());
             bd.setOwner(requestUser);
             em.persist(bd); 
             bled.add(bd);
