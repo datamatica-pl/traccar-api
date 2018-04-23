@@ -24,8 +24,6 @@ import pl.datamatica.traccar.model.Position;
 
 public class PositionDto implements ICachedDto {
     private static final String IGNITION_KEY="ignition";
-    private static final String FUEL_LEVEL_KEY="io84";
-    private static final String FUEL_USED_KEY="io83";
     
     private final long id;
     private final Double altitude;
@@ -137,18 +135,16 @@ public class PositionDto implements ICachedDto {
             this.deviceId = position.getDevice().getId();
             if(other != null) {
                 this.ignition = (Boolean)other.get(IGNITION_KEY);
-                this.fuelLevel = (Double)other.get(FUEL_LEVEL_KEY);
-                this.fuelUsed = (Double)other.get(FUEL_USED_KEY);
-                if(fuelUsed != null)
-                    fuelUsed *= 0.1;
             }
-			this.other = position.getOther();
+            this.other = position.getOther();
+            this.fuelLevel = position.getFuelLevel();
+            this.fuelUsed = position.getFuelUsed();
             this.serverTime = position.getServerTime();
             return this;
         }
 
         public PositionDto build() {
-            return new PositionDto(id, altitude, course, speed, 		latitude, longitude, 
+            return new PositionDto(id, altitude, course, speed, latitude, longitude, 
                     deviceTime, ignition, isValid, deviceId, fuelLevel, fuelUsed, other,
                     serverTime);
         }
