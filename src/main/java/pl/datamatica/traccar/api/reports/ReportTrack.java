@@ -101,12 +101,14 @@ public class ReportTrack extends ReportGenerator{
             rpe.add(0, ev);
         }
         if(report.isIncludeMap())
-            html("<div class=\"col-md-6\">");
+            html("<div class=\"col-md-8\">");
+        bold(message("report_route_points_completion"));
         drawTable("rpe", rpe, "report_header_route_point");
         List<DeviceEvent> alle = new ArrayList<>(rpe);
         
         if(route.getCorridor() != null) {
             List<DeviceEvent> core = calculate(Collections.singleton(route.getCorridor()), history);
+            bold(message("report_corridor_abandnment"));
             drawTable("core", core, null);
             alle.addAll(core);
             gfs.add(route.getCorridor());
@@ -114,7 +116,7 @@ public class ReportTrack extends ReportGenerator{
         
         if(report.isIncludeMap() && !alle.isEmpty()) {
             html("</div>");
-            html("<div class=\"col-md-6\">");
+            html("<div class=\"col-md-4\">");
             drawMap(alle, gfs, route.getLinePoints(), rpe.size());
             html("</div>");
         }
@@ -194,7 +196,7 @@ public class ReportTrack extends ReportGenerator{
 
     void drawMap(List<DeviceEvent> events, Collection<GeoFence> gfs, String ls,
             int corridorOff) {
-        MapBuilder builder = getMapBuilder();
+        MapBuilder builder = getMapBuilder((int)(0.7*DEFAULT_TABLE_HEIGHT));
         builder.polyline(ls.replace("\\", "\\\\"), "#808080", 3);
         for(DeviceEvent ev : events) {
             System.out.println(ev.getTime()+"");
