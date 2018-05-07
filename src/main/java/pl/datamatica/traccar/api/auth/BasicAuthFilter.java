@@ -20,6 +20,7 @@ import com.google.gson.Gson;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 import org.slf4j.Logger;
@@ -85,6 +86,7 @@ public class BasicAuthFilter {
                 if(rc.getRulesProvider().getActiveRules() != null)
                     request.attribute(RequestContext.REQUEST_FIELD_ERROR_DTO, new ErrorDto(MessageKeys.ERR_RULES_NOT_ACCEPTED));
             }
+            user.setLastRequestTime(new Date());
             
             if (req.attribute(RequestContext.REQUEST_FIELD_ERROR_DTO) == null && rc.isRequestForImeiManager(request)) {
                 // Check whether IP is allowed to manage IMEI's

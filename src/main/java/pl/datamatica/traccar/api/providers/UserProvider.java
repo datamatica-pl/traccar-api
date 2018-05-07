@@ -17,6 +17,7 @@
 package pl.datamatica.traccar.api.providers;
 
 import java.util.Collections;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
@@ -149,6 +150,7 @@ public class UserProvider extends ProviderBase {
             } else {
                 user.addRulesAcceptance(rv);
             }
+        user.setLastRequestTime(new Date());
         
         generateAuditLogForCreateRemoveUser(user.getLogin(), false);
         return user;
