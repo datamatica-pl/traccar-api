@@ -62,8 +62,6 @@ public class RegisterUserDto {
             errors.add(new ErrorDto(MessageKeys.ERR_PASSWORD_NOT_PROVIDED));
         if(userDto.checkMarketing == null)
             errors.add(new ErrorDto(MessageKeys.ERR_CHECK_MARKETING_NOT_PROVIDED));
-        if(userDto.imei == null || userDto.imei.isEmpty())
-            errors.add(new ErrorDto(MessageKeys.ERR_IMEI_NOT_PROVIDED));
         
         return errors;
     }

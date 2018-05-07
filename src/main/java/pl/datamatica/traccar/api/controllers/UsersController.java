@@ -206,7 +206,9 @@ public class UsersController extends ControllerBase {
             User user = up.registerUser(userDto.getEmail().trim(), 
                     userDto.getPassword(), userDto.isCheckMarketing());
             requestContext.setUser(user);
-            requestContext.getDeviceProvider().createDevice(userDto.getImei(), requestContext.getDeviceModelProvider());
+            if(userDto.getImei() != null)
+                requestContext.getDeviceProvider().createDevice(userDto.getImei(), 
+                        requestContext.getDeviceModelProvider());
             sendActivationToken(user);
             return created("users/"+user.getId(), "");
         } catch (ProviderException ex) {
