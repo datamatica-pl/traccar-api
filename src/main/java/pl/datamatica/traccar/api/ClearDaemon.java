@@ -58,6 +58,29 @@ public class ClearDaemon extends Daemon {
             if(DEMO_USER.equals(u.getLogin()) 
                     || u.hasPermission(UserPermission.RESOURCE_MANAGEMENT))
                 continue;
+            
+            if(!u.hadAnyDevice()) {
+                if(u.wasBleUser())
+                    u.setHadAnyDevice(true);
+                else {
+                    boolean hasGpsDevice = em.createQuery(
+                            "select 1 from Device d where d.owner = :u")
+                            .setParameter("u", u)
+                            .setMaxResults(1)
+                            .getResultList().isEmpty();
+                    u.setHadAnyDevice(hasGpsDevice);
+                }
+                
+                if(!u.hadAnyDevice() && getDaysCount(now, u.getRegistrationTime().getTime()) >= 7) {
+                    try {
+                        up.forceRemoveUser(u);
+                        continue;
+                    } catch (Exception ex) {
+                        Logger.getLogger(ClearDaemon.class.getName()).log(Level.SEVERE, null, ex);
+                    }
+                }
+            }
+            
             Date newestPos = null;
             Set<User> uAndManaged = new HashSet<>(u.getAllManagedUsers());
             uAndManaged.add(u);

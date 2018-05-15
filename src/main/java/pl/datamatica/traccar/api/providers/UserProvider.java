@@ -151,6 +151,7 @@ public class UserProvider extends ProviderBase {
                 user.addRulesAcceptance(rv);
             }
         user.setLastRequestTime(new Date());
+        user.setRegistrationTime(new Date());
         
         generateAuditLogForCreateRemoveUser(user.getLogin(), false);
         return user;
