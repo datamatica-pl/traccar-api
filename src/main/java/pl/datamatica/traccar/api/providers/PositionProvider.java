@@ -16,9 +16,11 @@
  */
 package pl.datamatica.traccar.api.providers;
 
+import com.google.gson.Gson;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import javax.persistence.EntityManager;
@@ -83,7 +85,7 @@ public class PositionProvider extends ProviderBase {
         if(maxCount != 0)
             positionListQuery.setMaxResults(maxCount);            
         
-        return positionListQuery.getResultList().stream();
+        return positionListQuery.getResultList().stream().map(PositionProvider::prepare);
     }
     
     public Stream<Position> getDeviceHistory(Device device, Date minDate, Date maxDate)
@@ -111,8 +113,30 @@ public class PositionProvider extends ProviderBase {
         historyQuery.setParameter("maxDate", maxDate);
         historyQuery.setParameter("valid", Position.VALID_STATUS_CORRECT_POSITION);         
         
-        return historyQuery.getResultList().stream();
+        return historyQuery.getResultList().stream().map(PositionProvider::prepare);
         
+    }
+    
+    //AUTO-1625 Lazy migration
+    static Position prepare(Position p) {
+        if(p == null || p.getFuelLevel() != null)
+            return p;
+        Gson gson = new Gson();
+        Map<String, Object> other = gson.fromJson(p.getOther(), Map.class);
+        Double fuelLevel = -1., fuelUsed = -1.;
+        if(other != null) {
+            fuelLevel = (Double)other.get("io84");
+            fuelUsed = (Double)other.get("io83");
+            if(fuelLevel == null)
+                fuelLevel = -1.;
+            if(fuelUsed != null)
+                fuelUsed *= 0.1;
+            else
+                fuelUsed = -1.;
+        }
+        p.setFuelLevel(fuelLevel);
+        p.setFuelUsed(fuelUsed);
+        return p;
     }
     
     private boolean isVisible(Position p) {
