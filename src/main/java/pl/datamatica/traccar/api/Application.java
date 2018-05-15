@@ -77,7 +77,8 @@ public class Application implements spark.servlet.SparkApplication {
     
     private final Daemon[] DAEMONS = new Daemon[]{
             new AlarmDaemon(),
-            new SubscriptionDaemon()
+            new SubscriptionDaemon(),
+            new ClearDaemon()
         };
 
     @Override

@@ -194,11 +194,17 @@ public class UserProvider extends ProviderBase {
             throw pe;
         }
         
+        String removedLogin = user.getLogin();
+        forceRemoveUser(user);
+        generateAuditLogForCreateRemoveUser(removedLogin, false);
+        logger.info("{} removed {} account", requestUser.getLogin(), removedLogin);
+    }
+    
+    public void forceRemoveUser(User user) throws Exception {
         removeUserSettings(user);
         removeUserResources(user);
         
         Long userSettingsId =  user.getUserSettings() != null ? user.getUserSettings().getId() : null;
-        String removedLogin = user.getLogin();
         Query query = em.createQuery("DELETE FROM User WHERE id = ?");
         query.setParameter(1, user.getId());
         query.executeUpdate();
@@ -210,8 +216,6 @@ public class UserProvider extends ProviderBase {
         }
         
         em.flush();
-        generateAuditLogForCreateRemoveUser(removedLogin, false);
-        logger.info("{} removed {} account", requestUser.getLogin(), removedLogin);
     }
     
     private void removeUserSettings(User user) throws Exception {
