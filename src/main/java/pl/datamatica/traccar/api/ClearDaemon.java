@@ -27,31 +27,45 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.persistence.EntityManager;
 import pl.datamatica.traccar.api.fcm.Daemon;
+import pl.datamatica.traccar.api.providers.ProviderException;
 import pl.datamatica.traccar.api.providers.UserProvider;
-import pl.datamatica.traccar.model.Device;
 import pl.datamatica.traccar.model.User;
 import pl.datamatica.traccar.model.UserPermission;
 
-public class ClearDaemon extends Daemon {
-    public static final String DEMO_USER = "testowy";
+public class ClearDaemon extends Daemon{
+    private final long AUDIT_REMOVE_INTERVAL = 
+            TimeUnit.MILLISECONDS.convert(29, TimeUnit.DAYS);
     private static final int CHECK_HOUR = 1;
-
+    public static final String DEMO_USER = "testowy";
+    public static final String CLEARING_USER = "admin";
+    
     @Override
     public void start(ScheduledExecutorService scheduler) {
-        Calendar calendar = Calendar.getInstance();
-        if(calendar.get(Calendar.HOUR_OF_DAY) >= CHECK_HOUR)
-            calendar.add(Calendar.DATE, 1);
-        calendar.set(Calendar.HOUR_OF_DAY, CHECK_HOUR);
-        calendar.set(Calendar.MINUTE, 0);
-        calendar.set(Calendar.SECOND, 0);
-        long mDiff = (calendar.getTimeInMillis()-System.currentTimeMillis())/(60*1000);
+        long mDiff = Helper.minutesToHourOfDay(CHECK_HOUR);
         start(scheduler, mDiff, 60*24);
     }
 
     @Override
     protected void doWork(EntityManager em) {
+        clearUsers(em);
+        clearAuditLog(em);
+    }
+    
+    private void clearUsers(EntityManager em) {
         long now = System.currentTimeMillis();
         UserProvider up = new UserProvider(em, null, null);
+        try {
+            User clearing = up.getUserByLogin(CLEARING_USER);
+            if(clearing == null) {
+                Logger.getLogger(ClearDaemon.class.getName())
+                        .log(Level.SEVERE, "No such user: "+CLEARING_USER);
+                return;
+            }
+            up.authenticateUser(clearing.getId());
+        } catch(ProviderException e) {
+            Logger.getLogger(ClearDaemon.class.getName()).log(Level.SEVERE, null, e);
+            return;
+        }
         List<User> users = em.createQuery("select u from User u", 
                 User.class).getResultList();
         for(User u : users) {
@@ -111,6 +125,13 @@ public class ClearDaemon extends Daemon {
     
     private long getDaysCount(long to, long from) {
         return TimeUnit.DAYS.convert(to - from, TimeUnit.MILLISECONDS);
+    }
+    
+    private void clearAuditLog(EntityManager em) {
+        Date limitDate = new Date(System.currentTimeMillis() - AUDIT_REMOVE_INTERVAL);
+        em.createQuery("delete from AuditLog al where al.time < :limitDate")
+                .setParameter("limitDate", limitDate)
+                .executeUpdate();
     }
     
 }

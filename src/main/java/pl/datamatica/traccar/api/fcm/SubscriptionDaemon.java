@@ -23,8 +23,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ScheduledExecutorService;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.persistence.EntityManager;
 import javax.persistence.TypedQuery;
 import pl.datamatica.traccar.model.Device;
@@ -36,15 +34,7 @@ public class SubscriptionDaemon extends Daemon {
     
     @Override
     public void start(ScheduledExecutorService scheduler) {
-        Calendar calendar = Calendar.getInstance();
-        if(calendar.get(Calendar.HOUR_OF_DAY) >= CHECK_HOUR)
-            calendar.add(Calendar.DATE, 1);
-        calendar.set(Calendar.HOUR_OF_DAY, CHECK_HOUR);
-        calendar.set(Calendar.MINUTE, 0);
-        calendar.set(Calendar.SECOND, 0);
-        long mDiff = (calendar.getTimeInMillis()-System.currentTimeMillis())/(60*1000);
-        Logger.getLogger(SubscriptionDaemon.class.getSimpleName())
-                .log(Level.INFO, "start: first check after "+mDiff+" minutes");
+        long mDiff = Helper.minutesToHourOfDay(CHECK_HOUR);
         start(scheduler, mDiff, 60*24);
     }
 
