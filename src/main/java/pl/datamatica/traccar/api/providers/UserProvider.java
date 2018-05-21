@@ -195,13 +195,12 @@ public class UserProvider extends ProviderBase {
             throw pe;
         }
         
-        String removedLogin = user.getLogin();
         forceRemoveUser(user);
-        generateAuditLogForCreateRemoveUser(removedLogin, false);
-        logger.info("{} removed {} account", requestUser.getLogin(), removedLogin);
     }
     
     public void forceRemoveUser(User user) throws Exception {
+        String removedLogin = user.getLogin();
+        
         removeUserSettings(user);
         removeUserResources(user);
         
@@ -215,6 +214,8 @@ public class UserProvider extends ProviderBase {
             query.setParameter(1, userSettingsId.longValue());
             query.executeUpdate();
         }
+        generateAuditLogForCreateRemoveUser(removedLogin, true);
+        logger.info("{} removed {} account", requestUser.getLogin(), removedLogin);
         
         em.flush();
     }
@@ -261,6 +262,7 @@ public class UserProvider extends ProviderBase {
         query.setParameter("manager", user);
         for (User us : (List<User>) query.getResultList()) {
             us.setManagedBy(requestUser);
+            logger.info("{} became manager of {}", requestUser.getLogin(), us.getLogin());
         }
         
         // devices
@@ -271,6 +273,8 @@ public class UserProvider extends ProviderBase {
         query.setParameter("owner", user);
         for (Device dev : (List<Device>) query.getResultList()) {
             dev.setOwner(requestUser);
+            logger.info("{} became owner of {}(id={})", requestUser.getLogin(),
+                    dev.getName(), dev.getId());
         }
         em.flush();
 

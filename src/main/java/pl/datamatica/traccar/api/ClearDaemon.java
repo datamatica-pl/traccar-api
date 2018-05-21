@@ -77,7 +77,7 @@ public class ClearDaemon extends Daemon{
                 if(u.wasBleUser())
                     u.setHadAnyDevice(true);
                 else {
-                    boolean hasGpsDevice = em.createQuery(
+                    boolean hasGpsDevice = !em.createQuery(
                             "select 1 from Device d where d.owner = :u")
                             .setParameter("u", u)
                             .setMaxResults(1)
