@@ -21,6 +21,7 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -137,5 +138,17 @@ public abstract class Daemon {
                 validSessions.add(s);
         }
         user.setSessions(validSessions);
+    }
+    
+    public static class Helper {
+        public static long minutesToHourOfDay(int hour) {
+            Calendar calendar = Calendar.getInstance();
+            if(calendar.get(Calendar.HOUR_OF_DAY) >= hour)
+                calendar.add(Calendar.DATE, 1);
+            calendar.set(Calendar.HOUR_OF_DAY, hour);
+            calendar.set(Calendar.MINUTE, 0);
+            calendar.set(Calendar.SECOND, 0);
+            return (calendar.getTimeInMillis()-System.currentTimeMillis())/(60*1000);
+        }
     }
 }

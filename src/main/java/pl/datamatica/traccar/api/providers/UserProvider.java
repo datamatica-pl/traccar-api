@@ -155,6 +155,7 @@ public class UserProvider extends ProviderBase {
                 user.addRulesAcceptance(rv);
             }
         user.setLastRequestTime(new Date());
+        user.setRegistrationTime(new Date());
         
         generateAuditLogForCreateRemoveUser(user.getLogin(), false);
         return user;
@@ -198,11 +199,16 @@ public class UserProvider extends ProviderBase {
             throw pe;
         }
         
+        forceRemoveUser(user);
+    }
+    
+    public void forceRemoveUser(User user) throws Exception {
+        String removedLogin = user.getLogin();
+        
         removeUserSettings(user);
         removeUserResources(user);
         
         Long userSettingsId =  user.getUserSettings() != null ? user.getUserSettings().getId() : null;
-        String removedLogin = user.getLogin();
         Query query = em.createQuery("DELETE FROM User WHERE id = ?");
         query.setParameter(1, user.getId());
         query.executeUpdate();
@@ -212,10 +218,10 @@ public class UserProvider extends ProviderBase {
             query.setParameter(1, userSettingsId.longValue());
             query.executeUpdate();
         }
+        generateAuditLogForCreateRemoveUser(removedLogin, true);
+        logger.info("{} removed {} account", requestUser.getLogin(), removedLogin);
         
         em.flush();
-        generateAuditLogForCreateRemoveUser(removedLogin, false);
-        logger.info("{} removed {} account", requestUser.getLogin(), removedLogin);
     }
     
     private void removeUserSettings(User user) throws Exception {
@@ -260,6 +266,7 @@ public class UserProvider extends ProviderBase {
         query.setParameter("manager", user);
         for (User us : (List<User>) query.getResultList()) {
             us.setManagedBy(requestUser);
+            logger.info("{} became manager of {}", requestUser.getLogin(), us.getLogin());
         }
         
         // devices
@@ -270,6 +277,8 @@ public class UserProvider extends ProviderBase {
         query.setParameter("owner", user);
         for (Device dev : (List<Device>) query.getResultList()) {
             dev.setOwner(requestUser);
+            logger.info("{} became owner of {}(id={})", requestUser.getLogin(),
+                    dev.getName(), dev.getId());
         }
         em.flush();
 

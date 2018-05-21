@@ -225,7 +225,8 @@ public class DeviceDto extends EditDeviceDto implements ICachedDto {
             Position latestPosition = device.getLatestPosition();
             if(!device.isBlocked() && latestPosition != null)
                 this.lastPosition = new PositionDto.Builder().position(latestPosition).build();
-            this.accountId = device.getOwner().getId();
+            if(device.getOwner() != null)
+                this.accountId = device.getOwner().getId();
             if(device.getValidTo() != null) {
                 Date dayAfter = new Date(device.getValidTo().getTime() + TimeUnit.DAYS.toMillis(1));
                 this.validTo = dayAfter;
