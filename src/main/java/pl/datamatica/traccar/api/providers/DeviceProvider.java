@@ -74,7 +74,9 @@ public class DeviceProvider extends ProviderBase {
     }
     
     public Device getDevice(long id) throws ProviderException {
-        Device d = new Device(get(Device.class, id, this::isVisible));
+        Device d1 = get(Device.class, id, this::isVisible);
+        PositionProvider.prepare(d1.getLatestPosition());
+        Device d = new Device(d1);
         if(!requestUser.hasPermission(UserPermission.ALL_USERS)) {
             Set<User> visibleUsers = new HashSet<>(requestUser.getManagedUsers());
             visibleUsers.add(requestUser);
@@ -110,7 +112,10 @@ public class DeviceProvider extends ProviderBase {
         loadMaintenances(devices);
         loadRegistrations(devices);
         
-        return devices.stream();
+        return devices.stream().map(d -> {
+            PositionProvider.prepare(d.getLatestPosition());
+            return d;
+        });
     }
 
     private void loadMaintenances(List<Device> devices) {

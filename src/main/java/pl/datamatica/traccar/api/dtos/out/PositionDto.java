@@ -138,7 +138,11 @@ public class PositionDto implements ICachedDto {
             }
             this.other = position.getOther();
             this.fuelLevel = position.getFuelLevel();
+            if(fuelLevel != null && fuelLevel < 0)
+                this.fuelLevel = null;
             this.fuelUsed = position.getFuelUsed();
+            if(fuelUsed != null && fuelUsed < 0)
+                this.fuelUsed = null;
             this.serverTime = position.getServerTime();
             return this;
         }
