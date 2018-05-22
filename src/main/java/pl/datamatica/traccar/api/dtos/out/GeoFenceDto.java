@@ -25,6 +25,7 @@ import pl.datamatica.traccar.model.GeoFence;
 public class GeoFenceDto extends AddGeoFenceDto {
     private final long id;
     private final boolean isRouteOnly;
+    private final long accountId;
 
     public static class Builder {
 
@@ -39,6 +40,7 @@ public class GeoFenceDto extends AddGeoFenceDto {
         private long[] deviceIds;
         private String address;
         private boolean isRouteOnly;
+        private long accountId;
 
         public Builder geoFence(GeoFence geofence) {
             this.id = geofence.getId();
@@ -61,12 +63,14 @@ public class GeoFenceDto extends AddGeoFenceDto {
                         .mapToLong(d -> d.getId()).toArray();
             this.address = geofence.getAddress();
             this.isRouteOnly = geofence.isRouteOnly();
+            this.accountId = geofence.getOwner().getId();
             return this;
         }
 
         public GeoFenceDto build() {
             return new GeoFenceDto(id, geofenceName, description, allDevices, 
-                    color, points, radius, type, deviceIds, address, isRouteOnly);
+                    color, points, radius, type, deviceIds, address, isRouteOnly,
+                    accountId);
         }
     }
 
@@ -80,11 +84,13 @@ public class GeoFenceDto extends AddGeoFenceDto {
             final String type, 
             final long[] deviceIds,
             final String address,
-            final boolean isRouteOnly) {
+            final boolean isRouteOnly,
+            final long accountId) {
         super(geofenceName, description, allDevices, color, points, radius, type, 
                 deviceIds, address);
         this.id = id;
         this.isRouteOnly = isRouteOnly;
+        this.accountId = accountId;
     }
 
     public long getId() {

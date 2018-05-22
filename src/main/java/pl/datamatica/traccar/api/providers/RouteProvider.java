@@ -130,6 +130,7 @@ public class RouteProvider extends ProviderBase {
             corr.setUsers(Collections.singleton(requestUser));
             corr.setRouteOnly(true);
             corr.setName(r.getName()+"_c");
+            corr.setOwner(requestUser);
             if(device != null)
                 corr.setDevices(Collections.singleton(device));
         }
@@ -160,6 +161,7 @@ public class RouteProvider extends ProviderBase {
             gf.setRadius(agf.getRadius());
             gf.setType(GeoFenceType.CIRCLE);
             gf.setName(agf.getGeofenceName());
+            gf.setOwner(requestUser);
             if(agf.getAddress() != null)
                 gf.setAddress(agf.getAddress());
             if(agf.getColor() != null)
