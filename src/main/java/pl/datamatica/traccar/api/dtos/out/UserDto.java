@@ -36,6 +36,8 @@ public class UserDto extends EditUserDto {
     private final String userGroupName;
     private final List<RulesDto> unacceptedActiveRules;
     private final List<RulesDto> unacceptedFutureRules;
+    private final Date registrationTime;
+    private final boolean hadAnyDevice;
 
     public static class Builder {
 
@@ -61,6 +63,8 @@ public class UserDto extends EditUserDto {
         private String userGroupName;
         private List<RulesDto> unacceptedActiveRules = new ArrayList<>();
         private List<RulesDto> unacceptedFutureRules = new ArrayList<>();
+        private Date registrationTime;
+        private boolean hadAnyDevice;
 
         public Builder id(final long value) {
             this.id = value;
@@ -172,6 +176,8 @@ public class UserDto extends EditUserDto {
                     this.premium = true;
                     break;
                 }
+            this.registrationTime = user.getRegistrationTime();
+            this.hadAnyDevice = user.hadAnyDevice();
             return this;
         }
         
@@ -201,7 +207,8 @@ public class UserDto extends EditUserDto {
                     phoneNumber, expirationDate, maxNumOfDevices, managedById, 
                     manager, admin, archive, blocked, notificationEvents, readOnly,
                     settings, userGroup, premium, userGroupName,
-                    unacceptedActiveRules, unacceptedFutureRules
+                    unacceptedActiveRules, unacceptedFutureRules,
+                    registrationTime, hadAnyDevice
             );
         }
     }
@@ -227,7 +234,9 @@ public class UserDto extends EditUserDto {
             final boolean premium,
             final String userGroupName,
             final List<RulesDto> unacceptedActiveRules,
-            final List<RulesDto> unacceptedFutureRules) {
+            final List<RulesDto> unacceptedFutureRules,
+            final Date registrationTime,
+            final boolean hadAnyDevice) {
         super(email, companyName, firstName, lastName, phoneNumber,
                 expirationDate, maxNumOfDevices, manager, admin, archive,
                 blocked, PASSWORD_PLACEHOLDER, notificationEvents, readOnly);
@@ -240,6 +249,8 @@ public class UserDto extends EditUserDto {
         this.userGroupName = userGroupName;
         this.unacceptedActiveRules = unacceptedActiveRules;
         this.unacceptedFutureRules = unacceptedFutureRules;
+        this.registrationTime = registrationTime;
+        this.hadAnyDevice = hadAnyDevice;
     }
     
     public long getId() {

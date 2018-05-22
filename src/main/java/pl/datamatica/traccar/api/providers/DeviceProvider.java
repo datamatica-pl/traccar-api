@@ -191,6 +191,7 @@ public class DeviceProvider extends ProviderBase {
         }
         
         em.persist(device);
+        requestUser.setHadAnyDevice(true);
         
         logger.info("{} created device {} (id={})", 
                 requestUser.getLogin(), device.getName(), device.getId());
