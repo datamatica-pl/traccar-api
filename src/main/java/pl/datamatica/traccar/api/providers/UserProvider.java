@@ -483,8 +483,10 @@ public class UserProvider extends ProviderBase {
     public void updateUserBleDevices(long id, List<BleDeviceDto> dtos) throws ProviderException {
         if(id != requestUser.getId())
             throw new ProviderException(Type.ACCESS_DENIED);
-        if(!dtos.isEmpty())
+        if(!dtos.isEmpty()) {
             requestUser.setWasBleUser(true);
+            requestUser.setHadAnyDevice(true);
+        }
         
         Query q = em.createQuery("DELETE FROM BleDevice bd where bd.owner = :user");
         q.setParameter("user", requestUser);
