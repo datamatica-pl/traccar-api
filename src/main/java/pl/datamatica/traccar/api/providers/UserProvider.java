@@ -276,11 +276,12 @@ public class UserProvider extends ProviderBase {
         query = em.createQuery("SELECT g FROM GeoFence g WHERE :user in elements(g.users)");
         query.setParameter("user", user);
         for (GeoFence geo : (List<GeoFence>) query.getResultList()) {
-            Set<User> us = geo.getUsers();
-            if (us.size() == 1) {
-                geoProvider.delete(geo.getId());
+            if (geo.getOwner() == user) {
+                geo.setUsers(new HashSet<>());
+                em.remove(geo);
             }
             else {
+                Set<User> us = geo.getUsers();
                 us.remove(user);
                 geo.setUsers(us);
             }

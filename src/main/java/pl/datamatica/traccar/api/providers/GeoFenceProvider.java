@@ -108,6 +108,7 @@ public class GeoFenceProvider extends ProviderBase{
         GeoFence gf = new GeoFence();
         updateGeoFence(gf, geoFenceDto);
         gf.setUsers(Collections.singleton(requestUser));
+        gf.setOwner(requestUser);
         Set<Device> devices = Arrays.stream(geoFenceDto.getDeviceIds())
                 .mapToObj(id -> em.find(Device.class, id))
                 .collect(Collectors.toSet());
@@ -193,13 +194,16 @@ public class GeoFenceProvider extends ProviderBase{
         GeoFence gf = get(GeoFence.class, id, this::isVisible);
         if(!canDeleteGeofence(gf))
             throw new ProviderException(Type.ACCESS_DENIED);
-        gf.getUsers().remove(requestUser);
-        if(!gf.getUsers().isEmpty()) {
-            logger.info("{} stopped seeing geofence {} (id={})",
-                requestUser.getLogin(), gf.getName(), gf.getId());
-        } else {
+        
+        if(gf.getOwner().equals(requestUser) || requestUser.hasPermission(UserPermission.ALL_GEOFENCES)) {
             gf.setDeleted(true);
+            gf.setUsers(new HashSet<>());
             logger.info("{} deleted geofence {} (id={})",
+                requestUser.getLogin(), gf.getName(), gf.getId());
+        } 
+        else {
+            gf.getUsers().remove(requestUser);
+            logger.info("{} stopped seeing geofence {} (id={})",
                 requestUser.getLogin(), gf.getName(), gf.getId());
         }
         em.persist(gf);
@@ -208,6 +212,9 @@ public class GeoFenceProvider extends ProviderBase{
     }
 
     private boolean canDeleteGeofence(GeoFence gf) {
+        if (requestUser.hasPermission(UserPermission.ALL_GEOFENCES)) {
+            return true;
+        }
         return gf.getUsers().contains(requestUser);
     }
 }
