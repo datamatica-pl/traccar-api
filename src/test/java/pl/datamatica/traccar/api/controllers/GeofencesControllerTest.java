@@ -16,6 +16,7 @@
  */
 package pl.datamatica.traccar.api.controllers;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
@@ -35,11 +36,12 @@ import pl.datamatica.traccar.api.responses.ErrorResponse;
 import pl.datamatica.traccar.api.responses.HttpResponse;
 import pl.datamatica.traccar.api.responses.OkResponse;
 import pl.datamatica.traccar.model.GeoFence;
+import pl.datamatica.traccar.model.User;
 
 public class GeofencesControllerTest {
     GeoFenceProvider provider;
     GeofencesController controller;
-    
+    List<GeoFence> geofences = new ArrayList<>();
     
     @Before
     public void testInit() {
@@ -48,11 +50,16 @@ public class GeofencesControllerTest {
         Mockito.when(rc.getGeoFencesProvider()).thenReturn(provider);
         Mockito.when(rc.getModificationDate()).thenReturn(new Date(0));
         controller = new GeofencesController(rc);
+        
+        User user = new User();
+        GeoFence geo = new GeoFence();
+        geo.setOwner(user);
+        geofences.add(geo);
     }
     
     @Test
     public void getAll_ok() throws ProviderException{
-        Mockito.when(provider.getAllAvailableGeoFences()).thenReturn(Stream.of(new GeoFence()));
+        Mockito.when(provider.getAllAvailableGeoFences()).thenReturn(Stream.of(geofences.get(0)));
         
         HttpResponse response = controller.get();
         
@@ -64,7 +71,7 @@ public class GeofencesControllerTest {
     
     @Test
     public void getOne_ok() throws ProviderException {
-        Mockito.when(provider.getGeoFence(1)).thenReturn(new GeoFence());
+        Mockito.when(provider.getGeoFence(1)).thenReturn(geofences.get(0));
         
         HttpResponse response = controller.get(1);
         
@@ -104,7 +111,7 @@ public class GeofencesControllerTest {
                 .type("CIRCLE")
                 .deviceIds(new long[0])
                 .build();
-        Mockito.when(provider.createGeoFence(geofenceDto)).thenReturn(new GeoFence());
+        Mockito.when(provider.createGeoFence(geofenceDto)).thenReturn(geofences.get(0));
         
         HttpResponse response = controller.post(geofenceDto);
         
