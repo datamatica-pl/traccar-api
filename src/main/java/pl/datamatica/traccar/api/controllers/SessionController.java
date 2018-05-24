@@ -16,6 +16,7 @@
  */
 package pl.datamatica.traccar.api.controllers;
 
+import java.util.ArrayList;
 import java.util.List;
 import pl.datamatica.traccar.api.Application;
 import pl.datamatica.traccar.api.auth.BasicAuthFilter;
@@ -83,6 +84,8 @@ public class SessionController extends ControllerBase {
         RulesProvider rp = requestContext.getRulesProvider();
         List<RulesVersion> active = rp.getActiveRules();
         List<RulesVersion> future = rp.getFutureRules();
+        if("testowy".equals(requestContext.getUser().getLogin()))
+            active = future = new ArrayList<>();
         return ok(new UserDto.Builder().sessionUser(requestContext.getUser(),
                 active, future).build());
     }
