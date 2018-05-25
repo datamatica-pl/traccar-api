@@ -341,28 +341,30 @@ public class UsersController extends ControllerBase {
     
     private static String emailConfirmationContent(String url) {
         url = url.replace("46.41.148.107", "gps.petio.eu").replace("46.41.149.43", "trackman.pl");
+        Map<String, String> appInfo = Application.getAppInfo();
         
         return String.format("Witaj,<br/><br/>" +
-                "Dziękujemy za założenie konta w systemie " + getAppInfo().get("appName") + ".<br/>" +
+                "Dziękujemy za założenie konta w systemie " + appInfo.get("appName") + ".<br/>" +
                 "Twoje konto jest nieaktywne. Aby aktywować konto kliknij w poniższy link.<br/><br/><br/>" +
                 "<a href=\"%s\">Link do aktywacji konta</a><br/><br/>" +
                 "bądź skopiuj poniższy link i wklej do przeglądarki w pasku adresu.<br/><br/>" +
                 "%s<br/><br/>" +
                 "Uwaga: link aktywacyjny ważny jest przez 7 dni.<br/><br/><br/>" +
                 "Dziękujemy,<br/><br/>" +
-                "Zespół serwisu " + getAppInfo().get("appName") + "<br/><br/>" +
+                "Zespół serwisu " + appInfo.get("appName") + "<br/><br/>" +
                 "Ten email został wygenerowany automatycznie - nie odpowiadaj na niego.",
                 url, url);
     }
     
     private static String passResetReqContent(String url) {
         url = url.replace("46.41.148.107", "gps.petio.eu").replace("46.41.149.43", "trackman.pl");
+        Map<String, String> appInfo = Application.getAppInfo();
         
         return String.format("Witaj,<br/><br/>"
-                + "Odnotowaliśmy próbę odzyskania hasła do konta w systemie " + getAppInfo().get("appName") + ".<br/>"
+                + "Odnotowaliśmy próbę odzyskania hasła do konta w systemie " + appInfo.get("appName") + ".<br/>"
                 + "Nowe hasło zostanie wysłane na adres e-mail po kliknięciu poniższego linku:<br/><br/>"
                 + "%s<br/><br/>"
-                + "Zespół serwisu " + getAppInfo().get("appName") +  "<br/><br/>"
+                + "Zespół serwisu " + appInfo.get("appName") +  "<br/><br/>"
                 + "Ten email został wygenerowany automatycznie - nie odpowiadaj na niego.", 
                 url);
     }
@@ -373,7 +375,7 @@ public class UsersController extends ControllerBase {
                 + "%s<br/><br/>"
                 + "W celu zwiększenia bezpieczeństwa prosimy o zmianę wygenerowanego hasła "
                 + "po zalogowaniu się do systemu.<br/>"
-                + "Zespół serwisu " + getAppInfo().get("appName") +  "<br/><br/>"
+                + "Zespół serwisu " + Application.getAppInfo().get("appName") +  "<br/><br/>"
                 + "Ten email został wygenerowany automatycznie - nie odpowiadaj na niego.",
                 pass);
     }
@@ -381,39 +383,9 @@ public class UsersController extends ControllerBase {
     public HttpResponse activateUser(String token) {
         try {
             up.activateUser(token);
-            return redirect(getAppInfo().get("afterRegisterLink"));
+            return redirect(Application.getAppInfo().get("afterRegisterLink"));
         } catch (ProviderException ex) {
             return ok("");
         }
-    }
-    
-    private static Map<String, String> getAppInfo() {
-        Logger logger = LoggerFactory.getLogger(Application.class);
-        TraccarConfig traccarConf;
-        Map<String, String> appInfo = new HashMap<>();
-
-        appInfo.put("appName", "DM TrackMan / Petio / Travman");
-        appInfo.put("afterRegisterLink", "http://trackman.pl/rejestracja");
-
-        try {
-            traccarConf = TraccarConfig.getInstance();
-        } catch (ConfigLoadException e) {
-            logger.error("Instance of TraccarConfig cannot be obtained. Default values will be used");
-            return appInfo;
-        }
-
-        try {
-            appInfo.put("appName", traccarConf.getNotNullStringParam("dm_app.app_name"));
-        } catch (IllegalAccessException | InvocationTargetException e) {
-            logger.error("Config key dm_app.app_name cannot be get. Default value will be used.");
-        }
-
-        try {
-            appInfo.put("afterRegisterLink", traccarConf.getNotNullStringParam("dm_app.email.after_register_link"));
-        } catch (IllegalAccessException | InvocationTargetException e) {
-            logger.error("Config key dm_app.email.after_register_link cannot be get. Default value will be used.");
-        }
-
-        return appInfo;
     }
 }

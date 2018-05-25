@@ -30,6 +30,7 @@ import pl.datamatica.traccar.api.fcm.Daemon;
 import pl.datamatica.traccar.api.providers.ProviderException;
 import pl.datamatica.traccar.api.providers.UserProvider;
 import pl.datamatica.traccar.model.User;
+import pl.datamatica.traccar.model.UserEvent;
 import pl.datamatica.traccar.model.UserPermission;
 
 public class ClearDaemon extends Daemon{
@@ -42,7 +43,7 @@ public class ClearDaemon extends Daemon{
     @Override
     public void start(ScheduledExecutorService scheduler) {
         long mDiff = Helper.minutesToHourOfDay(CHECK_HOUR);
-        start(scheduler, mDiff, 60*24);
+        start(scheduler, 0, 60*24);
     }
 
     @Override
@@ -99,6 +100,31 @@ public class ClearDaemon extends Daemon{
             Set<User> uAndManaged = new HashSet<>(u.getAllManagedUsers());
             uAndManaged.add(u);
             long inactiveDays = Long.MAX_VALUE;
+            
+            List<UserEvent.Type> warnedAlready = em.createQuery(
+                    "SELECT DISTINCT ue.kind FROM "+UserEvent.class.getName()+" ue "+
+                    " WHERE ue.user = :user AND ue.lastRequestTime = :lrt", 
+                    UserEvent.Type.class)
+                    .setParameter("user", u)
+                    .setParameter("lrt", u.getLastRequestTime())
+                    .getResultList();
+            int nextWarn = 30;
+            UserEvent.Type nextWarnType = UserEvent.Type.INACTIVE_30D;
+            if(warnedAlready.contains(nextWarnType)) {
+                nextWarn = 90;
+                nextWarnType = UserEvent.Type.INACTIVE_90D;
+            }
+            if(warnedAlready.contains(nextWarnType)) {
+                nextWarn = 173;
+                nextWarnType = UserEvent.Type.INACTIVE_173D;
+            }
+            if(getDaysCount(now, u.getLastRequestTime().getTime()) >= nextWarn
+                    && !warnedAlready.contains(nextWarnType)) {
+                UserEvent ue = new UserEvent(u, nextWarnType, u.getLastRequestTime());
+                em.persist(ue);
+            }
+                
+                
             for(User u1 : uAndManaged)
                 inactiveDays = Math.min(inactiveDays, 
                         getDaysCount(now, u1.getLastRequestTime().getTime()));

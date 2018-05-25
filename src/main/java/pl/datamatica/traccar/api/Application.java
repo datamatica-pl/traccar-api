@@ -20,7 +20,10 @@ import java.awt.Image;
 import java.io.File;
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.lang.reflect.InvocationTargetException;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.logging.Level;
 import java.util.regex.Pattern;
@@ -34,6 +37,7 @@ import spark.Spark;
 import pl.datamatica.traccar.api.controllers.*;
 import pl.datamatica.traccar.api.auth.BasicAuthFilter;
 import pl.datamatica.traccar.api.controllers.RequestContext;
+import pl.datamatica.traccar.api.exceptions.ConfigLoadException;
 import pl.datamatica.traccar.api.fcm.AlarmDaemon;
 import pl.datamatica.traccar.api.fcm.Daemon;
 import pl.datamatica.traccar.api.fcm.SubscriptionDaemon;
@@ -78,7 +82,8 @@ public class Application implements spark.servlet.SparkApplication {
     private final Daemon[] DAEMONS = new Daemon[]{
             new AlarmDaemon(),
             new SubscriptionDaemon(),
-            new ClearDaemon()
+            new ClearDaemon(),
+            new NotificationDaemon()
         };
 
     @Override
@@ -180,5 +185,35 @@ public class Application implements spark.servlet.SparkApplication {
     public static String getConfigRecord(String key) throws Exception {
         InitialContext context = new InitialContext();
         return (String)context.lookup(key);
+    }
+    
+    public static Map<String, String> getAppInfo() {
+        Logger logger = LoggerFactory.getLogger(Application.class);
+        TraccarConfig traccarConf;
+        Map<String, String> appInfo = new HashMap<>();
+
+        appInfo.put("appName", "DM TrackMan / Petio / Travman");
+        appInfo.put("afterRegisterLink", "http://trackman.pl/rejestracja");
+
+        try {
+            traccarConf = TraccarConfig.getInstance();
+        } catch (ConfigLoadException e) {
+            logger.error("Instance of TraccarConfig cannot be obtained. Default values will be used");
+            return appInfo;
+        }
+
+        try {
+            appInfo.put("appName", traccarConf.getNotNullStringParam("dm_app.app_name"));
+        } catch (IllegalAccessException | InvocationTargetException e) {
+            logger.error("Config key dm_app.app_name cannot be get. Default value will be used.");
+        }
+
+        try {
+            appInfo.put("afterRegisterLink", traccarConf.getNotNullStringParam("dm_app.email.after_register_link"));
+        } catch (IllegalAccessException | InvocationTargetException e) {
+            logger.error("Config key dm_app.email.after_register_link cannot be get. Default value will be used.");
+        }
+
+        return appInfo;
     }
 }   
