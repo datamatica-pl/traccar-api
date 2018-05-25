@@ -16,7 +16,6 @@
  */
 package pl.datamatica.traccar.api;
 
-import java.util.Calendar;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
@@ -43,7 +42,7 @@ public class ClearDaemon extends Daemon{
     @Override
     public void start(ScheduledExecutorService scheduler) {
         long mDiff = Helper.minutesToHourOfDay(CHECK_HOUR);
-        start(scheduler, 0, 60*24);
+        start(scheduler, mDiff, 60*24);
     }
 
     @Override

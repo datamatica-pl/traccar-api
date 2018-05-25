@@ -16,7 +16,6 @@
  */
 package pl.datamatica.traccar.api;
 
-import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import javax.persistence.EntityManager;
 import pl.datamatica.traccar.api.fcm.Daemon;
@@ -24,6 +23,7 @@ import pl.datamatica.traccar.api.providers.MailSender;
 import pl.datamatica.traccar.model.UserEvent;
 
 public class NotificationDaemon extends Daemon {
+    private static final int CHECK_HOUR = 8;
     
     @Override
     protected void doWork(EntityManager em) {
@@ -52,7 +52,8 @@ public class NotificationDaemon extends Daemon {
 
     @Override
     public void start(ScheduledExecutorService scheduler) {
-        start(scheduler, 0, 8*60);
+        long mDiff = Helper.minutesToHourOfDay(CHECK_HOUR);
+        start(scheduler, mDiff, 24*60);
     }
 
     private int getInactiveDaysCount(UserEvent.Type kind) {
