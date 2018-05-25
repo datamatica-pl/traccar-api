@@ -325,6 +325,11 @@ public class UserProvider extends ProviderBase {
         query = em.createQuery("DELETE FROM BleDevice bd where bd.owner = :user");
         query.setParameter("user", user);
         query.executeUpdate();
+        
+        //UserEvent
+        query = em.createQuery("DELETE FROM UserEvent ue where ue.user = :user");
+        query.setParameter("user", user);
+        query.executeUpdate();
     }
     
     // REMOVING USER - END // 
