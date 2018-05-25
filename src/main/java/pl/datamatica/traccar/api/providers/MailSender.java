@@ -26,6 +26,28 @@ import javax.persistence.EntityManager;
 import pl.datamatica.traccar.model.NotificationSettings;
 
 public class MailSender {
+    private static final String HEADER = "<div style=\"display:inline-block\">\n" +
+"      <div style=\"overflow:hidden\">\n" +
+"        <a href=\"https://www.datamatica.pl\"><img style=\"margin:20px 50px;width:145px;height:36px\" \n" +
+"          src=\"http://datamatica.pl/wp-content/uploads/2017/12/Logo-DMweb.png\"></img></a>\n" +
+"        <img style=\"float:right;width:187px;height:71px\" usemap=\"#magic_map\"\n" +
+"          src=\"https://datamatica.sklep.pl/wp-content/uploads/2018/02/Grafika_promo_626x728-Copy-2@2x.png\"></img>\n" +
+"        <map name=\"magic_map\">\n" +
+"          <area shape=\"circle\" coords=\"35,36,29\" href=\"https://www.trackman.pl\" alt=\"TrackMan\">\n" +
+"          <area shape=\"circle\" coords=\"94,36,29\" href=\"https://www.travman.eu\" alt=\"Petio\">\n" +
+"          <area shape=\"circle\" coords=\"153,36,29\" href=\"https://www.petio.eu\" alt=\"Travman\"\n" +
+"        </map>\n" +
+"      </div>";
+    private static final String FOOTER = "<hr>\n" +
+"      <center>\n" +
+"        <p style=\"color:#808080\">DataMatica Sp. z o. o., ul. Kieślowskiego 3d lok. 1, 02-962 Warszawa</p>\n" +
+"        <a href=\"https://www.datamatica.pl\">www.datamatica.pl</a><br/>\n" +
+"        <a href=\"https://www.trackman.pl\">www.trackman.pl</a><br/>\n" +
+"        <a href=\"https://www.petio.eu\">www.petio.eu</a><br/>\n" +
+"        <a href=\"https://www.travman.eu\">www.travman.eu</a><br/>\n" +
+"      </center>\n" +
+"    </div>";
+    
     private NotificationSettings settings;
     
     public MailSender(EntityManager em) {
@@ -52,6 +74,7 @@ public class MailSender {
             msg.setRecipients(Message.RecipientType.TO, InternetAddress.parse(address, false));
             msg.setSubject(subject, "UTF-8");
 
+            message = HEADER+message+FOOTER;
             msg.setContent(message, "text/html; charset=utf-8");
             msg.setHeader("X-Mailer", "traccar-web.sendmail");
             msg.setSentDate(new Date());
