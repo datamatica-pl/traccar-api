@@ -208,6 +208,12 @@ public class UserProvider extends ProviderBase {
         removeUserSettings(user);
         removeUserResources(user);
         
+        if (user.getGeoFences() != null && user.getGeoFences().size() > 0) {
+            Query queryDelGeo = em.createQuery("DELETE FROM GeoFence WHERE owner_id = ?");
+            queryDelGeo.setParameter(1, user.getId());
+            queryDelGeo.executeUpdate();
+        }
+        
         Long userSettingsId =  user.getUserSettings() != null ? user.getUserSettings().getId() : null;
         Query query = em.createQuery("DELETE FROM User WHERE id = ?");
         query.setParameter(1, user.getId());
