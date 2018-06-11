@@ -48,6 +48,7 @@ import pl.datamatica.traccar.model.DeviceEventType;
 import pl.datamatica.traccar.model.PositionIconType;
 import pl.datamatica.traccar.model.GeoFence;
 import pl.datamatica.traccar.model.Group;
+import pl.datamatica.traccar.model.Route;
 import pl.datamatica.traccar.model.RulesVersion;
 import pl.datamatica.traccar.model.User;
 import pl.datamatica.traccar.model.UserPermission;
@@ -208,12 +209,6 @@ public class UserProvider extends ProviderBase {
         removeUserSettings(user);
         removeUserResources(user);
         
-        if (user.getGeoFences() != null && user.getGeoFences().size() > 0) {
-            Query queryDelGeo = em.createQuery("DELETE FROM GeoFence WHERE owner_id = ?");
-            queryDelGeo.setParameter(1, user.getId());
-            queryDelGeo.executeUpdate();
-        }
-        
         Long userSettingsId =  user.getUserSettings() != null ? user.getUserSettings().getId() : null;
         Query query = em.createQuery("DELETE FROM User WHERE id = ?");
         query.setParameter(1, user.getId());
@@ -289,9 +284,11 @@ public class UserProvider extends ProviderBase {
         em.flush();
 
         // tracks
-        query = em.createQuery("DELETE FROM Route r WHERE r.owner = :owner");
+        RouteProvider rp = new RouteProvider(em, user);
+        query = em.createQuery("SELECT r FROM Route r wHERE r.owner = :owner");
         query.setParameter("owner", user);
-        query.executeUpdate();
+        for(Route r : (List<Route>)query.getResultList())
+            rp.forceDeleteRoute(r);
         
         // geofences
         query = em.createQuery("SELECT g FROM GeoFence g WHERE :user in elements(g.users)");
@@ -307,6 +304,7 @@ public class UserProvider extends ProviderBase {
                 geo.setUsers(us);
             }
         }
+        em.flush();
         
         // groups
         for (Group gr : user.getGroups()) {
@@ -314,7 +312,7 @@ public class UserProvider extends ProviderBase {
             if (us == null) 
                 continue;
             if (us.size() == 1) {
-                deviceGroupProvider.deleteGroup(gr.getId());
+                deviceGroupProvider.hardRemoveGroup(gr);
             }
             else {
                 us.remove(user);

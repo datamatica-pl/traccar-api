@@ -127,7 +127,7 @@ public class DeviceGroupProvider extends ProviderBase {
         group.setName(dto.getName());
     }
     
-    private void hardRemoveGroup(Group group) {
+    void hardRemoveGroup(Group group) {
         // This feature isn't supported (parentGroup) but for consistency of foreign keys this SQL shouldn't be removed
         Query query = em.createQuery("SELECT g FROM Group g WHERE parent_id = :id");
         query.setParameter("id", group.getId());

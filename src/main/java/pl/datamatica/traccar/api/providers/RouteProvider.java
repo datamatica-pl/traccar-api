@@ -198,6 +198,10 @@ public class RouteProvider extends ProviderBase {
         if(!requestUser.hasPermission(UserPermission.TRACK_EDIT))
             throw new ProviderException(Type.ACCESS_DENIED);
         Route r = get(Route.class, id, this::isVisible);
+        forceDeleteRoute(r);
+    }
+    
+    void forceDeleteRoute(Route r) {
         if(r.getCorridor() != null) {
             GeoFence corr = r.getCorridor();
             r.setCorridor(null);
