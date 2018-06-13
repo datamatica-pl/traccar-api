@@ -541,7 +541,8 @@ public class EventDaemon {
                 if(position.getTime().before(start))
                     continue;
                 
-                for(RoutePoint rp : unvisited.get(route)) {
+                List<RoutePoint> rps = unvisited.get(route);
+                for(RoutePoint rp : rps) {
                     GeoFence gf = new GeoFence().copyFrom(rp.getGeofence());
                     gf.setDevices(Collections.singleton(route.getDevice()));
                     boolean beforeEnter = rp.getEnterTime() == null;
@@ -564,7 +565,7 @@ public class EventDaemon {
                     }
                 }
                 
-                if(visited == unvisited.size()) {
+                if(visited == rps.size()) {
                     recalc = true;
                     refreshUnvisited(route);
                 }
