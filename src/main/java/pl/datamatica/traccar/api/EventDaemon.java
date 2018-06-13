@@ -481,42 +481,19 @@ public class EventDaemon {
     
     public static class RoutesDetector extends EventProducer {
         GeoFenceCalculator gfCalc;
-        Map<Route, List<RoutePoint>> unvisited = new HashMap<>(); 
+        Map<Route, List<RoutePoint>> unvisited = new HashMap<>();
+        Map<Long, GeoFence> gfs;
         
         @Override
         void before() {
-            Map<Long, GeoFence> gfs = new HashMap<>();
+            gfs = new HashMap<>();
             List<Route> routes = entityManager.createQuery("SELECT distinct r FROM Route r "
                     + "LEFT JOIN FETCH r.routePoints "
                     + "WHERE r.device IS NOT NULL AND r.status IN (:status)", Route.class)
                     .setParameter("status", EnumSet.of(Route.Status.NEW, Route.Status.IN_PROGRESS_OK, Route.Status.IN_PROGRESS_LATE))
                     .getResultList();
             for(Route r : routes) {
-                if(r.getRoutePoints().get(0).getDeadline() == null)
-                    continue;
-                if(r.getStatus() == Route.Status.NEW && !r.getDevice().isValid(new Date()))
-                    continue;
-                unvisited.put(r, new ArrayList<>());
-                for(int i=0;i<r.getRoutePoints().size();++i) {
-                    RoutePoint rp = r.getRoutePoints().get(i);
-                    boolean add = rp.getEnterTime() == null || rp.getExitTime() == null;
-                    if(r.isForceFirst() && i == 0) {
-                        add = rp.getExitTime() == null;
-                    }
-                    if(r.isForceLast() && i == r.getRoutePoints().size() -1) {
-                        add = unvisited.get(r).isEmpty() && rp.getEnterTime() == null;
-                    }
-                    if(add) {
-                        long id = rp.getGeofence().getId();
-                        if(!gfs.containsKey(id)) {
-                            GeoFence gf = new GeoFence().copyFrom(rp.getGeofence());
-                            gf.setDevices(new HashSet<>());
-                            gfs.put(id, gf);  
-                        }
-                        gfs.get(id).getDevices().add(r.getDevice());
-                        unvisited.get(r).add(rp);
-                    }
-                }
+                refreshUnvisited(r);
             }
             if (gfs.isEmpty()) {
                 return;
@@ -524,9 +501,42 @@ public class EventDaemon {
             gfCalc = new GeoFenceCalculator(gfs.values());
         }
 
+        private void refreshUnvisited(Route r) {
+            if (r.getRoutePoints().get(0).getDeadline() == null)
+                return;
+            if (r.getStatus() == Route.Status.NEW && !r.getDevice().isValid(new Date()))
+                return;
+            if(unvisited.containsKey(r))
+                unvisited.get(r).clear();
+            else
+                unvisited.put(r, new ArrayList<>());
+            for(int i=0;i<r.getRoutePoints().size();++i) {
+                RoutePoint rp = r.getRoutePoints().get(i);
+                boolean add = rp.getEnterTime() == null || rp.getExitTime() == null;
+                if(r.isForceFirst() && i == 0) {
+                    add = rp.getExitTime() == null;
+                }
+                if(r.isForceLast() && i == r.getRoutePoints().size() -1) {
+                    add = unvisited.get(r).isEmpty() && rp.getEnterTime() == null;
+                }
+                if(add) {
+                    long id = rp.getGeofence().getId();
+                    if(!gfs.containsKey(id)) {
+                        GeoFence gf = new GeoFence().copyFrom(rp.getGeofence());
+                        gf.setDevices(new HashSet<>());
+                        gfs.put(id, gf);
+                    }
+                    gfs.get(id).getDevices().add(r.getDevice());
+                    unvisited.get(r).add(rp);
+                }
+            }
+        }
+
         @Override
-        void positionScanned(Position prevPosition, Position position) {            
+        void positionScanned(Position prevPosition, Position position) {
+            boolean recalc = false;
             for(Route route : unvisited.keySet()) {
+                int visited = 0;
                 Date start = new Date(route.getRoutePoints().get(0).getDeadline().getTime() - route.getTolerance()*60*1000);
                 if(position.getTime().before(start))
                     continue;
@@ -548,10 +558,20 @@ public class EventDaemon {
                         } else if (!containsCurrent && containsPrevious && !beforeEnter) {
                             rp.setExitTime(position.getTime());
                             entityManager.persist(rp);
+                            ++visited;
                             updateStatus(route, rp);
                         }
                     }
                 }
+                
+                if(visited == unvisited.size()) {
+                    recalc = true;
+                    refreshUnvisited(route);
+                }
+            }
+            if(recalc) {
+                gfCalc = new GeoFenceCalculator(gfs.values());
+                positionScanned(prevPosition, position);
             }
         }
         
