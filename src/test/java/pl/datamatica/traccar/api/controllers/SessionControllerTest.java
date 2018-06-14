@@ -28,10 +28,12 @@ import pl.datamatica.traccar.api.dtos.MessageKeys;
 import pl.datamatica.traccar.api.dtos.in.NotificationTokenDto;
 import pl.datamatica.traccar.api.dtos.out.ErrorDto;
 import pl.datamatica.traccar.api.dtos.out.UserDto;
+import pl.datamatica.traccar.api.providers.ApplicationSettingsProvider;
 import pl.datamatica.traccar.api.providers.ProviderException;
 import pl.datamatica.traccar.api.providers.RulesProvider;
 import pl.datamatica.traccar.api.providers.SessionProvider;
 import pl.datamatica.traccar.api.responses.*;
+import pl.datamatica.traccar.model.ApplicationSettings;
 import pl.datamatica.traccar.model.User;
 import pl.datamatica.traccar.model.UserSettings;
 
@@ -42,11 +44,15 @@ public class SessionControllerTest {
     private boolean isTokenValid;
     private Session session;
     private SessionProvider sp;
+    private ApplicationSettings settings;
     
     @Before
     public void testInit() {
         session = Mockito.mock(Session.class);
         sp = Mockito.mock(SessionProvider.class);
+        settings = new ApplicationSettings();
+        ApplicationSettingsProvider asp = Mockito.mock(ApplicationSettingsProvider.class);
+        Mockito.when(asp.get()).thenReturn(settings);
         RulesProvider rp = Mockito.mock(RulesProvider.class);
         requestUser = new User();
         requestUser.setLogin("test");
@@ -55,6 +61,7 @@ public class SessionControllerTest {
         Mockito.when(rc.getUser()).thenReturn(requestUser);
         Mockito.when(rc.getSessionProvider()).thenReturn(sp);
         Mockito.when(rc.session()).thenReturn(session);
+        Mockito.when(rc.getApplicationSettingsProvider()).thenReturn(asp);
         Mockito.when(rc.getRulesProvider()).thenReturn(rp);
         Mockito.when(rp.getActiveRules()).thenReturn(Collections.EMPTY_LIST);
         Mockito.when(rp.getFutureRules()).thenReturn(Collections.EMPTY_LIST);

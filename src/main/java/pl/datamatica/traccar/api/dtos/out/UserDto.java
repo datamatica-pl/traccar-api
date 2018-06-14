@@ -38,6 +38,7 @@ public class UserDto extends EditUserDto {
     private final List<RulesDto> unacceptedFutureRules;
     private final Date registrationTime;
     private final boolean hadAnyDevice;
+    private final Integer freeHistory;
 
     public static class Builder {
 
@@ -65,6 +66,7 @@ public class UserDto extends EditUserDto {
         private List<RulesDto> unacceptedFutureRules = new ArrayList<>();
         private Date registrationTime;
         private boolean hadAnyDevice;
+        private Integer freeHistory;
 
         public Builder id(final long value) {
             this.id = value;
@@ -182,7 +184,7 @@ public class UserDto extends EditUserDto {
         }
         
         public Builder sessionUser(final User user, List<RulesVersion> activeRules,
-                List<RulesVersion> futureRules) {
+                List<RulesVersion> futureRules, int freeHistory) {
             user(user);
             settings = new UserSettingsDto.Builder().userSettings(user.getUserSettings()).build();
             userGroup = new UserGroupDto.Builder().userGroup(user.getUserGroup()).build();
@@ -194,6 +196,7 @@ public class UserDto extends EditUserDto {
                 if(!user.seenRules(frv) || (frv.isObligatory() && !user.acceptsRules(frv)))
                     unacceptedFutureRules.add(new RulesDto.Builder().rulesVersion(frv).build());
             }
+            this.freeHistory = freeHistory;
             return this;
         }
         
@@ -208,7 +211,7 @@ public class UserDto extends EditUserDto {
                     manager, admin, archive, blocked, notificationEvents, readOnly,
                     settings, userGroup, premium, userGroupName,
                     unacceptedActiveRules, unacceptedFutureRules,
-                    registrationTime, hadAnyDevice
+                    registrationTime, hadAnyDevice, freeHistory
             );
         }
     }
@@ -236,7 +239,8 @@ public class UserDto extends EditUserDto {
             final List<RulesDto> unacceptedActiveRules,
             final List<RulesDto> unacceptedFutureRules,
             final Date registrationTime,
-            final boolean hadAnyDevice) {
+            final boolean hadAnyDevice,
+            final Integer freeHistory) {
         super(email, companyName, firstName, lastName, phoneNumber,
                 expirationDate, maxNumOfDevices, manager, admin, archive,
                 blocked, PASSWORD_PLACEHOLDER, notificationEvents, readOnly);
@@ -251,6 +255,7 @@ public class UserDto extends EditUserDto {
         this.unacceptedFutureRules = unacceptedFutureRules;
         this.registrationTime = registrationTime;
         this.hadAnyDevice = hadAnyDevice;
+        this.freeHistory = freeHistory;
     }
     
     public long getId() {

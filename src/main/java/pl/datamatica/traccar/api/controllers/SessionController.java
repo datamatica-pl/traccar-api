@@ -30,6 +30,7 @@ import pl.datamatica.traccar.api.providers.SessionProvider;
 import pl.datamatica.traccar.api.responses.HttpResponse;
 import spark.Spark;
 import pl.datamatica.traccar.api.validators.INotificationTokenValidator;
+import pl.datamatica.traccar.model.ApplicationSettings;
 import pl.datamatica.traccar.model.RulesVersion;
 import spark.Request;
 
@@ -81,13 +82,14 @@ public class SessionController extends ControllerBase {
     }
     
     public HttpResponse getUser() {
+        ApplicationSettings as = requestContext.getApplicationSettingsProvider().get();
         RulesProvider rp = requestContext.getRulesProvider();
         List<RulesVersion> active = rp.getActiveRules();
         List<RulesVersion> future = rp.getFutureRules();
         if("testowy".equals(requestContext.getUser().getLogin()))
             active = future = new ArrayList<>();
         return ok(new UserDto.Builder().sessionUser(requestContext.getUser(),
-                active, future).build());
+                active, future, as.getFreeHistory()).build());
     }
     
     public HttpResponse putNotificationToken(NotificationTokenDto tokenDto) {
