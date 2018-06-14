@@ -23,11 +23,13 @@ import javax.persistence.*;
 import org.junit.*;
 import static org.junit.Assert.*;
 import pl.datamatica.traccar.api.providers.ProviderException.*;
+import pl.datamatica.traccar.model.ApplicationSettings;
 import pl.datamatica.traccar.model.Position;
 
 public class PositionProviderTest {
     
     private PositionProvider provider;
+    private ApplicationSettings settings;
     private static TestDatabase database;
     private static EntityManager em;
     
@@ -42,11 +44,12 @@ public class PositionProviderTest {
     @Before
     public void testInit() {
         em.getTransaction().begin();
+        settings = new ApplicationSettings();
     }
     
     @Test
     public void get_ok() throws ProviderException {
-        provider = new PositionProvider(em, database.admin);
+        provider = new PositionProvider(em, database.admin, settings);
         Position expected = database.adminPosition;
        
         Position position = provider.get(expected.getId());
@@ -56,7 +59,7 @@ public class PositionProviderTest {
     
     @Test
     public void get_notFound() {
-        provider = new PositionProvider(em, database.admin);
+        provider = new PositionProvider(em, database.admin, settings);
         try {
             provider.get(859);
         } catch (ProviderException ex) {
@@ -68,7 +71,7 @@ public class PositionProviderTest {
     
     @Test
     public void get_accessDenied() {
-        provider = new PositionProvider(em, database.managed2);
+        provider = new PositionProvider(em, database.managed2, settings);
         try {
             provider.get(database.adminPosition.getId());
         } catch(ProviderException e) {
@@ -80,7 +83,7 @@ public class PositionProviderTest {
     
     @Test
     public void getAllAvailablePositions_success() throws ProviderException {
-        provider = new PositionProvider(em, database.manager);
+        provider = new PositionProvider(em, database.manager, settings);
         
         Position position = new Position();
         position.setLatitude(1.);
@@ -113,7 +116,7 @@ public class PositionProviderTest {
     
     @Test
     public void getAllAvailable_maxZero() throws ProviderException {
-        provider = new PositionProvider(em, database.manager);
+        provider = new PositionProvider(em, database.manager, settings);
         Calendar cal = Calendar.getInstance();
         cal.add(Calendar.DATE, -2);
         Stream<Position> result = provider.getAllAvailablePositions(database.managed2Device, cal.getTime(), null, 0);
@@ -123,7 +126,7 @@ public class PositionProviderTest {
     
     @Test
     public void getAllAvailable_maxOne() throws ProviderException {
-        provider = new PositionProvider(em, database.manager);
+        provider = new PositionProvider(em, database.manager, settings);
         Calendar cal = Calendar.getInstance();
         cal.add(Calendar.DATE, -2);
         Stream<Position> result = provider.getAllAvailablePositions(database.managed2Device, cal.getTime(), null, 1);
@@ -133,7 +136,7 @@ public class PositionProviderTest {
     
     @Test
     public void getAllAvailable_withEndTime() throws ProviderException {
-        provider = new PositionProvider(em, database.manager);
+        provider = new PositionProvider(em, database.manager, settings);
         Calendar startCal = Calendar.getInstance();
         startCal.add(Calendar.DATE, -2);
         Calendar endCal = Calendar.getInstance();

@@ -29,6 +29,7 @@ import static org.junit.Assert.fail;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import pl.datamatica.traccar.model.ApplicationSettings;
 import pl.datamatica.traccar.model.Group;
 
 /**
@@ -38,6 +39,7 @@ import pl.datamatica.traccar.model.Group;
 public class DeviceGroupProviderTest  {
     
     private DeviceGroupProvider provider;
+    private ApplicationSettings settings;
     private static TestDatabase database;
     private static EntityManager em;
     
@@ -52,12 +54,14 @@ public class DeviceGroupProviderTest  {
     @Before
     public void testInit() {
         em.getTransaction().begin();
+        settings = new ApplicationSettings();
     }
     
     @Test
     public void getAll_admin() throws ProviderException {
         provider = new DeviceGroupProvider(em, database.admin);
-        provider.setDeviceProvider(new DeviceProvider(em, database.admin, new ImeiProvider(em), provider, null, 0));
+        provider.setDeviceProvider(new DeviceProvider(em, database.admin, 
+                new ImeiProvider(em), provider, null, settings));
         
         List<Group> result = provider.getAllAvailableGroups().collect(Collectors.toList());
         
@@ -68,7 +72,8 @@ public class DeviceGroupProviderTest  {
     @Test
     public void getAll_managedUser() throws ProviderException {
         provider = new DeviceGroupProvider(em, database.managedUser);
-        provider.setDeviceProvider(new DeviceProvider(em, database.managedUser, new ImeiProvider(em), provider, null, 0));
+        provider.setDeviceProvider(new DeviceProvider(em, database.managedUser, 
+                new ImeiProvider(em), provider, null, settings));
         
         List<Group> result = provider.getAllAvailableGroups().collect(Collectors.toList());
         
@@ -82,7 +87,8 @@ public class DeviceGroupProviderTest  {
     @Test
     public void getAll_managed2User() throws ProviderException {
         provider = new DeviceGroupProvider(em, database.managed2);
-        provider.setDeviceProvider(new DeviceProvider(em, database.managed2, new ImeiProvider(em), provider, null, 0));
+        provider.setDeviceProvider(new DeviceProvider(em, database.managed2, 
+                new ImeiProvider(em), provider, null, settings));
         
         List<Group> result = provider.getAllAvailableGroups().collect(Collectors.toList());
         
@@ -96,7 +102,8 @@ public class DeviceGroupProviderTest  {
     @Test
     public void getAll_managed3User() throws ProviderException {
         provider = new DeviceGroupProvider(em, database.managed3);
-        provider.setDeviceProvider(new DeviceProvider(em, database.managed3, new ImeiProvider(em), provider, null, 0));
+        provider.setDeviceProvider(new DeviceProvider(em, database.managed3, 
+                new ImeiProvider(em), provider, null, settings));
         
         List<Group> result = provider.getAllAvailableGroups().collect(Collectors.toList());
         
@@ -108,7 +115,8 @@ public class DeviceGroupProviderTest  {
     @Test 
     public void delete_accessDanied() throws ProviderException {
         provider = new DeviceGroupProvider(em, database.managed3);
-        provider.setDeviceProvider(new DeviceProvider(em, database.managed3, new ImeiProvider(em), provider, null, 0));
+        provider.setDeviceProvider(new DeviceProvider(em, database.managed3, 
+                new ImeiProvider(em), provider, null, settings));
         
         try {
             provider.deleteGroup(database.adminDeviceGroup.getId());

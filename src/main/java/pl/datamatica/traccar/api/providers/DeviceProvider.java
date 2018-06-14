@@ -51,26 +51,28 @@ import pl.datamatica.traccar.model.UserPermission;
 import org.apache.commons.lang3.StringUtils;
 import pl.datamatica.traccar.api.metadata.model.DeviceModel;
 import pl.datamatica.traccar.api.metadata.model.LocalOrRemoteImeiNumber;
+import pl.datamatica.traccar.model.ApplicationSettings;
 
 public class DeviceProvider extends ProviderBase {
     private final User requestUser;
+    private final ApplicationSettings settings;
     private final ImeiProvider imeis;
     private final DeviceGroupProvider groups;
     private final PicturesProvider pictures;
     private final Logger logger;
     private final SimpleDateFormat dateFormat;
-    private final long defaultIconId;
     
     public DeviceProvider(EntityManager em, User requestUser, ImeiProvider imeis,
-            DeviceGroupProvider groups, PicturesProvider pictures, long defaultIconId) {
+            DeviceGroupProvider groups, PicturesProvider pictures,
+            ApplicationSettings settings) {
         super(em);
         this.requestUser = requestUser;
         this.imeis = imeis;
         this.groups = groups;
         this.pictures = pictures;
-        this.defaultIconId = defaultIconId;
         logger = DbLog.getLogger();
         dateFormat = new SimpleDateFormat(Application.DATE_FORMAT);
+        this.settings = settings;
     }
     
     public Device getDevice(long id) throws ProviderException {
@@ -182,8 +184,9 @@ public class DeviceProvider extends ProviderBase {
         device.setName(createGpsName());
         device.setUniqueId(imei);
         device.setUsers(Collections.singleton(requestUser));
-        device.setIconId(defaultIconId);
+        device.setIconId((long)settings.getDefaultIconId());
         device.setOwner(requestUser);
+        device.setHistoryLength(settings.getFreeHistory());
         
         final String modelName = imeiChecker.getDeviceModelName();
         

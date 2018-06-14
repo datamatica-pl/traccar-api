@@ -445,7 +445,8 @@ public abstract class ReportGenerator {
     
     Date getFromDate(ReportDto report, Device device) {
         Date from = report.getFromDate();
-        Date lastAvail = device.getLastAvailablePositionDate(new Date());
+        Date lastAvail = device.getLastAvailablePositionDate(new Date(),
+                applicationSettings.getFreeHistory());
         return from.before(lastAvail) ? lastAvail : from;
     }
 

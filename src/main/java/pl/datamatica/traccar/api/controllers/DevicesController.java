@@ -49,6 +49,7 @@ import pl.datamatica.traccar.api.providers.ProviderException;
 import pl.datamatica.traccar.api.responses.HttpResponse;
 import pl.datamatica.traccar.api.responses.OkCachedResponse;
 import pl.datamatica.traccar.api.utils.GeoUtils;
+import pl.datamatica.traccar.model.ApplicationSettings;
 import pl.datamatica.traccar.model.Device;
 import pl.datamatica.traccar.model.Picture;
 import pl.datamatica.traccar.model.Position;
@@ -158,6 +159,7 @@ public class DevicesController extends ControllerBase {
     private final DeviceProvider dp;
     private final DeviceGroupProvider gp;
     private final PositionProvider positions;
+    private final ApplicationSettings settings;
     private final Date minDate;
     private final SimpleDateFormat dateFormat;
     
@@ -169,14 +171,16 @@ public class DevicesController extends ControllerBase {
         this.positions = requestContext.getPositionProvider();
         this.minDate = requestContext.getModificationDate();
         this.dateFormat = new SimpleDateFormat(Application.DATE_FORMAT);
+        this.settings = requestContext.getApplicationSettingsProvider().get();
     }
 
     public HttpResponse get() throws Exception {
         List<Device> devices = dp.getAllAvailableDevices()
                 .filter(d -> !d.isDeleted())
                 .collect(Collectors.toList());
+        
         List<DeviceDto> changedDevices = devices.stream()
-                .map(d -> new DeviceDto.Builder().device(d).build())
+                .map(this::toDto)
                 .filter(d -> isModified(d.getModificationTime()))
                 .collect(Collectors.toList());
         long[] deviceIds = devices.stream()
@@ -193,10 +197,17 @@ public class DevicesController extends ControllerBase {
     public HttpResponse get(long id) throws Exception {
         try{
             Device dev = dp.getDevice(id);
-            return okCached(new DeviceDto.Builder().device(dev).build());
+            return okCached(toDto(dev));
         } catch(ProviderException e) {
             return handle(e);
         }
+    }
+    
+    private DeviceDto toDto(Device d) {
+        DeviceDto.Builder builder = new DeviceDto.Builder().device(d);
+        if(d.getValidTo() == null)
+            builder.historyLength(settings.getFreeHistory());
+        return builder.build();
     }
 
     public HttpResponse post(AddDeviceDto deviceDto) throws Exception {

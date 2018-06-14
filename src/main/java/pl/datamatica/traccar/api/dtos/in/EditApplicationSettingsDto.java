@@ -40,6 +40,7 @@ public class EditApplicationSettingsDto {
     private final String matchServiceURL;
     private final Long defaultUserGroupId;
     private final Integer defaultIconId;
+    private final Integer freeHistory;
 
     protected EditApplicationSettingsDto(boolean registrationEnabled, 
             Short updateInterval, 
@@ -50,7 +51,8 @@ public class EditApplicationSettingsDto {
             String bingMapsKey, 
             String matchServiceURL, 
             long defaultUserGroupId,
-            int defaultIconId) {
+            int defaultIconId,
+            int freeHistory) {
         this.registrationEnabled = registrationEnabled;
         this.updateInterval = updateInterval;
         this.defaultPasswordHash = defaultPasswordHash;
@@ -61,6 +63,7 @@ public class EditApplicationSettingsDto {
         this.matchServiceURL = matchServiceURL;
         this.defaultUserGroupId = defaultUserGroupId;
         this.defaultIconId = defaultIconId;
+        this.freeHistory = freeHistory;
     }
  
     public boolean isRegistrationEnabled() {
@@ -103,6 +106,10 @@ public class EditApplicationSettingsDto {
         return defaultIconId;
     }
     
+    public Integer getFreeHistory() {
+        return freeHistory;
+    }
+    
     public static List<ErrorDto> validate(EditApplicationSettingsDto dto) {
         if(dto == null)
             return Collections.singletonList(new ErrorDto(MessageKeys.ERR_DATA_NOT_PROVIDED));
@@ -139,7 +146,10 @@ public class EditApplicationSettingsDto {
         }
         if(dto.defaultIconId == null)
             errors.add(new ErrorDto(MessageKeys.ERR_APPSETTINGS_DEFAULT_ICON_ID_NOT_PROVIDED));
-        
+        if(dto.freeHistory == null)
+            errors.add(new ErrorDto(MessageKeys.ERR_APPSETTINGS_FREE_HISTORY_NOT_PROVIDED));
+        else if(dto.freeHistory <= 0) 
+            errors.add(new ErrorDto(MessageKeys.ERR_APPSETTINGS_FREE_HISTORY_NOT_POSITIVE));
         return errors;
     }
     
@@ -156,6 +166,7 @@ public class EditApplicationSettingsDto {
         private String newRulesUrl;
         private Date newRulesStartDate;
         private int defaultIconId;
+        private int freeHistory;
         
         public Builder() {
         }
@@ -210,6 +221,11 @@ public class EditApplicationSettingsDto {
             return this;
         }
         
+        public Builder freeHistory(int days) {
+            this.freeHistory = days;
+            return this;
+        }
+        
         public EditApplicationSettingsDto build() {
             return new EditApplicationSettingsDto(registrationEnabled, 
                     updateInterval, 
@@ -220,7 +236,8 @@ public class EditApplicationSettingsDto {
                     bingMapsKey, 
                     matchServiceURL, 
                     defaultUserGroupId,
-                    defaultIconId
+                    defaultIconId,
+                    freeHistory
             );
         }
     }

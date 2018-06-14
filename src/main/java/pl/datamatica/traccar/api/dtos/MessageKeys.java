@@ -107,6 +107,8 @@ public class MessageKeys {
     public static final String ERR_APPSETTINGS_ILLEGAL_PASSWORD_HASH_METHOD = "err_appsettings_illegal_password_hash_method";
     public static final String ERR_APPSETTINGS_DEFAULT_USER_GROUP_NOT_PROVIDED = "err_appsettings_default_user_group_not_provided";
     public static final String ERR_APPSETTINGS_DEFAULT_ICON_ID_NOT_PROVIDED = "err_appsettings_default_icon_id_not_provided";
+    public static final String ERR_APPSETTINGS_FREE_HISTORY_NOT_PROVIDED = "err_appsettings_free_history_not_provided";
+    public static final String ERR_APPSETTINGS_FREE_HISTORY_NOT_POSITIVE = "err_appsettings_free_history_not_positive";
 
     public static final String ERR_APPVERSIONS_VERSION_NOT_PROVIDED = "err_appversions_version_not_provided";
     public static final String ERR_APPVERSIONS_VERSION_REGEX_MISMATCH = "err_appversions_version_regex_mismatch";

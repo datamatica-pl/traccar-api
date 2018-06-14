@@ -27,6 +27,7 @@ import javax.persistence.EntityManager;
 import javax.persistence.TypedQuery;
 import pl.datamatica.traccar.api.dtos.out.ErrorDto;
 import pl.datamatica.traccar.api.utils.GeoUtils;
+import pl.datamatica.traccar.model.ApplicationSettings;
 import pl.datamatica.traccar.model.Device;
 import pl.datamatica.traccar.model.Position;
 import pl.datamatica.traccar.model.User;
@@ -35,12 +36,14 @@ import pl.datamatica.traccar.model.UserPermission;
 public class PositionProvider extends ProviderBase {
     
     private final User user;
+    private final ApplicationSettings settings;
     private final TypedQuery<Position> positionListQuery;
     private final TypedQuery<Position> historyQuery;
     
-    public PositionProvider(EntityManager em, User user) {
+    public PositionProvider(EntityManager em, User user, ApplicationSettings settings) {
         super(em);
         this.user = user;
+        this.settings = settings;
         
         positionListQuery = em.createQuery("from Position p "
                 + "where p.device = :device and p.serverTime >= :minDate and p.serverTime <= :maxDate "
@@ -63,7 +66,8 @@ public class PositionProvider extends ProviderBase {
         if (!user.hasPermission(UserPermission.HISTORY_READ))
             throw new ProviderException(ProviderException.Type.ACCESS_DENIED);
         
-        Date lastAvailPos = device.getLastAvailablePositionDate(new Date());
+        Date lastAvailPos = device.getLastAvailablePositionDate(new Date(),
+                settings.getFreeHistory());
         
         if(minDate == null && user.hasPermission(UserPermission.ALL_HISTORY))
             minDate = new Date(0);
@@ -93,7 +97,8 @@ public class PositionProvider extends ProviderBase {
         if (!user.hasPermission(UserPermission.HISTORY_READ))
             throw new ProviderException(ProviderException.Type.ACCESS_DENIED);
         
-        Date lastAvailPos = device.getLastAvailablePositionDate(new Date());
+        Date lastAvailPos = device.getLastAvailablePositionDate(new Date(), 
+                settings.getFreeHistory());
         
         if(minDate == null && user.hasPermission(UserPermission.ALL_HISTORY))
             minDate = new Date(0);
@@ -149,7 +154,8 @@ public class PositionProvider extends ProviderBase {
                 .anyMatch(d -> d.equals(p.getDevice())))
             return false;
         
-        Date lastAvailPos = p.getDevice().getLastAvailablePositionDate(new Date());
+        Date lastAvailPos = p.getDevice().getLastAvailablePositionDate(new Date(),
+                settings.getFreeHistory());
         return lastAvailPos.before(p.getTime());
     }
     

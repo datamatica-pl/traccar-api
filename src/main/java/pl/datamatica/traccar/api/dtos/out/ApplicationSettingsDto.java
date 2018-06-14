@@ -36,7 +36,8 @@ public class ApplicationSettingsDto extends EditApplicationSettingsDto {
             String bingMapsKey, 
             String matchServiceURL, 
             long defaultUserGroupId,
-            int defaultIconId) {
+            int defaultIconId,
+            int freeHistory) {
         super(registrationEnabled, 
                     updateInterval, 
                     defaultPasswordHash, 
@@ -46,7 +47,8 @@ public class ApplicationSettingsDto extends EditApplicationSettingsDto {
                     bingMapsKey, 
                     matchServiceURL, 
                     defaultUserGroupId,
-                    defaultIconId);
+                    defaultIconId,
+                    freeHistory);
         this.id = id;
     }
     
@@ -62,6 +64,7 @@ public class ApplicationSettingsDto extends EditApplicationSettingsDto {
         private String matchServiceURL;
         private long defaultUserGroupId;
         private int defaultIconId;
+        private int freeHistory;
         
         public Builder() {
         }
@@ -121,6 +124,11 @@ public class ApplicationSettingsDto extends EditApplicationSettingsDto {
             return this;
         }
         
+        public Builder freeHistory(int value) {
+            this.freeHistory = value;
+            return this;
+        }
+        
         public Builder purgeConfidentialData() {
             this.bingMapsKey = null;
             this.matchServiceURL = null;
@@ -139,6 +147,7 @@ public class ApplicationSettingsDto extends EditApplicationSettingsDto {
             this.matchServiceURL = as.getMatchServiceURL();
             this.defaultUserGroupId = as.getDefaultGroup().getId();
             this.defaultIconId = as.getDefaultIconId();
+            this.freeHistory = as.getFreeHistory();
             return this;
         }
         
@@ -153,7 +162,8 @@ public class ApplicationSettingsDto extends EditApplicationSettingsDto {
                     bingMapsKey, 
                     matchServiceURL, 
                     defaultUserGroupId,
-                    defaultIconId);
+                    defaultIconId,
+                    freeHistory);
         }
     }
 }

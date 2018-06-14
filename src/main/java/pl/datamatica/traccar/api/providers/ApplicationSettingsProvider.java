@@ -16,7 +16,6 @@
  */
 package pl.datamatica.traccar.api.providers;
 
-import java.util.Date;
 import java.util.List;
 import java.util.Objects;
 import javax.persistence.EntityManager;
@@ -26,7 +25,6 @@ import pl.datamatica.traccar.model.ApplicationSettings;
 import pl.datamatica.traccar.model.AuditLog;
 import pl.datamatica.traccar.model.AuditLogType;
 import pl.datamatica.traccar.model.PasswordHashMethod;
-import pl.datamatica.traccar.model.RulesVersion;
 import pl.datamatica.traccar.model.User;
 import pl.datamatica.traccar.model.UserGroup;
 import pl.datamatica.traccar.model.UserPermission;
@@ -76,6 +74,7 @@ public class ApplicationSettingsProvider{
         as.setBingMapsKey(dto.getBingMapsKey());
         as.setMatchServiceURL(dto.getMatchServiceURL());
         as.setDefaultIconId(dto.getDefaultIconId());
+        as.setFreeHistory(dto.getFreeHistory());
         
         if (requestUser.hasPermission(UserPermission.USER_GROUP_MANAGEMENT) && dto.getDefaultUserGroupId() != null) {
             UserGroup group = userGroupsProvider.getGroup(dto.getDefaultUserGroupId());
@@ -106,6 +105,8 @@ public class ApplicationSettingsProvider{
             addSingleChangeAuditLog("bingMapsKey", dto.getBingMapsKey());
         if (!Objects.equals(as.getMatchServiceURL(), dto.getMatchServiceURL()))
             addSingleChangeAuditLog("matchServiceURL", dto.getMatchServiceURL());
+        if(as.getFreeHistory() != dto.getFreeHistory())
+            addSingleChangeAuditLog("freeHistory", ""+dto.getFreeHistory());
     }
     
     private void addSingleChangeAuditLog(String fieldName, String fieldNewValue) {

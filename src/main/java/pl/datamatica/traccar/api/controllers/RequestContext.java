@@ -94,9 +94,10 @@ public class RequestContext implements AutoCloseable {
     
     public DeviceProvider getDeviceProvider() {
         if(devices == null) {
-            long defIconId = getApplicationSettingsProvider().get().getDefaultIconId();
+            appSettings = getApplicationSettingsProvider();
             devices = new DeviceProvider(em, user, getImeiProvider(), 
-                    getDeviceGroupProvider(), getPicturesProvider(), defIconId);
+                    getDeviceGroupProvider(), getPicturesProvider(),
+                    appSettings.get());
         }
         return devices;
     }
@@ -136,8 +137,11 @@ public class RequestContext implements AutoCloseable {
     }
     
     public PositionProvider getPositionProvider() {
-        if(positions == null)
-            positions = new PositionProvider(em, user);
+        if(positions == null) {
+            appSettings = getApplicationSettingsProvider();
+            ApplicationSettings as = appSettings.get();
+            positions = new PositionProvider(em, user, as);
+        }
         return positions;
     }
     
@@ -162,7 +166,8 @@ public class RequestContext implements AutoCloseable {
     }
     
     public AlertProvider getAlertProvider() {
-        AlertProvider provider = new AlertProvider(em, user);
+        appSettings = getApplicationSettingsProvider();
+        AlertProvider provider = new AlertProvider(em, user, appSettings.get());
         return provider;
     }
     
@@ -188,11 +193,13 @@ public class RequestContext implements AutoCloseable {
     
     public DeviceGroupProvider getDeviceGroupProvider() {
         if (deviceGroupProvider == null) {
+            appSettings = getApplicationSettingsProvider();
             deviceGroupProvider = new DeviceGroupProvider(em, user);
             if (devices == null) {
                 long defIconId = getApplicationSettingsProvider().get().getDefaultIconId();
                 devices = new DeviceProvider(em, user, getImeiProvider(), 
-                        deviceGroupProvider, getPicturesProvider(), defIconId);
+                        deviceGroupProvider, getPicturesProvider(),
+                        appSettings.get());
             }
             deviceGroupProvider.setDeviceProvider(devices);
         }

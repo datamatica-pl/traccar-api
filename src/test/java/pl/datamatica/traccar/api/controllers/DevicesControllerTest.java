@@ -38,6 +38,7 @@ import pl.datamatica.traccar.api.dtos.out.DeviceDto;
 import pl.datamatica.traccar.api.dtos.out.ErrorDto;
 import pl.datamatica.traccar.api.dtos.out.ListDto;
 import pl.datamatica.traccar.api.dtos.out.PositionDto;
+import pl.datamatica.traccar.api.providers.ApplicationSettingsProvider;
 import pl.datamatica.traccar.api.providers.DeviceProvider;
 import pl.datamatica.traccar.api.providers.PositionProvider;
 import pl.datamatica.traccar.api.providers.PositionProvider.PositionSpeedOperator;
@@ -46,6 +47,7 @@ import pl.datamatica.traccar.api.providers.ProviderException;
 import pl.datamatica.traccar.api.providers.ProviderException.Type;
 import pl.datamatica.traccar.api.providers.UserProvider;
 import pl.datamatica.traccar.api.responses.*;
+import pl.datamatica.traccar.model.ApplicationSettings;
 import pl.datamatica.traccar.model.Device;
 import pl.datamatica.traccar.model.Position;
 import pl.datamatica.traccar.model.User;
@@ -57,6 +59,7 @@ public class DevicesControllerTest {
     private PositionProvider pp;
     private UserProvider up;
     private DevicesController dc;
+    private ApplicationSettings settings;
     private RequestContext rc;
     private List<Device> devices;
     
@@ -68,10 +71,14 @@ public class DevicesControllerTest {
         dp = Mockito.mock(DeviceProvider.class);
         pp = Mockito.mock(PositionProvider.class);
         up = Mockito.mock(UserProvider.class);
+        settings = new ApplicationSettings();
+        ApplicationSettingsProvider asp = Mockito.mock(ApplicationSettingsProvider.class);
+        Mockito.when(asp.get()).thenReturn(settings);
         Mockito.when(rc.getDeviceProvider()).thenReturn(dp);
         Mockito.when(rc.getPositionProvider()).thenReturn(pp);
         Mockito.when(rc.getUserProvider()).thenReturn(up);
         Mockito.when(rc.getUser()).thenReturn(user);
+        Mockito.when(rc.getApplicationSettingsProvider()).thenReturn(asp);
         Mockito.when(up.getAllAvailableUsers()).thenReturn(Stream.<User>empty());
         dc = new DevicesController(rc);
         devices = IntStream.range(0, 3)

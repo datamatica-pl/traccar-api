@@ -25,6 +25,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 import javax.persistence.EntityManager;
 import javax.persistence.TypedQuery;
+import pl.datamatica.traccar.model.ApplicationSettings;
 import pl.datamatica.traccar.model.Device;
 import pl.datamatica.traccar.model.DeviceEvent;
 import pl.datamatica.traccar.model.DeviceEventType;
@@ -37,11 +38,14 @@ public class AlertProvider {
     private final User requestUser;
     private final DeviceProvider devices;
     private final GeoFenceProvider geofences;
+    private final ApplicationSettings settings;
     
-    public AlertProvider(EntityManager em, User requestUser) {
+    public AlertProvider(EntityManager em, User requestUser, 
+            ApplicationSettings settings) {
         this.em = em;
         this.requestUser = requestUser;
-        this.devices = new DeviceProvider(em, requestUser, null, null, null, -1);
+        this.settings = settings;
+        this.devices = new DeviceProvider(em, requestUser, null, null, null, null);
         this.geofences = new GeoFenceProvider(em);
         geofences.setRequestUser(requestUser);
     }
@@ -92,7 +96,7 @@ public class AlertProvider {
         return events.stream()
                 .filter(e -> ChronoUnit.DAYS.between(e.getTime().toInstant()
                         .atZone(ZoneId.systemDefault()).toLocalDate(), 
-                        LocalDate.now()) <= e.getDevice().getAlertsHistoryLength())
+                        LocalDate.now()) <= e.getDevice().getAlertsHistoryLength(settings))
                 .filter(e -> e.getPosition().getValid() != null 
                         && e.getPosition().getValid())
                 .filter(e -> e.getPosition().getSpeed() == null 
