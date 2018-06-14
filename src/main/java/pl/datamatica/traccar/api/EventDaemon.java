@@ -565,7 +565,7 @@ public class EventDaemon {
                     }
                 }
                 
-                if(visited == rps.size()) {
+                if(visited != 0 && visited == rps.size()) {
                     recalc = true;
                     refreshUnvisited(route);
                 }
