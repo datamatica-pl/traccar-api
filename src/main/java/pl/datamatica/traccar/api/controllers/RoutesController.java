@@ -16,16 +16,31 @@
  */
 package pl.datamatica.traccar.api.controllers;
 
+import com.google.gson.Gson;
+import java.lang.reflect.InvocationTargetException;
+import java.net.URL;
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
+import java.util.Scanner;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.stream.Collectors;
+import javax.net.ssl.HttpsURLConnection;
 import pl.datamatica.traccar.api.Application;
+import pl.datamatica.traccar.api.Context;
+import pl.datamatica.traccar.api.TraccarConfig;
+import pl.datamatica.traccar.api.dtos.MessageKeys;
 import pl.datamatica.traccar.api.dtos.in.EditRouteDto;
 import pl.datamatica.traccar.api.dtos.out.ErrorDto;
 import pl.datamatica.traccar.api.dtos.out.RouteDto;
+import pl.datamatica.traccar.api.exceptions.ConfigLoadException;
 import pl.datamatica.traccar.api.providers.ProviderException;
+import pl.datamatica.traccar.api.providers.RouteProvider;
 import pl.datamatica.traccar.api.responses.HttpResponse;
 import pl.datamatica.traccar.model.Route;
 import spark.Request;
+import spark.Response;
 import spark.Spark;
 
 /**
@@ -56,6 +71,11 @@ public class RoutesController extends ControllerBase {
                 return render(rc.post(dto), res);
             }, gson::toJson);
             
+            Spark.post(baseUrl()+"/findPolyline", (req, res) -> {
+                RoutesController rc = createController(req);
+                return rc.findPolyline(req, res);
+            });
+            
             Spark.delete(baseUrl()+"/:id", (req, res) -> {
                 RoutesController rc = createController(req);
                 long id = Long.parseLong(req.params(":id"));
@@ -72,8 +92,16 @@ public class RoutesController extends ControllerBase {
         }
     }
     
+    private static final String CONFIG_API_KEY = "api.directions_key";
+    private String apiKey;
+    
     public RoutesController(RequestContext requestContext) {
         super(requestContext);
+        try {
+            apiKey = TraccarConfig.getInstance().getNotNullStringParam(CONFIG_API_KEY);
+        } catch (ConfigLoadException | IllegalAccessException | InvocationTargetException ex) {
+            Logger.getLogger(RoutesController.class.getName()).log(Level.SEVERE, null, ex);
+        }
     }
     
     public HttpResponse<List<RouteDto>> get(boolean archive) throws ProviderException {
@@ -114,6 +142,33 @@ public class RoutesController extends ControllerBase {
             return ok("");
         } catch(ProviderException e) {
             return handle(e);
+        }
+    }
+    
+    private String findPolyline(Request req, Response res) throws Exception {
+        final Gson gson = Context.getInstance().getGson();
+        RouteProvider rp = requestContext.getRouteProvider();
+        rp.updateLimit();
+        if(rp.isLimitReached()) {
+            res.status(429);
+            return gson.toJson(Collections.singletonList(
+                    new ErrorDto(MessageKeys.ERR_ROUTE_REQ_LIMIT_EXCEEDED)));
+        }
+        
+        StringBuilder url = new StringBuilder("https://api.openrouteservice.org/directions?api_key=");
+        url.append(apiKey);
+        for(Map.Entry<String, String[]> param : req.queryMap().toMap().entrySet()) {
+            url.append("&").append(param.getKey()).append("=").append(param.getValue()[0]);
+        }
+        HttpsURLConnection conn = null;
+        try {
+            conn = (HttpsURLConnection)new URL(url.toString()).openConnection();
+            res.status(conn.getResponseCode());
+            Scanner sc = new Scanner(conn.getInputStream()).useDelimiter("\\A");
+            return sc.next();
+        } finally {
+            if(conn != null)
+                conn.disconnect();
         }
     }
     

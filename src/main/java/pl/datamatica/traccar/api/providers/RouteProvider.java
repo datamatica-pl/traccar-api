@@ -37,6 +37,7 @@ import pl.datamatica.traccar.model.GeoFence.LonLat;
 import pl.datamatica.traccar.model.GeoFenceType;
 import pl.datamatica.traccar.model.Route;
 import pl.datamatica.traccar.model.RoutePoint;
+import pl.datamatica.traccar.model.UserRequest;
 
 /**
  *
@@ -46,6 +47,7 @@ public class RouteProvider extends ProviderBase {
     private final String SELECT_WITH_JOINS = "select distinct r from Route r left join fetch r.device"
             + " left join fetch r.routePoints rp left join fetch rp.geofence"
             + " left join fetch r.corridor";
+    private static final int LIMIT = 250;
     
     private final User requestUser;
     private DeviceProvider devices;
@@ -231,6 +233,33 @@ public class RouteProvider extends ProviderBase {
         Query q = em.createNativeQuery("delete from geofences where id = ?");
         q.setParameter(1, gf.getId());
         q.executeUpdate();
+    }
+    
+    public void updateLimit() {
+        Date today = new Date();
+        List<UserRequest> ur = em.createQuery("FROM UserRequest ur "
+                + "WHERE ur.id.user = ? AND ur.id.date = ?", UserRequest.class)
+                .setParameter(1, requestUser)
+                .setParameter(2, today)
+                .getResultList();
+        if(ur.isEmpty())
+            em.persist(new UserRequest(requestUser, today));
+        else
+            ur.get(0).increaseCount();
+        em.flush();
+    }
+    
+    public boolean isLimitReached() {
+        Date today = new Date();
+        List<UserRequest> ur = em.createQuery("FROM UserRequest ur "
+                + "WHERE ur.id.user = ? AND ur.id.date = ?", UserRequest.class)
+                .setParameter(1, requestUser)
+                .setParameter(2, today)
+                .getResultList();
+        if(ur.isEmpty())
+            return false;
+        else
+            return ur.get(0).getCount() > LIMIT;
     }
     
     private boolean isVisible(Route r) {
