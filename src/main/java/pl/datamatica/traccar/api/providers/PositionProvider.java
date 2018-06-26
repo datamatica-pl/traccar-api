@@ -48,7 +48,7 @@ public class PositionProvider extends ProviderBase {
         positionListQuery = em.createQuery("from Position p "
                 + "where p.device = :device and p.serverTime >= :minDate and p.serverTime <= :maxDate "
                 +   "and (validStatus is null or validStatus = :valid) "
-                + "order by p.serverTime", Position.class);
+                + "order by p.serverTime, p.time", Position.class);
         
         historyQuery = em.createQuery("from Position p "
                 +"where p.device = :device and p.time between :minDate and :maxDate "
