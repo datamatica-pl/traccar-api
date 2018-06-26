@@ -34,6 +34,7 @@ public class RouteBaseDto {
     private final Boolean forceLast;
     private final List<RoutePointDto> points;
     private final String polyline;
+    private final Integer length;
 
     public RouteBaseDto(String name,
             Long deviceId, 
@@ -42,7 +43,8 @@ public class RouteBaseDto {
             boolean forceFirst, 
             boolean forceLast, 
             List<RoutePointDto> points, 
-            String polyline) {
+            String polyline,
+            int length) {
         this.name = name;
         this.deviceId = deviceId;
         this.tolerance = tolerance;
@@ -51,6 +53,7 @@ public class RouteBaseDto {
         this.forceLast = forceLast;
         this.points = points;
         this.polyline = polyline;
+        this.length = length;
     }
 
     public String getName() {
@@ -85,6 +88,10 @@ public class RouteBaseDto {
         return polyline;
     }
     
+    public Integer getLength() {
+        return length;
+    }
+    
     
 
     public static class Builder {
@@ -97,6 +104,7 @@ public class RouteBaseDto {
         protected Boolean forceLast;
         protected List<RoutePointDto> points;
         protected String polyline;
+        protected Integer length;
 
         public Builder() {
         }
@@ -136,13 +144,18 @@ public class RouteBaseDto {
             return this;
         }
         
+        public Builder length(final int value) {
+            this.length = value;
+            return this;
+        }
+        
         public Builder name(final String value) {
             this.name = value;
             return this;
         }
         
         public Builder route(final Route route) {
-            name(route.getName());
+            name(route.getName()).length(route.getLength());
             tolerance(route.getTolerance()).archiveAfter(route.getArchiveAfter())
                     .forceFirst(route.isForceFirst()).forceLast(route.isForceLast());
             if(route.getDevice() != null)
@@ -156,7 +169,7 @@ public class RouteBaseDto {
 
         public RouteBaseDto build() {
             return new RouteBaseDto(name, deviceId, tolerance, archiveAfter, 
-                    forceFirst, forceLast, points, polyline);
+                    forceFirst, forceLast, points, polyline, length);
         }
     }    
 }

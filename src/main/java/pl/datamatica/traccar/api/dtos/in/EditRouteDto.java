@@ -30,9 +30,10 @@ public class EditRouteDto extends RouteBaseDto {
     
     public EditRouteDto(String name, Long deviceId, int tolerance, int archiveAfter, 
             boolean forceFirst, boolean forceLast, List<RoutePointDto> points, 
-            String polyline, List<AddGeoFenceDto> newGeofences, Float corridorWidth,
-            Boolean archive, Boolean cancel) {
-        super(name, deviceId, tolerance, archiveAfter, forceFirst, forceLast, points, polyline);
+            String polyline, Integer length, List<AddGeoFenceDto> newGeofences, 
+            Float corridorWidth, Boolean archive, Boolean cancel) {
+        super(name, deviceId, tolerance, archiveAfter, forceFirst, forceLast, points, 
+                polyline, length);
         this.newGeofences = newGeofences;
         this.corridorWidth = corridorWidth;
         this.archive = archive;
@@ -79,6 +80,8 @@ public class EditRouteDto extends RouteBaseDto {
             errors.add(new ErrorDto(MessageKeys.ERR_ROUTE_POLYLINE_NOT_PROVIDED));
         for(AddGeoFenceDto gf : dto.getNewGeofences())
             errors.addAll(AddGeoFenceDto.validateGeofenceFromRoute(gf));
+        if(dto.getLength() == null)
+            errors.add(new ErrorDto(MessageKeys.ERR_ROUTE_LENGTH_NOT_PROVIDED));
         return errors;
     }
 }

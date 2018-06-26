@@ -37,8 +37,9 @@ public class RouteDto extends RouteBaseDto {
             String name, Long deviceId, int tolerance, 
             int archiveAfter, boolean forceFirst, 
             boolean forceLast, List<RoutePointDto> points, 
-            String polyline) {
-        super(name, deviceId, tolerance, archiveAfter, forceFirst, forceLast, points, polyline);
+            String polyline, Integer length) {
+        super(name, deviceId, tolerance, archiveAfter, forceFirst, forceLast, points, 
+                polyline, length);
         this.id = id;
         this.createdDate = createdDate;
         this.status = status;
@@ -86,7 +87,8 @@ public class RouteDto extends RouteBaseDto {
 
         public RouteDto build() {
             return new RouteDto(id, createdDate, status, corridorId, name, deviceId, 
-                    tolerance, archiveAfter, forceFirst, forceLast, points, polyline);
+                    tolerance, archiveAfter, forceFirst, forceLast, points, 
+                    polyline, length);
         }
     }    
 }

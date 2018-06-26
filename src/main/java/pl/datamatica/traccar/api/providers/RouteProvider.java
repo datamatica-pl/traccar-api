@@ -125,6 +125,7 @@ public class RouteProvider extends ProviderBase {
             }
             r.setArchived(dto.getArchive());
         }
+        r.setLength(dto.getLength());
         GeoFence corr = r.getCorridor();
         if(r.getCorridor() == null) {
             corr = new GeoFence();
