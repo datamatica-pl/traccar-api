@@ -22,6 +22,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.stream.Collectors;
+import org.apache.commons.lang3.StringUtils;
 import pl.datamatica.traccar.api.Application;
 import pl.datamatica.traccar.api.dtos.MessageKeys;
 import pl.datamatica.traccar.api.dtos.out.ErrorDto;
@@ -195,7 +196,8 @@ public class AddGeoFenceDto implements IGeoFenceInfo {
             if(!matcher.matches())
                 errors.add(new ErrorDto(MessageKeys.ERR_INVALID_COLOR_FORMAT));
         }
-        if(geoFenceDto.geofenceName == null || geoFenceDto.geofenceName.isEmpty())
+        
+        if(geoFenceDto.geofenceName == null || StringUtils.trim(geoFenceDto.geofenceName).isEmpty())
             errors.add(new ErrorDto(MessageKeys.ERR_GEOFENCE_NAME_NOT_PROVIDED));
         if(geoFenceDto.points == null || geoFenceDto.points.isEmpty())
             errors.add(new ErrorDto(MessageKeys.ERR_GEOFENCE_POINTS_NOT_PROVIDED));
