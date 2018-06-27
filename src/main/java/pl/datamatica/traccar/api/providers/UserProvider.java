@@ -22,10 +22,8 @@ import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
-import java.util.Random;
 import java.util.Set;
 import java.util.UUID;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import javax.persistence.EntityManager;
 import javax.persistence.NoResultException;
@@ -54,6 +52,7 @@ import pl.datamatica.traccar.model.User;
 import pl.datamatica.traccar.model.UserPermission;
 import pl.datamatica.traccar.model.UserSettings;
 import pl.datamatica.traccar.model.UserSettings.SpeedUnit;
+import org.apache.commons.lang3.RandomStringUtils;
 
 public class UserProvider extends ProviderBase {
     private User requestUser;
@@ -413,13 +412,13 @@ public class UserProvider extends ProviderBase {
         if(user == null)
             throw new ProviderException(Type.NOT_FOUND);
         user.setPassResetToken(null);
-        StringBuilder pass = new StringBuilder();
-        Random r = new Random();
-        for(int i=0;i<14;++i)
-            pass.appendCodePoint(r.nextInt(94)+33);
+        
+        final int passLength = 8;
+        final String pass = RandomStringUtils.randomAlphanumeric(passLength);
+        
         user.setPassword(user.getPasswordHashMethod()
-                .doHash(pass.toString(), appSettings.getSalt()));
-        user.setPasswordRaw(pass.toString());
+                .doHash(pass, appSettings.getSalt()));
+        user.setPasswordRaw(pass);
         em.persist(user);
         return user;
     }
