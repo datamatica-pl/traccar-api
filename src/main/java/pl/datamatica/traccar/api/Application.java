@@ -116,19 +116,19 @@ public class Application implements spark.servlet.SparkApplication {
                 }
             }
             //uncomment for debug
-            //res.header("Access-Control-Allow-Origin", "http://127.0.0.1:8888");
+            res.header("Access-Control-Allow-Origin", "http://127.0.0.1:8888");
             res.header("Cache-Control", "max-age=10");
         });
         
         //uncomment for debug
-//        Spark.options("/*", (req, res) -> {
-//            res.header("Access-Control-Allow-Methods", "GET, POST");
-//            res.header("Access-Control-Allow-Headers", "Content-Type,"
-//                    + "x-http-method-override,Authorization");
-//            res.header("Access-Control-Max-Age", "86400");
-//            res.body("");
-//            return res;
-//        });
+        Spark.options("/*", (req, res) -> {
+            res.header("Access-Control-Allow-Methods", "GET, POST");
+            res.header("Access-Control-Allow-Headers", "Content-Type,"
+                    + "x-http-method-override,Authorization");
+            res.header("Access-Control-Max-Age", "86400");
+            res.body("");
+            return res;
+        });
 
         Spark.after((req, res)-> {
             RequestContext rc = (RequestContext)req.attribute(REQUEST_CONTEXT_KEY);
