@@ -182,14 +182,14 @@ public class RouteProvider extends ProviderBase {
                 rp = em.find(RoutePoint.class, rpd.getId());
             } else {
                 rp = new RoutePoint();
-                GeoFence gf;
-                if(rpd.getGeofenceId() != null && rpd.getGeofenceId() != 0)
-                    gf = geofences.getEditableGeofence(rpd.getGeofenceId());
-                else
-                    gf = gfs.get(i++);
-                rp.setGeofence(gf);
-                rp.setDeadline(rpd.getDeadline());
             }
+            GeoFence gf;
+            if(rpd.getGeofenceId() != null && rpd.getGeofenceId() != 0)
+                gf = geofences.getEditableGeofence(rpd.getGeofenceId());
+            else
+                gf = gfs.get(i++);
+            rp.setGeofence(gf);
+            rp.setDeadline(rpd.getDeadline());
             r.getRoutePoints().add(rp);
         }
         em.flush();
