@@ -530,9 +530,9 @@ public class DeviceProvider extends ProviderBase {
         checkUserSharePermission();
         
         Device d = get(Device.class, id, this::isVisible);
-        if(requestUser. hasPermission(UserPermission.ALL_USERS))
+        if(requestUser.hasPermission(UserPermission.ALL_USERS)) {
             d.getUsers().clear();
-        else {
+        } else {
             d.getUsers().removeAll(requestUser.getAllManagedUsers());
             d.getUsers().remove(requestUser);
         }
@@ -552,6 +552,8 @@ public class DeviceProvider extends ProviderBase {
             users.removeIf(u -> !ids.contains(u.getId()));
         }
         d.getUsers().addAll(users);
+
+        users.stream().filter(u -> !u.hadAnyDevice()).forEach(u -> u.setHadAnyDevice(true));
     }
     
     public long updateCustomIcon(long deviceId, byte[] data) throws ProviderException {
