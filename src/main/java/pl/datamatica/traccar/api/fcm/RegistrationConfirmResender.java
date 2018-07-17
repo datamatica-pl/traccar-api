@@ -17,8 +17,8 @@
 package pl.datamatica.traccar.api.fcm;
 
 import java.util.concurrent.TimeUnit;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import pl.datamatica.traccar.api.providers.MailSender;
 import pl.datamatica.traccar.model.User;
 
@@ -32,12 +32,12 @@ public class RegistrationConfirmResender extends Thread {
     private final String threadName;
     private final String emailTitle;
     private final String emailMsg;
-    private final Logger logger;
     private final String className;
     private final MailSender sender;
     private final User user;
     private final static int NUM_OF_TRIES = 3;
     private final static int SLEEP_TIME_SECONDS = 30;
+    private final static Logger LOGGER = LoggerFactory.getLogger(RegistrationConfirmResender.class);
     
     public RegistrationConfirmResender(MailSender sender, User user, String title, String msgContent) {
         this.sender = sender;
@@ -46,29 +46,26 @@ public class RegistrationConfirmResender extends Thread {
         emailMsg = msgContent;
         className = RegistrationConfirmResender.class.getName();
         threadName = className + "-" + user.getId();
-        logger = Logger.getLogger(className);
     }
 
     public void run() {
         try {
             for (int i = 0; i < NUM_OF_TRIES; i++) {
                 Thread.sleep(TimeUnit.SECONDS.toMillis(SLEEP_TIME_SECONDS));
-                logger.log(Level.INFO,
-                        String.format("%s: is trying to resend confirmation. Try %d of %d", threadName, i + 1, NUM_OF_TRIES));
+                LOGGER.info(String.format("%s: is trying to resend confirmation. Try %d of %d", threadName, i + 1, NUM_OF_TRIES));
                 Boolean sendResult = sender.sendMessage(user.getEmail(), emailTitle, emailMsg);
                 if (sendResult) {
-                    logger.log(Level.INFO, "Confirmation successfully sent by " + threadName);
+                    LOGGER.info("Confirmation successfully sent by " + threadName);
                     break;
                 }
             }
         } catch (InterruptedException ie) {
-            logger.log(Level.SEVERE, String.format("%s: resending confirmation email interrupted: ", className), ie);
+            LOGGER.error(String.format("%s: resending confirmation email interrupted: ", className), ie);
         }
-        logger.log(Level.INFO, "Confirmation resender " + threadName + " exiting.");
+        LOGGER.info("Confirmation resender " + threadName + " exiting.");
     }
 
     public void start() {
-        logger.log(Level.INFO, "Starting resending confirmation: " + threadName);
         if (t == null) {
             t = new Thread(this, threadName);
             t.start();
