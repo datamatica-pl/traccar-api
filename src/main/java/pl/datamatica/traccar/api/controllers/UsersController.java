@@ -40,6 +40,7 @@ import pl.datamatica.traccar.api.dtos.out.ErrorDto;
 import pl.datamatica.traccar.api.dtos.out.UserDto;
 import pl.datamatica.traccar.api.dtos.out.UserSettingsDto;
 import pl.datamatica.traccar.api.exceptions.ConfigLoadException;
+import pl.datamatica.traccar.api.fcm.RegistrationConfirmResender;
 import pl.datamatica.traccar.api.providers.MailSender;
 import pl.datamatica.traccar.api.providers.ProviderException;
 import pl.datamatica.traccar.api.providers.ProviderRemovingException;
@@ -267,9 +268,17 @@ public class UsersController extends ControllerBase {
     private void sendActivationToken(User user) {
         String token = user.getEmailValidationToken();
         if(token != null) {
-            String url = requestContext.getApiRoot()+"/users/activate/"+token;
-            sender.sendMessage(user.getEmail(), "Email confirmation",
-                    emailConfirmationContent(url));
+            final String url = requestContext.getApiRoot()+"/users/activate/"+token;
+            final String content = emailConfirmationContent(url);
+            final String title = "Email confirmation";
+            
+            Boolean sendResult = sender.sendMessage(user.getEmail(), title, content);
+            
+            // Try to resend a bil later in another thread
+            if (!sendResult) {
+                RegistrationConfirmResender rcs = new RegistrationConfirmResender(sender, user, title, content);
+                rcs.start();
+            }
         }
     }
     
