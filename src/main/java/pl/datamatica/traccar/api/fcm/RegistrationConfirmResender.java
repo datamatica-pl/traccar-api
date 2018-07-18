@@ -1,5 +1,5 @@
 /*
- *  Copyright (C) 2016  Datamatica (dev@datamatica.pl)
+ *  Copyright (C) 2018  Datamatica (dev@datamatica.pl)
  * 
  *   This program is free software: you can redistribute it and/or modify
  *   it under the terms of the GNU Affero General Public License as published
@@ -37,7 +37,7 @@ public class RegistrationConfirmResender extends Thread {
     private final MailSender sender;
     private final User user;
     private final static int NUM_OF_TRIES = 3;
-    private final static int SLEEP_TIME_SECONDS = 30;
+    private final static int SLEEP_TIME_SECONDS = 60;
     
     public RegistrationConfirmResender(MailSender sender, User user, String title, String msgContent) {
         this.sender = sender;
@@ -51,14 +51,21 @@ public class RegistrationConfirmResender extends Thread {
 
     public void run() {
         try {
-            for (int i = 0; i < NUM_OF_TRIES; i++) {
+            for (int i = 1; i <= NUM_OF_TRIES; i++) {
                 Thread.sleep(TimeUnit.SECONDS.toMillis(SLEEP_TIME_SECONDS));
                 logger.log(Level.INFO,
-                        String.format("%s: is trying to resend confirmation. Try %d of %d", threadName, i + 1, NUM_OF_TRIES));
+                        String.format("%s: is trying to resend confirmation for user with id %d. Try %d of %d.",
+                                threadName, user.getId(), i, NUM_OF_TRIES));
                 Boolean sendResult = sender.sendMessage(user.getEmail(), emailTitle, emailMsg);
                 if (sendResult) {
-                    logger.log(Level.INFO, "Confirmation successfully sent by " + threadName);
+                    logger.log(Level.INFO,
+                            String.format("Confirmation successfully sent by %s to user with id %d.", threadName, user.getId()));
                     break;
+                } else {
+                    if (i == NUM_OF_TRIES) {
+                        logger.log(Level.SEVERE,
+                                String.format("Resending confirmation for user id %d failed.", user.getId()));
+                    }
                 }
             }
         } catch (InterruptedException ie) {
@@ -68,7 +75,6 @@ public class RegistrationConfirmResender extends Thread {
     }
 
     public void start() {
-        logger.log(Level.INFO, "Starting resending confirmation: " + threadName);
         if (t == null) {
             t = new Thread(this, threadName);
             t.start();
