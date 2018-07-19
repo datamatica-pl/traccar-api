@@ -49,6 +49,7 @@ public class RegistrationConfirmResender extends Thread {
         logger = Logger.getLogger(className);
     }
 
+    @Override
     public void run() {
         try {
             for (int i = 1; i <= NUM_OF_TRIES; i++) {
@@ -71,9 +72,10 @@ public class RegistrationConfirmResender extends Thread {
         } catch (InterruptedException ie) {
             logger.log(Level.SEVERE, String.format("%s: resending confirmation email interrupted: ", className), ie);
         }
-        logger.log(Level.INFO, "Confirmation resender " + threadName + " exiting.");
+        logger.log(Level.INFO, String.format("Confirmation resender %s exiting.", threadName));
     }
 
+    @Override
     public void start() {
         if (t == null) {
             t = new Thread(this, threadName);
