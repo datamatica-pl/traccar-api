@@ -42,6 +42,7 @@ var imeiManager = {
             "CCTR-623",
             "Teltonika FMA",
             "Teltonika FMB",
+            "Teltonika TMT250",
             "GV20",
             "GT03",
             "GT710",
