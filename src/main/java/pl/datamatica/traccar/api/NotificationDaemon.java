@@ -1,16 +1,16 @@
 /*
  *  Copyright (C) 2018  Datamatica (dev@datamatica.pl)
- * 
+ *
  *   This program is free software: you can redistribute it and/or modify
  *   it under the terms of the GNU Affero General Public License as published
  *   by the Free Software Foundation, either version 3 of the License, or
  *   (at your option) any later version.
- *  
+ *
  *   This program is distributed in the hope that it will be useful,
  *   but WITHOUT ANY WARRANTY; without even the implied warranty of
  *   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *   GNU Affero General Public License for more details.
- *  
+ *
  *   You should have received a copy of the GNU Affero General Public License
  *   along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
@@ -21,10 +21,11 @@ import javax.persistence.EntityManager;
 import pl.datamatica.traccar.api.fcm.Daemon;
 import pl.datamatica.traccar.api.providers.MailSender;
 import pl.datamatica.traccar.model.UserEvent;
+import org.apache.commons.lang3.StringUtils;
 
 public class NotificationDaemon extends Daemon {
     private static final int CHECK_HOUR = 8;
-    
+
     @Override
     protected void doWork(EntityManager em) {
         MailSender ms = new MailSender(em);
@@ -36,17 +37,21 @@ public class NotificationDaemon extends Daemon {
                 "Dziękujemy,<br/><br/>" +
                 "Zespół serwisu " + appName + "<br/><br/>" +
                 "Ten email został wygenerowany automatycznie - nie odpowiadaj na niego.";
-        
+
         for(UserEvent ue : em.createQuery(
             "SELECT e FROM "+UserEvent.class.getName()+" e INNER JOIN FETCH e.user" +
-                    " WHERE e.notificationSent = :false", UserEvent.class)
+                    " WHERE e.notificationSent = :false AND email IS NOT NULL", UserEvent.class)
                             .setParameter("false", false)
                             .getResultList()) {
             int inactive = getInactiveDaysCount(ue.getKind());
             String title1 = String.format(title, inactive);
             String message1 = String.format(message, inactive);
-            if(ms.sendMessage(ue.getUser().getEmail(), title1, message1))
-                ue.setNotificationSent(true);
+
+            if (StringUtils.isNotBlank(ue.getUser().getEmail())) {
+                if(ms.sendMessage(ue.getUser().getEmail(), title1, message1)) {
+                    ue.setNotificationSent(true);
+                }
+            }
         }
     }
 
