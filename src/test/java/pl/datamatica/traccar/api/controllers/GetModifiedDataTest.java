@@ -68,13 +68,13 @@ public class GetModifiedDataTest {
             devices.add(tempDeviceFactory.get("1001", user, "2018-11-01 16:00:00 GMT"));
             devices.add(tempDeviceFactory.get("1002", user, "2018-11-01 08:00:00 PST"));
             devices.add(tempDeviceFactory.get("1003", user, "2018-11-01 17:00:00 CET"));
-            
+
             // Three devices with last modification time "2018-11-10 18:00:00 GMT" but in different TZs
             // CEST timezone is not active in November, but it should work
             devices.add(tempDeviceFactory.get("2001", user, "2018-11-10 10:00:00 PST"));
             devices.add(tempDeviceFactory.get("2002", user, "2018-11-10 18:00:00 GMT"));
             devices.add(tempDeviceFactory.get("2003", user, "2018-11-10 20:00:00 CEST"));
-            
+
             // Three devices with last modification time "2018-11-20 20:00:00 GMT" but in different TZs
             // PDT timezone is not active in November, but it should work
             devices.add(tempDeviceFactory.get("1236", user, "2018-11-20 13:00:00 PDT"));
@@ -89,7 +89,7 @@ public class GetModifiedDataTest {
     }
 
     @Test
-    public void getSixModifiedZoneGMT() throws Exception {
+    public void getSixModifiedDevicesZoneGMT() throws Exception {
         Date ifModifiedSince = DateUtil.parseDate("Thu, 01 Nov 2018 16:00:01 GMT");
         Mockito.when(rc.getModificationDate()).thenReturn(ifModifiedSince);
 
@@ -100,7 +100,7 @@ public class GetModifiedDataTest {
     }
 
     @Test
-    public void getNineModifiedZoneGMT() throws Exception {
+    public void getNineModifiedDevicesZoneGMT() throws Exception {
         Date ifModifiedSince = DateUtil.parseDate("Thu, 01 Nov 2018 15:59:59 GMT");
         Mockito.when(rc.getModificationDate()).thenReturn(ifModifiedSince);
 
@@ -111,7 +111,7 @@ public class GetModifiedDataTest {
     }
 
     @Test
-    public void getSixModifiedZonePST() throws Exception {
+    public void getSixModifiedDevicesZonePST() throws Exception {
         // "Sat, 10 Nov 2018 09:59:59 PST" -> 17:59:59 GMT
         Date ifModifiedSince = DateUtil.parseDate("Sat, 10 Nov 2018 09:59:59 PST");
         Mockito.when(rc.getModificationDate()).thenReturn(ifModifiedSince);
@@ -123,7 +123,7 @@ public class GetModifiedDataTest {
     }
 
     @Test
-    public void getThreeModifiedZonePST() throws Exception {
+    public void getThreeModifiedDevicesZonePST() throws Exception {
         // "Sat, 10 Nov 2018 10:00:01 PST" -> 18:01:01 GMT
         Date ifModifiedSince = DateUtil.parseDate("Sat, 10 Nov 2018 10:00:01 PST");
         Mockito.when(rc.getModificationDate()).thenReturn(ifModifiedSince);
@@ -135,7 +135,7 @@ public class GetModifiedDataTest {
     }
 
     @Test
-    public void getThreeModifiedZoneCET() throws Exception {
+    public void getThreeModifiedDevicesZoneCET() throws Exception {
         Date ifModifiedSince = DateUtil.parseDate("Tue, 20 Nov 2018 20:59:59 CET"); // 19:59:59 GMT
         Mockito.when(rc.getModificationDate()).thenReturn(ifModifiedSince);
 
@@ -146,7 +146,7 @@ public class GetModifiedDataTest {
     }
 
     @Test
-    public void getZeroModifiedZoneCET() throws Exception {
+    public void getZeroModifiedDevicesZoneCET() throws Exception {
         Date ifModifiedSince = DateUtil.parseDate("Tue, 20 Nov 2018 21:01:01 CET"); // 20:00:01 GMT
         Mockito.when(rc.getModificationDate()).thenReturn(ifModifiedSince);
 
@@ -158,7 +158,7 @@ public class GetModifiedDataTest {
 
     // Check CEST, even if not available in November, it should also work.
     @Test
-    public void getSixModifiedZoneCEST() throws Exception {
+    public void getSixModifiedDevicesZoneCEST() throws Exception {
         Date ifModifiedSince = DateUtil.parseDate("Sat, 10 Nov 2018 19:59:59 CEST"); // 17:59:59 GMT
         Mockito.when(rc.getModificationDate()).thenReturn(ifModifiedSince);
 
@@ -170,8 +170,19 @@ public class GetModifiedDataTest {
 
     // Check CEST, even if not available in November, it should also work.
     @Test
-    public void getThreeModifiedZoneCEST() throws Exception {
+    public void getThreeModifiedDevicesZoneCEST() throws Exception {
         Date ifModifiedSince = DateUtil.parseDate("Sat, 10 Nov 2018 20:00:01 CEST"); // 18:00:01 GMT
+        Mockito.when(rc.getModificationDate()).thenReturn(ifModifiedSince);
+
+        HttpResponse response = dc.get();
+
+        ListDto<DeviceDto> actual = (ListDto<DeviceDto>) response.getContent();
+        assertEquals(3, actual.getChanged().size());
+    }
+
+    @Test
+    public void getThreeModifiedDevicesExactTimeZoneCEST() throws Exception {
+        Date ifModifiedSince = DateUtil.parseDate("Sat, 10 Nov 2018 20:00:00 CEST"); // 18:00:01 GMT
         Mockito.when(rc.getModificationDate()).thenReturn(ifModifiedSince);
 
         HttpResponse response = dc.get();
