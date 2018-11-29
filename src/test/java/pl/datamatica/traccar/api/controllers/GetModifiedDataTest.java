@@ -42,6 +42,7 @@ import pl.datamatica.traccar.model.User;
  * @author Jan Usarek
  */
 public class GetModifiedDataTest {
+
     private User user;
     private DeviceProvider dp;
     private DevicesController dc;
@@ -63,29 +64,33 @@ public class GetModifiedDataTest {
         Mockito.when(rc.getApplicationSettingsProvider()).thenReturn(asp);
         dc = new DevicesController(rc);
 
-        try {
-            // Three devices with last modification time "2018-11-01 16:00:00 GMT" but in different TZs
-            devices.add(tempDeviceFactory.get("1001", user, "2018-11-01 16:00:00 GMT"));
-            devices.add(tempDeviceFactory.get("1002", user, "2018-11-01 08:00:00 PST"));
-            devices.add(tempDeviceFactory.get("1003", user, "2018-11-01 17:00:00 CET"));
-
-            // Three devices with last modification time "2018-11-10 18:00:00 GMT" but in different TZs
-            // CEST timezone is not active in November, but it should work
-            devices.add(tempDeviceFactory.get("2001", user, "2018-11-10 10:00:00 PST"));
-            devices.add(tempDeviceFactory.get("2002", user, "2018-11-10 18:00:00 GMT"));
-            devices.add(tempDeviceFactory.get("2003", user, "2018-11-10 20:00:00 CEST"));
-
-            // Three devices with last modification time "2018-11-20 20:00:00 GMT" but in different TZs
-            // PDT timezone is not active in November, but it should work
-            devices.add(tempDeviceFactory.get("1236", user, "2018-11-20 13:00:00 PDT"));
-            devices.add(tempDeviceFactory.get("1236", user, "2018-11-20 20:00:00 GMT"));
-            devices.add(tempDeviceFactory.get("1236", user, "2018-11-20 21:00:00 CET"));
-        } catch (ParseException pe) {
-            fail("Device list cannot be created because of incorrect modification time.");
-        }
+        this.initializeTestDevices();
 
         Mockito.when(dp.getDevice(0)).thenReturn(devices.get(0));
         Mockito.when(dp.getAllAvailableDevices()).thenReturn(devices.stream());
+    }
+
+    private void initializeTestDevices() {
+        try {
+            // Three devices with last modification time "2018-11-01 16:00:00 GMT" but in different TZs
+            devices.add(tempDeviceFactory.get(1L, "1001", user, "2018-11-01 16:00:00 GMT"));
+            devices.add(tempDeviceFactory.get(2L, "1002", user, "2018-11-01 08:00:00 PST"));
+            devices.add(tempDeviceFactory.get(3L, "1003", user, "2018-11-01 17:00:00 CET"));
+
+            // Three devices with last modification time "2018-11-10 18:00:00 GMT" but in different TZs
+            // CEST timezone is not active in November, but it should work
+            devices.add(tempDeviceFactory.get(4L, "2001", user, "2018-11-10 10:00:00 PST"));
+            devices.add(tempDeviceFactory.get(5L, "2002", user, "2018-11-10 18:00:00 GMT"));
+            devices.add(tempDeviceFactory.get(6L, "2003", user, "2018-11-10 20:00:00 CEST"));
+
+            // Three devices with last modification time "2018-11-20 20:00:00 GMT" but in different TZs
+            // PDT timezone is not active in November, but it should work
+            devices.add(tempDeviceFactory.get(7L, "1236", user, "2018-11-20 13:00:00 PDT"));
+            devices.add(tempDeviceFactory.get(8L, "1236", user, "2018-11-20 20:00:00 GMT"));
+            devices.add(tempDeviceFactory.get(9L, "1236", user, "2018-11-20 21:00:00 CET"));
+        } catch (ParseException pe) {
+            fail("Device list cannot be created because of incorrect modification time.");
+        }
     }
 
     @Test
@@ -192,9 +197,12 @@ public class GetModifiedDataTest {
     }
 
     private class TempDeviceFactory {
+
         private final SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss z");
-        public Device get(String imei, User owner, String dateStr) throws ParseException {
+
+        public Device get(long id, String imei, User owner, String dateStr) throws ParseException {
             Device device = new Device();
+            device.setId(id);
             device.setUniqueId(imei);
             device.setOwner(owner);
             device.setUsers(Collections.singleton(owner));
