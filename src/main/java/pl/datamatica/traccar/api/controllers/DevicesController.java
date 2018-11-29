@@ -429,6 +429,11 @@ public class DevicesController extends ControllerBase {
         return parsed;
     }
     
+    // Usefull in tests, to check whether minimum date used in get positions is correct
+    public Date getMinDate() {
+        return minDate;
+    }
+    
     /* PARSING POSITIONS QUERY - END */
     
     private Picture getCustomIcon(long deviceId) throws ProviderException {

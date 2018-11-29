@@ -196,6 +196,36 @@ public class GetModifiedDataTest {
         assertEquals(3, actual.getChanged().size());
     }
 
+    @Test
+    public void checkMinDateForPostionsFiltering() throws Exception {
+        Date ifModifiedSince = DateUtil.parseDate("Tue, 27 Nov 2018 8:00:00 PST");
+        Mockito.when(rc.getModificationDate()).thenReturn(ifModifiedSince);
+        DevicesController dc1 = new DevicesController(rc);
+        
+        Mockito.when(rc.getModificationDate()).thenReturn(DateUtil.parseDate("Tue, 27 Nov 2018 09:00:00 PDT"));
+        DevicesController dc2 = new DevicesController(rc);
+        
+        Mockito.when(rc.getModificationDate()).thenReturn(DateUtil.parseDate("Tue, 27 Nov 2018 16:00:00 GMT"));
+        DevicesController dc3 = new DevicesController(rc);
+        
+        Mockito.when(rc.getModificationDate()).thenReturn(DateUtil.parseDate("Tue, 27 Nov 2018 17:00:00 CET"));
+        DevicesController dc4 = new DevicesController(rc);
+        
+        Mockito.when(rc.getModificationDate()).thenReturn(DateUtil.parseDate("Tue, 27 Nov 2018 18:00:00 CEST"));
+        DevicesController dc5 = new DevicesController(rc);
+        
+        SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss z");
+        Date dateToCheck = format.parse("2018-11-27 16:00:00 GMT");
+        
+        // Make sure, than no matter of TimeZone of date used in If-modified-since,
+        // correct date and time is used for filtering positions
+        assertEquals(dateToCheck, dc1.getMinDate());
+        assertEquals(dateToCheck, dc2.getMinDate());
+        assertEquals(dateToCheck, dc3.getMinDate());
+        assertEquals(dateToCheck, dc4.getMinDate());
+        assertEquals(dateToCheck, dc5.getMinDate());
+    }
+
     private class TempDeviceFactory {
 
         private final SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss z");
