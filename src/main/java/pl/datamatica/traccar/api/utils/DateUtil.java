@@ -27,16 +27,10 @@ public class DateUtil {
     private static final SimpleDateFormat RFC_850 = new SimpleDateFormat("EEEE,  dd-MMM-yy HH:mm:ss z", Locale.US);
     private static final SimpleDateFormat ASCTIME = new SimpleDateFormat("EEE MMM  d HH:mm:ss yyyy", Locale.US);
 
-    static {
-        RFC_1123.setTimeZone(TimeZone.getTimeZone("GMT"));
-        RFC_850.setTimeZone(TimeZone.getTimeZone("GMT"));
-        ASCTIME.setTimeZone(TimeZone.getTimeZone("GMT"));
-    }
-
     public static synchronized Date parseDate(String in) throws ParseException {
         ParseException lastException = null;
         for(SimpleDateFormat format : getSupportedFormats())
-            try{
+            try {
                 return format.parse(in);
             } catch(ParseException e) {
                 lastException = e;
@@ -44,7 +38,8 @@ public class DateUtil {
         throw lastException;
     }
 
-    public static synchronized String formatDate(Date in) {
+    public static synchronized String formatDateForResponse(Date in) {
+        RFC_1123.setTimeZone(TimeZone.getTimeZone("GMT"));
         return RFC_1123.format(in);
     }
 

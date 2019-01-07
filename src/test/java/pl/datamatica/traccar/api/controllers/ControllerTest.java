@@ -27,7 +27,7 @@ import pl.datamatica.traccar.api.utils.DateUtil;
 public class ControllerTest {
     public static HttpHeader lastModifiedHeader(Date date) {
         return new HttpHeader(HttpHeaders.LAST_MODIFIED, 
-                DateUtil.formatDate(date));
+                DateUtil.formatDateForResponse(date));
     }
 
     public static Stream getHeaderStream(HttpResponse response) {

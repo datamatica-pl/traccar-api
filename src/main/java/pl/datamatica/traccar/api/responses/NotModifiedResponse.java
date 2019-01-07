@@ -30,7 +30,7 @@ public class NotModifiedResponse extends HttpResponse {
     @Override
     public Iterable getHeaders() {
         return Collections.singleton(new HttpHeader(HttpHeaders.LAST_MODIFIED, 
-                DateUtil.formatDate(serverModification)));
+                DateUtil.formatDateForResponse(serverModification)));
     }
     
     @Override

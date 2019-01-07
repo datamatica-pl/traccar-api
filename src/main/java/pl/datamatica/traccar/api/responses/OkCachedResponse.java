@@ -32,7 +32,7 @@ public class OkCachedResponse extends OkResponse {
     public Iterable getHeaders() {
         if(serverModification != null)
             return Collections.singleton(new HttpHeader(HttpHeaders.LAST_MODIFIED, 
-                    DateUtil.formatDate(serverModification)));
+                    DateUtil.formatDateForResponse(serverModification)));
         return Collections.EMPTY_LIST;
     }
 }
